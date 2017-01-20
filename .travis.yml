@@ -6,6 +6,9 @@ make && make test
 
 language: c
 
+notification:
+        slack: design3e1:TwMxEB4gtYnqe3WITrBwO5Ae
+
 # script:
 
 compliler: clang
