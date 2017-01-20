@@ -1,6 +1,6 @@
 ## Installation stuff
 
-install: make .
+# install: make .
 
 language: c
 
