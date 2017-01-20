@@ -1,0 +1,11 @@
+## Installation stuff
+
+install: make .
+
+make && make test
+
+language: c
+
+# script:
+
+compliler: clang
