@@ -13,19 +13,19 @@ static void help(void)
             "./contours\n");
 }
 
-#define w 1200
+IplImage* img;
 int levels = 3;
 CvSeq* contours = 0;
 
 static void on_trackbar(int pos)
 {
-    IplImage* cnt_img = cvCreateImage( cvSize(w,w), 8, 3 );
+    IplImage* cnt_img = cvCreateImage(cvGetSize(img), 8, 3 );
     CvSeq* _contours = contours;
     int _levels = levels - 3;
     (void)pos;
 
-    if( _levels <= 0 ) // get to the nearest face to make it look more funny
-        _contours = _contours->h_next->h_next->h_next;
+    //if( _levels <= 0 ) // get to the nearest face to make it look more funny
+    //    _contours = _contours->h_next->h_next->h_next;
     cvZero( cnt_img );
     cvDrawContours( cnt_img, _contours, CV_RGB(255,0,0), CV_RGB(0,255,0), _levels, 3, CV_AA, cvPoint(0,0) );
     cvShowImage( "contours", cnt_img );
@@ -56,14 +56,29 @@ int main(int argc, char* argv[])
 {
     int i, j;
     CvMemStorage* storage = cvCreateMemStorage(0);
-    IplImage* img = cvLoadImage("contours.y.jpg",CV_LOAD_IMAGE_GRAYSCALE);//cvCreateImage( cvSize(w,w), 8, 1 );
+    img = cvLoadImage(argv[1],CV_LOAD_IMAGE_COLOR);//cvCreateImage( cvSize(w,w), 8, 1 );
+
+    //cvSmooth(img, img, CV_GAUSSIAN, 3, 0, 0, 0);
+
+    IplImage* img_yuv = cvCreateImage(cvGetSize(img),IPL_DEPTH_8U,3);
+    cvCvtColor(img, img_yuv, CV_BGR2YCrCb);
+    CvScalar upper_bound = cvScalar(200, 116, 116, 255);
+    CvScalar lower_bound = cvScalar(90, 0, 0, 255);
+    //IplImage* img_green = cvCreateImage(cvGetSize(img),IPL_DEPTH_8U,1);
+    
+
     IplImage* im_bw = cvCreateImage(cvGetSize(img),IPL_DEPTH_8U,1);
-    cvThreshold(img, im_bw, 128, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
+    cvInRangeS(img_yuv, lower_bound, upper_bound, im_bw);
+    printf("test\n");
+    //cvThreshold(img, im_bw, 128, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
+    cvDilate(im_bw, im_bw, NULL, 5);
+    cvErode(im_bw, im_bw, NULL, 10);
+    cvDilate(im_bw, im_bw, NULL, 5);
+    //cvAdaptiveThreshold(img, im_bw, 255,  CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY, 101, 0);
     /*
     IplImage* img32f = cvCreateImage( cvSize(w,w), IPL_DEPTH_32F, 1 );
     IplImage* img32s = cvCreateImage( cvSize(w,w), IPL_DEPTH_32S, 1 );*/
-    IplImage* img3 = cvCreateImage( cvSize(w,w), 8, 3 );
-    (void)argc; (void)argv;
+    IplImage* img3 = cvCloneImage(img);//cvCreateImage( cvGetSize(img), 8, 3 );
 
     help();
     /*
@@ -101,8 +116,8 @@ int main(int argc, char* argv[])
         cvEllipse( img, cvPoint(dx+273, dy+100), cvSize(20,35), 0, 0, 360, white, -1, 8, 0 );
     }*/
 
-    cvNamedWindow( "image", 1 );
-    cvShowImage( "image", img );
+    cvNamedWindow( "image_yuv", 1 );
+    cvShowImage( "image_yuv", img_yuv );
     /*
     cvConvert( img, img32f );
     findCComp( img32f );
@@ -111,27 +126,33 @@ int main(int argc, char* argv[])
     cvFindContours( img32s, storage, &contours, sizeof(CvContour),
                     CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE, cvPoint(0,0) );
 */
+    cvShowImage( "bw", im_bw );
     cvFindContours( im_bw, storage, &contours, sizeof(CvContour),
                     CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cvPoint(0,0) );
 
 
-    {
+    {/*
     const char* attrs[] = {"recursive", "1", 0};
     cvSave("contours.xml", contours, 0, 0, cvAttrList(attrs, 0));
     contours = (CvSeq*)cvLoad("contours.xml", storage, 0, 0);
+    */
     }
 
     // comment this out if you do not want approximation
-    contours = cvApproxPoly( contours, sizeof(CvContour), storage, CV_POLY_APPROX_DP, 3, 1 );
-
+    contours = cvApproxPoly( contours, sizeof(CvContour), storage, CV_POLY_APPROX_DP, 100, 1 );
+    /*{
+    const char* attrs[] = {"recursive", "1", 0};
+    cvSave("contours.xml", contours, 0, 0, cvAttrList(attrs, 0));
+    contours = (CvSeq*)cvLoad("contours.xml", storage, 0, 0);
+    }*/
     cvNamedWindow( "contours", 1 );
-    cvCreateTrackbar( "levels+3", "contours", &levels, 7, on_trackbar );
+    cvCreateTrackbar( "levels+3", "contours", &levels, 8, on_trackbar );
 
     {
         CvRNG rng = cvRNG(-1);
 
         CvSeq* tcontours = contours;
-        cvCvtColor( img, img3, CV_GRAY2BGR );
+        //cvCvtColor( img, img3, CV_GRAY2BGR );
         while( tcontours->h_next )
             tcontours = tcontours->h_next;
 
@@ -156,6 +177,7 @@ int main(int argc, char* argv[])
     }
 
     cvShowImage( "colored", img3 );
+    
     on_trackbar(0);
     cvWaitKey(0);
     cvReleaseMemStorage( &storage );
@@ -163,6 +185,7 @@ int main(int argc, char* argv[])
     //cvReleaseImage( &img32f );
     //cvReleaseImage( &img32s );
     cvReleaseImage( &img3 );
+    cvReleaseImage( &im_bw );
 
     return 0;
 }
