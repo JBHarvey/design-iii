@@ -7,6 +7,9 @@ language: c
 notifications:
         slack: design3e1:TwMxEB4gtYnqe3WITrBwO5Ae
 
+install:
+- sudo apt-get install libopencv-dev
+
 script:
  - cd samples/opencv
  - sh ./build.sh
