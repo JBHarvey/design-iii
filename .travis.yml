@@ -7,6 +7,8 @@ language: c
 notifications:
         slack: design3e1:TwMxEB4gtYnqe3WITrBwO5Ae
 
-# script:
+script:
+ - cd samples/opencv
+ - sh ./build.sh
 
 compiler: clang
