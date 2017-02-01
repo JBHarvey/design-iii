@@ -25,7 +25,7 @@
 
 /* Lower bound of YUV channel coordinates to detect the white around the figure.
  */
-#define FIGURE_YUV_LOWER_BOUND (cvScalar(0, 115, 115, 255))
+#define FIGURE_YUV_LOWER_BOUND (cvScalar(110, 115, 115, 255))
 
 
 #define GREEN_SQUARE_POLY_APPROX 200
@@ -145,6 +145,10 @@ static unsigned int find_green_squares(CvMemStorage* storage, IplImage* img_bw, 
 
                     out_squares[num_squares] = square;
                     ++num_squares;
+
+                    if(num_squares >= max_squares) {
+                        return num_squares;
+                    }
                 }
 
                 v_seq = v_seq->v_next;
