@@ -33,6 +33,10 @@
 
 #define WIDTH_HEIGHT_EXTRACTED_SQUARE_IMAGE 1000
 
+#define MIN_FIGURE_AREA (WIDTH_HEIGHT_EXTRACTED_SQUARE_IMAGE * WIDTH_HEIGHT_EXTRACTED_SQUARE_IMAGE * 0.05)
+#define MAX_FIGURE_AREA (WIDTH_HEIGHT_EXTRACTED_SQUARE_IMAGE * WIDTH_HEIGHT_EXTRACTED_SQUARE_IMAGE * 0.9)
+
+
 typedef struct {
     CvPoint2D32f corner[4];
 } Square;
@@ -104,6 +108,44 @@ static IplImage* threshold_image(IplImage* img_yuv, CvScalar lower_bound, CvScal
     return img_bw;
 }
 
+static void find_green_squares_recursive(CvSeq* contours, Square *out_squares, unsigned int max_squares,
+        unsigned int *num_squares)
+{
+    if(*num_squares >= max_squares) {
+        return;
+    }
+
+    CvSeq* h_seq = contours;
+
+    while(h_seq) {
+        if(detect_dual_square(h_seq)) {
+            Square square;
+            square.corner[0] = cvPointTo32f(*(CvPoint*)cvGetSeqElem(h_seq->v_next, 0));
+            square.corner[1] = cvPointTo32f(*(CvPoint*)cvGetSeqElem(h_seq->v_next, 1));
+            square.corner[2] = cvPointTo32f(*(CvPoint*)cvGetSeqElem(h_seq->v_next, 2));
+            square.corner[3] = cvPointTo32f(*(CvPoint*)cvGetSeqElem(h_seq->v_next, 3));
+
+            /* fix rotation */
+            if(square.corner[0].x * square.corner[0].y > square.corner[3].x * square.corner[3].y) {
+                CvPoint2D32f temp = square.corner[0];
+                square.corner[0] = square.corner[3];
+                square.corner[3] = square.corner[2];
+                square.corner[2] = square.corner[1];
+                square.corner[1] = temp;
+            }
+
+            out_squares[*num_squares] = square;
+            ++*num_squares;
+
+            if(*num_squares >= max_squares) {
+                return;
+            }
+        }
+
+        find_green_squares_recursive(h_seq->v_next, out_squares, max_squares, num_squares);
+        h_seq = h_seq->h_next;
+    }
+}
 
 static unsigned int find_green_squares(CvMemStorage* storage, IplImage* img_bw, Square *out_squares,
                                        unsigned int max_squares)
@@ -120,42 +162,7 @@ static unsigned int find_green_squares(CvMemStorage* storage, IplImage* img_bw, 
                       CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cvPoint(0, 0))) {
 
         contours = cvApproxPoly(contours, sizeof(CvContour), storage, CV_POLY_APPROX_DP, GREEN_SQUARE_POLY_APPROX, 1);
-
-        CvSeq* h_seq = contours;
-
-        while(h_seq) {
-            CvSeq* v_seq = h_seq;
-
-            while(v_seq) {
-                if(detect_dual_square(v_seq)) {
-                    Square square;
-                    square.corner[0] = cvPointTo32f(*(CvPoint*)cvGetSeqElem(v_seq->v_next, 0));
-                    square.corner[1] = cvPointTo32f(*(CvPoint*)cvGetSeqElem(v_seq->v_next, 1));
-                    square.corner[2] = cvPointTo32f(*(CvPoint*)cvGetSeqElem(v_seq->v_next, 2));
-                    square.corner[3] = cvPointTo32f(*(CvPoint*)cvGetSeqElem(v_seq->v_next, 3));
-
-                    /* fix rotation */
-                    if(square.corner[0].x * square.corner[0].y > square.corner[3].x * square.corner[3].y) {
-                        CvPoint2D32f temp = square.corner[0];
-                        square.corner[0] = square.corner[3];
-                        square.corner[3] = square.corner[2];
-                        square.corner[2] = square.corner[1];
-                        square.corner[1] = temp;
-                    }
-
-                    out_squares[num_squares] = square;
-                    ++num_squares;
-
-                    if(num_squares >= max_squares) {
-                        return num_squares;
-                    }
-                }
-
-                v_seq = v_seq->v_next;
-            }
-
-            h_seq = h_seq->h_next;
-        }
+        find_green_squares_recursive(contours, out_squares, max_squares, &num_squares);
     }
 
     return num_squares;
@@ -191,6 +198,44 @@ static CvSeq *find_figure_contours(CvMemStorage* storage, IplImage* img_bw)
     return contours;
 }
 
+static _Bool detect_figure(CvSeq* contours)
+{
+    double countour_area = cvContourArea(contours, CV_WHOLE_SEQ, 0);
+
+    if(countour_area < MAX_FIGURE_AREA && countour_area > MIN_FIGURE_AREA) {
+        return 1;
+    }
+
+    return 0;
+}
+
+
+static CvSeq *find_figure(CvSeq *in)
+{
+    if(!in) {
+        return 0;
+    }
+
+    CvSeq* h_seq = in;
+
+    while(h_seq) {
+        if(detect_figure(h_seq)) {
+            return h_seq;
+        }
+
+
+        CvSeq* temp = find_figure(h_seq->v_next);
+
+        if(temp) {
+            return temp;
+        }
+
+        h_seq = h_seq->h_next;
+    }
+
+    return 0;
+}
+
 CvSeq *find_first_figure(CvMemStorage* storage, IplImage* img_yuv)
 {
     CvSeq *figure_contours = NULL;
@@ -208,6 +253,7 @@ CvSeq *find_first_figure(CvMemStorage* storage, IplImage* img_yuv)
 
         figure_contours = find_figure_contours(storage, square_image_bw);
         cvReleaseImage(&square_image_bw);
+        figure_contours = find_figure(figure_contours);
     }
 
     cvReleaseImage(&img_bw);
