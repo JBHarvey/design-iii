@@ -9,7 +9,7 @@
 /* Number of pixels that the black and white images will be eroded then dilated to make
  * the edges cleaner.
  */
-#define ERODE_DILATE_PIXELS 4
+#define ERODE_DILATE_PIXELS 1
 
 /* Upper bound of YUV channel coordinates to detect the green square.
  */
@@ -28,8 +28,8 @@
 #define FIGURE_YUV_LOWER_BOUND (cvScalar(110, 115, 115, 255))
 
 
-#define GREEN_SQUARE_POLY_APPROX 200
-#define FIGURE_POLY_APPROX 20
+#define GREEN_SQUARE_POLY_APPROX 50
+#define FIGURE_POLY_APPROX 5
 
 #define WIDTH_HEIGHT_EXTRACTED_SQUARE_IMAGE 1000
 

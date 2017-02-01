@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
             IplImage* im_square_image = cvCreateImage(cvSize(1000, 1000), IPL_DEPTH_8U, 3);
 
             if(contour) {
-                cvDrawContours(im_square_image, contour, CV_RGB(255, 0, 0), CV_RGB(0, 255, 0), 8, 3, CV_AA, cvPoint(0, 0));
+                cvDrawContours(im_square_image, contour, CV_RGB(255, 0, 0), CV_RGB(0, 255, 0), 0, 3, CV_AA, cvPoint(0, 0));
             }
 
             cvShowImage("Video-lines", im_square_image);
