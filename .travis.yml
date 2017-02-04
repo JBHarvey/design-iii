@@ -15,5 +15,8 @@ install:
 script:
  - cd samples/opencv
  - sh ./build.sh
+ - cd ../..
+ - cd test
+ - sh ./run_test.sh
 
 compiler: clang
