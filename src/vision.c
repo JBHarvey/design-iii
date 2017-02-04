@@ -25,11 +25,11 @@
 
 /* Lower bound of YUV channel coordinates to detect the white around the figure.
  */
-#define FIGURE_YUV_LOWER_BOUND (cvScalar(110, 115, 115, 255))
+#define FIGURE_YUV_LOWER_BOUND (cvScalar(160, 115, 115, 255))
 
 
-#define GREEN_SQUARE_POLY_APPROX 50
-#define FIGURE_POLY_APPROX 5
+#define GREEN_SQUARE_POLY_APPROX 100
+#define FIGURE_POLY_APPROX 3
 
 #define WIDTH_HEIGHT_EXTRACTED_SQUARE_IMAGE 1000
 
@@ -102,8 +102,7 @@ static IplImage* threshold_image(IplImage* img_yuv, CvScalar lower_bound, CvScal
     cvInRangeS(img_yuv, lower_bound, upper_bound, img_bw);
 
     cvDilate(img_bw, img_bw, NULL, erode_dilate_pixels);
-    cvErode(img_bw, img_bw, NULL, erode_dilate_pixels);
-    cvErode(img_bw, img_bw, NULL, erode_dilate_pixels);
+    cvErode(img_bw, img_bw, NULL, erode_dilate_pixels * 2);
     cvDilate(img_bw, img_bw, NULL, erode_dilate_pixels);
     return img_bw;
 }
