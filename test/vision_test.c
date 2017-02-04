@@ -1,5 +1,5 @@
- 
- 
+
+
 #include "opencv2/highgui/highgui_c.h"
 #include "vision.h"
 #include <stdio.h>
@@ -14,8 +14,9 @@ static _Bool has_nonblack_pixels(IplImage* img)
     char *img_data = img->imageData;
 
     unsigned int i;
-    for (i = 0; i < size; ++i) {
-        if (img_data[i]) {
+
+    for(i = 0; i < size; ++i) {
+        if(img_data[i]) {
             return 1;
         }
     }
@@ -25,14 +26,15 @@ static _Bool has_nonblack_pixels(IplImage* img)
 
 int main(int argc, char *argv[])
 {
-    if (argc < 3)
+    if(argc < 3) {
         return 1;
+    }
 
     _Bool non_black_pixels = 1;
 
     CvMemStorage* storage = cvCreateMemStorage(0);
 
-    IplImage* img = cvLoadImage(argv[1],CV_LOAD_IMAGE_COLOR);
+    IplImage* img = cvLoadImage(argv[1], CV_LOAD_IMAGE_COLOR);
     CvSeq *contours_comp = (CvSeq*)cvLoad(argv[2], storage, 0, 0);
 
     //cvNamedWindow("Video", 0); // create window
@@ -51,31 +53,34 @@ int main(int argc, char *argv[])
 
         memset(im_square_image->imageData, 0, im_square_image->imageSize);
 
-        if (contours_comp && contour) {
-#ifdef D_DEBUG
-            cvDrawContours(im_square_image, contours_comp, CV_RGB(0, 255, 0), CV_RGB(0, 255, 0), 0, OFF_PIXEL_TOLERANCE, 8, cvPoint(0, 0));
+        if(contours_comp && contour) {
+            #ifdef D_DEBUG
+            cvDrawContours(im_square_image, contours_comp, CV_RGB(0, 255, 0), CV_RGB(0, 255, 0), 0, OFF_PIXEL_TOLERANCE, 8,
+                           cvPoint(0, 0));
             cvDrawContours(im_square_image, contour, CV_RGB(255, 0, 0), CV_RGB(255, 0, 0), 0, 1, 8, cvPoint(0, 0));
             {
-#else
+            #else
             double area = cvContourArea(contour, CV_WHOLE_SEQ, 0);
             double area_comp = cvContourArea(contours_comp, CV_WHOLE_SEQ, 0);
 
-            if (area < area_comp * (1.0 + OFF_AREA_TOLERANCE) && area > area_comp * (1.0 - OFF_AREA_TOLERANCE)) {
+            if(area < area_comp * (1.0 + OFF_AREA_TOLERANCE) && area > area_comp * (1.0 - OFF_AREA_TOLERANCE)) {
                 cvDrawContours(im_square_image, contour, CV_RGB(0, 255, 0), CV_RGB(0, 255, 0), 0, 1, 8, cvPoint(0, 0));
-                cvDrawContours(im_square_image, contours_comp, CV_RGB(0, 0, 0), CV_RGB(0, 0, 0), 0, OFF_PIXEL_TOLERANCE, 8, cvPoint(0, 0));
-#endif
+                cvDrawContours(im_square_image, contours_comp, CV_RGB(0, 0, 0), CV_RGB(0, 0, 0), 0, OFF_PIXEL_TOLERANCE, 8, cvPoint(0,
+                               0));
+            #endif
                 non_black_pixels = has_nonblack_pixels(im_square_image);
             }
         }
-#ifdef D_DEBUG
+        #ifdef D_DEBUG
         cvShowImage("Video-lines", im_square_image);
-#endif
+        #endif
         cvReleaseImage(&im_square_image);
         cvReleaseImage(&img);
     }
-#ifdef D_DEBUG
+
+    #ifdef D_DEBUG
     int c = cvWaitKey(0);
-#endif
+    #endif
     /* clean up */
     cvReleaseMemStorage(&storage);
     //cvDestroyWindow("Video-orig");
