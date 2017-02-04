@@ -9,6 +9,15 @@ notifications:
         email: false
         
 
-# script:
+install:
+- sudo apt-get install libopencv-dev
+- sudo ln /dev/null /dev/raw1394
+
+script:
+ - cd samples/opencv
+ - sh ./build.sh
+ - cd ../..
+ - cd test
+ - sh ./run_test.sh
 
 compiler: clang
