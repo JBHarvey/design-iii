@@ -13,10 +13,10 @@ for i in vision_test_images/* ; do
      if $vision_test $j ./contours.xml
      then
         echo test suceeded $i $j
-        ((suceeded_tests++))
+        suceeded_tests=$((suceeded_tests + 1))
      else
         echo test failed $i $j
-        ((failed_tests++))
+        failed_tests=$((failed_tests + 1))
      fi
   done
   cd ../..
