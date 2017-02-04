@@ -11,6 +11,7 @@ notifications:
 
 install:
 - sudo apt-get install libopencv-dev
+- sudo ln /dev/null /dev/raw1394
 
 script:
  - cd samples/opencv
