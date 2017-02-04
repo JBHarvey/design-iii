@@ -45,7 +45,7 @@ typedef struct {
  * finds a cosine of angle between vectors
  * from pt0->pt1 and from pt0->pt2
  */
-static double angle(CvPoint* pt1, CvPoint* pt2, CvPoint* pt0)
+static double angle(CvPoint *pt1, CvPoint *pt2, CvPoint *pt0)
 {
     double dx1 = pt1->x - pt0->x;
     double dy1 = pt1->y - pt0->y;
@@ -54,7 +54,7 @@ static double angle(CvPoint* pt1, CvPoint* pt2, CvPoint* pt0)
     return (dx1 * dx2 + dy1 * dy2) / sqrt((dx1 * dx1 + dy1 * dy1) * (dx2 * dx2 + dy2 * dy2) + 1e-10);
 }
 
-static _Bool detect_square(CvSeq* contours)
+static _Bool detect_square(CvSeq *contours)
 {
     if(contours->total == 4 &&
        fabs(cvContourArea(contours, CV_WHOLE_SEQ, 0)) > 1000 &&
@@ -69,9 +69,9 @@ static _Bool detect_square(CvSeq* contours)
              */
             if(i >= 2) {
                 double t = fabs(angle(
-                                    (CvPoint*)cvGetSeqElem(contours, i),
-                                    (CvPoint*)cvGetSeqElem(contours, i - 2),
-                                    (CvPoint*)cvGetSeqElem(contours, i - 1)));
+                                    (CvPoint *)cvGetSeqElem(contours, i),
+                                    (CvPoint *)cvGetSeqElem(contours, i - 2),
+                                    (CvPoint *)cvGetSeqElem(contours, i - 1)));
                 s = s > t ? s : t;
             }
         }
@@ -86,7 +86,7 @@ static _Bool detect_square(CvSeq* contours)
     return 0;
 }
 
-static _Bool detect_dual_square(CvSeq* contours)
+static _Bool detect_dual_square(CvSeq *contours)
 {
     if(contours->v_next && detect_square(contours) && detect_square(contours->v_next)) {
         return 1;
@@ -95,10 +95,10 @@ static _Bool detect_dual_square(CvSeq* contours)
     return 0;
 }
 
-static IplImage* threshold_image(IplImage* img_yuv, CvScalar lower_bound, CvScalar upper_bound,
+static IplImage *threshold_image(IplImage *img_yuv, CvScalar lower_bound, CvScalar upper_bound,
                                  unsigned int erode_dilate_pixels)
 {
-    IplImage* img_bw = cvCreateImage(cvGetSize(img_yuv), IPL_DEPTH_8U, 1);
+    IplImage *img_bw = cvCreateImage(cvGetSize(img_yuv), IPL_DEPTH_8U, 1);
     cvInRangeS(img_yuv, lower_bound, upper_bound, img_bw);
 
     cvDilate(img_bw, img_bw, NULL, erode_dilate_pixels);
@@ -107,22 +107,22 @@ static IplImage* threshold_image(IplImage* img_yuv, CvScalar lower_bound, CvScal
     return img_bw;
 }
 
-static void find_green_squares_recursive(CvSeq* contours, Square *out_squares, unsigned int max_squares,
+static void find_green_squares_recursive(CvSeq *contours, Square *out_squares, unsigned int max_squares,
         unsigned int *num_squares)
 {
     if(*num_squares >= max_squares) {
         return;
     }
 
-    CvSeq* h_seq = contours;
+    CvSeq *h_seq = contours;
 
     while(h_seq) {
         if(detect_dual_square(h_seq)) {
             Square square;
-            square.corner[0] = cvPointTo32f(*(CvPoint*)cvGetSeqElem(h_seq->v_next, 0));
-            square.corner[1] = cvPointTo32f(*(CvPoint*)cvGetSeqElem(h_seq->v_next, 1));
-            square.corner[2] = cvPointTo32f(*(CvPoint*)cvGetSeqElem(h_seq->v_next, 2));
-            square.corner[3] = cvPointTo32f(*(CvPoint*)cvGetSeqElem(h_seq->v_next, 3));
+            square.corner[0] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(h_seq->v_next, 0));
+            square.corner[1] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(h_seq->v_next, 1));
+            square.corner[2] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(h_seq->v_next, 2));
+            square.corner[3] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(h_seq->v_next, 3));
 
             /* fix rotation */
             if(square.corner[0].x * square.corner[0].y > square.corner[3].x * square.corner[3].y) {
@@ -146,7 +146,7 @@ static void find_green_squares_recursive(CvSeq* contours, Square *out_squares, u
     }
 }
 
-static unsigned int find_green_squares(CvMemStorage* storage, IplImage* img_bw, Square *out_squares,
+static unsigned int find_green_squares(CvMemStorage *storage, IplImage *img_bw, Square *out_squares,
                                        unsigned int max_squares)
 {
     unsigned int num_squares = 0;
@@ -155,7 +155,7 @@ static unsigned int find_green_squares(CvMemStorage* storage, IplImage* img_bw, 
         return 0;
     }
 
-    CvSeq* contours = 0;
+    CvSeq *contours = 0;
 
     if(cvFindContours(img_bw, storage, &contours, sizeof(CvContour),
                       CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cvPoint(0, 0))) {
@@ -167,7 +167,7 @@ static unsigned int find_green_squares(CvMemStorage* storage, IplImage* img_bw, 
     return num_squares;
 }
 
-static IplImage* image_inside_square(IplImage* img_yuv, Square square)
+static IplImage *image_inside_square(IplImage *img_yuv, Square square)
 {
     CvPoint2D32f dst[4];
     dst[0] = cvPoint2D32f(0, 0);
@@ -178,7 +178,7 @@ static IplImage* image_inside_square(IplImage* img_yuv, Square square)
     CvMat *perspective_matrix = cvCreateMat(3, 3, CV_32F);
     perspective_matrix = cvGetPerspectiveTransform(square.corner, dst, perspective_matrix);
 
-    IplImage* corrected_image = cvCreateImage(cvSize(WIDTH_HEIGHT_EXTRACTED_SQUARE_IMAGE,
+    IplImage *corrected_image = cvCreateImage(cvSize(WIDTH_HEIGHT_EXTRACTED_SQUARE_IMAGE,
                                 WIDTH_HEIGHT_EXTRACTED_SQUARE_IMAGE), IPL_DEPTH_8U, 3);
 
     cvWarpPerspective(img_yuv, corrected_image, perspective_matrix, CV_INTER_LINEAR, cvScalarAll(0));
@@ -186,9 +186,9 @@ static IplImage* image_inside_square(IplImage* img_yuv, Square square)
     return corrected_image;
 }
 
-static CvSeq *find_figure_contours(CvMemStorage* storage, IplImage* img_bw)
+static CvSeq *find_figure_contours(CvMemStorage *storage, IplImage *img_bw)
 {
-    CvSeq* contours = NULL;
+    CvSeq *contours = NULL;
 
     if(cvFindContours(img_bw, storage, &contours, sizeof(CvContour), CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cvPoint(0, 0))) {
         contours = cvApproxPoly(contours, sizeof(CvContour), storage, CV_POLY_APPROX_DP, FIGURE_POLY_APPROX, 1);
@@ -197,7 +197,7 @@ static CvSeq *find_figure_contours(CvMemStorage* storage, IplImage* img_bw)
     return contours;
 }
 
-static _Bool detect_figure(CvSeq* contours)
+static _Bool detect_figure(CvSeq *contours)
 {
     double countour_area = cvContourArea(contours, CV_WHOLE_SEQ, 0);
 
@@ -215,7 +215,7 @@ static CvSeq *find_figure(CvSeq *in)
         return 0;
     }
 
-    CvSeq* h_seq = in;
+    CvSeq *h_seq = in;
 
     while(h_seq) {
         if(detect_figure(h_seq)) {
@@ -223,7 +223,7 @@ static CvSeq *find_figure(CvSeq *in)
         }
 
 
-        CvSeq* temp = find_figure(h_seq->v_next);
+        CvSeq *temp = find_figure(h_seq->v_next);
 
         if(temp) {
             return temp;
@@ -235,7 +235,7 @@ static CvSeq *find_figure(CvSeq *in)
     return 0;
 }
 
-CvSeq *find_first_figure(CvMemStorage* storage, IplImage* img_yuv)
+CvSeq *find_first_figure(CvMemStorage *storage, IplImage *img_yuv)
 {
     CvSeq *figure_contours = NULL;
 
