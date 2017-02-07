@@ -10,7 +10,7 @@ for i in vision_test_images/* ; do
   for j in ./*.jpg; do
      if $vision_test $j ./contours.xml
      then
-        echo test suceeded $i $j
+        #echo test suceeded $i $j
         suceeded_tests=$((suceeded_tests + 1))
      else
         echo test failed $i $j
