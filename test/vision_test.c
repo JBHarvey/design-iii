@@ -4,11 +4,14 @@
 #include "vision.h"
 #include <stdio.h>
 
+#ifndef D_TOLERANCE
+    #define D_TOLERANCE (66.0)
+#endif
 
 #define OFF_AREA_TOLERANCE (60.0 / 1000.0)
-#define OFF_PIXEL_TOLERANCE ((unsigned int)(1000.0 / 66.0))
+#define OFF_PIXEL_TOLERANCE ((unsigned int)(1000.0 / D_TOLERANCE))
 
-static _Bool has_nonblack_pixels(IplImage* img)
+static _Bool has_nonblack_pixels(IplImage *img)
 {
     unsigned int size = img->imageSize;
     char *img_data = img->imageData;
@@ -32,10 +35,10 @@ int main(int argc, char *argv[])
 
     _Bool non_black_pixels = 1;
 
-    CvMemStorage* storage = cvCreateMemStorage(0);
+    CvMemStorage *storage = cvCreateMemStorage(0);
 
-    IplImage* img = cvLoadImage(argv[1], CV_LOAD_IMAGE_COLOR);
-    CvSeq *contours_comp = (CvSeq*)cvLoad(argv[2], storage, 0, 0);
+    IplImage *img = cvLoadImage(argv[1], CV_LOAD_IMAGE_COLOR);
+    CvSeq *contours_comp = (CvSeq *)cvLoad(argv[2], storage, 0, 0);
 
     //cvNamedWindow("Video", 0); // create window
     //cvNamedWindow("Video-lines", 0); // create window
@@ -44,12 +47,12 @@ int main(int argc, char *argv[])
     if(img) {
         //cvShowImage("Video-orig", img);
         //cvSmooth(img, img, CV_GAUSSIAN, 3, 0, 0, 0);
-        IplImage* img_yuv = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
+        IplImage *img_yuv = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
         cvCvtColor(img, img_yuv, CV_BGR2YCrCb);
         CvSeq *contour = find_first_figure(storage, img_yuv);
         cvReleaseImage(&img_yuv);
 
-        IplImage* im_square_image = cvCreateImage(cvSize(1000, 1000), IPL_DEPTH_8U, 3);
+        IplImage *im_square_image = cvCreateImage(cvSize(1000, 1000), IPL_DEPTH_8U, 3);
 
         memset(im_square_image->imageData, 0, im_square_image->imageSize);
 
