@@ -23,3 +23,8 @@ done
 echo suceeded: $suceeded_tests
 echo failed: $failed_tests
  
+if [ "$failed_tests" -eq "0" ]; then
+   exit 0;
+fi
+
+exit 1

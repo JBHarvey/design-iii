@@ -18,6 +18,6 @@ script:
  - sh ./build.sh
  - cd ../..
  - cd test
- - sh ./run_test.sh
+ - ./run_test.sh
 
 compiler: clang
