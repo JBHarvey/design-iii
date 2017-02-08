@@ -96,54 +96,54 @@ static _Bool detect_dual_square(CvSeq *contours)
     return 0;
 }
 
-static IplImage *threshold_image(IplImage *img_yuv, CvScalar lower_bound, CvScalar upper_bound,
+static IplImage *threshold_image(IplImage *image_yuv, CvScalar lower_bound, CvScalar upper_bound,
                                  unsigned int erode_dilate_pixels)
 {
-    IplImage *img_bw = cvCreateImage(cvGetSize(img_yuv), IPL_DEPTH_8U, 1);
-    cvInRangeS(img_yuv, lower_bound, upper_bound, img_bw);
+    IplImage *image_black_white = cvCreateImage(cvGetSize(image_yuv), IPL_DEPTH_8U, 1);
+    cvInRangeS(image_yuv, lower_bound, upper_bound, image_black_white);
 
-    cvDilate(img_bw, img_bw, NULL, erode_dilate_pixels);
-    cvErode(img_bw, img_bw, NULL, erode_dilate_pixels * 2);
-    cvDilate(img_bw, img_bw, NULL, erode_dilate_pixels);
-    return img_bw;
+    cvDilate(image_black_white, image_black_white, NULL, erode_dilate_pixels);
+    cvErode(image_black_white, image_black_white, NULL, erode_dilate_pixels * 2);
+    cvDilate(image_black_white, image_black_white, NULL, erode_dilate_pixels);
+    return image_black_white;
 }
 
 
-static IplImage *threshold_image_3d(IplImage *img_yuv, unsigned int erode_dilate_pixels)
+static IplImage *threshold_image_3d(IplImage *image_yuv, unsigned int erode_dilate_pixels)
 {
-    IplImage *img_bw = cvCreateImage(cvGetSize(img_yuv), IPL_DEPTH_8U, 1);
-    IplImage *im_y = cvCreateImage(cvGetSize(img_yuv), IPL_DEPTH_8U, 1);
-    cvSplit(img_yuv, im_y, 0, 0, 0);
-    int thresh_y = cvThreshold(im_y, img_bw, 0, 0, CV_THRESH_BINARY | CV_THRESH_OTSU);
+    IplImage *image_black_white = cvCreateImage(cvGetSize(image_yuv), IPL_DEPTH_8U, 1);
+    IplImage *image_y = cvCreateImage(cvGetSize(image_yuv), IPL_DEPTH_8U, 1);
+    cvSplit(image_yuv, image_y, 0, 0, 0);
+    int thresh_y = cvThreshold(image_y, image_black_white, 0, 0, CV_THRESH_BINARY | CV_THRESH_OTSU);
 
-    cvReleaseImage(&im_y);
+    cvReleaseImage(&image_y);
 
     if(thresh_y > FIGURE_Y_UPPER_BOUND) {
         thresh_y = FIGURE_Y_UPPER_BOUND;
     }
 
-    unsigned int size = img_yuv->width * img_yuv->height;
+    unsigned int size = image_yuv->width * image_yuv->height;
     unsigned int i;
 
     for(i = 0; i < size; i++) {
-        int y = (uchar)img_yuv->imageData[i * 3 + 0];
-        int u = (uchar)img_yuv->imageData[i * 3 + 1];
-        int v = (uchar)img_yuv->imageData[i * 3 + 2];
+        int y = (uchar)image_yuv->imageData[i * 3 + 0];
+        int u = (uchar)image_yuv->imageData[i * 3 + 1];
+        int v = (uchar)image_yuv->imageData[i * 3 + 2];
 
         int px = (u - 128);
         int py = (v - 128);
 
         if(y > thresh_y && (px * px + py * py) < (FIGURE_UV_MIN_DISTANCE * FIGURE_UV_MIN_DISTANCE)) {
-            img_bw->imageData[i] = 255;
+            image_black_white->imageData[i] = 255;
         } else {
-            img_bw->imageData[i] = 0;
+            image_black_white->imageData[i] = 0;
         }
     }
 
-    cvDilate(img_bw, img_bw, NULL, erode_dilate_pixels);
-    cvErode(img_bw, img_bw, NULL, erode_dilate_pixels * 2);
-    cvDilate(img_bw, img_bw, NULL, erode_dilate_pixels);
-    return img_bw;
+    cvDilate(image_black_white, image_black_white, NULL, erode_dilate_pixels);
+    cvErode(image_black_white, image_black_white, NULL, erode_dilate_pixels * 2);
+    cvDilate(image_black_white, image_black_white, NULL, erode_dilate_pixels);
+    return image_black_white;
 }
 
 
@@ -186,7 +186,7 @@ static void find_green_squares_recursive(CvSeq *contours, Square *out_squares, u
     }
 }
 
-static unsigned int find_green_squares(CvMemStorage *storage, IplImage *img_bw, Square *out_squares,
+static unsigned int find_green_squares(CvMemStorage *storage, IplImage *image_black_white, Square *out_squares,
                                        unsigned int max_squares)
 {
     unsigned int num_squares = 0;
@@ -197,7 +197,7 @@ static unsigned int find_green_squares(CvMemStorage *storage, IplImage *img_bw, 
 
     CvSeq *contours = 0;
 
-    if(cvFindContours(img_bw, storage, &contours, sizeof(CvContour),
+    if(cvFindContours(image_black_white, storage, &contours, sizeof(CvContour),
                       CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cvPoint(0, 0))) {
 
         contours = cvApproxPoly(contours, sizeof(CvContour), storage, CV_POLY_APPROX_DP, GREEN_SQUARE_POLY_APPROX, 1);
@@ -207,7 +207,7 @@ static unsigned int find_green_squares(CvMemStorage *storage, IplImage *img_bw, 
     return num_squares;
 }
 
-static IplImage *image_inside_square(IplImage *img_yuv, Square square)
+static IplImage *image_inside_square(IplImage *image_yuv, Square square)
 {
     CvPoint2D32f dst[4];
     dst[0] = cvPoint2D32f(0, 0);
@@ -221,16 +221,17 @@ static IplImage *image_inside_square(IplImage *img_yuv, Square square)
     IplImage *corrected_image = cvCreateImage(cvSize(WIDTH_HEIGHT_EXTRACTED_SQUARE_IMAGE,
                                 WIDTH_HEIGHT_EXTRACTED_SQUARE_IMAGE), IPL_DEPTH_8U, 3);
 
-    cvWarpPerspective(img_yuv, corrected_image, perspective_matrix, CV_INTER_LINEAR, cvScalarAll(0));
+    cvWarpPerspective(image_yuv, corrected_image, perspective_matrix, CV_INTER_LINEAR, cvScalarAll(0));
     cvReleaseMat(&perspective_matrix);
     return corrected_image;
 }
 
-static CvSeq *find_figure_contours(CvMemStorage *storage, IplImage *img_bw)
+static CvSeq *find_figure_contours(CvMemStorage *storage, IplImage *image_black_white)
 {
     CvSeq *contours = NULL;
 
-    if(cvFindContours(img_bw, storage, &contours, sizeof(CvContour), CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cvPoint(0, 0))) {
+    if(cvFindContours(image_black_white, storage, &contours, sizeof(CvContour), CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE,
+                      cvPoint(0, 0))) {
         contours = cvApproxPoly(contours, sizeof(CvContour), storage, CV_POLY_APPROX_DP, FIGURE_POLY_APPROX, 1);
     }
 
@@ -275,25 +276,25 @@ static CvSeq *find_figure(CvSeq *in)
     return 0;
 }
 
-CvSeq *find_first_figure(CvMemStorage *storage, IplImage *img_yuv)
+CvSeq *find_first_figure(CvMemStorage *storage, IplImage *image_yuv)
 {
     CvSeq *figure_contours = NULL;
 
-    IplImage *img_bw = threshold_image(img_yuv, GREEN_SQUARE_YUV_LOWER_BOUND, GREEN_SQUARE_YUV_UPPER_BOUND,
-                                       ERODE_DILATE_PIXELS);
+    IplImage *image_black_white = threshold_image(image_yuv, GREEN_SQUARE_YUV_LOWER_BOUND, GREEN_SQUARE_YUV_UPPER_BOUND,
+                                  ERODE_DILATE_PIXELS);
 
     Square squares[1];
 
-    if(find_green_squares(storage, img_bw, squares, sizeof(squares) / sizeof(Square)) >= 1) {
-        IplImage *square_image = image_inside_square(img_yuv, squares[0]);
-        IplImage *square_image_bw = threshold_image_3d(square_image, ERODE_DILATE_PIXELS);
+    if(find_green_squares(storage, image_black_white, squares, sizeof(squares) / sizeof(Square)) >= 1) {
+        IplImage *square_image = image_inside_square(image_yuv, squares[0]);
+        IplImage *square_image_black_white = threshold_image_3d(square_image, ERODE_DILATE_PIXELS);
         cvReleaseImage(&square_image);
 
-        figure_contours = find_figure_contours(storage, square_image_bw);
-        cvReleaseImage(&square_image_bw);
+        figure_contours = find_figure_contours(storage, square_image_black_white);
+        cvReleaseImage(&square_image_black_white);
         figure_contours = find_figure(figure_contours);
     }
 
-    cvReleaseImage(&img_bw);
+    cvReleaseImage(&image_black_white);
     return figure_contours;
 }
