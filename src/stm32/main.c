@@ -14,7 +14,13 @@
 #include "stm32f4xx_syscfg.h"
 #include "misc.h"
 
-volatile uint8_t numberOfFrontEdges1 = 0;
+#define INTERNAL_SYSTICK_FREQUENCY 100
+#define TIME_DELAY 1/(float) INTERNAL_SYSTICK_FREQUENCY
+
+volatile int numberOfEdges1 = 0;
+volatile float timeDelay;
+volatile float speed1;
+volatile float a;
 
 /* Configure pins to be interrupts */
 void Configure_PD0(void) {
@@ -32,7 +38,7 @@ void Configure_PD0(void) {
 	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN;
 	GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_0;
-	GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;
+	GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_DOWN;
 	GPIO_InitStruct.GPIO_Speed = GPIO_Speed_100MHz;
 	GPIO_Init(GPIOD, &GPIO_InitStruct);
 
@@ -73,17 +79,28 @@ void intializeLeds() {
 	STM_EVAL_LEDInit (LED6);
 }
 
+/* frequency is in hertz*/
 void systickInit(uint16_t frequency) {
+	NVIC_SetPriority(SysTick_IRQn, 0);
 	RCC_ClocksTypeDef RCC_Clocks;
 	RCC_GetClocksFreq(&RCC_Clocks);
 	(void) SysTick_Config(RCC_Clocks.HCLK_Frequency / frequency);
+
+}
+
+float calculateSpeed(int edges) {
+	return edges / (1600 * 4 * TIME_DELAY);
 }
 
 int main() {
 	/* Initialize system */
 	SystemInit();
+
 	/* set internal interrupt*/
-	systickInit(1);
+	systickInit(INTERNAL_SYSTICK_FREQUENCY);
+
+	/* set time delay for internal interupt*/
+	timeDelay = 1 / (float) INTERNAL_SYSTICK_FREQUENCY;
 
 	/* Configure PD0 as interrupt */
 	Configure_PD0();
@@ -97,8 +114,11 @@ int main() {
 }
 
 extern void SysTick_Handler(void) {
-	int total = numberOfFrontEdges1;
-	numberOfFrontEdges1 = 0;
+	int edge1 = numberOfEdges1;
+	float speed2 = edge1 / (1600 * 4 * TIME_DELAY);
+	//float a = 1600 * 4 * timeDelay;
+	//speed1 = numberOfEdges1 / (1600 * 4 * timeDelay);
+	numberOfEdges1 = 0;
 }
 
 /* Set interrupt handlers */
@@ -111,7 +131,7 @@ void EXTI0_IRQHandler(void) {
 		/* Toggle RED led */
 		STM_EVAL_LEDToggle (LED6);
 		/* Check counter */
-		numberOfFrontEdges1++;
+		numberOfEdges1++;
 
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line0);
