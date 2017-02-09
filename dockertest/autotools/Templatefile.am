@@ -10,7 +10,7 @@ LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
 
 check_PROGRAMS = criterion_tests
 
-criterion_tests_SOURCES = tests/testSuite.c tests/subtest.c
+criterion_tests_SOURCES = TODO 
 criterion_tests_LDFLAGS = -lcriterion
 
 TESTS = criterion_tests
