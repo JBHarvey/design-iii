@@ -16,11 +16,18 @@ RUN git clone --depth 1 --branch=master https://github.com/Snaipe/Criterion \
     && make install \
     && cd ../../ && rm -Rf Criterion
 
-VOLUME /tests
-WORKDIR /tests
+VOLUME /build
+WORKDIR /build
 
-ENV TEST_FILE=sample
-CMD gcc \
-        -o build/$TEST_FILE $TEST_FILE.c \
-        -lcriterion \
-&& build/$TEST_FILE
+#ENV TEST_FILE=testSuite
+CMD ./autogen.sh &&\
+        rm -r build &&\
+        mkdir build && cd build &&\
+        ../configure &&\
+        make check
+#CMD gcc \
+#        -o build/$TEST_FILE $TEST_FILE.c \
+#        -fprofile-arcs\
+#        -ftest-coverage\
+#        -lcriterion \
+#&& build/$TEST_FILE
