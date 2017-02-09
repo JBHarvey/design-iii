@@ -1,1 +1,1 @@
-docker run -v /home/jb/Dropbox/university/6eTrimHiv2017/design3/design-iii/dockertest/tests:/tests -t typhoon
+docker run -v `pwd`/tests:/tests -t typhoon
