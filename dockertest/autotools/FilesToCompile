@@ -1,1 +1,0 @@
-criterion_tests_SOURCES = tests/testSuite.c tests/subtest.c

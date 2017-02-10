@@ -1,7 +1,7 @@
 #!/bin/sh
 
-
-#Copies the current test code
+#Cleans the building directory
+rm build/tests -r
 cp tests build -r
 #Prepares the base source selection
 echo "criterion_tests_SOURCES =" > autotools/FilesToCompile

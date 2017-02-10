@@ -13,3 +13,9 @@ Test(second_suite, test)
     cr_assert(1);
 }
 
+Test(sample, test)
+{
+    cr_expect(0, "Is this failing?");
+    cr_assert(1, "Or is this?");
+}
+
