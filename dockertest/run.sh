@@ -2,7 +2,9 @@
 
 #Cleans the building directory
 rm build/tests -r
+rm build/src -r
 cp tests build -r
+cp src build -r
 #Prepares the base source selection
 echo "criterion_tests_SOURCES =" > autotools/FilesToCompile
 #Fetches the names of the files to compile and places them in a file
@@ -18,4 +20,4 @@ sed -e '/TODO/{r autotools/FilesToCompile' -e 'd}' autotools/Templatefile.am >> 
 cp autotools/* build/.
 
 #Launches the build
-docker run -v `pwd`/build:/build -t typhoon
+docker run -v `pwd`/build:/build -t jbharvey/typhoon
