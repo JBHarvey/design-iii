@@ -10,7 +10,6 @@ services:
   - docker
 
 before_install:
-  - cd dockertest
   - docker pull jbharvey/typhoon
 
 
