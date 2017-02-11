@@ -122,21 +122,31 @@ static IplImage *threshold_image_3d(IplImage *image_yuv, unsigned int erode_dila
         thresh_y = FIGURE_Y_UPPER_BOUND;
     }
 
-    unsigned int size = image_yuv->width * image_yuv->height;
-    unsigned int i;
+    unsigned int width = image_yuv->width;
+    unsigned int height = image_yuv->height;
+    unsigned int source_width_step = image_yuv->widthStep;
+    unsigned int dest_width_step = image_black_white->widthStep;
 
-    for(i = 0; i < size; i++) {
-        int y = (uchar)image_yuv->imageData[i * 3 + 0];
-        int u = (uchar)image_yuv->imageData[i * 3 + 1];
-        int v = (uchar)image_yuv->imageData[i * 3 + 2];
+    unsigned int size = image_yuv->widthStep * image_yuv->height;
+    unsigned int i, j;
 
-        int px = (u - 128);
-        int py = (v - 128);
+    for(j = 0; j < height; j++) {
+        for(i = 0; i < width; i++) {
+            unsigned int source_row_index = j * source_width_step;
+            int y = (uchar)image_yuv->imageData[i * 3 + 0 + source_row_index];
+            int u = (uchar)image_yuv->imageData[i * 3 + 1 + source_row_index];
+            int v = (uchar)image_yuv->imageData[i * 3 + 2 + source_row_index];
 
-        if(y > thresh_y && (px * px + py * py) < (FIGURE_UV_MIN_DISTANCE * FIGURE_UV_MIN_DISTANCE)) {
-            image_black_white->imageData[i] = 255;
-        } else {
-            image_black_white->imageData[i] = 0;
+            int px = (u - 128);
+            int py = (v - 128);
+
+            unsigned int dest_row_index = j * dest_width_step;
+
+            if(y > thresh_y && (px * px + py * py) < (FIGURE_UV_MIN_DISTANCE * FIGURE_UV_MIN_DISTANCE)) {
+                image_black_white->imageData[i + dest_row_index] = 255;
+            } else {
+                image_black_white->imageData[i + dest_row_index] = 0;
+            }
         }
     }
 

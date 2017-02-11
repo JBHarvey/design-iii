@@ -4,11 +4,12 @@ suceeded_tests=0
 failed_tests=0
 
 vision_test=$(readlink -f "vision_test")
+camera_calibration=$(readlink -f "camera_calibration.xml")
 
 for i in vision_test_images/* ; do
   cd $i
   for j in ./*.jpg; do
-     if $vision_test $j ./contours.xml
+     if $vision_test $j ./contours.xml $camera_calibration
      then
         #echo test suceeded $i $j
         suceeded_tests=$((suceeded_tests + 1))
