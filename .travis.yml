@@ -12,11 +12,17 @@ notifications:
 install:
 - sudo apt-get install libopencv-dev
 - sudo ln /dev/null /dev/raw1394
+- wget https://github.com/Snaipe/Criterion/releases/download/v2.3.1/criterion-v2.3.1-linux-x86_64.tar.bz2
+- tar xf criterion-v2.3.1-linux-x86_64.tar.bz2
+- mv criterion-v2.3.1 criterion
 
 script:
  - cd samples/opencv
  - sh ./build.sh
  - cd ../..
+ - cd tests
+ - ./tests.sh
+ - cd ..
  - cd test
  - ./run_test.sh
 
