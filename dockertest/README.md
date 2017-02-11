@@ -9,7 +9,9 @@ This enables CI tools like Jenkins and several metrics to be run once on the who
 
 ## Workflow
 
-The general localisation of the code is very important in order for Typhoon to work.  
+There are 3 things that are very important for Typhoon to work.
+1. Do not mention any directory when you `#include "SomeFile.h"`, for the build process reads the files as if they were all in the same directory.  
+2. The general localisation of the code is very important in order for Typhoon to work.  
 Place your tests and production code in the `tests` and `src` folders, respectively.  
 Place your main in the `main` folder, naming it *subprogram*-main.c *(Note that the actual name of the file is totally irrelevant here. The suggested notation helps for clarity)*  
 As long as you respect this, the building process will work perfectly.  
@@ -17,7 +19,7 @@ Although I would recommand to create identical subdirectories under `tests` and 
 
 From there, the Criterion tests will automatically run on the enterety of the code on the invocation of `runtest.sh`.  
   
-To run a subprogram individually, you need to create a `[*subprogram*]-launch.sh` script.  
+3. To run a subprogram individually, you need to create a `[*subprogram*]-launch.sh` script.  
 This subprogram-launch script should describe which module will be used for its subprogram. It uses `template-launch.sh` to assemble a custom `Makefile.am` file with the specified modules and builds the subprogram.  
 ** !!! IMPORTANT NOTE !!!   
 THE SUBPROGRAM-LAUNCH TEMPLATE AND AUTOMATIC BUILD FUNCTIONNALITIES AREN'T YET IMPLEMENTED.**
