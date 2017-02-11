@@ -2,7 +2,18 @@
 
 # install: make .
 
+sudo: required
+
 language: c
+    
+services:
+  - docker
+
+before_install:
+  - cd dockertest
+  - docker pull jbharvey/typhoon
+  - docker build -t jbharvey/typhoon .
+
 
 notifications:
         slack: design3e1:TwMxEB4gtYnqe3WITrBwO5Ae
@@ -10,14 +21,18 @@ notifications:
         
 
 install:
-- sudo apt-get install libopencv-dev
-- sudo ln /dev/null /dev/raw1394
+    #  - sudo apt-get install libopencv-dev
+    #  - sudo ln /dev/null /dev/raw1394
 
 script:
- - cd samples/opencv
- - sh ./build.sh
- - cd ../..
- - cd test
- - ./run_test.sh
+  - ls -lAh
+  - pwd
+  - cd dockertest
+  - ./runtest.sh
+    #  - cd samples/opencv
+    #  - sh ./build.sh
+    #  - cd ../..
+    #  - cd test
+    #  - ./run_test.sh
 
-compiler: clang
+#compiler: clang
