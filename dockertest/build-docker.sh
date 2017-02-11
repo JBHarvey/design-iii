@@ -1,3 +1,4 @@
 #!/bin/sh
 
-docker build -t typhoon .
+docker pull jbharvey/typhoon
+docker build -t jbharvey/typhoon .
