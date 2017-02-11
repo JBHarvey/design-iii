@@ -1,0 +1,8 @@
+Quadrature Encoder :
+	-
+
+USB VCP : 
+	- micro-B
+PWM : 
+	- Pin X
+	- Timer X
