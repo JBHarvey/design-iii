@@ -27,3 +27,9 @@
 *.exe
 *.out
 *.app
+
+# Automation-related files
+*ToCompile
+*Makefile.am
+*build
+*Dockerfile
