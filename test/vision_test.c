@@ -29,7 +29,7 @@ static _Bool has_nonblack_pixels(IplImage *image)
 
 int main(int argc, char *argv[])
 {
-    if(argc < 3) {
+    if(argc < 4) {
         return 1;
     }
 
@@ -40,13 +40,28 @@ int main(int argc, char *argv[])
     IplImage *image = cvLoadImage(argv[1], CV_LOAD_IMAGE_COLOR);
     CvSeq *contours_compare = (CvSeq *)cvLoad(argv[2], storage, 0, 0);
 
+    CvMat *camera_matrix = (CvMat *)cvLoad(argv[3], storage, "Camera_Matrix", 0);
+    CvMat *distortion_coeffs = (CvMat *)cvLoad(argv[3], storage, "Distortion_Coefficients", 0);
+
     //cvNamedWindow("Video", 0); // create window
     //cvNamedWindow("Video-lines", 0); // create window
     //cvNamedWindow("Video-innersquare", 0); // create window
 
-    if(image) {
+    if(image && camera_matrix && distortion_coeffs) {
         //cvShowImage("Video-orig", image);
         //cvSmooth(image, image, CV_GAUSSIAN, 3, 0, 0, 0);
+
+        if(image->width == 1600) {
+            IplImage *image_temp = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
+            cvUndistort2(image, image_temp, camera_matrix, distortion_coeffs, 0);
+            cvReleaseImage(&image);
+            image = image_temp;
+        }
+
+        cvReleaseMat(&camera_matrix);
+        cvReleaseMat(&distortion_coeffs);
+
+        //cvShowImage("Video-orig", image);
         IplImage *image_yuv = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
         cvCvtColor(image, image_yuv, CV_BGR2YCrCb);
         CvSeq *contour = find_first_figure(storage, image_yuv);
