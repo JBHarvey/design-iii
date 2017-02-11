@@ -12,7 +12,6 @@ services:
 before_install:
   - cd dockertest
   - docker pull jbharvey/typhoon
-  - docker run jbharvey/typhoon .
 
 
 notifications:
