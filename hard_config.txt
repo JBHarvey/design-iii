@@ -1,8 +1,15 @@
 Quadrature Encoder :
-	-
+	- D5
+	- D6
 
 USB VCP : 
 	- micro-B
+	- PA9
+	- PA10
+	- PA11
+	- PA12
+	- LED VERTE : D12
+	- LED rouge : D14
 PWM : 
-	- Pin X
-	- Timer X
+	- PB6
+	- TIM4
