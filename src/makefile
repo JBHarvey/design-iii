@@ -1,10 +1,10 @@
 CC=clang
-CFLAGS= -g `pkg-config --cflags gtk+-3.0 opencv`
-LIBS=`pkg-config --libs gtk+-3.0 opencv`
+CFLAGS= -g `pkg-config --cflags gtk+-3.0 opencv gmodule-2.0`
+LIBS=`pkg-config --libs gtk+-3.0 opencv gmodule-2.0`
 ODIR=obj
 RDIR=station-resources
-DEPS=
-_OBJ=station-main.o resources.o
+DEPS=ui_builder.h ui_event.h world_vision.h
+_OBJ=station-main.o resources.o ui_builder.o ui_event.o world_vision.o
 OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
 _RES=ui.gresource.xml
 RES=$(patsubst %,$(RDIR)/%,$(_RES))
