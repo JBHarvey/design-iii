@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<contours type_id="opencv-sequence">
+  <flags>"closed hole curve"</flags>
+  <count>10</count>
+  <dt>"2i"</dt>
+  <color>0</color>
+  <data>
+    500 113 589 377 868 376 645 548 732 805 500 651 274 813 356 548 136
+    378 411 377</data></contours>
+</opencv_storage>
