@@ -1,4 +1,5 @@
-#include "opencv2/highgui/highgui_c.h"
+#include "opencv2/videoio/videoio_c.h"
+#include "opencv2/imgproc/imgproc_c.h"
 #include "world_vision.h"
 #include "ui_event.h"
 
@@ -14,7 +15,6 @@ gpointer world_camera_feeder(gpointer data)
     IplImage* frame_BGR;
 
     /* Find camera. 0 is for the embedded webcam. */
-
     for(int i = 1; i < 100; i++) {
         cv_cap = cvCreateCameraCapture(i);
 
