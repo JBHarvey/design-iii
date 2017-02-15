@@ -6,6 +6,10 @@ AC_CHECK_LIB([criterion], [criterion_initialize], [], [
               AC_MSG_ERROR([unable to find Criterion :C])
               ], [])
 
+AC_CHECK_LIB([opencv_core], [opencv_imgproc], [], [
+              AC_MSG_ERROR([unable to find opencv :C])
+              ], [])
+
 AC_PROG_AWK
 AC_PROG_CC
 

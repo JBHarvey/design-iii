@@ -33,3 +33,6 @@
 *Makefile.am
 *build
 *Dockerfile
+
+# Compilation Database
+compile_commands.json
