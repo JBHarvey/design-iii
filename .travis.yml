@@ -1,26 +1,24 @@
-## Installation stuff
-
-# install: make .
+sudo: required
 
 language: c
+    
+services:
+    - docker
+
+before_install:
+    - sudo apt-get -qq update
+    - docker pull jbharvey/typhoon
+
 
 notifications:
-        slack: design3e1:TwMxEB4gtYnqe3WITrBwO5Ae
-        email: false
-        
+    slack: design3e1:TwMxEB4gtYnqe3WITrBwO5Ae
+    email: false        
 
 install:
-- sudo apt-get install libopencv-dev libgtk-3-dev
-- sudo ln /dev/null /dev/raw1394
+    - sudo apt-get install libopencv-dev libgtk-3-dev
+    - sudo ln /dev/null /dev/raw1394
 
 script:
- - cd samples/opencv
- - sh ./build.sh
- - cd ../..
- - cd tests
- - ./tests.sh
- - cd ..
- - cd test
- - ./run_test.sh
-
-compiler: clang
+    - ./run-tests.sh
+    
+#compiler: clang

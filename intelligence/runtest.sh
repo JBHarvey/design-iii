@@ -1,8 +1,8 @@
 #!/bin/sh
 
 #Cleans the building directory
-rm build/code -r
-mkdir build/code
+rm -rf build/code
+mkdir -p build/code
 
 find src -type f -regex '.*\.\(c\|\h\)' -exec cp \{\} build \;
 find src -type f -regex '.*\.\(c\|\h\)' -exec cp \{\} build/code \;
