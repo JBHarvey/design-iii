@@ -10,7 +10,7 @@ notifications:
         
 
 install:
-- sudo apt-get install libopencv-dev
+- sudo apt-get install libopencv-dev libgtk-3-dev
 - sudo ln /dev/null /dev/raw1394
 
 script:
