@@ -13,3 +13,6 @@ USB VCP :
 PWM : 
 	- PB6
 	- TIM4
+
+Manchester :
+	-PD7
