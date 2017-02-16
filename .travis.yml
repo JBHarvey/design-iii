@@ -21,14 +21,6 @@ install:
     #  - sudo ln /dev/null /dev/raw1394
 
 script:
-#  - ./runtest.sh
- - cd samples/opencv
- - sh ./build.sh
- - cd ../..
- - cd tests
- - ./tests.sh
- - cd ..
- - cd test
- - ./run_test.sh
-
+  - ./run-tests.sh
+    
 #compiler: clang
