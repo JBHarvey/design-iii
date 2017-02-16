@@ -3,24 +3,23 @@ sudo: required
 language: c
     
 services:
-  - docker
+    - docker
 
 before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y libopencv-dev libgtk-3-dev
-  - docker pull jbharvey/typhoon
+    - sudo apt-get -qq update
+    - sudo apt-get install -y libopencv-dev libgtk-3-dev
+    - docker pull jbharvey/typhoon
+    - sudo ln /dev/null /dev/raw1394
 
 
 notifications:
-        slack: design3e1:TwMxEB4gtYnqe3WITrBwO5Ae
-        email: false
+    slack: design3e1:TwMxEB4gtYnqe3WITrBwO5Ae
+    email: false
         
 
 install:
-    #  - sudo apt-get install libopencv-dev
-    #  - sudo ln /dev/null /dev/raw1394
 
 script:
-  - ./run-tests.sh
+    - ./run-tests.sh
     
 #compiler: clang
