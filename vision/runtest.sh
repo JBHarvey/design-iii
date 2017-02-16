@@ -1,6 +1,7 @@
 #!/bin/sh
 
-ls
+ls -lAh
+pwd
 cd samples/opencv
 sh ./build.sh
 cd ../../
