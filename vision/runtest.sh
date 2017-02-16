@@ -1,5 +1,6 @@
 #!/bin/sh
 
+ls
 cd samples/opencv
 sh ./build.sh
 cd ../../
