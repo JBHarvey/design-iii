@@ -1,6 +1,6 @@
 Quadrature Encoder :
-	- D5
-	- D6
+	- Canal 1 : PD5
+	- Canal 2 : PD6
 
 USB VCP : 
 	- micro-B
@@ -15,4 +15,42 @@ PWM :
 	- TIM4
 
 Manchester :
-	-PD7
+	- Signal : PD7
+
+LCD :
+	- VSS : GND
+	- VCC : +5V
+	- VO : GND (Pour le constrast)
+	- RS : PB2
+	- RW : GND
+	- E : PB7
+	- D0 : pas de connexion
+	- D1 : pas de connexion
+	- D2 : pas de connexion
+	- D3 : pas de connexion
+	- D4 : PC12
+	- D5 : PC13
+	- D6 : PB12
+	- D7 : PB13
+	- A : 3V (Backlight)
+	- K : GND (backlight)
+Pont H 
+	Moteur 1 :
+		- Noir, 1 : pin 1
+		- Blanc, 2 : PWM
+		- Gris, 3 : pin 2
+	Moteur 2 :
+		- Mauve, 4 : pin 1
+		- Bleu, 5 : PWM
+		- Vert, 6 : pin 2
+	Moteur 3 :
+		- Jaune, 7 : Pin 1
+		- Orange, 8 : PWM
+		- Rouge, 9 : Pin 2
+	Moteur 4 : 
+		- Gris foncé, 10 : Pin 1
+		- Noir, 11 : PWM
+		- Banc, 12 : Pin 2
+	Gris pâle, 13 : 5V
+	Mauve, 14 : GND
+
