@@ -12,9 +12,6 @@
 #define PORT_NO 3033
 #define BUFFER_SIZE 1024
 
-void accept_cb(struct ev_loop *loop, struct ev_io *watcher, int revents);
-void read_cb(struct ev_loop *loop, struct ev_io *watcher, int revents);
-
 int main()
 {
     struct ev_loop *loop = ev_default_loop(0);
