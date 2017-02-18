@@ -33,6 +33,8 @@ enum InformationBitsState {
 #define INFORMATION_BITS_LENGTH 8
 #define FACTOR_2X 2
 #define FACTOR_4X 4
+#define ORIENTATION_LENGTH 5
+#define MESSAGE_TO_DISPLAY_LENGTH 10
 
 uint8_t isNextTwoBitsTheBeginningOfNewCycle(uint8_t index,
 		uint8_t *manchesterBuffer);
@@ -53,11 +55,14 @@ uint8_t decodeManchester(uint8_t * informationBits, uint8_t *manchesterBuffer);
 
 uint8_t getFigureFromInformationBits(uint8_t * informationBits);
 
-uint8_t getOrientationFromInformationBits(uint8_t * informationBits);
+void getOrientationFromInformationBits(uint8_t * informationBits,
+		char *orientation);
 
 uint8_t getFactorFromInformationBits(uint8_t * informationBits);
 
-void displayManchesterInformation(uint8_t figure, uint8_t orientation,
-		uint8_t factor);
+void generateMessageToDisplay(uint8_t figure, char *orientation, uint8_t factor,
+		char *messageToDisplay);
+
+void displayManchesterInformation(char *messageToDisplay);
 
 #endif /* MANCHESTER_H_ */

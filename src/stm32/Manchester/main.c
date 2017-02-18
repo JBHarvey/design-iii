@@ -162,7 +162,6 @@ int main() {
 	InitializeInput();
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 	initializeExternalInterruptLine7();
-	manchesterState = MANCHESTER_DECODE;
 
 	while (1) {
 		if (manchesterState == MANCHESTER_DECODE) {
@@ -172,10 +171,13 @@ int main() {
 			if (decodeManchester(informationBits, manchesterBuffer)
 					== VALID_INFORMATION) {
 				uint8_t figure = getFigureFromInformationBits(informationBits);
-				uint8_t orientation = getOrientationFromInformationBits(
-						informationBits);
+				char orientation[ORIENTATION_LENGTH];
+				getOrientationFromInformationBits(informationBits, orientation);
 				uint8_t factor = getFactorFromInformationBits(informationBits);
-				displayManchesterInformation(figure, orientation, factor);
+				char messageToDisplay[MESSAGE_TO_DISPLAY_LENGTH];
+				generateMessageToDisplay(figure, orientation, factor,
+						messageToDisplay);
+				displayManchesterInformation(messageToDisplay);
 				manchesterState = MANCHESTER_IDLE;
 			}
 		}

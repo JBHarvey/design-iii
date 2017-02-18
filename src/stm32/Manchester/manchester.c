@@ -78,8 +78,46 @@ uint8_t getFigureFromInformationBits(uint8_t * informationBits) {
 	return informationBits[1] * 4 + informationBits[2] * 2 + informationBits[3];
 }
 
-uint8_t getOrientationFromInformationBits(uint8_t * informationBits) {
-	return informationBits[4] * 2 + informationBits[5]; //  en char
+void getOrientationFromInformationBits(uint8_t * informationBits,
+		char *orientation) {
+	uint8_t orientationNumber = informationBits[4] * 2 + informationBits[5];
+	switch (orientationNumber) {
+	case 0:
+		orientation[0] = ' ';
+		orientation[1] = 'N';
+		orientation[2] = 'o';
+		orientation[3] = 'r';
+		orientation[4] = 'd';
+		break;
+	case 1:
+		orientation[0] = ' ';
+		orientation[1] = ' ';
+		orientation[2] = 'E';
+		orientation[3] = 's';
+		orientation[4] = 't';
+		break;
+	case 2:
+		orientation[0] = ' ';
+		orientation[1] = ' ';
+		orientation[2] = 'S';
+		orientation[3] = 'u';
+		orientation[4] = 'd';
+		break;
+
+	case 3:
+		orientation[0] = 'O';
+		orientation[1] = 'u';
+		orientation[2] = 'e';
+		orientation[3] = 's';
+		orientation[4] = 't';
+		break;
+	default:
+		orientation[0] = ' ';
+		orientation[1] = ' ';
+		orientation[2] = ' ';
+		orientation[3] = ' ';
+		orientation[4] = ' ';
+	}
 }
 
 uint8_t getFactorFromInformationBits(uint8_t * informationBits) {
@@ -90,6 +128,19 @@ uint8_t getFactorFromInformationBits(uint8_t * informationBits) {
 	}
 }
 
-void displayManchesterInformation(uint8_t figure, uint8_t orientation,
-		uint8_t factor) {
+void generateMessageToDisplay(uint8_t figure, char *orientation, uint8_t factor,
+		char *messageToDisplay) {
+	messageToDisplay[0] = '0' + figure;
+	messageToDisplay[1] = ' ';
+	messageToDisplay[2] = orientation[0];
+	messageToDisplay[3] = orientation[1];
+	messageToDisplay[4] = orientation[2];
+	messageToDisplay[5] = orientation[3];
+	messageToDisplay[6] = orientation[4];
+	messageToDisplay[7] = ' ';
+	messageToDisplay[8] = '0' + factor;
+	messageToDisplay[9] = 'X';
+}
+
+void displayManchesterInformation(char* messageToDisplay) {
 }
