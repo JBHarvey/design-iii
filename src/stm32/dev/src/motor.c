@@ -1,52 +1,24 @@
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f4_discovery.h"
-#include <stdio.h>
-
+#include "motor.h"
 /* Private typedef -----------------------------------------------------------*/
 GPIO_InitTypeDef GPIO_InitStructure;
 USART_InitTypeDef USART_InitStructure;
 TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 TIM_OCInitTypeDef TIM_OCInitStructure;
-/* Private define ------------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
-/* Private function prototypes -----------------------------------------------*/
-void TIM_Config(void);
-void PWM_Config(int period);
-void PWM_SetDC(uint16_t channel, uint16_t dutycycle);
-void Delay(__IO uint32_t nCount);
-void LED_Config(void);
+
 /* Private functions ---------------------------------------------------------*/
 
-/**
- * @brief  Main program
- * @param  None
- * @retval None
- */
-int main(void) {
-	uint16_t pulse_width = 0;
+void initMotors(void) {
 	/* TIM Configuration */
 	TIM_Config();
-	/* LED Configuration */
-	LED_Config();
 	/* PWM Configuration */
-	PWM_Config(800);
-
-	PWM_SetDC(1, 100);
-	PWM_SetDC(2, 100);
-	PWM_SetDC(3, 100);
-	PWM_SetDC(4, 100);
-	while (1) {
-		/* PD12 to be toggled */
-		GPIO_ToggleBits(GPIOD, GPIO_Pin_13);
-		PWM_SetDC(1, pulse_width++);
-		if (pulse_width > 800) {
-			pulse_width = 0;
-		}
-		Delay(100000);
-	}
+	PWM_Config();
+	/* Direction Configuration */
+	initDir(MOTOR1_DIR_RCC, MOTOR1_DIR1_PIN, MOTOR1_DIR2_PIN, MOTOR1_DIR_GPIO);
+	initDir(MOTOR2_DIR_RCC, MOTOR2_DIR1_PIN, MOTOR2_DIR2_PIN, MOTOR1_DIR_GPIO);
+	initDir(MOTOR3_DIR_RCC, MOTOR3_DIR1_PIN, MOTOR3_DIR2_PIN, MOTOR1_DIR_GPIO);
+	initDir(MOTOR4_DIR_RCC, MOTOR4_DIR1_PIN, MOTOR4_DIR2_PIN, MOTOR1_DIR_GPIO);
 }
-
 /**
  * @brief  Configure the TIM3 Ouput Channels.
  * @param  None
@@ -84,8 +56,8 @@ void TIM_Config(void) {
 	GPIO_PinAFConfig(GPIOB, GPIO_PinSource1, GPIO_AF_TIM3);
 }
 
-void PWM_Config(int period) {
-	uint16_t PrescalerValue = 0;
+void PWM_Config() {
+	//uint16_t PrescalerValue = 0;
 	/* -----------------------------------------------------------------------
 	 TIM3 Configuration: generate 4 PWM signals with 4 different duty cycles.
 
@@ -111,11 +83,10 @@ void PWM_Config(int period) {
 	 ----------------------------------------------------------------------- */
 
 	/* Compute the prescaler value */
-	PrescalerValue = (uint16_t)((SystemCoreClock / 2) / 28000000) - 1;
-
+	//PrescalerValue = (uint16_t)((SystemCoreClock / 2) / 28000000) - 1;
 	/* Time base configuration */
-	TIM_TimeBaseStructure.TIM_Period = period;
-	TIM_TimeBaseStructure.TIM_Prescaler = PrescalerValue;
+	TIM_TimeBaseStructure.TIM_Period = PWM_PERIOD;
+	TIM_TimeBaseStructure.TIM_Prescaler = PWM_PRESCALER;
 	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
 
@@ -161,29 +132,85 @@ void PWM_Config(int period) {
 	TIM_Cmd(TIM3, ENABLE);
 }
 
-void PWM_SetDC(uint16_t channel, uint16_t dutycycle) {
+void MotorSetSpeed(uint16_t channel, uint16_t percent) {
 	if (channel == 1) {
-		TIM3->CCR1 = dutycycle;
+		TIM3->CCR1 = (uint32_t) percent * PWM_PERIOD / 100;
 	} else if (channel == 2) {
-		TIM3->CCR2 = dutycycle;
+		TIM3->CCR2 = (uint32_t) percent * PWM_PERIOD / 100;
 	} else if (channel == 3) {
-		TIM3->CCR3 = dutycycle;
+		TIM3->CCR3 = (uint32_t) percent * PWM_PERIOD / 100;
 	} else {
-		TIM3->CCR4 = dutycycle;
+		TIM3->CCR4 = (uint32_t) percent * PWM_PERIOD / 100;
 	}
 }
 
-void LED_Config(void) {
-	/* GPIOD Periph clock enable */
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
+// Initialise les pins pour la direction
+void initDir(uint32_t RCCx, uint16_t GPIO_Pin1, uint16_t GPIO_Pin2,
+		GPIO_TypeDef* GPIOx) {
 
-	/* Configure PD12, PD13, PD14 and PD15 in output pushpull mode */
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14
-			| GPIO_Pin_15;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	GPIO_Init(GPIOD, &GPIO_InitStructure);
+	GPIO_InitTypeDef GPIO_InitDef;
+	RCC_AHB1PeriphClockCmd(RCCx, ENABLE);
 
+	GPIO_InitDef.GPIO_Pin = GPIO_Pin1 | GPIO_Pin2;
+	GPIO_InitDef.GPIO_Mode = GPIO_Mode_OUT;
+	GPIO_InitDef.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitDef.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_InitDef.GPIO_Speed = GPIO_Speed_100MHz;
+	//Initialize pins
+	GPIO_Init(GPIOx, &GPIO_InitDef);
+
+	GPIO_ResetBits(GPIOx, GPIO_Pin1);
+	GPIO_SetBits(GPIOx, GPIO_Pin2);
 }
+
+void MotorSetDirection(uint8_t noMotor, uint8_t direction) {
+	GPIO_TypeDef* GPIOx;
+	uint16_t Pin1;
+	uint16_t Pin2;
+	switch (noMotor) {
+	case 1:
+		GPIOx = MOTOR1_DIR_GPIO;
+		Pin1 = MOTOR1_DIR1_PIN;
+		Pin2 = MOTOR1_DIR2_PIN;
+		break;
+	case 2:
+		GPIOx = MOTOR2_DIR_GPIO;
+		Pin1 = MOTOR2_DIR1_PIN;
+		Pin2 = MOTOR2_DIR2_PIN;
+		break;
+	case 3:
+		GPIOx = MOTOR3_DIR_GPIO;
+		Pin1 = MOTOR3_DIR1_PIN;
+		Pin2 = MOTOR3_DIR2_PIN;
+		break;
+	case 4:
+		GPIOx = MOTOR4_DIR_GPIO;
+		Pin1 = MOTOR4_DIR1_PIN;
+		Pin2 = MOTOR4_DIR2_PIN;
+		break;
+	default:
+		return;
+		break;
+	}
+	switch (direction) {
+	case BRAKE_G:
+		GPIO_ResetBits(GPIOx, Pin1 | Pin2);
+		break;
+	case CLOCK:
+		GPIO_ResetBits(GPIOx, Pin1);
+		GPIO_SetBits(GPIOx, Pin2);
+		break;
+	case COUNTER_CLOCK:
+		GPIO_SetBits(GPIOx, Pin1);
+		GPIO_ResetBits(GPIOx, Pin2);
+		break;
+	case BRAKE_V:
+		GPIO_SetBits(GPIOx, Pin1 | Pin2);
+		break;
+	default:
+		GPIO_ResetBits(GPIOx, Pin1);
+		GPIO_ResetBits(GPIOx, Pin2);
+		break;
+	}
+}
+
