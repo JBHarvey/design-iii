@@ -1,33 +1,15 @@
-/*
- * encoder.c
- *
- *  Created on: 2017-02-19
- *      Author: Admin
- */
+#include "encoder.h"
 
-#include <encoder.h>
-
-void initEncoders() {
-	// On initialise les pins
-	initCanal(RCC_AHB1Periph_GPIOD, GPIO_Pin_5 | GPIO_Pin_6, GPIOD);
-	// On initialise les interruptions externes
-	/* Enable clock for SYSCFG */
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
-	initializeExternalInterruptLine5();
-	initializeExternalInterruptLine6();
-}
-
-void initCanal(uint32_t RCCx, uint32_t GPIO_Pinx, GPIO_TypeDef* GPIOx) {
-
-	RCC_AHB1PeriphClockCmd(RCCx, ENABLE);
+void intializePinsD() {
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
 	/* Set pins as input */
 	GPIO_InitTypeDef GPIO_InitStruct;
 	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN;
 	GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStruct.GPIO_Pin = GPIO_Pinx;
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_6;
 	GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_DOWN;
 	GPIO_InitStruct.GPIO_Speed = GPIO_Speed_100MHz;
-	GPIO_Init(GPIOx, &GPIO_InitStruct);
+	GPIO_Init(GPIOD, &GPIO_InitStruct);
 }
 
 void initializeExternalInterruptLine5() {
@@ -90,4 +72,17 @@ void initializeExternalInterruptLine6() {
 	NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
 	/* Add to NVIC */
 	NVIC_Init(&NVIC_InitStruct);
+}
+
+void intializeExternalInterrupts() {
+	/* Enable clock for SYSCFG */
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+	initializeExternalInterruptLine5();
+	initializeExternalInterruptLine6();
+}
+
+/* Configure pins to be interrupts */
+void initEncoders(void) {
+	intializePinsD();
+	intializeExternalInterrupts();
 }

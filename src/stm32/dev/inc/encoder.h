@@ -15,9 +15,10 @@
 #include <stdio.h>
 #include "defines.h"
 
-void initCanal(uint32_t RCCx, uint32_t GPIO_Pinx, GPIO_TypeDef* GPIOx);
-void initEncoders();
+void intializePinsD();
 void initializeExternalInterruptLine5();
 void initializeExternalInterruptLine6();
+void intializeExternalInterrupts();
+void initEncoders();
 
 #endif /* ENCODER_H_ */

@@ -10,7 +10,7 @@
  *
  * #define USE_USB_OTG_HS
  */
-
+#include <motor.h>
 #include "tm_stm32f4_usb_vcp.h"
 #include "tm_stm32f4_disco.h"
 #include "defines.h"
@@ -20,8 +20,8 @@
 #include "stm32f4xx_syscfg.h"
 #include "misc.h"
 #include "tm_stm32f4_gpio.h"
-#include "motor.h"
-#include "encoder.h"
+
+#include <encoder.h>
 
 #define TAILLE 500
 
@@ -86,13 +86,6 @@ uint16_t calculateSpeed(int edges) {
 	return edges / (16000 * 2 * timeDelay);
 }
 
-void initializeSystem() {
-	timeDelay = 1 / (float) INTERNAL_SYSTICK_FREQUENCY;
-
-	/* initialize Clocks */
-	SystemInit();
-}
-
 void generateFirstPWM() {
 	MotorSetSpeed(1, 40);
 }
@@ -115,25 +108,23 @@ int main(void) {
 
 	// Motors initialization
 	initMotors();
-
 	// Example of speed setting of 4 motors
-	MotorSetSpeed(1, 25);
-	MotorSetSpeed(2, 50);
-	MotorSetSpeed(3, 75);
-	MotorSetSpeed(4, 100);
+	//MotorSetSpeed(1, 25);
+	//MotorSetSpeed(2, 50);
+	//MotorSetSpeed(3, 75);
+	//MotorSetSpeed(4, 100);
 
 	// Example of direction setting of 4 motors
-	MotorSetDirection(1, BRAKE_G);
-	MotorSetDirection(2, CLOCK);
-	MotorSetDirection(3, COUNTER_CLOCK);
-	MotorSetDirection(4, BRAKE_V);
+	//MotorSetDirection(1, BRAKE_G);
+	//MotorSetDirection(2, CLOCK);
+	//MotorSetDirection(3, COUNTER_CLOCK);
+	//MotorSetDirection(4, BRAKE_V);
 
-	/* Encoders initialization */
-	//initEncoders();
-	/* Blue button initialization */
+	initEncoders();
+
 	initBtn();
 
-	/* Initialize LED's */
+	/* Initialize LED's. Make sure to check settings for your board in tm_stm32f4_disco.h file */
 	TM_DISCO_LedInit();
 
 	/* Initialize USB VCP */
