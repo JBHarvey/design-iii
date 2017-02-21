@@ -1,7 +1,17 @@
 Quadrature Encoder :
-	- Canal 1 : PD5
-	- Canal 2 : PD6
-
+	Motor 1 :
+	- Canal 1 : PD5 - Ligne 5 (EXTI9_5_IRQHandler)
+	- Canal 2 : PD6 - Ligne 6 (EXTI9_5_IRQHandler)
+	Motor 2 :
+	- Canal 1 : PD8 - Ligne 8 (EXTI9_5_IRQHandler)
+	- Canal 2 : PD9 - Ligne 9 (EXTI9_5_IRQHandler)
+	Motor 3 :
+	- Canal 1 : Px10 - Ligne 10 (EXTI15_10_IRQHandler)
+	- Canal 2 : Px11 - Ligne 11 (EXTI15_10_IRQHandler)
+	Motor 4 : 
+	- Canal 1 : Px12 - Ligne 12 (EXTI15_10_IRQHandler)
+	- Canal 2 : Px13 - Ligne 13(EXTI15_10_IRQHandler)
+	
 USB VCP : 
 	- micro-B
 	- PA9
@@ -10,12 +20,19 @@ USB VCP :
 	- PA12
 	- LED VERTE : D12
 	- LED rouge : D14
-PWM : 
-	- PB6
-	- TIM4
+PWM : (TIM3) 
+	Motor 1 : 
+	- PC6 Canal 1
+	Motor 2 :
+	- PC7 Canal 2
+	Motor 3 :
+	- PB0 Canal 3
+	Motor 4 :
+	- PB1 Canal 4
+	
 
 Manchester :
-	- Signal : PD7
+	- Signal : PD7 - Ligne 7
 
 LCD :
 	- VSS : GND
