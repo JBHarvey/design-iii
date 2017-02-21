@@ -20,6 +20,7 @@
 #include "stm32f4xx_syscfg.h"
 #include "misc.h"
 #include "tm_stm32f4_gpio.h"
+#include "tm_stm32f4_hd44780.h"
 
 #include <encoder.h>
 
@@ -32,6 +33,10 @@ enum State {
 	ACQUIRE,
 	SEND_DATA,
 	WAIT_FOR_SECOND_PWM
+};
+
+enum MainState {
+	MAIN_IDLE, MAIN_MANCH, MAIN_ACQUIS, MAIN_MOVE
 };
 
 #define INTERNAL_SYSTICK_FREQUENCY 500
@@ -73,6 +78,32 @@ void initBtn() {
 	GPIO_Init(GPIOA, &GPIO_InitDef);
 }
 
+/* Change the state of the main
+ * IN : the new state
+ */
+void setState(int* state, int newState) {
+	switch (newState) {
+	case MAIN_IDLE:
+		*state = newState;
+		TM_HD44780_Puts(0, 0, MSG_IDLE);
+		break;
+	case MAIN_MANCH:
+		*state = newState;
+		TM_HD44780_Puts(0, 0, MSG_MANCH);
+		break;
+	case MAIN_ACQUIS:
+		TM_HD44780_Puts(0, 0, "NOT IMPLEMENTED");
+		break;
+	case MAIN_MOVE:
+		TM_HD44780_Puts(0, 0, "NOT IMPLEMENTED");
+		break;
+	default:
+		// Invalid state
+		TM_HD44780_Puts(0, 0, MSG_ERR);
+		break;
+	}
+}
+
 /* frequency is in hertz*/
 void systickInit(uint16_t frequency) {
 	NVIC_SetPriority(SysTick_IRQn, 0);
@@ -98,31 +129,50 @@ void startFillingBuffer() {
 	systickInit(INTERNAL_SYSTICK_FREQUENCY);
 }
 
-int main(void) {
+uint8_t readUSB() {
+	/* USB configured OK, drivers OK */
+	if (TM_USB_VCP_GetStatus() == TM_USB_VCP_CONNECTED) {
+		/* Turn on GREEN led */
+		TM_DISCO_LedOn (LED_GREEN);
+		TM_DISCO_LedOff (LED_RED);
+		uint8_t c;
+		/* If something arrived at VCP */
+		if (TM_USB_VCP_Getc(&c) == TM_USB_VCP_DATA_OK) {
+			/* Return data back */
+			return c;
+			// Pour le echo TM_USB_VCP_Putc(c);
+		}
+		return 0;
 
-	// Initialisation des variables
-	int state = IDLE;
-	uint8_t c;
+	} else {
+		/* USB not OK */
+		TM_DISCO_LedOff (LED_GREEN);
+		TM_DISCO_LedOn (LED_RED);
+		return 0;
+	}
+}
+
+int main(void) {
 	/* System Init */
 	SystemInit();
 
-	// Motors initialization
+// Motors initialization
 	initMotors();
-	// Example of speed setting of 4 motors
-	//MotorSetSpeed(1, 25);
-	//MotorSetSpeed(2, 50);
-	//MotorSetSpeed(3, 75);
-	//MotorSetSpeed(4, 100);
+// Example of speed setting of 4 motors
+	MotorSetSpeed(1, 25);
+	MotorSetSpeed(2, 50);
+	MotorSetSpeed(3, 75);
+	MotorSetSpeed(4, 100);
 
-	// Example of direction setting of 4 motors
-	//MotorSetDirection(1, BRAKE_G);
-	//MotorSetDirection(2, CLOCK);
-	//MotorSetDirection(3, COUNTER_CLOCK);
-	//MotorSetDirection(4, BRAKE_V);
-
+// Example of direction setting of 4 motors
+	MotorSetDirection(1, BRAKE_G);
+	MotorSetDirection(2, CLOCK);
+	MotorSetDirection(3, COUNTER_CLOCK);
+	MotorSetDirection(4, BRAKE_V);
+// Encoder initialization
 	initEncoders();
-
-	initBtn();
+// LCD initialization
+	TM_HD44780_Init(16, 2);
 
 	/* Initialize LED's. Make sure to check settings for your board in tm_stm32f4_disco.h file */
 	TM_DISCO_LedInit();
@@ -130,7 +180,17 @@ int main(void) {
 	/* Initialize USB VCP */
 	TM_USB_VCP_Init();
 
+	initBtn();
+
+// Initialisation des variables
+	int mainState;
+	setState(&mainState, MAIN_IDLE);
+
+	int state = IDLE;
+
 	while (1) {
+
+		// Vite fait debounce pour le bouton bleu
 		if (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_0)) {
 			int i;
 			for (i = 0; i < 9000000; i++)
@@ -145,67 +205,55 @@ int main(void) {
 				break;
 			}
 		}
-		/* USB configured OK, drivers OK */
-		if (TM_USB_VCP_GetStatus() == TM_USB_VCP_CONNECTED) {
-			/* Turn on GREEN led */
-			TM_DISCO_LedOn (LED_GREEN);
-			TM_DISCO_LedOff (LED_RED);
-			/* If something arrived at VCP */
-			if (TM_USB_VCP_Getc(&c) == TM_USB_VCP_DATA_OK) {
-				/* Return data back */
-				state = c;
-				// Pour le echo TM_USB_VCP_Putc(c);
+
+		/* Main state machine */
+		switch (mainState) {
+		case MAIN_IDLE:
+			uint8_t consigne = readUSB();
+			if (consigne != 0)
+				setState(&mainState, consigne);
+			break;
+		case MAIN_MANCH:
+			break;
+		case MAIN_ACQUIS:
+			/* Action lors d'une acquisition */
+			state = readUSB();
+			if (state == GENERATE_FIRST_PWM) {
+				generateFirstPWM();
+				state = BETWEEN_PWM;
+			} else if (state == ACQUIRE) {
+				startFillingBuffer();
+				state = WAIT_FOR_SECOND_PWM;
+			} else if (state == SEND_DATA) {
+				for (int i = 0; i < TAILLE; i++) {
+					TM_USB_VCP_Putc(speedBuffer[i] & 0x00ff);
+					TM_USB_VCP_Putc((speedBuffer[i] & 0xff00) >> 8);
+				}
+				state = IDLE;
+			} else if (state == WAIT_FOR_SECOND_PWM && speedIndex > 200) {
+				generateSecondPWM();
+				state = IDLE;
 			}
-
-		}
-
-		else {
-			/* USB not OK */
-			TM_DISCO_LedOff (LED_GREEN);
-			TM_DISCO_LedOn (LED_RED);
-		}
-
-		if (state == GENERATE_FIRST_PWM) {
-			generateFirstPWM();
-
-			state = BETWEEN_PWM;
-		} else if (state == ACQUIRE) {
-			startFillingBuffer();
-			state = WAIT_FOR_SECOND_PWM;
-		} else if (state == SEND_DATA) {
-			for (int i = 0; i < TAILLE; i++) {
-				TM_USB_VCP_Putc(speedBuffer[i] & 0x00ff);
-				TM_USB_VCP_Putc((speedBuffer[i] & 0xff00) >> 8);
-			}
-			/*if (nbFoisEnvoyer < 5) {
-
-			 for (int i = TAILLE * nbFoisEnvoyer;
-			 i < TAILLE + nbFoisEnvoyer * TAILLE; i++) {
-			 TM_USB_VCP_Putc(speedBuffer[i] & 0x00ff);
-			 TM_USB_VCP_Putc((speedBuffer[i] & 0xff00) >> 8);
-			 }
-			 nbFoisEnvoyer++;
-			 }*/
-
-			state = IDLE;
-		} else if (state == WAIT_FOR_SECOND_PWM && speedIndex > 200) {
-			generateSecondPWM();
-			state = IDLE;
+			break;
+		case MAIN_MOVE:
+			break;
+		default:
+			setState(&mainState, MAIN_IDLE);
 		}
 	}
 }
 
-extern void SysTick_Handler(void) {
-	if (speedIndex < MAX_SPEED_INDEX) {
+/*extern void SysTick_Handler(void) {
+ if (speedIndex < MAX_SPEED_INDEX) {
 
-		speedBuffer[speedIndex] = numberOfEdges1; //calculateSpeed(numberOfEdges1);
-		speedIndex++;
-		numberOfEdges1 = 0;
-	} else {
-		TM_DISCO_LedOn (LED_ORANGE);
-		MotorSetSpeed(1, 0);
-	}
-}
+ speedBuffer[speedIndex] = numberOfEdges1; //calculateSpeed(numberOfEdges1);
+ speedIndex++;
+ numberOfEdges1 = 0;
+ } else {
+ TM_DISCO_LedOn (LED_ORANGE);
+ MotorSetSpeed(1, 0);
+ }
+ }*/
 
 extern void EXTI0_IRQHandler(void) {
 	/* Make sure that interrupt flag is set */

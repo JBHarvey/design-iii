@@ -132,18 +132,6 @@ void PWM_Config() {
 	TIM_Cmd(TIM3, ENABLE);
 }
 
-void MotorSetSpeed(uint16_t channel, uint16_t percent) {
-	if (channel == 1) {
-		TIM3->CCR1 = (uint32_t) percent * PWM_PERIOD / 100;
-	} else if (channel == 2) {
-		TIM3->CCR2 = (uint32_t) percent * PWM_PERIOD / 100;
-	} else if (channel == 3) {
-		TIM3->CCR3 = (uint32_t) percent * PWM_PERIOD / 100;
-	} else {
-		TIM3->CCR4 = (uint32_t) percent * PWM_PERIOD / 100;
-	}
-}
-
 // Initialise les pins pour la direction
 void initDir(uint32_t RCCx, uint16_t GPIO_Pin1, uint16_t GPIO_Pin2,
 		GPIO_TypeDef* GPIOx) {
@@ -161,6 +149,18 @@ void initDir(uint32_t RCCx, uint16_t GPIO_Pin1, uint16_t GPIO_Pin2,
 
 	GPIO_ResetBits(GPIOx, GPIO_Pin1);
 	GPIO_SetBits(GPIOx, GPIO_Pin2);
+}
+
+void MotorSetSpeed(uint16_t channel, uint16_t percent) {
+	if (channel == 1) {
+		TIM3->CCR1 = (uint32_t) percent * PWM_PERIOD / 100;
+	} else if (channel == 2) {
+		TIM3->CCR2 = (uint32_t) percent * PWM_PERIOD / 100;
+	} else if (channel == 3) {
+		TIM3->CCR3 = (uint32_t) percent * PWM_PERIOD / 100;
+	} else {
+		TIM3->CCR4 = (uint32_t) percent * PWM_PERIOD / 100;
+	}
 }
 
 void MotorSetDirection(uint8_t noMotor, uint8_t direction) {

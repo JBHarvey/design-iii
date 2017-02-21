@@ -39,6 +39,11 @@
 #define MOTOR4_DIR1_PIN 	GPIO_Pin_13
 #define MOTOR4_DIR2_PIN 	GPIO_Pin_14
 
+/* Les messages */
+#define MSG_IDLE "IDLE"
+#define MSG_MANCH "Manchester"
+#define MSG_ERR "Etat invalide"
+
 #ifndef TM_DEFINES_H
 #define TM_DEFINES_H
 
