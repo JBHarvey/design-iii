@@ -3,36 +3,40 @@
 #include "State.h"
 #include "Objective.h"
 
+const int AIMED_X = 10000;       // 1 m
+const int AIMED_Y = 10000;       // 1 m
+const int AIMED_THETA = 7854;    // Pi/4 rad
 
 static struct State* aimedState;
+static struct Objective* defaultObjective;
+
+struct Objective* buildADefaultToleranceObjective(void)
+{
+    struct Pose* defaultPoseTolerances = Pose_new(X_TOLERANCE_DEFAULT, Y_TOLERANCE_DEFAULT, THETA_TOLERANCE_DEFAULT);
+    struct State* defaultTolerances = State_new(defaultPoseTolerances);
+    struct Objective* defaultToleranceObjective = Objective_new(aimedState, defaultTolerances);
+    return defaultToleranceObjective;
+}
 
 void setup(void)
 {
-    const int SOME_X = 10000;       // 1 m
-    const int SOME_Y = 10000;       // 1 m
-    const int SOME_THETA = 7854;    // Pi/4 rad
 
-    struct Pose* pose = Pose_new(SOME_X, SOME_Y, SOME_THETA);
+    struct Pose* pose = Pose_new(AIMED_X, AIMED_Y, AIMED_THETA);
     aimedState = State_new(pose);
+    defaultObjective = buildADefaultToleranceObjective();
 }
 
 void teardown(void)
 {
-    State_delete(aimedState);
+    Objective_delete(defaultObjective);
 }
 
-struct State* givenAZeroTolerance(void)
+struct Objective* givenAZeroToleranceObjective(void)
 {
     struct Pose* zeroPoseTolerances = Pose_new(X_TOLERANCE_MIN, Y_TOLERANCE_MIN, THETA_TOLERANCE_MIN);
     struct State* zeroTolerances = State_new(zeroPoseTolerances);
-    return zeroTolerances;
-}
-
-struct State* givenADefaultTolerance(void)
-{
-    struct Pose* defaultPoseTolerances = Pose_new(X_TOLERANCE_DEFAULT, Y_TOLERANCE_DEFAULT, THETA_TOLERANCE_DEFAULT);
-    struct State* defaultTolerances = State_new(defaultPoseTolerances);
-    return defaultTolerances;
+    struct Objective* zeroToleranceObjective = Objective_new(aimedState, zeroTolerances);
+    return zeroToleranceObjective;
 }
 
 struct State* givenAMaxTolerance(void)
@@ -52,7 +56,7 @@ Test(Objective, creation_destruction, .init = setup, .fini = teardown)
     Objective_delete(objective);
 }
 
-Test(Objective, given_maxTolerances_when_validatesIfObjectiveIsReached_then_isReached,
+Test(Objective, given_maxTolerances_when_checksIfIsReached_then_isReached,
      .init = setup, .fini = teardown)
 {
     struct State* maxTolerances = givenAMaxTolerance();
@@ -61,5 +65,26 @@ Test(Objective, given_maxTolerances_when_validatesIfObjectiveIsReached_then_isRe
     int reached = Objective_isReached(reachableObjective, aimedState);
 
     cr_assert(reached == 1);
+
     Objective_delete(reachableObjective);
+}
+
+Test(Objective, given_zeroTolerancesAndExactState_when_checksIfIsReached_then_isReached,
+     .init = setup, .fini = teardown)
+{
+    struct Objective* objective = givenAZeroToleranceObjective();
+
+    int reached = Objective_isReached(objective, aimedState);
+
+    cr_assert(reached == 1);
+
+    Objective_delete(objective);
+}
+
+Test(Objective_DefaultTolerance, given_anOnSpotState_when_checksIfIsReached_then_isReached,
+     .init = setup, .fini = teardown)
+{
+    int reached = Objective_isReached(defaultObjective, aimedState);
+
+    cr_assert(reached == 1);
 }
