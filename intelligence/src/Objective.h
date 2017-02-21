@@ -5,10 +5,10 @@
 
 struct Objective {
     struct State * objectiveValues;
-    struct State * valuesToValidate;
+    struct State * tolerances;
 };
 
-struct Objective * Objective_new(struct State * new_objectiveValues, struct State * new_valuesToValidate);
+struct Objective * Objective_new(struct State * new_objectiveValues, struct State * new_tolerances);
 void Objective_delete(struct Objective * objective);
 int Objective_isReached(struct Objective * objective, int tolerance);
 
