@@ -28,3 +28,15 @@ Test(Angle, given_aValueSmallerThanMinusPi_when_created_then_valueIsWrappedBetwe
     cr_assert(angle->theta == MINUS_PI);
     Angle_delete(angle);
 }
+
+Test(Angle, given_PiAndMinusPi_when_askedForDistance_returnsZero)
+{
+    struct Angle* pi = Angle_new(PI);
+    struct Angle* minusPi = Angle_new(MINUS_PI);
+
+    struct Angle* betweenAngle = Angle_smallestAngleBetween(pi, minusPi);
+
+    cr_assert(betweenAngle->theta == 0);
+}
+
+//Test(Angle_Difference, given_twoPositiveAngles
