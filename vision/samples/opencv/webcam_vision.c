@@ -12,11 +12,19 @@ int main(int argc, char *argv[])
     cvSetCaptureProperty(cv_cap, CV_CAP_PROP_FRAME_WIDTH, 1600);
     cvSetCaptureProperty(cv_cap, CV_CAP_PROP_FRAME_HEIGHT, 1200);
 
+    CvMat *camera_matrix = 0;
+    CvMat *distortion_coeffs = 0;
+    CvMemStorage *storage = cvCreateMemStorage(0);
+
+    if (argc > 1) {
+        camera_matrix = (CvMat *)cvLoad(argv[1], storage, "Camera_Matrix", 0);
+        distortion_coeffs = (CvMat *)cvLoad(argv[1], storage, "Distortion_Coefficients", 0);
+    }
+
     //cvNamedWindow("Video", 0); // create window
     cvNamedWindow("Video-orig", 0); // create window
     cvNamedWindow("Video-lines", 0); // create window
     //cvNamedWindow("Video-innersquare", 0); // create window
-    CvMemStorage *storage = cvCreateMemStorage(0);
 
     for(;;) {
         img = cvQueryFrame(cv_cap); // get frame
@@ -24,7 +32,13 @@ int main(int argc, char *argv[])
 
         if(img != 0) {
             cvShowImage("Video-orig", img);
-            cvSmooth(img, img, CV_GAUSSIAN, 5, 0, 0, 0);
+
+            if(camera_matrix) {
+                IplImage *image_temp = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
+                cvUndistort2(img, image_temp, camera_matrix, distortion_coeffs, 0);
+                img = image_temp;
+            }
+
             IplImage *img_yuv = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
             cvCvtColor(img, img_yuv, CV_BGR2YCrCb);
             CvSeq *contour = find_first_figure(storage, img_yuv);
@@ -39,6 +53,9 @@ int main(int argc, char *argv[])
             cvShowImage("Video-lines", im_square_image);
             cvReleaseImage(&im_square_image);
             //cvReleaseImage(&img);
+
+            if(camera_matrix)
+                cvReleaseImage(&img);
         }
 
         c = cvWaitKey(10); // wait 10 ms or for key stroke
