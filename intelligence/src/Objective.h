@@ -19,11 +19,11 @@
 
 
 struct Objective {
-    struct State * aimedState;
+    struct State * goalState;
     struct State * tolerances;
 };
 
-struct Objective * Objective_new(struct State * new_aimedState, struct State * new_tolerances);
+struct Objective * Objective_new(struct State * new_goalState, struct State * new_tolerances);
 void Objective_delete(struct Objective * objective);
 int Objective_isReached(struct Objective * objective, struct State * currentState);
 
