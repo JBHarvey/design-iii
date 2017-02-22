@@ -29,9 +29,18 @@ int xIsWithinToleranceOfGoal(struct Objective * objective, struct State * curren
     return withinWithTolerance(currentX, goalX, X_TOLERANCE_DEFAULT);
 }
 
+int yIsWithinToleranceOfGoal(struct Objective * objective, struct State * currentState)
+{
+    int currentY = currentState->pose->y;
+    int goalY = objective->goalState->pose->y;
+
+    return withinWithTolerance(currentY, goalY, Y_TOLERANCE_DEFAULT);
+}
+
 int Objective_isReached(struct Objective * objective, struct State * currentState)
 {
-    int reached = xIsWithinToleranceOfGoal(objective, currentState);
+    int reached = xIsWithinToleranceOfGoal(objective, currentState)
+                  && yIsWithinToleranceOfGoal(objective, currentState);
 
     return reached;
 }

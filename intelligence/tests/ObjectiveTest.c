@@ -101,35 +101,64 @@ void assertReachingDefaultObjectiveWithPoseIs(int x, int y, int theta, int expec
     State_delete(currentState);
 }
 
-Test(Objective_DefaultTolerance, given_xUnderGoalMinusTolerance_when_checksIfIsReached_then_isNotReached,
+Test(Objective_DefaultTolerance_Pose_X, given_UnderGoalMinusTolerance_when_checksIfIsReached_then_isNotReached,
      .init = setup, .fini = teardown)
 {
-    int underGoalX = GOAL_X - (2 * X_TOLERANCE_DEFAULT);
-    assertReachingDefaultObjectiveWithPoseIs(underGoalX, GOAL_Y, GOAL_THETA, 0);
+    int underGoal = GOAL_X - (2 * X_TOLERANCE_DEFAULT);
+    assertReachingDefaultObjectiveWithPoseIs(underGoal, GOAL_Y, GOAL_THETA, 0);
 
 }
 
-Test(Objective_DefaultTolerance, given_xUnderGoalButInsideTolerance_when_checksIfIsReached_then_isReached,
+Test(Objective_DefaultTolerance_Pose_X, given_UnderGoalButInsideTolerance_when_checksIfIsReached_then_isReached,
      .init = setup, .fini = teardown)
 {
-    int underGoalXWithinTolerance = GOAL_X - (X_TOLERANCE_DEFAULT / 2);
-    assertReachingDefaultObjectiveWithPoseIs(underGoalXWithinTolerance, GOAL_Y, GOAL_THETA, 1);
+    int underGoalWithinTolerance = GOAL_X - (X_TOLERANCE_DEFAULT / 2);
+    assertReachingDefaultObjectiveWithPoseIs(underGoalWithinTolerance, GOAL_Y, GOAL_THETA, 1);
 }
 
-Test(Objective_DefaultTolerance, given_xOverGoalPlusTolerance_when_checksIfIsReached_then_isNotReached,
+Test(Objective_DefaultTolerance_Pose_X, given_OverGoalPlusTolerance_when_checksIfIsReached_then_isNotReached,
      .init = setup, .fini = teardown)
 {
-    int overGoalX = GOAL_X + (2 * X_TOLERANCE_DEFAULT);
-    assertReachingDefaultObjectiveWithPoseIs(overGoalX, GOAL_Y, GOAL_THETA, 0);
+    int overGoal = GOAL_X + (2 * X_TOLERANCE_DEFAULT);
+    assertReachingDefaultObjectiveWithPoseIs(overGoal, GOAL_Y, GOAL_THETA, 0);
 
 }
 
-Test(Objective_DefaultTolerance, given_xOverGoalButInsideTolerance_when_checksIfIsReached_then_isReached,
+Test(Objective_DefaultTolerance_Pose_X, given_OverGoalButInsideTolerance_when_checksIfIsReached_then_isReached,
      .init = setup, .fini = teardown)
 {
-    int overGoalXWithinTolerance = GOAL_X + (X_TOLERANCE_DEFAULT / 2);
-    assertReachingDefaultObjectiveWithPoseIs(overGoalXWithinTolerance, GOAL_Y, GOAL_THETA, 1);
+    int overGoalWithinTolerance = GOAL_X + (X_TOLERANCE_DEFAULT / 2);
+    assertReachingDefaultObjectiveWithPoseIs(overGoalWithinTolerance, GOAL_Y, GOAL_THETA, 1);
 }
 
-//TODO: fails if outside Y tolerance.
+Test(Objective_DefaultTolerance_Pose_Y, given_UnderGoalMinusTolerance_when_checksIfIsReached_then_isNotReached,
+     .init = setup, .fini = teardown)
+{
+    int underGoal = GOAL_Y - (2 * X_TOLERANCE_DEFAULT);
+    assertReachingDefaultObjectiveWithPoseIs(GOAL_X, underGoal, GOAL_THETA, 0);
+
+}
+
+Test(Objective_DefaultTolerance_Pose_Y, given_UnderGoalButInsideTolerance_when_checksIfIsReached_then_isReached,
+     .init = setup, .fini = teardown)
+{
+    int underGoalWithinTolerance = GOAL_Y - (Y_TOLERANCE_DEFAULT / 2);
+    assertReachingDefaultObjectiveWithPoseIs(GOAL_X, underGoalWithinTolerance, GOAL_THETA, 1);
+}
+
+Test(Objective_DefaultTolerance_Pose_Y, given_OverGoalPlusTolerance_when_checksIfIsReached_then_isNotReached,
+     .init = setup, .fini = teardown)
+{
+    int overGoal = GOAL_Y + (2 * Y_TOLERANCE_DEFAULT);
+    assertReachingDefaultObjectiveWithPoseIs(GOAL_X, overGoal, GOAL_THETA, 0);
+
+}
+
+Test(Objective_DefaultTolerance_Pose_Y, given_OverGoalButInsideTolerance_when_checksIfIsReached_then_isReached,
+     .init = setup, .fini = teardown)
+{
+    int overGoalWithinTolerance = GOAL_Y + (Y_TOLERANCE_DEFAULT / 2);
+    assertReachingDefaultObjectiveWithPoseIs(GOAL_X, overGoalWithinTolerance, GOAL_THETA, 1);
+}
+
 //TODO: fails if outside THETA tolerance.
