@@ -16,10 +16,3 @@ void Pose_delete(struct Pose * pose)
 {
     free(pose);
 }
-
-void Pose_print(struct Pose * pose)
-{
-    printf("Pose -->  x: %i * 10^(-1) mm\n", pose->x);
-    printf("          y: % i * 10 ^ (-1) mm\n", pose->y);
-    printf("          theta: % i * 10 ^ (-4) rad", pose->theta);
-}
