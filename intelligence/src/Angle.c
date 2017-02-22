@@ -11,7 +11,7 @@ int Angle_wrap(int theta)
         theta -= 2 * PI;
     }
 
-    while(theta < MINUS_PI) {
+    while(theta <= MINUS_PI) {
         theta += 2 * PI;
     }
 
@@ -42,10 +42,32 @@ int Angle_smallestAngleBetween(struct Angle* alpha, struct Angle* beta)
         distance = abs(wrappedAlpha - wrappedBeta);
     } else {
         distance = abs(wrappedBeta) + abs(wrappedAlpha);
+
+        if(distance > PI) {
+            distance -= PI;
+        }
     }
 
     return Angle_wrap(distance);
 }
 
 
+enum RotationDirection Angle_fetchRotationDirectionToReduceDistanceBetween(struct Angle* goal, struct Angle* current)
+{
+    int goalValue = Angle_wrap(goal->theta);
+    int currentValue = Angle_wrap(current->theta);
+
+    if(goalValue == currentValue) {
+        return STOP_TURNING;
+    }
+
+    int distance = Angle_smallestAngleBetween(goal, current);
+
+    if(Angle_wrap(goalValue - distance) == currentValue) {
+        return ANTICLOCKWISE;
+    }
+
+    return CLOCKWISE;
+
+}
 
