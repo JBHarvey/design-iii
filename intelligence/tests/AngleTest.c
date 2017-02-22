@@ -63,13 +63,15 @@ Test(Angle_Difference, given_twoDifferentPositiveAngles_when_askedForDistance_re
 
 Test(Angle_Difference, given_twoDifferentNegativeAngles_when_askedForDistance_returnsBiggestMinusSmallest)
 {
-    assertDifferenceBetweenAnglesIs(- 3 * PI / 4, -7 * PI / 8, PI / 8);
+    assertDifferenceBetweenAnglesIs(-3 * PI / 4, -7 * PI / 8, PI / 8);
     assertDifferenceBetweenAnglesIs(-7 * PI / 8, -3 * PI / 4, PI / 8);
 }
 
 Test(Angle_Difference, given_twoDifferentPolaritiesAngles_when_askedForDistance_returnsWrappedAddition)
 {
-    assertDifferenceBetweenAnglesIs(- PI / 2, PI / 2, PI);
+    assertDifferenceBetweenAnglesIs(-PI / 2, PI / 2, PI);
+    assertDifferenceBetweenAnglesIs(PI / 4, -PI / 3, 7 * PI / 12);
+    assertDifferenceBetweenAnglesIs(3 * PI / 4, -4 * PI / 5, 9 * PI / 20);
 }
 
 void assertRotationDirectionBetweenAnglesIs(int goalValue, int currentValue, enum RotationDirection expectedResult)

@@ -37,10 +37,20 @@ int yIsWithinToleranceOfGoal(struct Objective * objective, struct State * curren
     return withinWithTolerance(currentY, goalY, Y_TOLERANCE_DEFAULT);
 }
 
+int thetaIsWithinToleranceOfGoal(struct Objective * objective, struct State * currentState)
+{
+    struct Angle* currentAngle = currentState->pose->angle;
+    struct Angle* goalAngle = objective->goalState->pose->angle;
+
+    int distance = Angle_smallestAngleBetween(goalAngle, currentAngle);
+    return (distance <= THETA_TOLERANCE_DEFAULT);
+}
+
 int Objective_isReached(struct Objective * objective, struct State * currentState)
 {
     int reached = xIsWithinToleranceOfGoal(objective, currentState)
-                  && yIsWithinToleranceOfGoal(objective, currentState);
+                  && yIsWithinToleranceOfGoal(objective, currentState)
+                  && thetaIsWithinToleranceOfGoal(objective, currentState);
 
     return reached;
 }

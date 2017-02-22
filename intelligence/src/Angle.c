@@ -44,7 +44,7 @@ int Angle_smallestAngleBetween(struct Angle* alpha, struct Angle* beta)
         distance = abs(wrappedBeta) + abs(wrappedAlpha);
 
         if(distance > PI) {
-            distance -= PI;
+            distance = 2 * PI - distance;
         }
     }
 

@@ -12,8 +12,8 @@
 #define Y_TOLERANCE_MAX 50000               // 5 m
 
 #define THETA_TOLERANCE_MIN 0               // 0 rad
-#define THETA_TOLERANCE_DEFAULT 3142        // Pi/10 rad
-#define THETA_TOLERANCE_MAX 314160           // Pi rad
+#define THETA_TOLERANCE_DEFAULT 31416       // Pi/10 rad
+#define THETA_TOLERANCE_MAX 314160          // Pi rad
 
 
 
