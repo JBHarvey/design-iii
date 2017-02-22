@@ -1,8 +1,8 @@
 #ifndef ANGLE_H_
 #define ANGLE_H_
 
-#define PI 314159
-#define MINUS_PI -314159
+#define PI 314160
+#define MINUS_PI -314160
 
 enum RotationDirection {ANTICLOCKWISE, CLOCKWISE};
 /*
@@ -16,5 +16,6 @@ struct Angle {
 
 struct Angle* Angle_new(int new_theta);
 void Angle_delete(struct Angle* angle);
+int Angle_smallestAngleBetween(struct Angle* alpha, struct Angle* beta);
 
 #endif // ANGLE_H_
