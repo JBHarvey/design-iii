@@ -5,7 +5,6 @@
 
 Test(states, creation_destruction)
 {
-
     const int SOME_X = 13256;
     const int SOME_Y = 521651;
     const int SOME_THETA = 11611;

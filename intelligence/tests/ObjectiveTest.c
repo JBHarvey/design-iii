@@ -5,7 +5,7 @@
 
 const int GOAL_X = 10000;       // 1 m
 const int GOAL_Y = 10000;       // 1 m
-const int GOAL_THETA = 7854;    // Pi/4 rad
+const int GOAL_THETA = 78540;    // Pi/4 rad
 
 static struct State* goalState;
 static struct Objective* defaultObjective;
