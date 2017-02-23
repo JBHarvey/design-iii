@@ -10,6 +10,5 @@ struct Pose {
 
 struct Pose * Pose_new(int new_x, int new_y, int new_theta);
 void Pose_delete(struct Pose * pose);
-void Pose_print(struct Pose * pose);
 
 #endif // POSE_H_
