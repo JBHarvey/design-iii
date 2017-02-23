@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     /* Starts worker threads */
     g_thread_new("world_camera_feeder", world_camera_feeder, NULL);
 
-    gtk_window_fullscreen(GTK_WINDOW(ui_window));
+    // gtk_window_fullscreen(GTK_WINDOW(ui_window));
     gtk_widget_show_all(GTK_WIDGET(ui_window));
 
     gtk_main();
