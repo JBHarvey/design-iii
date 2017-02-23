@@ -71,3 +71,6 @@ Pont H
 	Gris pâle, 13 : 5V
 	Mauve, 14 : GND
 
+
+fils rouge et noir : alim du pont H
+
