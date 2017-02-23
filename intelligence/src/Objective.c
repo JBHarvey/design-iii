@@ -46,11 +46,18 @@ int thetaIsWithinToleranceOfGoal(struct Objective * objective, struct State * cu
     return (distance <= THETA_TOLERANCE_DEFAULT);
 }
 
+int flagsAreTheSame(struct Objective * objective, struct State * currentState)
+{
+    return (Flag_areTheSame(objective->goalState->flag, currentState->flag));
+}
+
+
 int Objective_isReached(struct Objective * objective, struct State * currentState)
 {
     int reached = xIsWithinToleranceOfGoal(objective, currentState)
                   && yIsWithinToleranceOfGoal(objective, currentState)
-                  && thetaIsWithinToleranceOfGoal(objective, currentState);
+                  && thetaIsWithinToleranceOfGoal(objective, currentState)
+                  && flagsAreTheSame(objective, currentState);
 
     return reached;
 }

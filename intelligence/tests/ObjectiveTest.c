@@ -18,7 +18,7 @@ struct Objective* buildADefaultToleranceObjective(void)
     return defaultToleranceObjective;
 }
 
-void setup(void)
+void setupObjective(void)
 {
 
     struct Pose* pose = Pose_new(GOAL_X, GOAL_Y, GOAL_THETA);
@@ -26,7 +26,7 @@ void setup(void)
     defaultObjective = buildADefaultToleranceObjective();
 }
 
-void teardown(void)
+void teardownObjective(void)
 {
     Objective_delete(defaultObjective);
 }
@@ -46,7 +46,7 @@ struct State* givenAMaxTolerance(void)
     return maxTolerances;
 }
 
-Test(Objective, creation_destruction, .init = setup, .fini = teardown)
+Test(Objective, creation_destruction, .init = setupObjective, .fini = teardownObjective)
 {
     struct State* tolerances = givenAMaxTolerance();
     struct Objective* objective = Objective_new(goalState, tolerances);
@@ -57,7 +57,7 @@ Test(Objective, creation_destruction, .init = setup, .fini = teardown)
 }
 
 Test(Objective, given_maxTolerances_when_checksIfIsReached_then_isReached,
-     .init = setup, .fini = teardown)
+     .init = setupObjective, .fini = teardownObjective)
 {
     struct State* maxTolerances = givenAMaxTolerance();
     struct Objective* reachableObjective = Objective_new(goalState, maxTolerances);
@@ -70,7 +70,7 @@ Test(Objective, given_maxTolerances_when_checksIfIsReached_then_isReached,
 }
 
 Test(Objective, given_zeroTolerancesAndExactState_when_checksIfIsReached_then_isReached,
-     .init = setup, .fini = teardown)
+     .init = setupObjective, .fini = teardownObjective)
 {
     struct Objective* objective = givenAZeroToleranceObjective();
 
@@ -82,7 +82,7 @@ Test(Objective, given_zeroTolerancesAndExactState_when_checksIfIsReached_then_is
 }
 
 Test(Objective_DefaultTolerance, given_anOnSpotState_when_checksIfIsReached_then_isReached,
-     .init = setup, .fini = teardown)
+     .init = setupObjective, .fini = teardownObjective)
 {
     int reached = Objective_isReached(defaultObjective, goalState);
 
@@ -102,85 +102,100 @@ void assertReachingDefaultObjectiveWithPoseIs(int x, int y, int theta, int expec
 }
 
 Test(Objective_DefaultTolerance_Pose_X, given_UnderGoalMinusTolerance_when_checksIfIsReached_then_isNotReached,
-     .init = setup, .fini = teardown)
+     .init = setupObjective, .fini = teardownObjective)
 {
     int underGoal = GOAL_X - (2 * X_TOLERANCE_DEFAULT);
     assertReachingDefaultObjectiveWithPoseIs(underGoal, GOAL_Y, GOAL_THETA, 0);
 }
 
 Test(Objective_DefaultTolerance_Pose_X, given_UnderGoalButInsideTolerance_when_checksIfIsReached_then_isReached,
-     .init = setup, .fini = teardown)
+     .init = setupObjective, .fini = teardownObjective)
 {
     int underGoalWithinTolerance = GOAL_X - (X_TOLERANCE_DEFAULT / 2);
     assertReachingDefaultObjectiveWithPoseIs(underGoalWithinTolerance, GOAL_Y, GOAL_THETA, 1);
 }
 
 Test(Objective_DefaultTolerance_Pose_X, given_OverGoalPlusTolerance_when_checksIfIsReached_then_isNotReached,
-     .init = setup, .fini = teardown)
+     .init = setupObjective, .fini = teardownObjective)
 {
     int overGoal = GOAL_X + (2 * X_TOLERANCE_DEFAULT);
     assertReachingDefaultObjectiveWithPoseIs(overGoal, GOAL_Y, GOAL_THETA, 0);
 }
 
 Test(Objective_DefaultTolerance_Pose_X, given_OverGoalButInsideTolerance_when_checksIfIsReached_then_isReached,
-     .init = setup, .fini = teardown)
+     .init = setupObjective, .fini = teardownObjective)
 {
     int overGoalWithinTolerance = GOAL_X + (X_TOLERANCE_DEFAULT / 2);
     assertReachingDefaultObjectiveWithPoseIs(overGoalWithinTolerance, GOAL_Y, GOAL_THETA, 1);
 }
 
 Test(Objective_DefaultTolerance_Pose_Y, given_UnderGoalMinusTolerance_when_checksIfIsReached_then_isNotReached,
-     .init = setup, .fini = teardown)
+     .init = setupObjective, .fini = teardownObjective)
 {
     int underGoal = GOAL_Y - (2 * Y_TOLERANCE_DEFAULT);
     assertReachingDefaultObjectiveWithPoseIs(GOAL_X, underGoal, GOAL_THETA, 0);
 }
 
 Test(Objective_DefaultTolerance_Pose_Y, given_UnderGoalButInsideTolerance_when_checksIfIsReached_then_isReached,
-     .init = setup, .fini = teardown)
+     .init = setupObjective, .fini = teardownObjective)
 {
     int underGoalWithinTolerance = GOAL_Y - (Y_TOLERANCE_DEFAULT / 2);
     assertReachingDefaultObjectiveWithPoseIs(GOAL_X, underGoalWithinTolerance, GOAL_THETA, 1);
 }
 
 Test(Objective_DefaultTolerance_Pose_Y, given_OverGoalPlusTolerance_when_checksIfIsReached_then_isNotReached,
-     .init = setup, .fini = teardown)
+     .init = setupObjective, .fini = teardownObjective)
 {
     int overGoal = GOAL_Y + (2 * Y_TOLERANCE_DEFAULT);
     assertReachingDefaultObjectiveWithPoseIs(GOAL_X, overGoal, GOAL_THETA, 0);
 }
 
 Test(Objective_DefaultTolerance_Pose_Y, given_OverGoalButInsideTolerance_when_checksIfIsReached_then_isReached,
-     .init = setup, .fini = teardown)
+     .init = setupObjective, .fini = teardownObjective)
 {
     int overGoalWithinTolerance = GOAL_Y + (Y_TOLERANCE_DEFAULT / 2);
     assertReachingDefaultObjectiveWithPoseIs(GOAL_X, overGoalWithinTolerance, GOAL_THETA, 1);
 }
 
 Test(Objective_DefaultTolerance_Pose_THETA, given_UnderGoalMinusTolerance_when_checksIfIsReached_then_isNotReached,
-     .init = setup, .fini = teardown)
+     .init = setupObjective, .fini = teardownObjective)
 {
     int underGoal = GOAL_THETA - (2 * THETA_TOLERANCE_DEFAULT);
     assertReachingDefaultObjectiveWithPoseIs(GOAL_X, GOAL_Y, underGoal, 0);
 }
 
 Test(Objective_DefaultTolerance_Pose_THETA, given_UnderGoalButInsideTolerance_when_checksIfIsReached_then_isReached,
-     .init = setup, .fini = teardown)
+     .init = setupObjective, .fini = teardownObjective)
 {
     int underGoalWithinTolerance = GOAL_THETA - (THETA_TOLERANCE_DEFAULT / 2);
     assertReachingDefaultObjectiveWithPoseIs(GOAL_X, GOAL_Y, underGoalWithinTolerance, 1);
 }
 
 Test(Objective_DefaultTolerance_Pose_THETA, given_OverGoalPlusTolerance_when_checksIfIsReached_then_isNotReached,
-     .init = setup, .fini = teardown)
+     .init = setupObjective, .fini = teardownObjective)
 {
     int overGoal = GOAL_THETA + (2 * THETA_TOLERANCE_DEFAULT);
     assertReachingDefaultObjectiveWithPoseIs(GOAL_X, GOAL_Y, overGoal, 0);
 }
 
 Test(Objective_DefaultTolerance_Pose_THETA, given_OverGoalButInsideTolerance_when_checksIfIsReached_then_isReached,
-     .init = setup, .fini = teardown)
+     .init = setupObjective, .fini = teardownObjective)
 {
     int overGoalWithinTolerance = GOAL_THETA + (THETA_TOLERANCE_DEFAULT / 2);
     assertReachingDefaultObjectiveWithPoseIs(GOAL_X, GOAL_Y, overGoalWithinTolerance, 1);
+}
+
+Test(Objective_DefaultTolerance, given_anOnSpotStateWithDifferentFlags_when_checksIfIsReached_isNotReached,
+     .init = setupObjective, .fini = teardownObjective)
+{
+    struct Pose* pose = Pose_new(GOAL_X, GOAL_Y, GOAL_THETA);
+    struct State* currentState = State_new(pose);
+    Flag_setStartCycleSignalRecieved(currentState->flag, 1);
+
+    int reached = Objective_isReached(defaultObjective, currentState);
+
+    cr_assert(reached == 0);
+
+    State_delete(currentState);
+
 }
