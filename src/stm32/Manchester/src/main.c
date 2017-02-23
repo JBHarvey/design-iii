@@ -1,13 +1,19 @@
+#include <misc.h>
 #include <stm32f4xx_gpio.h>
 #include <stm32f4xx_tim.h>
 #include <stm32f4xx_rcc.h>
 #include "manchester.h"
-#include <misc.h>
+#include "stm32f4xx.h"
+#include "tm_stm32f4_hd44780.h"
 
 // Buffer contenant tous les bits du manchester
 volatile uint8_t manchesterState = MANCHESTER_WAIT_FOR_DECODING;
 volatile uint8_t manchesterBuffer[MANCHESTER_BUFFER_LENGTH];
 volatile uint8_t manchesterIndex = 0;
+volatile uint8_t figureVerification = 0;
+volatile char orientationVerification[ORIENTATION_LENGTH] = { ' ', ' ', ' ',
+		' ', ' ' };
+volatile uint8_t factorVerification = 0;
 
 void InitializeLEDs() {
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
@@ -18,7 +24,7 @@ void InitializeLEDs() {
 	gpioStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOD, &gpioStructure);
 
-	GPIO_WriteBit(GPIOD, GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14, Bit_RESET);
+	GPIO_ResetBits(GPIOD, GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14);
 }
 
 void SetTimer(uint16_t period) {
@@ -91,26 +97,34 @@ void EnableTimerInterrupt() {
 	NVIC_Init(&nvicStructure);
 }
 
+void disableTimerInterrupt() {
+	NVIC_InitTypeDef nvicStructure;
+	nvicStructure.NVIC_IRQChannel = TIM5_IRQn;
+	nvicStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	nvicStructure.NVIC_IRQChannelSubPriority = 1;
+	nvicStructure.NVIC_IRQChannelCmd = DISABLE;
+	NVIC_Init(&nvicStructure);
+}
+
 extern void TIM5_IRQHandler() {
 	if (TIM_GetITStatus(TIM5, TIM_IT_Update) != RESET) {
 		TIM_ClearITPendingBit(TIM5, TIM_IT_Update);
 
 		switch (manchesterState) {
 		case MANCHESTER_FIRST:
-			GPIO_ToggleBits(GPIOD, GPIO_Pin_12);
+			//GPIO_ToggleBits(GPIOD, GPIO_Pin_12);
+			manchesterIndex = 0;
 			manchesterState = MANCHESTER_FILL;
 			TIM_SetAutoreload(TIM5, MANCHESTER_PERIOD * 4 - 1);
 			break;
 		case MANCHESTER_FILL:
-			GPIO_ToggleBits(GPIOD, GPIO_Pin_13);
+			//GPIO_ToggleBits(GPIOD, GPIO_Pin_13);
 			manchesterBuffer[manchesterIndex] = GPIO_ReadInputDataBit(GPIOD,
 					MANCHESTER_PIN);
 			manchesterIndex++;
 			if (manchesterIndex >= MANCHESTER_BUFFER_LENGTH)
 				manchesterState = MANCHESTER_DECODE;
 			break;
-		default:
-			manchesterState = MANCHESTER_WAIT_FOR_DECODING;
 		}
 	}
 }
@@ -157,12 +171,87 @@ extern void EXTI9_5_IRQHandler(void) {
 	}
 }
 
+uint8_t decodeInformationBits16(uint8_t indexOfBeginningCycle,
+		uint8_t *informationBits, uint8_t *manchesterBuffer) {
+	for (uint8_t i = 0; i < 16; i++) {
+		if (isNextBitsEqualToZero(indexOfBeginningCycle + 2 * i,
+				manchesterBuffer)) {
+			informationBits[i] = 0;
+		} else if (isNextBitsEqualToOne(indexOfBeginningCycle + 2 * i,
+				manchesterBuffer)) {
+			informationBits[i] = 1;
+		} else {
+			return BAD_INFORMATION;
+		}
+	}
+	return VALID_INFORMATION;
+}
+
+uint8_t decodeManchester16Bits(uint8_t * informationBits,
+		uint8_t *manchesterBuffer) {
+	uint8_t indexOfBeginningCycle = findAValidCycle(manchesterBuffer);
+	if (indexOfBeginningCycle != 0) {
+		uint8_t informationState = decodeInformationBits16(
+				indexOfBeginningCycle, informationBits, manchesterBuffer);
+		return informationState;
+	}
+	return BAD_INFORMATION;
+}
+
+void generateMessageToDisplay16(char *informationBits16,
+		char *messageToDisplay16) {
+
+	messageToDisplay16[0] = '0' + informationBits16[0];
+	messageToDisplay16[1] = '0' + informationBits16[1];
+	messageToDisplay16[2] = '0' + informationBits16[2];
+	messageToDisplay16[3] = '0' + informationBits16[3];
+	messageToDisplay16[4] = '0' + informationBits16[4];
+	messageToDisplay16[5] = '0' + informationBits16[5];
+	messageToDisplay16[6] = '0' + informationBits16[6];
+	messageToDisplay16[7] = '0' + informationBits16[7];
+	messageToDisplay16[8] = '0' + informationBits16[8];
+	messageToDisplay16[9] = '0' + informationBits16[9];
+	messageToDisplay16[10] = '0' + informationBits16[10];
+	messageToDisplay16[11] = '0' + informationBits16[11];
+	messageToDisplay16[12] = '0' + informationBits16[12];
+	messageToDisplay16[13] = '0' + informationBits16[13];
+	messageToDisplay16[14] = '0' + informationBits16[14];
+	messageToDisplay16[15] = '0' + informationBits16[15];
+
+}
+
+uint8_t isFigureEqual(uint8_t figure, uint8_t figureVerification) {
+	return figure == figureVerification;
+}
+
+uint8_t isOrientationEqual(char *orientation, char *orientationVerification) {
+	for (int i = 0; i < ORIENTATION_LENGTH; i++) {
+		if (orientation[i] != orientationVerification[i]) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
+uint8_t isFactorEqual(uint8_t factor, uint8_t factorVerification) {
+	return factor == factorVerification;
+}
+
+uint8_t isSameDataThanPreviousIteration(uint8_t figure,
+		uint8_t figureVerification, char *orientation,
+		char *orientationVerification, uint8_t factor,
+		uint8_t factorVerification) {
+	return isFigureEqual(figure, figureVerification)
+			&& isOrientationEqual(orientation, orientationVerification)
+			&& isFactorEqual(factor, factorVerification);
+}
+
 int main() {
 	InitializeLEDs();
 	InitializeInput();
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 	initializeExternalInterruptLine7();
-
+	TM_HD44780_Init(16, 2);
 	while (1) {
 		if (manchesterState == MANCHESTER_DECODE) {
 
@@ -170,15 +259,36 @@ int main() {
 			uint8_t informationBits[INFORMATION_BITS_LENGTH];
 			if (decodeManchester(informationBits, manchesterBuffer)
 					== VALID_INFORMATION) {
+
 				uint8_t figure = getFigureFromInformationBits(informationBits);
 				char orientation[ORIENTATION_LENGTH];
-				getOrientationFromInformationBits(informationBits, orientation);
+				setOrientationFromInformationBits(informationBits, orientation);
 				uint8_t factor = getFactorFromInformationBits(informationBits);
-				char messageToDisplay[MESSAGE_TO_DISPLAY_LENGTH];
-				generateMessageToDisplay(figure, orientation, factor,
-						messageToDisplay);
-				displayManchesterInformation(messageToDisplay);
-				manchesterState = MANCHESTER_IDLE;
+
+				if (isSameDataThanPreviousIteration(figure, figureVerification,
+						orientation, orientationVerification, factor,
+						factorVerification)) {
+					char messageToDisplay[MESSAGE_TO_DISPLAY_LENGTH];
+					setMessageToDisplay(figure, orientation, factor,
+							messageToDisplay);
+					displayManchesterMessage(messageToDisplay);
+					disableExternalInterruptLine7();
+					disableTimerInterrupt();
+					manchesterState = MANCHESTER_IDLE;
+					GPIO_SetBits(GPIOD, GPIO_Pin_13);
+				} else {
+					figureVerification = figure;
+					strcpy(orientationVerification, orientation);
+					factorVerification = factor;
+					disableTimerInterrupt();
+					manchesterState = MANCHESTER_WAIT_FOR_DECODING;
+					initializeExternalInterruptLine7();
+				}
+
+			} else {
+				disableTimerInterrupt();
+				manchesterState = MANCHESTER_WAIT_FOR_DECODING;
+				initializeExternalInterruptLine7();
 			}
 		}
 	}

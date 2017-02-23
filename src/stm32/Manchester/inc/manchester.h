@@ -16,6 +16,7 @@ enum ManchState {
 	MANCHESTER_FIRST,
 	MANCHESTER_FILL,
 	MANCHESTER_DECODE,
+	MANCHESTER_VERIFICATION,
 	MANCHESTER_ERREUR
 };
 
@@ -55,14 +56,14 @@ uint8_t decodeManchester(uint8_t * informationBits, uint8_t *manchesterBuffer);
 
 uint8_t getFigureFromInformationBits(uint8_t * informationBits);
 
-void getOrientationFromInformationBits(uint8_t * informationBits,
+void setOrientationFromInformationBits(uint8_t * informationBits,
 		char *orientation);
 
 uint8_t getFactorFromInformationBits(uint8_t * informationBits);
 
-void generateMessageToDisplay(uint8_t figure, char *orientation, uint8_t factor,
+void setMessageToDisplay(uint8_t figure, char *orientation, uint8_t factor,
 		char *messageToDisplay);
 
-void displayManchesterInformation(char *messageToDisplay);
+void displayManchesterMessage(char *messageToDisplay);
 
 #endif /* MANCHESTER_H_ */

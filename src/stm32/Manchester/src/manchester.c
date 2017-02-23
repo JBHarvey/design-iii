@@ -78,7 +78,7 @@ uint8_t getFigureFromInformationBits(uint8_t * informationBits) {
 	return informationBits[1] * 4 + informationBits[2] * 2 + informationBits[3];
 }
 
-void getOrientationFromInformationBits(uint8_t * informationBits,
+void setOrientationFromInformationBits(uint8_t * informationBits,
 		char *orientation) {
 	uint8_t orientationNumber = informationBits[4] * 2 + informationBits[5];
 	switch (orientationNumber) {
@@ -128,7 +128,7 @@ uint8_t getFactorFromInformationBits(uint8_t * informationBits) {
 	}
 }
 
-void generateMessageToDisplay(uint8_t figure, char *orientation, uint8_t factor,
+void setMessageToDisplay(uint8_t figure, char *orientation, uint8_t factor,
 		char *messageToDisplay) {
 	messageToDisplay[0] = '0' + figure;
 	messageToDisplay[1] = ' ';
@@ -140,7 +140,16 @@ void generateMessageToDisplay(uint8_t figure, char *orientation, uint8_t factor,
 	messageToDisplay[7] = ' ';
 	messageToDisplay[8] = '0' + factor;
 	messageToDisplay[9] = 'X';
+	messageToDisplay[10] = ' ';
+	messageToDisplay[11] = ' ';
+	messageToDisplay[12] = ' ';
+	messageToDisplay[13] = ' ';
+	messageToDisplay[14] = ' ';
+	messageToDisplay[15] = ' ';
 }
 
-void displayManchesterInformation(char* messageToDisplay) {
+void displayManchesterMessage(char *messageToDisplay) {
+	TM_HD44780_Init(16, 2);
+	TM_HD44780_Puts(0, 1, messageToDisplay);
+	TM_HD44780_Puts(0, 0, "Manchester Code");
 }
