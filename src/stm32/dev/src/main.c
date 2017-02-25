@@ -10,6 +10,7 @@
  *
  * #define USE_USB_OTG_HS
  */
+// TEST
 #include <motor.h>
 #include "tm_stm32f4_usb_vcp.h"
 #include "tm_stm32f4_disco.h"
