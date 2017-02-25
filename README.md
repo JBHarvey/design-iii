@@ -25,3 +25,18 @@ cd ui
 make all
 ./station-main
 ```
+
+
+## Intelligence
+
+Dependency: [docker](https://docs.docker.com/engine/getstarted/)  
+How to run tests:
+```
+cd intelligence
+./build-docker.sh
+./runtest.sh
+```
+To see the test log in details:
+```
+./showlog.sh
+```
