@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 #include "vision.h"
 
 /* Used by the square finding algorithm
