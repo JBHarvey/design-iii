@@ -18,3 +18,6 @@ cd ..
 #### UI
 
 # ?
+
+
+exit $fail
