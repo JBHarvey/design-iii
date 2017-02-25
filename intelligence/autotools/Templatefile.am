@@ -13,6 +13,7 @@ check_PROGRAMS = criterion_tests
 criterion_testsdir = code
 criterion_tests_HEADERS = HFILES
 criterion_tests_SOURCES = CFILES
+criterion_tests_CFLAGS  = -fsanitize=address -fno-omit-frame-pointer
 criterion_tests_LDFLAGS = -lcriterion
 
 TESTS = criterion_tests
