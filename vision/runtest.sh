@@ -4,5 +4,5 @@ cd samples/opencv
 sh ./build.sh
 cd ../../
 cd acceptation-tests/
-./run_test.sh
+./run_test.sh || exit 1
 
