@@ -6,7 +6,7 @@ static struct Flags *flags;
 static struct Flags *otherFlags;
 const int ZERO = 0;
 const int START_CYCLE = 1;
-
+/*
 Test(Flags, creation_destruction)
 {
     struct Flags *flags = Flags_new();
@@ -65,3 +65,4 @@ Test(Flags, given_twoFlagsWithDifferentValues_when_copied_then_theFlagsHaveTheSa
     int comparison = Flags_haveTheSameValues(flags, otherFlags);
     cr_assert(comparison == 1);
 }
+*/

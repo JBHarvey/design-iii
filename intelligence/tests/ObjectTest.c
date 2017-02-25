@@ -5,7 +5,7 @@
 struct Object *object;
 const int ONE = 1;
 const int INITIAL_COUNT = 1;
-
+/*
 void setupObject(void)
 {
     object = Object_new();
@@ -47,3 +47,4 @@ Test(Object, given_anObjectWithReferenceCountEqualToZero_when_checksIfCanBeDelet
     int canBeDeleted = Object_canBeDeleted(object);
     cr_assert(canBeDeleted == ONE);
 }
+*/

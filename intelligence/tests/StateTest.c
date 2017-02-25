@@ -9,7 +9,7 @@ const int SOME_THETA = 11611;
 
 struct State *state;
 struct Pose *pose;
-
+/*
 void setupState(void)
 {
     pose = Pose_new(SOME_X, SOME_Y, SOME_THETA);
@@ -59,3 +59,4 @@ Test(State, given_aState_when_updateFlagssFromAnotherState_then_theFlagsValuesOf
     Flags_delete(flags);
     State_delete(otherState);
 }
+*/

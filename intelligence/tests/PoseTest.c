@@ -1,7 +1,7 @@
 #include <criterion/criterion.h>
 #include <stdio.h>
 #include "Pose.h"
-
+/*
 Test(Pose, creation_destruction)
 {
     const int SOME_X = 13256;
@@ -15,3 +15,4 @@ Test(Pose, creation_destruction)
         pose->angle->theta == SOME_THETA);
     Pose_delete(pose);
 }
+*/

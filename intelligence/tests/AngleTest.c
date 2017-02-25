@@ -1,7 +1,7 @@
 #include <criterion/criterion.h>
 #include <stdio.h>
 #include "Angle.h"
-
+/*
 Test(Angle, creation_destruction)
 {
     int value = PI / 2;
@@ -109,6 +109,4 @@ Test(Angle_RotationDirection,
     assertRotationDirectionBetweenAnglesIs(3 * PI / 4, -4 * PI / 5, CLOCKWISE);
     assertRotationDirectionBetweenAnglesIs(PI / -6, PI / 12, CLOCKWISE);
 }
-
-
-
+*/

@@ -12,7 +12,7 @@ struct Pose *defaultPoseTolerances;
 struct State *defaultTolerances;
 struct State *goalState;
 struct Objective *defaultObjective;
-
+/*
 void setupObjective(void)
 {
     pose = Pose_new(GOAL_X, GOAL_Y, GOAL_THETA);
@@ -198,3 +198,4 @@ Test(Objective_DefaultTolerance, given_anOnSpotStateWithDifferentFlags_when_chec
     State_delete(currentState);
 
 }
+*/
