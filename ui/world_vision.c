@@ -23,6 +23,10 @@ gpointer world_camera_feeder(gpointer data)
         }
     }
 
+    if(!cv_cap) {
+        cv_cap = cvCreateCameraCapture(0);
+    }
+
     cvSetCaptureProperty(cv_cap, CV_CAP_PROP_FRAME_WIDTH, WORLD_CAMERA_WIDTH);
     cvSetCaptureProperty(cv_cap, CV_CAP_PROP_FRAME_HEIGHT, WORLD_CAMERA_HEIGHT);
 
