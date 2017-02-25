@@ -8,7 +8,7 @@ Test(Pose, creation_destruction)
     const int SOME_Y = 521651;
     const int SOME_THETA = PI;
 
-    struct Pose* pose = Pose_new(SOME_X, SOME_Y, SOME_THETA);
+    struct Pose *pose = Pose_new(SOME_X, SOME_Y, SOME_THETA);
     cr_assert(
         pose->x == SOME_X &&
         pose->y == SOME_Y &&

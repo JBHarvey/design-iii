@@ -16,9 +16,9 @@ struct Angle {
     int theta;
 };
 
-struct Angle* Angle_new(int new_theta);
-void Angle_delete(struct Angle* angle);
-int Angle_smallestAngleBetween(struct Angle* alpha, struct Angle* beta);
-enum RotationDirection Angle_fetchRotationDirectionToReduceDistanceBetween(struct Angle* goal, struct Angle* current);
+struct Angle *Angle_new(int new_theta);
+void Angle_delete(struct Angle *angle);
+int Angle_smallestAngleBetween(struct Angle *alpha, struct Angle *beta);
+enum RotationDirection Angle_fetchOptimalRotationDirection(struct Angle *goal, struct Angle *current);
 
 #endif // ANGLE_H_

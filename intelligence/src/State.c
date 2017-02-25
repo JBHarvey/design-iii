@@ -2,25 +2,25 @@
 #include "State.h"
 
 
-struct State* State_new(struct Pose* new_pose)
+struct State *State_new(struct Pose *new_pose)
 {
-    struct State* pointer = (struct State*) malloc(sizeof(struct State));
+    struct State *pointer = (struct State *) malloc(sizeof(struct State));
     pointer->pose = new_pose;
 
-    struct Flag* newFlag = Flag_new();
-    pointer->flag = newFlag;
+    struct Flags *newFlags = Flags_new();
+    pointer->flags = newFlags;
 
     return pointer;
 }
 
-void State_delete(struct State* state)
+void State_delete(struct State *state)
 {
     Pose_delete(state->pose);
-    Flag_delete(state->flag);
+    Flags_delete(state->flags);
     free(state);
 }
 
-void State_updateFlagValuesFrom(struct State* recipient, struct State* source)
+void State_updateFlagsValuesFrom(struct State *recipient, struct State *source)
 {
-    Flag_copyValuesFrom(recipient->flag, source->flag);
+    Flags_copyValuesFrom(recipient->flags, source->flags);
 }

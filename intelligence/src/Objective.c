@@ -1,15 +1,15 @@
 #include <stdlib.h>
 #include "Objective.h"
 
-struct Objective * Objective_new(struct State * new_goalState, struct State * new_tolerances)
+struct Objective *Objective_new(struct State *new_goalState, struct State *new_tolerances)
 {
-    struct Objective * pointer = (struct Objective *) malloc(sizeof(struct Objective));
+    struct Objective *pointer = (struct Objective *) malloc(sizeof(struct Objective));
     pointer->goalState = new_goalState;
     pointer->tolerances = new_tolerances;
     return pointer;
 }
 
-void Objective_delete(struct Objective * objective)
+void Objective_delete(struct Objective *objective)
 {
     State_delete(objective->goalState);
     State_delete(objective->tolerances);
@@ -21,7 +21,7 @@ int withinWithTolerance(int value, int goal, int tolerance)
     return (value < goal + tolerance && value > goal - tolerance);
 }
 
-int xIsWithinToleranceOfGoal(struct Objective * objective, struct State * currentState)
+int xIsWithinToleranceOfGoal(struct Objective *objective, struct State *currentState)
 {
     int currentX = currentState->pose->x;
     int goalX = objective->goalState->pose->x;
@@ -29,7 +29,7 @@ int xIsWithinToleranceOfGoal(struct Objective * objective, struct State * curren
     return withinWithTolerance(currentX, goalX, X_TOLERANCE_DEFAULT);
 }
 
-int yIsWithinToleranceOfGoal(struct Objective * objective, struct State * currentState)
+int yIsWithinToleranceOfGoal(struct Objective *objective, struct State *currentState)
 {
     int currentY = currentState->pose->y;
     int goalY = objective->goalState->pose->y;
@@ -37,22 +37,22 @@ int yIsWithinToleranceOfGoal(struct Objective * objective, struct State * curren
     return withinWithTolerance(currentY, goalY, Y_TOLERANCE_DEFAULT);
 }
 
-int thetaIsWithinToleranceOfGoal(struct Objective * objective, struct State * currentState)
+int thetaIsWithinToleranceOfGoal(struct Objective *objective, struct State *currentState)
 {
-    struct Angle* currentAngle = currentState->pose->angle;
-    struct Angle* goalAngle = objective->goalState->pose->angle;
+    struct Angle *currentAngle = currentState->pose->angle;
+    struct Angle *goalAngle = objective->goalState->pose->angle;
 
     int distance = Angle_smallestAngleBetween(goalAngle, currentAngle);
     return (distance <= THETA_TOLERANCE_DEFAULT);
 }
 
-int flagsAreTheSame(struct Objective * objective, struct State * currentState)
+int flagsAreTheSame(struct Objective *objective, struct State *currentState)
 {
-    return (Flag_areTheSame(objective->goalState->flag, currentState->flag));
+    return (Flags_haveTheSameValues(objective->goalState->flags, currentState->flags));
 }
 
 
-int Objective_isReached(struct Objective * objective, struct State * currentState)
+int Objective_isReached(struct Objective *objective, struct State *currentState)
 {
     int reached = xIsWithinToleranceOfGoal(objective, currentState)
                   && yIsWithinToleranceOfGoal(objective, currentState)

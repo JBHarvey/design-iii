@@ -7,8 +7,8 @@ const int SOME_X = 13256;
 const int SOME_Y = 521651;
 const int SOME_THETA = 11611;
 
-struct State* state;
-struct Pose* pose;
+struct State *state;
+struct Pose *pose;
 
 void setupState(void)
 {
@@ -28,33 +28,33 @@ Test(State, creation_destruction
     cr_assert(state->pose == pose);
 }
 
-Test(State, given__when_aStateIsCreated_then_itHasAnAllZeroFlag
+Test(State, given__when_aStateIsCreated_then_itHasAnAllZeroFlags
      , .init = setupState
      , .fini = teardownState)
 {
-    struct Flag* flag = Flag_new();
+    struct Flags *flags = Flags_new();
 
-    int comparison = Flag_areTheSame(flag, state->flag);
+    int comparison = Flags_areTheSame(flags, state->flags);
     cr_assert(comparison);
 
-    Flag_delete(flag);
+    Flags_delete(flags);
 }
 
-Test(State, given_aState_when_updateFlagsFromAnotherState_then_theFlagValuesOfTheStateAreCopied
+Test(State, given_aState_when_updateFlagssFromAnotherState_then_theFlagsValuesOfTheStateAreCopied
      , .init = setupState
      , .fini = teardownState)
 {
-    struct Flag* flag = Flag_new();
-    Flag_setStartCycleSignalRecieved(flag, 1);
+    struct Flags *flags = Flags_new();
+    Flags_setStartCycleSignalRecieved(flags, 1);
 
-    struct State* otherState = State_new(pose);
-    Flag_copyValuesFrom(otherState->flag, flag);
+    struct State *otherState = State_new(pose);
+    Flags_copyValuesFrom(otherState->flags, flags);
 
-    State_updateFlagValuesFrom(state, otherState);
+    State_updateFlagsValuesFrom(state, otherState);
 
-    int comparison = Flag_areTheSame(flag, state->flag);
+    int comparison = Flags_areTheSame(flags, state->flags);
     cr_assert(comparison);
 
-    Flag_delete(flag);
+    Flags_delete(flags);
     State_delete(otherState);
 }

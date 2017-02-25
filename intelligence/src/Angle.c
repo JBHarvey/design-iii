@@ -3,9 +3,9 @@
 
 
 /**
-* Ensures the angle stays between MINUS_PI and PI.
+ *Ensures the angle stays between MINUS_PI and PI.
 */
-int Angle_wrap(int theta)
+static int Angle_wrap(int theta)
 {
     while(theta > PI) {
         theta -= 2 * PI;
@@ -18,20 +18,20 @@ int Angle_wrap(int theta)
     return theta;
 }
 
-struct Angle* Angle_new(int new_theta)
+struct Angle *Angle_new(int new_theta)
 {
-    struct Angle * pointer = (struct Angle *) malloc(sizeof(struct Angle));
+    struct Angle *pointer = (struct Angle *) malloc(sizeof(struct Angle));
     int wrappedTheta = Angle_wrap(new_theta);
     pointer->theta = wrappedTheta;
     return pointer;
 }
 
-void Angle_delete(struct Angle* angle)
+void Angle_delete(struct Angle *angle)
 {
     free(angle);
 }
 
-int Angle_smallestAngleBetween(struct Angle* alpha, struct Angle* beta)
+int Angle_smallestAngleBetween(struct Angle *alpha, struct Angle *beta)
 {
     int wrappedAlpha = Angle_wrap(alpha->theta);
     int wrappedBeta = Angle_wrap(beta->theta);
@@ -52,7 +52,7 @@ int Angle_smallestAngleBetween(struct Angle* alpha, struct Angle* beta)
 }
 
 
-enum RotationDirection Angle_fetchRotationDirectionToReduceDistanceBetween(struct Angle* goal, struct Angle* current)
+enum RotationDirection Angle_fetchOptimalRotationDirection(struct Angle *goal, struct Angle *current)
 {
     int goalValue = Angle_wrap(goal->theta);
     int currentValue = Angle_wrap(current->theta);

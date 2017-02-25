@@ -5,7 +5,7 @@
 Test(Angle, creation_destruction)
 {
     int value = PI / 2;
-    struct Angle* angle = Angle_new(value);
+    struct Angle *angle = Angle_new(value);
 
     cr_assert(angle->theta == value);
     Angle_delete(angle);
@@ -13,7 +13,7 @@ Test(Angle, creation_destruction)
 
 Test(Angle, given_minusPi_when_created_then_valueIsPi)
 {
-    struct Angle * angle = Angle_new(MINUS_PI);
+    struct Angle *angle = Angle_new(MINUS_PI);
 
     cr_assert_eq(angle->theta, PI);
     Angle_delete(angle);
@@ -21,8 +21,8 @@ Test(Angle, given_minusPi_when_created_then_valueIsPi)
 
 Test(Angle, given_aValueBiggerThanPi_when_created_then_valueIsWrappedBetweenPiAndMinusPi)
 {
-    const int fivePi = 5 * PI;
-    struct Angle* angle = Angle_new(fivePi);
+    const int FIVE_PI = 5 * PI;
+    struct Angle *angle = Angle_new(FIVE_PI);
 
     cr_assert(angle->theta == PI);
     Angle_delete(angle);
@@ -30,8 +30,8 @@ Test(Angle, given_aValueBiggerThanPi_when_created_then_valueIsWrappedBetweenPiAn
 
 Test(Angle, given_aValueSmallerThanMinusPi_when_created_then_valueIsWrappedBetweenPiAndMinusPi)
 {
-    const int minusThreePi = -3 * PI;
-    struct Angle * angle = Angle_new(minusThreePi);
+    const int MINUS_THREE_PI = -3 * PI;
+    struct Angle *angle = Angle_new(MINUS_THREE_PI);
 
     cr_assert_eq(angle->theta, PI);
     Angle_delete(angle);
@@ -39,8 +39,8 @@ Test(Angle, given_aValueSmallerThanMinusPi_when_created_then_valueIsWrappedBetwe
 
 void assertDifferenceBetweenAnglesIs(int alphaValue, int betaValue, int expectedResult)
 {
-    struct Angle* alpha = Angle_new(alphaValue);
-    struct Angle* beta = Angle_new(betaValue);
+    struct Angle *alpha = Angle_new(alphaValue);
+    struct Angle *beta = Angle_new(betaValue);
 
     int betweenAngle = Angle_smallestAngleBetween(alpha, beta);
 
@@ -76,13 +76,13 @@ Test(Angle_Difference, given_twoDifferentPolaritiesAngles_when_askedForDistance_
 
 void assertRotationDirectionBetweenAnglesIs(int goalValue, int currentValue, enum RotationDirection expectedResult)
 {
-    struct Angle* goal = Angle_new(goalValue);
-    struct Angle* current = Angle_new(currentValue);
+    struct Angle *goal = Angle_new(goalValue);
+    struct Angle *current = Angle_new(currentValue);
 
-    enum RotationDirection suggestedDirection = Angle_fetchRotationDirectionToReduceDistanceBetween(goal, current);
+    enum RotationDirection suggestedDirection = Angle_fetchOptimalRotationDirection(goal, current);
 
     cr_assert(suggestedDirection == expectedResult, "Rotating from %d to %d in %d direction (expected %d)",
-              currentValue,              goalValue, expectedResult, suggestedDirection);
+              currentValue, goalValue, expectedResult, suggestedDirection);
     Angle_delete(goal);
     Angle_delete(current);
 }
