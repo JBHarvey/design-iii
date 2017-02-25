@@ -7,14 +7,13 @@ vision_test=$(readlink -f "vision_test")
 camera_calibration=$(readlink -f "camera_calibration.xml")
 
 for i in vision_test_images/* ; do
-  cd $i
-  for j in ./*.jpg; do
+  for j in $i/*.jpg; do
     if [[ " ${SUCCEEDED_IMAGES[*]} " == *" $i$j "* ]]
     then
         #echo test already $i $j
         suceeded_tests=$((suceeded_tests + 1))
     else
-        if $vision_test $j ./contours.xml $camera_calibration
+        if $vision_test $j $i/contours.xml $camera_calibration
         then
             #echo test suceeded $i $j
             SUCCEEDED_IMAGES+=($i$j)
@@ -25,7 +24,6 @@ for i in vision_test_images/* ; do
         fi
     fi
   done
-  cd ../..
 done
 
 echo suceeded: $suceeded_tests

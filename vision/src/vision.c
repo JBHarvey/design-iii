@@ -47,7 +47,7 @@ typedef struct {
  * finds a cosine of angle between vectors
  * from pt0->pt1 and from pt0->pt2
  */
-static double angle(CvPoint *pt1, CvPoint *pt2, CvPoint *pt0)
+double angle(CvPoint *pt1, CvPoint *pt2, CvPoint *pt0)
 {
     double dx1 = pt1->x - pt0->x;
     double dy1 = pt1->y - pt0->y;
@@ -88,7 +88,7 @@ static _Bool detect_square(CvSeq *contours)
     return 0;
 }
 
-static _Bool detect_dual_square(CvSeq *contours)
+_Bool detect_dual_square(CvSeq *contours)
 {
     if(contours->v_next && detect_square(contours) && detect_square(contours->v_next)) {
         return 1;
@@ -249,7 +249,7 @@ static CvSeq *find_figure_contours(CvMemStorage *storage, IplImage *image_black_
     return contours;
 }
 
-static _Bool detect_figure(CvSeq *contours)
+_Bool detect_figure(CvSeq *contours)
 {
     double countour_area = cvContourArea(contours, CV_WHOLE_SEQ, 0);
 

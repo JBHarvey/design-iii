@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<contourrs type_id="opencv-sequence-tree">
+  <sequences>
+    <_ type_id="opencv-sequence">
+      <level>0</level>
+      <flags>"closed curve"</flags>
+      <count>4</count>
+      <dt>"2i"</dt>
+      <rect><x>146</x>
+        <y>397</y>
+        <width>1354</width>
+        <height>1352</height></rect>
+      <color>0</color>
+      <data>
+        209 397 146 1683 1437 1748 1499 460</data></_>
+    <_ type_id="opencv-sequence">
+      <level>1</level>
+      <flags>"closed hole curve"</flags>
+      <count>4</count>
+      <dt>"2i"</dt>
+      <rect><x>214</x>
+        <y>461</y>
+        <width>1221</width>
+        <height>1226</height></rect>
+      <color>0</color>
+      <data>
+        271 461 1434 520 1378 1686 214 1626</data></_></sequences></contourrs>
+</opencv_storage>
