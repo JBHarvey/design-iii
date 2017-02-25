@@ -21,6 +21,7 @@
 #include "misc.h"
 #include "tm_stm32f4_gpio.h"
 #include "tm_stm32f4_hd44780.h"
+#include "tm_stm32f4_delay.h"
 
 #include <encoder.h>
 
@@ -156,22 +157,12 @@ int main(void) {
 	/* System Init */
 	SystemInit();
 
-// Motors initialization
+	// Motors initialization
 	initMotors();
-// Example of speed setting of 4 motors
-	MotorSetSpeed(1, 25);
-	MotorSetSpeed(2, 50);
-	MotorSetSpeed(3, 75);
-	MotorSetSpeed(4, 100);
 
-// Example of direction setting of 4 motors
-	MotorSetDirection(1, BRAKE_G);
-	MotorSetDirection(2, CLOCK);
-	MotorSetDirection(3, COUNTER_CLOCK);
-	MotorSetDirection(4, BRAKE_V);
-// Encoder initialization
+	// Encoder initialization
 	initEncoders();
-// LCD initialization
+	// LCD initialization
 	TM_HD44780_Init(16, 2);
 
 	/* Initialize LED's. Make sure to check settings for your board in tm_stm32f4_disco.h file */
@@ -182,9 +173,9 @@ int main(void) {
 
 	initBtn();
 
-// Initialisation des variables
-	int mainState;
-	setState(&mainState, MAIN_IDLE);
+	// Initialisation des variables
+	int mainState = MAIN_IDLE;
+	//setState(&mainState, MAIN_MOVE);
 
 	int state = IDLE;
 
@@ -196,22 +187,19 @@ int main(void) {
 			for (i = 0; i < 9000000; i++)
 				;
 			TM_DISCO_LedOn (LED_BLUE);
-			switch (state) {
-			case IDLE:
-				state = GENERATE_FIRST_PWM;
-				break;
-			case BETWEEN_PWM:
-				state = ACQUIRE;
+			switch (mainState) {
+			case MAIN_IDLE:
+				mainState = MAIN_MOVE;
+				//setState(&mainState, MAIN_MOVE);
 				break;
 			}
 		}
-
+		uint8_t consigne = readUSB();
 		/* Main state machine */
 		switch (mainState) {
 		case MAIN_IDLE:
-			uint8_t consigne = readUSB();
-			if (consigne != 0)
-				setState(&mainState, consigne);
+			//if (consigne != 0)
+			//setState(&mainState, consigne);
 			break;
 		case MAIN_MANCH:
 			break;
@@ -236,6 +224,115 @@ int main(void) {
 			}
 			break;
 		case MAIN_MOVE:
+			//Initialize Systick timer
+			TM_DELAY_Init();
+			TM_DISCO_LedOn (LED_BLUE);
+			TM_DISCO_LedOn (LED_ORANGE);
+			// Example of direction setting of 4 motors
+			//MotorSetDirection(1, CLOCK);
+			//MotorSetDirection(2, CLOCK);
+			//MotorSetDirection(3, CLOCK);
+			//MotorSetDirection(4, CLOCK);
+
+			// Example of speed setting of 4 motors
+			//MotorSetSpeed(1, 50);
+			//MotorSetSpeed(2, 50);
+			//MotorSetSpeed(3, 50);
+			//MotorSetSpeed(4, 50);
+
+			//Delayms(2000);
+
+			//MotorSetSpeed(1, 0);
+			//MotorSetSpeed(2, 0);
+			//MotorSetSpeed(3, 0);
+			//MotorSetSpeed(4, 0);
+
+			//Delayms(2000);
+
+			MotorSetDirection(1, COUNTER_CLOCK);
+			MotorSetDirection(2, BRAKE_G);
+			MotorSetDirection(3, CLOCK);
+			MotorSetDirection(4, BRAKE_G);
+
+			MotorSetSpeed(1, 75);
+			MotorSetSpeed(2, 0);
+			MotorSetSpeed(3, 75);
+			MotorSetSpeed(4, 0);
+
+			Delayms(2000);
+
+			MotorSetDirection(1, CLOCK);
+			MotorSetDirection(2, BRAKE_G);
+			MotorSetDirection(3, COUNTER_CLOCK);
+			MotorSetDirection(4, BRAKE_G);
+
+			MotorSetSpeed(1, 75);
+			MotorSetSpeed(2, 0);
+			MotorSetSpeed(3, 75);
+			MotorSetSpeed(4, 0);
+
+			Delayms(2000);
+
+			MotorSetDirection(1, CLOCK);
+			MotorSetDirection(2, CLOCK);
+			MotorSetDirection(3, COUNTER_CLOCK);
+			MotorSetDirection(4, COUNTER_CLOCK);
+
+			MotorSetSpeed(1, 75);
+			MotorSetSpeed(2, 75);
+			MotorSetSpeed(3, 75);
+			MotorSetSpeed(4, 75);
+
+			Delayms(1000);
+
+			MotorSetDirection(1, CLOCK);
+			MotorSetDirection(2, COUNTER_CLOCK);
+			MotorSetDirection(3, COUNTER_CLOCK);
+			MotorSetDirection(4, CLOCK);
+
+			MotorSetSpeed(1, 75);
+			MotorSetSpeed(2, 75);
+			MotorSetSpeed(3, 75);
+			MotorSetSpeed(4, 75);
+
+			Delayms(1000);
+
+			MotorSetDirection(1, COUNTER_CLOCK);
+			MotorSetDirection(2, COUNTER_CLOCK);
+			MotorSetDirection(3, CLOCK);
+			MotorSetDirection(4, CLOCK);
+
+			MotorSetSpeed(1, 75);
+			MotorSetSpeed(2, 75);
+			MotorSetSpeed(3, 75);
+			MotorSetSpeed(4, 75);
+
+			Delayms(1000);
+
+			MotorSetDirection(1, COUNTER_CLOCK);
+			MotorSetDirection(2, CLOCK);
+			MotorSetDirection(3, CLOCK);
+			MotorSetDirection(4, COUNTER_CLOCK);
+
+			MotorSetSpeed(1, 75);
+			MotorSetSpeed(2, 75);
+			MotorSetSpeed(3, 75);
+			MotorSetSpeed(4, 75);
+
+			Delayms(1000);
+
+			MotorSetDirection(1, BRAKE_G);
+			MotorSetDirection(2, BRAKE_G);
+			MotorSetDirection(3, BRAKE_G);
+			MotorSetDirection(4, BRAKE_G);
+
+			MotorSetSpeed(1, 0);
+			MotorSetSpeed(2, 0);
+			MotorSetSpeed(3, 0);
+			MotorSetSpeed(4, 0);
+
+			mainState = MAIN_IDLE;
+
 			break;
 		default:
 			setState(&mainState, MAIN_IDLE);

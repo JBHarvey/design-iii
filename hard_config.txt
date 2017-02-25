@@ -74,3 +74,5 @@ Pont H
 
 fils rouge et noir : alim du pont H
 
+Alimentation encoder : vert ground, bleu ~5V
+
