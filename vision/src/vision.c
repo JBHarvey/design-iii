@@ -249,7 +249,7 @@ static CvSeq *find_figure_contours(CvMemStorage *storage, IplImage *image_black_
     return contours;
 }
 
-static _Bool detect_figure(CvSeq *contours)
+_Bool detect_figure(CvSeq *contours)
 {
     double countour_area = cvContourArea(contours, CV_WHOLE_SEQ, 0);
 

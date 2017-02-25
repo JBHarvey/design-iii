@@ -7,5 +7,6 @@
 double angle(CvPoint *pt1, CvPoint *pt2, CvPoint *pt0);
 
 _Bool detect_dual_square(CvSeq *contours);
+_Bool detect_figure(CvSeq *contours);
 
 CvSeq *find_first_figure(CvMemStorage *storage, IplImage *img_yuv);

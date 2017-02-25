@@ -22,3 +22,12 @@ Test(vision, detect_dual_square)
     cr_assert(detect_dual_square(contours_dual_square));
     cvReleaseMemStorage(&storage);
 }
+
+Test(vision, detect_figure)
+{
+    CvMemStorage *storage = cvCreateMemStorage(0);
+    CvSeq *figure = (CvSeq *)cvLoad("figure.xml", storage, 0, 0);
+
+    cr_assert(detect_figure(figure));
+    cvReleaseMemStorage(&storage);
+}
