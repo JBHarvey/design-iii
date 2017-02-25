@@ -1,5 +1,6 @@
 #!/bin/bash
 SUCCEEDED_IMAGES=()
+fail=0
 
 TOLERANCE=124.0 ./build.sh || exit 1
 
@@ -40,6 +41,8 @@ echo execute with tolerance 1000/52 +-0.57cm
 TOLERANCE=47.0 ./build.sh || exit 1
 
 echo execute with tolerance 1000/47 +-0.63cm
-. ./execute_test.sh || exit 1
+. ./execute_test.sh || fail=1
 
-exit 0
+llvm-cov gcov ../src/vision.c -o ./
+
+exit $fail

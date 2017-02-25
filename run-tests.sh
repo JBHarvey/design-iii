@@ -11,7 +11,7 @@ cd ..
 #### Vision
 echo "----------     Running Vision module tests      ----------"
 cd vision
-./runtest.sh || $fail=1
+./runtest.sh || fail=1
 
 cd ..
 
