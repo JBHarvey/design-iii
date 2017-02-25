@@ -33,7 +33,8 @@ void Flags_copyValuesFrom(struct Flags *recipient, struct Flags *source)
 
 int Flags_haveTheSameValues(struct Flags *flags, struct Flags *otherFlags)
 {
-    return flags->startCycleSignalReceived == otherFlags->startCycleSignalReceived;
+    return (flags->startCycleSignalReceived == otherFlags->startCycleSignalReceived
+            || flags->startCycleSignalReceived == -1 || otherFlags->startCycleSignalReceived == -1);
 }
 
 void Flags_setStartCycleSignalReceived(struct Flags *flags, int newValue)

@@ -198,3 +198,20 @@ Test(Objective_DefaultTolerance, given_anOnSpotStateWithDifferentFlags_when_chec
     State_delete(currentState);
 
 }
+
+Test(Objective,
+     given_aDefaultGoalWithMinusOneValuesInItsFlags_when_checksIfIsReached_theCorrespondingFlagsAreNotConsidered,
+     .init = setupObjective, .fini = teardownObjective)
+{
+    struct Pose *currentPose = Pose_new(GOAL_X, GOAL_Y, GOAL_THETA);
+    struct State *currentState = State_new(currentPose);
+    Flags_setStartCycleSignalReceived(goalState->flags, -1);
+
+    int reached = Objective_isReached(defaultObjective, currentState);
+
+    cr_assert(reached == 1);
+
+    Pose_delete(currentPose);
+    State_delete(currentState);
+
+}
