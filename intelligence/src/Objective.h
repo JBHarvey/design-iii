@@ -15,10 +15,8 @@
 #define THETA_TOLERANCE_DEFAULT 31416       // Pi/10 rad
 #define THETA_TOLERANCE_MAX 314160          // Pi rad
 
-
-
-
 struct Objective {
+    struct Object *object;
     struct State *goalState;
     struct State *tolerances;
 };

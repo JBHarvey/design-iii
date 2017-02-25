@@ -5,7 +5,11 @@
 
 struct Flags *Flags_new(void)
 {
+    struct Object *new_object = Object_new();
     struct Flags *pointer = (struct Flags *) malloc(sizeof(struct Flags));
+
+    pointer->object = new_object;
+
     pointer->startCycleSignalReceived = 0;
 
     return pointer;
@@ -13,7 +17,12 @@ struct Flags *Flags_new(void)
 
 void Flags_delete(struct Flags *flags)
 {
-    free(flags);
+    Object_removeOneReference(flags->object);
+
+    if(Object_canBeDeleted(flags->object)) {
+        Object_delete(flags->object);
+        free(flags);
+    }
 }
 
 void Flags_copyValuesFrom(struct Flags *recipient, struct Flags *source)

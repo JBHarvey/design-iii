@@ -3,17 +3,30 @@
 
 struct Objective *Objective_new(struct State *new_goalState, struct State *new_tolerances)
 {
+    struct Object *new_object = Object_new();
     struct Objective *pointer = (struct Objective *) malloc(sizeof(struct Objective));
+
+    pointer->object = new_object;
     pointer->goalState = new_goalState;
     pointer->tolerances = new_tolerances;
+
+    Object_addOneReference(new_goalState->object);
+    Object_addOneReference(new_tolerances->object);
+
     return pointer;
 }
 
 void Objective_delete(struct Objective *objective)
 {
-    State_delete(objective->goalState);
-    State_delete(objective->tolerances);
-    free(objective);
+    Object_removeOneReference(objective->object);
+
+    if(Object_canBeDeleted(objective->object)) {
+        Object_delete(objective->object);
+        State_delete(objective->goalState);
+        State_delete(objective->tolerances);
+
+        free(objective);
+    }
 }
 
 int withinWithTolerance(int value, int goal, int tolerance)

@@ -5,6 +5,7 @@
 #include "Flags.h"
 
 struct State {
+    struct Object *object;
     struct Pose *pose;
     struct Flags *flags;
 };

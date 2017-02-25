@@ -1,5 +1,6 @@
 #ifndef ANGLE_H_
 #define ANGLE_H_
+#include "Object.h"
 
 #define PI 314160
 #define MINUS_PI -314160
@@ -13,6 +14,7 @@ enum RotationDirection {ANTICLOCKWISE, CLOCKWISE, STOP_TURNING};
  *      in integer
  */
 struct Angle {
+    struct Object *object;
     int theta;
 };
 

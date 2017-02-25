@@ -4,20 +4,29 @@
 
 struct State *State_new(struct Pose *new_pose)
 {
+    struct Object *new_object = Object_new();
+    struct Flags *newFlags = Flags_new();
     struct State *pointer = (struct State *) malloc(sizeof(struct State));
+
+    pointer->object = new_object;
+    pointer->flags = newFlags;
     pointer->pose = new_pose;
 
-    struct Flags *newFlags = Flags_new();
-    pointer->flags = newFlags;
+    Object_addOneReference(new_pose->object);
 
     return pointer;
 }
 
 void State_delete(struct State *state)
 {
-    Pose_delete(state->pose);
-    Flags_delete(state->flags);
-    free(state);
+    Object_removeOneReference(state->object);
+
+    if(Object_canBeDeleted(state->object)) {
+        Object_delete(state->object);
+        Pose_delete(state->pose);
+        Flags_delete(state->flags);
+        free(state);
+    }
 }
 
 void State_updateFlagsValuesFrom(struct State *recipient, struct State *source)

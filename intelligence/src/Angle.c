@@ -3,7 +3,7 @@
 
 
 /**
- *Ensures the angle stays between MINUS_PI and PI.
+*Ensures the angle stays between MINUS_PI and PI.
 */
 static int Angle_wrap(int theta)
 {
@@ -20,15 +20,24 @@ static int Angle_wrap(int theta)
 
 struct Angle *Angle_new(int new_theta)
 {
+    struct Object *new_object = Object_new();
     struct Angle *pointer = (struct Angle *) malloc(sizeof(struct Angle));
     int wrappedTheta = Angle_wrap(new_theta);
+
+    pointer->object = new_object;
     pointer->theta = wrappedTheta;
+
     return pointer;
 }
 
 void Angle_delete(struct Angle *angle)
 {
-    free(angle);
+    Object_removeOneReference(angle->object);
+
+    if(Object_canBeDeleted(angle->object)) {
+        Object_delete(angle->object);
+        free(angle);
+    }
 }
 
 int Angle_smallestAngleBetween(struct Angle *alpha, struct Angle *beta)
