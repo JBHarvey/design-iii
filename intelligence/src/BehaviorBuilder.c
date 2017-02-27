@@ -51,6 +51,10 @@ struct Behavior* BehaviorBuilder_build(struct BehaviorBuilder *behaviorBuilder)
     return behavior;
 }
 
+struct Behavior* BehaviorBuilder_default(void)
+{
+    return BehaviorBuilder_build(BehaviorBuilder_end());
+}
 struct BehaviorBuilder* BehaviorBuilder_withGoalX(int goalX, struct BehaviorBuilder *behaviorBuilder)
 {
     behaviorBuilder->goalX = goalX;
@@ -97,7 +101,7 @@ struct BehaviorBuilder* BehaviorBuilder_withFlags(struct Flags *flags,
 
 struct BehaviorBuilder* BehaviorBuilder_fromExisting(struct Behavior *existing, struct BehaviorBuilder *behaviorBuilder)
 {
-    struct Objective *objective = existing->entryCondition;
+    struct Objective *objective = existing->entryConditions;
 
     struct State *goalState = objective->goalState;
     struct Pose *goalPose = goalState->pose;

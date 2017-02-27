@@ -19,6 +19,7 @@ struct BehaviorBuilder {
 
 struct BehaviorBuilder *BehaviorBuilder_end(void);
 struct Behavior* BehaviorBuilder_build(struct BehaviorBuilder *behaviorBuilder);
+struct Behavior* BehaviorBuilder_default(void);
 struct BehaviorBuilder* BehaviorBuilder_withGoalX(int goalX, struct BehaviorBuilder *behaviorBuilder);
 struct BehaviorBuilder* BehaviorBuilder_withGoalY(int goalY, struct BehaviorBuilder *behaviorBuilder);
 struct BehaviorBuilder* BehaviorBuilder_withGoalTheta(int goalTheta, struct BehaviorBuilder *behaviorBuilder);

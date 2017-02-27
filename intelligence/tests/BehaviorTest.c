@@ -1,33 +1,7 @@
 #include <criterion/criterion.h>
 #include <stdio.h>
-#include "Behavior.h"
+#include "BehaviorBuilder.h"
 
-/*
-struct Pose *pose;
-struct Pose *defaultPoseTolerances;
-struct State *defaultTolerances;
-struct State *goalState;
-struct Objective *defaultObjective;
-
-void setupObjective(void)
-{
-    pose = Pose_new(GOAL_X, GOAL_Y, GOAL_THETA);
-    goalState = State_new(pose);
-
-    defaultPoseTolerances = Pose_new(X_TOLERANCE_DEFAULT, Y_TOLERANCE_DEFAULT, THETA_TOLERANCE_DEFAULT);
-    defaultTolerances = State_new(defaultPoseTolerances);
-    defaultObjective  = Objective_new(goalState, defaultTolerances);
-}
-
-void teardownObjective(void)
-{
-    Pose_delete(pose);
-    Pose_delete(defaultPoseTolerances);
-    State_delete(defaultTolerances);
-    State_delete(goalState);
-    Objective_delete(defaultObjective);
-}
-*/
 Test(Behavior, creation_destruction)
 {
     int x = 10000;
@@ -41,7 +15,7 @@ Test(Behavior, creation_destruction)
     struct Objective *objective = Objective_new(goalState, tolerances);
     struct Behavior *behavior = Behavior_new(objective);
 
-    cr_assert(behavior->entryCondition == objective);
+    cr_assert(behavior->entryConditions == objective);
 
     Pose_delete(goalPose);
     State_delete(tolerances);
@@ -49,3 +23,32 @@ Test(Behavior, creation_destruction)
     Objective_delete(objective);
     Behavior_delete(behavior);
 }
+
+Test(Behavior, given_aDefaultValuedBehaviorAndDefaultValuedState_when_checksIfIsReached_then_isReached)
+{
+    struct Pose *pose = Pose_new(DEFAULT_GOAL_X, DEFAULT_GOAL_Y, DEFAULT_GOAL_THETA);
+    struct State *state = State_new(pose);
+    struct Behavior *behavior = BehaviorBuilder_default();
+
+    int isReached = Behavior_entryConditionsAreReached(behavior, state);
+    cr_assert(isReached);
+
+    Pose_delete(pose);
+    State_delete(state);
+    Behavior_delete(behavior);
+}
+/*
+Test(Behavior, given_aDefaultValuedBehaviorAndOffValuedState_when_checksIfIsReached_then_isNotReached)
+{
+    struct Pose *offPose = Pose_new(DEFAULT_GOAL_X, Y_TOLERANCE_MAX, DEFAULT_GOAL_THETA);
+    struct State *offState = State_new(offPose);
+    struct Behavior *behavior = BehaviorBuilder_default();
+
+    int isReached = Behavior_entryConditionsAreReached(behavior, offState);
+    cr_assert(isReached == 1);
+
+    Pose_delete(offPose);
+    State_delete(offState);
+    Behavior_delete(behavior);
+}
+*/

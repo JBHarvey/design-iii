@@ -5,11 +5,11 @@
 
 struct Behavior {
     struct Object *object;
-    struct Objective *entryCondition;
+    struct Objective *entryConditions;
 };
 
 struct Behavior *Behavior_new(struct Objective *new_entryCondition);
 void Behavior_delete(struct Behavior *behavior);
-//int Behavior_isReached(struct Behavior *behavior, struct State *currentState);
+int Behavior_entryConditionsAreReached(struct Behavior *behavior, struct State *currentState);
 
 #endif // BEHAVIOR_H_

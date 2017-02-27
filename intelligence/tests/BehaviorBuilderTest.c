@@ -5,7 +5,7 @@
 int validateBehaviorHasParameters(struct Behavior *builtBehavior, int goalX, int goalY, int goalTheta, int tolerancesX,
                                   int tolerancesY, int tolerancesTheta, struct Flags *goalFlags)
 {
-    struct Objective *objective = builtBehavior->entryCondition;
+    struct Objective *objective = builtBehavior->entryConditions;
 
     struct State *goalState = objective->goalState;
     struct Pose *goalPose = goalState->pose;
@@ -27,7 +27,7 @@ int validateBehaviorHasParameters(struct Behavior *builtBehavior, int goalX, int
 
 Test(BehaviorBuilder, given_noExtraParameters_when_buildingABehavior_then_returnsBehaviorWithDefaultObjective)
 {
-    struct Behavior *builtBehavior = BehaviorBuilder_build(BehaviorBuilder_end());
+    struct Behavior *builtBehavior = BehaviorBuilder_default();
 
     struct Flags* comparisonFlags = Flags_new();
 
