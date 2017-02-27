@@ -6,6 +6,7 @@ static struct Flags *flags;
 static struct Flags *otherFlags;
 const int ZERO = 0;
 const int START_CYCLE = 1;
+const int MINUS_ONE = -1;
 
 Test(Flags, creation_destruction)
 {
@@ -52,6 +53,16 @@ Test(Flags, given_twoFlagsWithDifferentValues_when_comparesThem_then_returnsFals
 
     int comparison = Flags_haveTheSameValues(flags, otherFlags);
     cr_assert(comparison == 0);
+}
+
+Test(Flags, given_twoFlagsWithDifferentValues_when_oneHasMinusOnesInItsValuesAndTheyAreCompared_then_returnsTrue
+     , .init = setupFlags
+     , .fini = teardownFlags)
+{
+    Flags_setStartCycleSignalReceived(flags, MINUS_ONE);
+
+    int comparison = Flags_haveTheSameValues(flags, otherFlags);
+    cr_assert(comparison == 1);
 }
 
 Test(Flags, given_twoFlagsWithDifferentValues_when_copied_then_theFlagsHaveTheSameValues
