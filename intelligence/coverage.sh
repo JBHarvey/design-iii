@@ -1,5 +1,6 @@
 #!/bin/sh
 
+rm -rf build/coverage
 mkdir -p build/coverage
 cp src/* build/coverage/.
 cp tests/*.c build/coverage/.
@@ -18,6 +19,5 @@ llvm-cov gcov *.c >> coverage
 cat coverage
 
 cd ../..
-rm -rf build/coverage
 
 exit 0
