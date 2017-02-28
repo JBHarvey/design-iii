@@ -30,25 +30,24 @@ Test(Behavior, given_aDefaultValuedBehaviorAndDefaultValuedState_when_checksIfIs
     struct State *state = State_new(pose);
     struct Behavior *behavior = BehaviorBuilder_default();
 
-    int isReached = Behavior_entryConditionsAreReached(behavior, state);
+    int isReached = Behavior_areEntryConditionsReached(behavior, state);
     cr_assert(isReached);
 
     Pose_delete(pose);
     State_delete(state);
     Behavior_delete(behavior);
 }
-/*
+
 Test(Behavior, given_aDefaultValuedBehaviorAndOffValuedState_when_checksIfIsReached_then_isNotReached)
 {
     struct Pose *offPose = Pose_new(DEFAULT_GOAL_X, Y_TOLERANCE_MAX, DEFAULT_GOAL_THETA);
     struct State *offState = State_new(offPose);
     struct Behavior *behavior = BehaviorBuilder_default();
 
-    int isReached = Behavior_entryConditionsAreReached(behavior, offState);
-    cr_assert(isReached == 1);
+    int isReached = Behavior_areEntryConditionsReached(behavior, offState);
+    cr_assert(isReached == 0);
 
     Pose_delete(offPose);
     State_delete(offState);
     Behavior_delete(behavior);
 }
-*/

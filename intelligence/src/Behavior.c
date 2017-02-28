@@ -26,7 +26,7 @@ void Behavior_delete(struct Behavior *behavior)
     }
 }
 
-int Behavior_entryConditionsAreReached(struct Behavior *behavior, struct State *currentState)
+int Behavior_areEntryConditionsReached(struct Behavior *behavior, struct State *currentState)
 {
     int reached = Objective_isReached(behavior->entryConditions, currentState);
 
