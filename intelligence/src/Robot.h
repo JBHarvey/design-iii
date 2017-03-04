@@ -3,8 +3,6 @@
 
 #include "State.h"
 
-struct DefaultValues;
-
 struct Robot {
     struct Object *object;
     struct DefaultValues *defaultValues;

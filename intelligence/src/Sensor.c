@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "Sensor.h"
 
-struct Sensor *Sensor_new()
+struct Sensor *Sensor_new(void)
 {
     struct Object *new_object = Object_new();
     struct Sensor *pointer = (struct Sensor *) malloc(sizeof(struct Sensor));

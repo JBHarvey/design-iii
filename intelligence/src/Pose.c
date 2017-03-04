@@ -28,3 +28,19 @@ void Pose_delete(struct Pose *pose)
         free(pose);
     }
 }
+
+void Pose_copyValuesFrom(struct Pose *recipient, struct Pose *source)
+{
+    recipient->x = source->x;
+    recipient->y = source->y;
+    recipient->angle->theta = source->angle->theta;
+}
+
+int Pose_haveTheSameValues(struct Pose *pose, struct Pose *otherPose)
+{
+    return(
+              pose->x == otherPose->x &&
+              pose->y == otherPose->y &&
+              Angle_smallestAngleBetween(pose->angle, otherPose->angle) == 0
+          );
+}

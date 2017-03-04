@@ -12,4 +12,7 @@ struct Pose {
 struct Pose *Pose_new(int new_x, int new_y, int new_theta);
 void Pose_delete(struct Pose *pose);
 
+void Pose_copyValuesFrom(struct Pose *recipient, struct Pose *source);
+int Pose_haveTheSameValues(struct Pose *pose, struct Pose *otherPose);
+
 #endif // POSE_H_
