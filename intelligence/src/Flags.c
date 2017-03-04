@@ -10,7 +10,8 @@ struct Flags *Flags_new(void)
 
     pointer->object = new_object;
 
-    pointer->startCycleSignalReceived = 0;
+    pointer->startCycleSignalReceived = FALSE;
+    pointer->pictureTaken = FALSE;
 
     return pointer;
 }
@@ -28,16 +29,25 @@ void Flags_delete(struct Flags *flags)
 void Flags_copyValuesFrom(struct Flags *recipient, struct Flags *source)
 {
     recipient->startCycleSignalReceived = source->startCycleSignalReceived;
+    recipient->pictureTaken = source->pictureTaken;
 }
 
 
 int Flags_haveTheSameValues(struct Flags *flags, struct Flags *otherFlags)
 {
-    return (flags->startCycleSignalReceived == otherFlags->startCycleSignalReceived
-            || flags->startCycleSignalReceived == -1 || otherFlags->startCycleSignalReceived == -1);
+    return
+        (flags->startCycleSignalReceived == otherFlags->startCycleSignalReceived
+         || flags->startCycleSignalReceived == IRRELEVANT || otherFlags->startCycleSignalReceived == IRRELEVANT)
+        && (flags->pictureTaken == otherFlags->pictureTaken
+            || flags->pictureTaken == IRRELEVANT || otherFlags->pictureTaken == IRRELEVANT);
 }
 
 void Flags_setStartCycleSignalReceived(struct Flags *flags, int newValue)
 {
     flags->startCycleSignalReceived = newValue;
+}
+
+void Flags_setPictureTaken(struct Flags *flags, int newValue)
+{
+    flags->pictureTaken = newValue;
 }
