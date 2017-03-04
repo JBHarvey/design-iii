@@ -20,6 +20,7 @@ struct Behavior *Behavior_new(struct Objective *new_entryConditions)
     pointer->entryConditions = new_entryConditions;
     pointer->firstChild = pointer;
     pointer->nextSibling = pointer;
+    pointer->action = &Behavior_dummyAction;
 
     Object_addOneReference(new_entryConditions->object);
 
@@ -99,4 +100,20 @@ void Behavior_addChild(struct Behavior *behavior, struct Behavior *newChild)
     }
 
     Object_addOneReference(newChild->object);
+}
+
+/* This here is present for safety purposes.
+ * It prevents action of doing anything
+ * if it isn't initialised.
+ * */
+void Behavior_dummyAction(struct Robot *robot) {}
+
+void Behavior_changeAction(struct Behavior *behavior, void (*new_action)(struct Robot *))
+{
+    behavior->action = new_action;
+}
+
+void Behavior_act(struct Behavior *behavior, struct Robot *robot)
+{
+    (*behavior->action)(robot);
 }

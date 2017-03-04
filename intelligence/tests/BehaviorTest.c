@@ -1,5 +1,6 @@
 #include <criterion/criterion.h>
 #include <stdio.h>
+#include "Robot.h"
 #include "BehaviorBuilder.h"
 
 struct State *currentState;
@@ -199,4 +200,53 @@ Test(Behavior_WithTwoChildren,
     Behavior_delete(behavior);
     Behavior_delete(reachableChild);
     Behavior_delete(unreachableChild);
+}
+
+Test(Behavior, given_aDefaultBehavior_when__then_itsActionIsDummyAction
+     , .init = setupBehavior
+     , .fini = teardownBehavior)
+{
+    struct Behavior *behavior = BehaviorBuilder_default();
+    void (*action)(struct Robot *) = &Behavior_dummyAction;
+
+    cr_assert_eq(behavior->action, action);
+
+    Behavior_delete(behavior);
+}
+
+Test(Behavior, given_aDefaultBehavior_when_changesItsAction_then_itsActionIsChanged
+     , .init = setupBehavior
+     , .fini = teardownBehavior)
+{
+    struct Behavior *behavior = BehaviorBuilder_default();
+    void (*action)(struct Robot *) = &Robot_takePicture;
+    Behavior_changeAction(behavior, action);
+
+    cr_assert_eq(behavior->action, action);
+
+    Behavior_delete(behavior);
+}
+
+void BehaviorActionTest(struct Robot *robot)
+{
+    Robot_takePicture(robot);
+}
+
+Test(Behavior, given_aSpecificFunction_when_acts_then_theActionTakesPlace
+     , .init = setupBehavior
+     , .fini = teardownBehavior)
+{
+    struct Robot *robot = Robot_new();
+    cr_assert(robot->currentState->flags->pictureTaken == FALSE);
+
+    struct Behavior *behavior = BehaviorBuilder_build(
+                                    BehaviorBuilder_withAction(&BehaviorActionTest,
+                                            BehaviorBuilder_end()));
+
+    Behavior_act(behavior, robot);
+
+    cr_assert(robot->currentState->flags->pictureTaken == TRUE);
+
+    Behavior_delete(behavior);
+    Robot_delete(robot);
 }

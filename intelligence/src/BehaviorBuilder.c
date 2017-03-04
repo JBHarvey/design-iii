@@ -13,6 +13,7 @@ struct BehaviorBuilder *BehaviorBuilder_end(void)
     pointer->tolerancesY = Y_TOLERANCE_DEFAULT;
     pointer->tolerancesTheta = THETA_TOLERANCE_DEFAULT;
     pointer->flags = defaultFlags;
+    pointer->action = &Behavior_dummyAction;
 
     return pointer;
 }
@@ -38,6 +39,8 @@ struct Behavior* BehaviorBuilder_build(struct BehaviorBuilder *behaviorBuilder)
     struct Objective *objective = Objective_new(chosenGoalState, chosenTolerances);
 
     struct Behavior *behavior = Behavior_new(objective);
+
+    Behavior_changeAction(behavior, behaviorBuilder->action);
 
     Pose_delete(chosenPose);
     Pose_delete(chosenPoseTolerances);
@@ -98,6 +101,12 @@ struct BehaviorBuilder* BehaviorBuilder_withFlags(struct Flags *flags,
     Flags_copyValuesFrom(behaviorBuilder->flags, flags);
     return behaviorBuilder;
 }
+struct BehaviorBuilder* BehaviorBuilder_withAction(void (*new_action)(struct Robot *),
+        struct BehaviorBuilder *behaviorBuilder)
+{
+    behaviorBuilder->action = new_action;
+    return behaviorBuilder;
+}
 
 struct BehaviorBuilder* BehaviorBuilder_fromExisting(struct Behavior *existing, struct BehaviorBuilder *behaviorBuilder)
 {
@@ -118,5 +127,6 @@ struct BehaviorBuilder* BehaviorBuilder_fromExisting(struct Behavior *existing, 
     behaviorBuilder = BehaviorBuilder_withTolerancesY(tolerancesPose->y, behaviorBuilder);
     behaviorBuilder = BehaviorBuilder_withTolerancesTheta(tolerancesAngle->theta, behaviorBuilder);
     behaviorBuilder = BehaviorBuilder_withFlags(goalState->flags, behaviorBuilder);
+    behaviorBuilder = BehaviorBuilder_withAction(existing->action, behaviorBuilder);
     return behaviorBuilder;
 }

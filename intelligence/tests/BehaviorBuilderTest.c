@@ -1,9 +1,10 @@
 #include <criterion/criterion.h>
 #include <stdio.h>
+#include "Robot.h"
 #include "BehaviorBuilder.h"
 
 int validateBehaviorHasParameters(struct Behavior *builtBehavior, int goalX, int goalY, int goalTheta, int tolerancesX,
-                                  int tolerancesY, int tolerancesTheta, struct Flags *goalFlags)
+                                  int tolerancesY, int tolerancesTheta, struct Flags *goalFlags, void (*action)(struct Robot *))
 {
     struct Objective *objective = builtBehavior->entryConditions;
 
@@ -21,7 +22,8 @@ int validateBehaviorHasParameters(struct Behavior *builtBehavior, int goalX, int
                    && tolerancesPose->x == tolerancesX
                    && tolerancesPose->y == tolerancesY
                    && tolerancesAngle->theta == tolerancesTheta
-                   && Flags_haveTheSameValues(goalState->flags, goalFlags);
+                   && Flags_haveTheSameValues(goalState->flags, goalFlags)
+                   && builtBehavior->action == action;
     return areEqual;
 }
 
@@ -39,7 +41,8 @@ Test(BehaviorBuilder, given_noExtraParameters_when_buildingABehavior_then_return
                        X_TOLERANCE_DEFAULT,
                        Y_TOLERANCE_DEFAULT,
                        THETA_TOLERANCE_DEFAULT,
-                       comparisonFlags);
+                       comparisonFlags,
+                       &Behavior_dummyAction);
 
     cr_assert(areEqual);
 
@@ -64,7 +67,8 @@ Test(BehaviorBuilder, given_aSpecificXGoalValue_when_buildingABehavior_then_only
                        X_TOLERANCE_DEFAULT,
                        Y_TOLERANCE_DEFAULT,
                        THETA_TOLERANCE_DEFAULT,
-                       comparisonFlags);
+                       comparisonFlags,
+                       &Behavior_dummyAction);
 
     cr_assert(areEqual);
 
@@ -89,7 +93,8 @@ Test(BehaviorBuilder, given_aSpecificYGoalValue_when_buildingABehavior_then_only
                        X_TOLERANCE_DEFAULT,
                        Y_TOLERANCE_DEFAULT,
                        THETA_TOLERANCE_DEFAULT,
-                       comparisonFlags);
+                       comparisonFlags,
+                       &Behavior_dummyAction);
 
     cr_assert(areEqual);
 
@@ -114,7 +119,8 @@ Test(BehaviorBuilder, given_aSpecificThetaGoalValue_when_buildingABehavior_then_
                        X_TOLERANCE_DEFAULT,
                        Y_TOLERANCE_DEFAULT,
                        THETA_TOLERANCE_DEFAULT,
-                       comparisonFlags);
+                       comparisonFlags,
+                       &Behavior_dummyAction);
 
     cr_assert(areEqual);
 
@@ -139,7 +145,8 @@ Test(BehaviorBuilder, given_aSpecificXToleranceValue_when_buildingABehavior_then
                        specificX,
                        Y_TOLERANCE_DEFAULT,
                        THETA_TOLERANCE_DEFAULT,
-                       comparisonFlags);
+                       comparisonFlags,
+                       &Behavior_dummyAction);
 
     cr_assert(areEqual);
 
@@ -164,7 +171,8 @@ Test(BehaviorBuilder, given_aSpecificYToleranceValue_when_buildingABehavior_then
                        X_TOLERANCE_DEFAULT,
                        specificY,
                        THETA_TOLERANCE_DEFAULT,
-                       comparisonFlags);
+                       comparisonFlags,
+                       &Behavior_dummyAction);
 
     cr_assert(areEqual);
 
@@ -189,7 +197,8 @@ Test(BehaviorBuilder, given_aSpecificThetaToleranceValue_when_buildingABehavior_
                        X_TOLERANCE_DEFAULT,
                        Y_TOLERANCE_DEFAULT,
                        specificTheta,
-                       comparisonFlags);
+                       comparisonFlags,
+                       &Behavior_dummyAction);
 
     cr_assert(areEqual);
 
@@ -214,12 +223,27 @@ Test(BehaviorBuilder, given_specificFlagsValues_when_buildingABehavior_then_only
                        X_TOLERANCE_DEFAULT,
                        Y_TOLERANCE_DEFAULT,
                        THETA_TOLERANCE_DEFAULT,
-                       comparisonFlags);
+                       comparisonFlags,
+                       &Behavior_dummyAction);
 
     cr_assert(areEqual);
 
     Behavior_delete(builtBehavior);
     Flags_delete(comparisonFlags);
+}
+
+void BehaviorBuilderTestAction(struct Robot *robot) {}
+
+Test(BehaviorBuilder, given_specificFunctionAddress_when_buildingABehavior_then_theBehaviorFunctionIsCorrectlyChanged)
+{
+    struct Behavior *builtBehavior = BehaviorBuilder_build(
+                                         BehaviorBuilder_withAction(&BehaviorBuilderTestAction,
+                                                 BehaviorBuilder_end()));
+
+
+    cr_assert(builtBehavior->action == &BehaviorBuilderTestAction);
+
+    Behavior_delete(builtBehavior);
 }
 
 Test(BehaviorBuilder, given_anExistingBehavior_when_buildingABehavior_then_returnsBehaviorWithSameValues)
@@ -241,7 +265,8 @@ Test(BehaviorBuilder, given_anExistingBehavior_when_buildingABehavior_then_retur
                                                                         BehaviorBuilder_withTolerancesY(specificTolerancesY,
                                                                                 BehaviorBuilder_withTolerancesTheta(specificTolerancesTheta,
                                                                                         BehaviorBuilder_withFlags(comparisonFlags,
-                                                                                                BehaviorBuilder_end()))))))));
+                                                                                                BehaviorBuilder_withAction(&BehaviorBuilderTestAction,
+                                                                                                        BehaviorBuilder_end())))))))));
     struct Behavior *builtBehavior = BehaviorBuilder_build(
                                          BehaviorBuilder_fromExisting(baseBehavior,
                                                  BehaviorBuilder_end()));
@@ -254,7 +279,8 @@ Test(BehaviorBuilder, given_anExistingBehavior_when_buildingABehavior_then_retur
                        specificTolerancesX,
                        specificTolerancesY,
                        specificTolerancesTheta,
-                       comparisonFlags);
+                       comparisonFlags,
+                       &BehaviorBuilderTestAction);
 
     cr_assert(areEqual);
 

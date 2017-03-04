@@ -15,6 +15,7 @@ struct BehaviorBuilder {
     int tolerancesY;
     int tolerancesTheta;
     struct Flags *flags;
+    void (*action)(struct Robot *);
 };
 
 struct BehaviorBuilder *BehaviorBuilder_end(void);
@@ -27,6 +28,7 @@ struct BehaviorBuilder* BehaviorBuilder_withTolerancesX(int tolerancesX, struct 
 struct BehaviorBuilder* BehaviorBuilder_withTolerancesY(int tolerancesY, struct BehaviorBuilder *behaviorBuilder);
 struct BehaviorBuilder* BehaviorBuilder_withTolerancesTheta(int tolerancesTheta, struct BehaviorBuilder *behaviorBuilder);
 struct BehaviorBuilder* BehaviorBuilder_withFlags(struct Flags *flags, struct BehaviorBuilder *behaviorBuilder);
+struct BehaviorBuilder* BehaviorBuilder_withAction(void (*new_action)(struct Robot *), struct BehaviorBuilder *behaviorBuilder);
 struct BehaviorBuilder* BehaviorBuilder_fromExisting(struct Behavior *existing, struct BehaviorBuilder *behaviorBuilder);
 
 #endif // BEHAVIORBUILDER_H_
