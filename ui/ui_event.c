@@ -32,3 +32,4 @@ gboolean draw_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer 
 
     return TRUE;
 }
+

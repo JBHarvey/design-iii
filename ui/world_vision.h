@@ -17,4 +17,6 @@ gpointer world_camera_feeder(gpointer data);
  * return: TRUE (handled by g_signal)*/
 gboolean world_camera_draw_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data);
 
+gboolean world_camera_calibration_clicked_event_callback(GtkWidget *widget, gpointer data);
+
 #endif // __WORLD_VISION
