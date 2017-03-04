@@ -12,6 +12,14 @@ void send_continue_packet()
     add_packet(&data, sizeof(data));
 }
 
+void send_station_data(Station_Data station_data)
+{
+    uint8_t data[1 + sizeof(Station_Data)];
+    data[0] = PACKET_STATION_DATA;
+    memcpy(data + 1, &station_data, sizeof(Station_Data));
+    add_packet(data, sizeof(data));
+}
+
 void handle_recv_packet(uint8_t *data, uint32_t length)
 {
     if(length == 0) {
@@ -20,11 +28,22 @@ void handle_recv_packet(uint8_t *data, uint32_t length)
 
     switch(data[0]) {
         case PACKET_START:
-            printf("start packet\n");
+            cb_start_packet();
             break;
 
         case PACKET_CONTINUE:
-            printf("continue packet\n");
+            cb_continue_packet();
+            break;
+
+        case PACKET_STATION_DATA:
+            if(length != (sizeof(Station_Data) + 1)) {
+                printf("wrong Station_Data length\n");
+                break;
+            }
+
+            Station_Data station_data;
+            memcpy(&station_data, data + 1, sizeof(Station_Data));
+            cb_station_data(station_data);
             break;
     }
 }
