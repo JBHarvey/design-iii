@@ -3,16 +3,16 @@
 #include "Pose.h"
 #include "State.h"
 
-const int SOME_X = 13256;
-const int SOME_Y = 521651;
-const int SOME_THETA = 11611;
+const int STATE_X = 13256;
+const int STATE_Y = 521651;
+const int STATE_THETA = 11611;
 
 struct State *state;
 struct Pose *pose;
 
 void setupState(void)
 {
-    pose = Pose_new(SOME_X, SOME_Y, SOME_THETA);
+    pose = Pose_new(STATE_X, STATE_Y, STATE_THETA);
     state = State_new(pose);
 }
 
