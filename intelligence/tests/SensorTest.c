@@ -4,8 +4,6 @@
 
 struct Sensor *sensor;
 
-const int ZERO = 0;
-
 void setupSensor(void)
 {
     sensor = Sensor_new();
@@ -20,31 +18,22 @@ Test(Sensor, creation_destruction
      , .init = setupSensor
      , .fini = teardownSensor)
 {
-    cr_assert(sensor->hasReceivedNewData == ZERO);
-}
-/*
-Test(Sensor, given_anSensor_when_addOneReference_then_referenceCountGoesUpByOne
-     , .init = setupSensor
-     , .fini = teardownSensor)
-{
-    Sensor_addOneReference(sensor);
-    cr_assert(sensor->referenceCount == ZERO + ONE);
+    cr_assert(sensor->hasReceivedNewData == 0);
 }
 
-Test(Sensor, given_anSensor_when_removeOneReference_then_referenceCountGoesDownByOne
+Test(Sensor, given_aSensor_when_receivesNewData_then_hasReceivedNewDataIsTrue
      , .init = setupSensor
      , .fini = teardownSensor)
 {
-    Sensor_removeOneReference(sensor);
-    cr_assert(sensor->referenceCount == ZERO - ONE);
+    Sensor_receivesData(sensor);
+    cr_assert(sensor->hasReceivedNewData);
 }
 
-Test(Sensor, given_anSensorWithReferenceCountEqualToZero_when_checksIfCanBeDeleted_then_returnsTrue
+Test(Sensor, given_aSensor_when_dataIsRead_then_hasReceivedNewDataIsFalse
      , .init = setupSensor
      , .fini = teardownSensor)
 {
-    Sensor_removeOneReference(sensor);
-    int canBeDeleted = Sensor_canBeDeleted(sensor);
-    cr_assert(canBeDeleted == ONE);
+    Sensor_receivesData(sensor);
+    Sensor_readsData(sensor);
+    cr_assert(sensor->hasReceivedNewData == 0);
 }
-*/

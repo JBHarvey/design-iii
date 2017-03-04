@@ -23,14 +23,12 @@ void Sensor_delete(struct Sensor *sensor)
     }
 }
 
-/*
-void Sensor_addOneReference(struct Sensor *sensor)
+void Sensor_receivesData(struct Sensor *sensor)
 {
-    ++sensor->hasReceivedNewData;
+    sensor->hasReceivedNewData = 1;
 }
 
-void Sensor_removeOneReference(struct Sensor *sensor)
+void Sensor_readsData(struct Sensor *sensor)
 {
-    --sensor->hasReceivedNewData;
+    sensor->hasReceivedNewData = 0;
 }
-*/

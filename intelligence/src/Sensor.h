@@ -11,7 +11,7 @@ struct Sensor {
 struct Sensor *Sensor_new(void);
 void Sensor_delete(struct Sensor *sensor);
 
-//void Sensor_addOneReference(struct Sensor *sensor);
-//void Sensor_removeOneReference(struct Sensor *sensor);
+void Sensor_receivesData(struct Sensor *sensor);
+void Sensor_readsData(struct Sensor *sensor);
 
 #endif // SENSOR_H_
