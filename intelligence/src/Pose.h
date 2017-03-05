@@ -1,11 +1,11 @@
 #ifndef POSE_H_
 #define POSE_H_
+#include "Coordinates.h"
 #include "Angle.h"
 
 struct Pose {
     struct Object *object;
-    int x;        /* Unit: 0.1 mm */
-    int y;        /* Unit: 0.1 mm */
+    struct Coordinates *coordinates;
     struct Angle *angle;
 };
 

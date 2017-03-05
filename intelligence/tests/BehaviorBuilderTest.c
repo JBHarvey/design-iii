@@ -16,11 +16,11 @@ int validateBehaviorHasParameters(struct Behavior *builtBehavior, int goalX, int
     struct Pose *tolerancesPose = tolerancesState->pose;
     struct Angle *tolerancesAngle = tolerancesPose->angle;
 
-    int areEqual = goalPose->x == goalX
-                   && goalPose->y == goalY
+    int areEqual = goalPose->coordinates->x == goalX
+                   && goalPose->coordinates->y == goalY
                    && goalAngle->theta == goalTheta
-                   && tolerancesPose->x == tolerancesX
-                   && tolerancesPose->y == tolerancesY
+                   && tolerancesPose->coordinates->x == tolerancesX
+                   && tolerancesPose->coordinates->y == tolerancesY
                    && tolerancesAngle->theta == tolerancesTheta
                    && Flags_haveTheSameValues(goalState->flags, goalFlags)
                    && builtBehavior->action == action;

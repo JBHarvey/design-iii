@@ -36,16 +36,16 @@ int withinWithTolerance(int value, int goal, int tolerance)
 
 int xIsWithinToleranceOfGoal(struct Objective *objective, struct State *currentState)
 {
-    int currentX = currentState->pose->x;
-    int goalX = objective->goalState->pose->x;
+    int currentX = currentState->pose->coordinates->x;
+    int goalX = objective->goalState->pose->coordinates->x;
 
     return withinWithTolerance(currentX, goalX, X_TOLERANCE_DEFAULT);
 }
 
 int yIsWithinToleranceOfGoal(struct Objective *objective, struct State *currentState)
 {
-    int currentY = currentState->pose->y;
-    int goalY = objective->goalState->pose->y;
+    int currentY = currentState->pose->coordinates->y;
+    int goalY = objective->goalState->pose->coordinates->y;
 
     return withinWithTolerance(currentY, goalY, Y_TOLERANCE_DEFAULT);
 }

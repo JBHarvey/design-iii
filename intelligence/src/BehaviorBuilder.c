@@ -114,17 +114,19 @@ struct BehaviorBuilder* BehaviorBuilder_fromExisting(struct Behavior *existing, 
 
     struct State *goalState = objective->goalState;
     struct Pose *goalPose = goalState->pose;
+    struct Coordinates *goalCoordinates = goalPose->coordinates;
     struct Angle *goalAngle = goalPose->angle;
 
     struct State *tolerancesState = objective->tolerances;
     struct Pose *tolerancesPose = tolerancesState->pose;
+    struct Coordinates *tolerancesCoordinates = tolerancesPose->coordinates;
     struct Angle *tolerancesAngle = tolerancesPose->angle;
 
-    behaviorBuilder = BehaviorBuilder_withGoalX(goalPose->x, behaviorBuilder);
-    behaviorBuilder = BehaviorBuilder_withGoalY(goalPose->y, behaviorBuilder);
+    behaviorBuilder = BehaviorBuilder_withGoalX(goalCoordinates->x, behaviorBuilder);
+    behaviorBuilder = BehaviorBuilder_withGoalY(goalCoordinates->y, behaviorBuilder);
     behaviorBuilder = BehaviorBuilder_withGoalTheta(goalAngle->theta, behaviorBuilder);
-    behaviorBuilder = BehaviorBuilder_withTolerancesX(tolerancesPose->x, behaviorBuilder);
-    behaviorBuilder = BehaviorBuilder_withTolerancesY(tolerancesPose->y, behaviorBuilder);
+    behaviorBuilder = BehaviorBuilder_withTolerancesX(tolerancesCoordinates->x, behaviorBuilder);
+    behaviorBuilder = BehaviorBuilder_withTolerancesY(tolerancesCoordinates->y, behaviorBuilder);
     behaviorBuilder = BehaviorBuilder_withTolerancesTheta(tolerancesAngle->theta, behaviorBuilder);
     behaviorBuilder = BehaviorBuilder_withFlags(goalState->flags, behaviorBuilder);
     behaviorBuilder = BehaviorBuilder_withAction(existing->action, behaviorBuilder);
