@@ -2,21 +2,16 @@
 #include <stdio.h>
 #include "Robot.h"
 
-const int INITIAL_X = 0;
-const int INITIAL_Y = 0;
-const int INITIAL_THETA = 0;
-
 static struct Robot *robot;
 
 Test(Robot, creation_destruction)
 {
     struct Robot *robot = Robot_new();
-    cr_assert(
-        robot->currentState->pose->x == INITIAL_X &&
-        robot->currentState->pose->y == INITIAL_Y &&
-        robot->currentState->pose->angle->theta == INITIAL_THETA);
+    struct Pose *zero = Pose_zero();
+    cr_assert(Pose_haveTheSameValues(robot->currentState->pose, zero));
 
     Robot_delete(robot);
+    Pose_delete(zero);
 }
 
 void setupRobot(void)

@@ -21,6 +21,15 @@ void teardownPose(void)
     Pose_delete(otherPose);
 }
 
+Test(Pose, given__when_createsPoseZero_then_poseHasAllZeroValues)
+{
+    struct Pose *poseZero = Pose_zero();
+    cr_assert(
+        poseZero->x == 0 &&
+        poseZero->y == 0 &&
+        poseZero->angle->theta == 0);
+    Pose_delete(poseZero);
+}
 Test(Pose, creation_destruction
      , .init = setupPose
      , .fini = teardownPose)

@@ -3,6 +3,11 @@
 #include "Pose.h"
 
 
+struct Pose *Pose_zero(void)
+{
+    return Pose_new(0, 0, 0);
+}
+
 struct Pose *Pose_new(int new_x, int new_y, int new_theta)
 {
     struct Object *new_object = Object_new();

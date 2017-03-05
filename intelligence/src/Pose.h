@@ -9,6 +9,7 @@ struct Pose {
     struct Angle *angle;
 };
 
+struct Pose *Pose_zero(void);
 struct Pose *Pose_new(int new_x, int new_y, int new_theta);
 void Pose_delete(struct Pose *pose);
 

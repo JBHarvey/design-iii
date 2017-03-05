@@ -11,6 +11,11 @@ struct Map {
     struct Pose *northWesternCorner;
     struct Pose *southEasternCorner;
     struct Pose *southWesternCorner;
+    struct Pose *antennaZoneStart;
+    struct Pose *antennaZoneStop;
+    int numberOfObstacles;
+//    struct Pose *obstacles[3];
+    struct Pose *paintingZones[8];
 };
 
 struct Map *Map_new(void);
