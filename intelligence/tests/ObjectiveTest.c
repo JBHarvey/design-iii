@@ -93,7 +93,15 @@ void assertReachingDefaultObjectiveWithPoseIs(int x, int y, int theta, int expec
 
     int reached = Objective_isReached(defaultObjective, currentState);
 
-    cr_assert(reached == expectedResult);
+    cr_assert(reached == expectedResult,
+              "Trying goal : (%d±%d,%d±%d)°(%d±%d) with pose : (%d,%d)°(%d) - \nShould %d (0: NotReach, 1: Reach)",
+              defaultObjective->goalState->pose->coordinates->x,
+              defaultObjective->tolerances->pose->coordinates->x,
+              defaultObjective->goalState->pose->coordinates->y,
+              defaultObjective->tolerances->pose->coordinates->y,
+              defaultObjective->goalState->pose->angle->theta,
+              defaultObjective->tolerances->pose->angle->theta,
+              x, y, theta, expectedResult);
 
     Pose_delete(currentPose);
     State_delete(currentState);

@@ -44,3 +44,74 @@ int Coordinates_haveTheSameValues(struct Coordinates *coordinates, struct Coordi
               coordinates->y == otherCoordinates->y
           );
 }
+
+int Coordinates_isToTheNorthOf(struct Coordinates *a, struct Coordinates *b)
+{
+    return (a->y > b-> y);
+}
+
+int Coordinates_isToTheEastOf(struct Coordinates *a, struct Coordinates *b)
+{
+    return (a->x > b-> x);
+}
+
+int Coordinates_isToTheSouthOf(struct Coordinates *a, struct Coordinates *b)
+{
+    return (a->y < b-> y);
+}
+
+int Coordinates_isToTheWestOf(struct Coordinates *a, struct Coordinates *b)
+{
+    return (a->x < b-> x);
+}
+
+int Coordinates_isToTheNorthEastOf(struct Coordinates *a, struct Coordinates *b)
+{
+    return (Coordinates_isToTheNorthOf(a, b) &&
+            Coordinates_isToTheEastOf(a, b));
+}
+
+int Coordinates_isToTheSouthEastOf(struct Coordinates *a, struct Coordinates *b)
+{
+    return (Coordinates_isToTheSouthOf(a, b) &&
+            Coordinates_isToTheEastOf(a, b));
+}
+
+int Coordinates_isToTheSouthWestOf(struct Coordinates *a, struct Coordinates *b)
+{
+    return (Coordinates_isToTheSouthOf(a, b) &&
+            Coordinates_isToTheWestOf(a, b));
+}
+
+int Coordinates_isToTheNorthWestOf(struct Coordinates *a, struct Coordinates *b)
+{
+    return (Coordinates_isToTheNorthOf(a, b) &&
+            Coordinates_isToTheWestOf(a, b));
+}
+
+enum CardinalDirection Coordinates_cardinalDirectionTo(struct Coordinates *from, struct Coordinates *to)
+{
+    enum CardinalDirection direction;
+
+    if(Coordinates_isToTheNorthEastOf(to, from)) {
+        direction = NORTHEAST;
+    } else if(Coordinates_isToTheSouthEastOf(to, from)) {
+        direction = SOUTHEAST;
+    } else if(Coordinates_isToTheSouthWestOf(to, from)) {
+        direction = SOUTHWEST;
+    } else if(Coordinates_isToTheNorthWestOf(to, from)) {
+        direction = NORTHWEST;
+    } else if(Coordinates_isToTheNorthOf(to, from)) {
+        direction = NORTH;
+    } else if(Coordinates_isToTheEastOf(to, from)) {
+        direction = EAST;
+    } else if(Coordinates_isToTheSouthOf(to, from)) {
+        direction = SOUTH;
+    } else if(Coordinates_isToTheWestOf(to, from)) {
+        direction = WEST;
+    } else {
+        direction = CENTER;
+    }
+
+    return direction;
+}

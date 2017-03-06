@@ -29,25 +29,32 @@ void Objective_delete(struct Objective *objective)
     }
 }
 
-int withinWithTolerance(int value, int goal, int tolerance)
+int coordinatesIsWithinToleranceOfGoal(struct Objective *objective, struct State *currentState)
 {
-    return (value < goal + tolerance && value > goal - tolerance);
-}
+    struct Coordinates *position = Coordinates_zero();
+    Coordinates_copyValuesFrom(position, currentState->pose->coordinates);
 
-int xIsWithinToleranceOfGoal(struct Objective *objective, struct State *currentState)
-{
-    int currentX = currentState->pose->coordinates->x;
     int goalX = objective->goalState->pose->coordinates->x;
-
-    return withinWithTolerance(currentX, goalX, X_TOLERANCE_DEFAULT);
-}
-
-int yIsWithinToleranceOfGoal(struct Objective *objective, struct State *currentState)
-{
-    int currentY = currentState->pose->coordinates->y;
     int goalY = objective->goalState->pose->coordinates->y;
+    int toleranceX = objective->tolerances->pose->coordinates->x;
+    int toleranceY = objective->tolerances->pose->coordinates->y;
+    struct Coordinates *northLimit = Coordinates_new(goalX, goalY + (toleranceY + 1));
+    struct Coordinates *southLimit = Coordinates_new(goalX, goalY - (toleranceY + 1));
+    struct Coordinates *eastLimit = Coordinates_new(goalX + (toleranceX + 1), goalY);
+    struct Coordinates *westLimit = Coordinates_new(goalX - (toleranceX + 1), goalY);
 
-    return withinWithTolerance(currentY, goalY, Y_TOLERANCE_DEFAULT);
+    int isWithin = (Coordinates_isToTheSouthOf(position, northLimit) &&
+                    Coordinates_isToTheNorthOf(position, southLimit) &&
+                    Coordinates_isToTheWestOf(position, eastLimit) &&
+                    Coordinates_isToTheEastOf(position, westLimit));
+
+    Coordinates_delete(position);
+    Coordinates_delete(northLimit);
+    Coordinates_delete(southLimit);
+    Coordinates_delete(eastLimit);
+    Coordinates_delete(westLimit);
+
+    return isWithin;
 }
 
 int thetaIsWithinToleranceOfGoal(struct Objective *objective, struct State *currentState)
@@ -67,8 +74,7 @@ int flagsAreTheSame(struct Objective *objective, struct State *currentState)
 
 int Objective_isReached(struct Objective *objective, struct State *currentState)
 {
-    int reached = xIsWithinToleranceOfGoal(objective, currentState)
-                  && yIsWithinToleranceOfGoal(objective, currentState)
+    int reached = coordinatesIsWithinToleranceOfGoal(objective, currentState)
                   && thetaIsWithinToleranceOfGoal(objective, currentState)
                   && flagsAreTheSame(objective, currentState);
 
