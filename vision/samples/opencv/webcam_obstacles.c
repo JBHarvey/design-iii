@@ -2,6 +2,7 @@
 #include "opencv2/highgui/highgui_c.h"
 #include "vision.h"
 #include <stdio.h>
+#include <math.h>
 
 
 int main(int argc, char *argv[])
@@ -41,13 +42,30 @@ int main(int argc, char *argv[])
 
             IplImage *img_yuv = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
             cvCvtColor(img, img_yuv, CV_BGR2YCrCb);
-            CvSeq *contour = find_first_figure(storage, img_yuv);
+            Obstacle obstacles[20];
+            int num_obstacles = find_obstacles(storage, obstacles, 20, img_yuv);
             cvReleaseImage(&img_yuv);
 
-            IplImage *im_square_image = cvCreateImage(cvSize(1000, 1000), IPL_DEPTH_8U, 3);
+            IplImage *im_square_image = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
 
-            if(contour) {
-                cvDrawContours(im_square_image, contour, CV_RGB(255, 0, 0), CV_RGB(0, 255, 0), 0, 3, CV_AA, cvPoint(0, 0));
+            if(num_obstacles) {
+                printf("num_obstacles %i\n", num_obstacles);
+                unsigned int i;
+
+                for(i = 0; i < num_obstacles; ++i) {
+                    if(obstacles[i].type == OBSTACLE_CIRCLE) {
+                        cvCircle(im_square_image, cvPoint(obstacles[i].x, obstacles[i].y), 22, CV_RGB(255, 0, 0), 1, 8, 0);
+                        cvCircle(im_square_image, cvPoint(obstacles[i].x, obstacles[i].y), 40, CV_RGB(255, 0, 0), 1, 8, 0);
+                    }
+
+                    if(obstacles[i].type == OBSTACLE_TRIANGLE) {
+                        cvLine(im_square_image, cvPoint(obstacles[i].x, obstacles[i].y), cvPoint(obstacles[i].x + 40 * cos(obstacles[i].angle),
+                                obstacles[i].y + 40 * sin(obstacles[i].angle)), CV_RGB(0, 255, 0), 1, 8, 0);
+                        cvCircle(im_square_image, cvPoint(obstacles[i].x, obstacles[i].y), 40, CV_RGB(0, 255, 0), 1, 8, 0);
+                    }
+                }
+
+                //cvDrawContours(im_square_image, contour, CV_RGB(255, 0, 0), CV_RGB(0, 255, 0), 0, 3, CV_AA, cvPoint(0, 0));
             }
 
             cvShowImage("Video-lines", im_square_image);

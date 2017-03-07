@@ -20,6 +20,14 @@
  */
 #define GREEN_SQUARE_YUV_LOWER_BOUND (cvScalar(10, 0, 0, 255))
 
+/* Upper bound of YUV channel coordinates to detect the green square.
+ */
+#define OBSTACLES_YUV_UPPER_BOUND (cvScalar(120, 148, 148, 255))
+
+/* Lower bound of YUV channel coordinates to detect the green square.
+ */
+#define OBSTACLES_YUV_LOWER_BOUND (cvScalar(0, 108, 108, 255))
+
 /* Upper bound of Y channel coordinates to detect the figure.
  */
 #define FIGURE_Y_UPPER_BOUND (150)
@@ -308,4 +316,237 @@ CvSeq *find_first_figure(CvMemStorage *storage, IplImage *image_yuv)
 
     cvReleaseImage(&image_black_white);
     return figure_contours;
+}
+
+static _Bool is_circle(CvSeq *in)
+{
+    CvPoint point = *(CvPoint *)cvGetSeqElem(in, 0);
+
+    double contour_area = fabs(cvContourArea(in, CV_WHOLE_SEQ, 0));
+    double contour_perimeter = cvArcLength(in, CV_WHOLE_SEQ, 1);
+
+    if(contour_area < 100.0) {
+        return 0;
+    }
+
+    double comp_area = contour_perimeter * contour_perimeter / (3.14159 * 4);
+
+    if(contour_area * 0.96 < comp_area && comp_area < contour_area * 1.04) {
+        return 1;
+    }
+
+    return 0;
+}
+
+#define OBSTACLE_CIRCLE_AREA 1465.0
+
+static _Bool is_circle_obstacle(CvSeq *in)
+{
+    if((in->flags & CV_SEQ_FLAG_HOLE) != 0) {
+        return 0;
+    }
+
+    if(!is_circle(in)) {
+        return 0;
+    }
+
+    double area = fabs(cvContourArea(in, CV_WHOLE_SEQ, 0));
+
+    if(OBSTACLE_CIRCLE_AREA * 0.90 < area && area < OBSTACLE_CIRCLE_AREA * 1.10) {
+        return 1;
+    }
+
+    return 0;
+}
+
+static CvPoint circle_center(CvSeq *in)
+{
+    unsigned int max_x = 0, max_y = 0;
+    unsigned int min_x = -1, min_y = -1;
+    unsigned int i;
+
+    for(i = 0; i < in->total; ++i) {
+        CvPoint point = *(CvPoint *)cvGetSeqElem(in, i);
+
+        if(point.x > max_x) {
+            max_x = point.x;
+        }
+
+        if(point.x < min_x) {
+            min_x = point.x;
+        }
+
+        if(point.y > max_y) {
+            max_y = point.y;
+        }
+
+        if(point.y < min_y) {
+            min_y = point.y;
+        }
+    }
+
+    CvPoint point;
+    point.x = min_x + ((max_x - min_x) / 2);
+    point.y = min_y + ((max_y - min_y) / 2);
+    return point;
+}
+
+#define OBSTACLE_TRIANGLE_AREA 1150.0
+
+static _Bool is_triangle_obstacle(CvSeq *in)
+{
+    if((in->flags & CV_SEQ_FLAG_HOLE) != 0) {
+        return 0;
+    }
+
+    double area = fabs(cvContourArea(in, CV_WHOLE_SEQ, 0));
+
+    if(OBSTACLE_TRIANGLE_AREA * 0.90 < area && area < OBSTACLE_TRIANGLE_AREA * 1.10) {
+        return 1;
+    }
+
+    return 0;
+}
+
+#define OBSTACLE_TRIANGLE_POLY_APPROX 10
+
+static _Bool triangle_points(CvPoint points[3], CvSeq *in)
+{
+    CvSeq *approxed = cvApproxPoly(in, sizeof(CvContour), in->storage, CV_POLY_APPROX_DP, OBSTACLE_TRIANGLE_POLY_APPROX, 1);
+
+    if(approxed->total != 3) {
+        return 0;
+    }
+
+    double smallest_dist = 1 << 30;
+    unsigned int index_smallest_dist = -1;
+
+    unsigned int i;
+
+    for(i = 0; i < 3; ++i) {
+        CvPoint point1 = *(CvPoint *)cvGetSeqElem(approxed, i);
+        CvPoint point2 = *(CvPoint *)cvGetSeqElem(approxed, (i + 1) % 3);
+
+        double distance = ((point1.y - point2.y) * (point1.y - point2.y)) + ((point1.x - point2.x) * (point1.x - point2.x));
+
+        if(distance < smallest_dist) {
+            smallest_dist = distance;
+            index_smallest_dist = i;
+        }
+    }
+
+    for(i = 0; i < 3; ++i) {
+        points[i] = *(CvPoint *)cvGetSeqElem(approxed, (i + index_smallest_dist + 2) % 3);
+    }
+
+    return 1;
+}
+
+static CvPoint midpoint(CvPoint point1, CvPoint point2)
+{
+    CvPoint midpoint;
+
+    midpoint.x = point1.x + ((point2.x - point1.x) / 2);
+    midpoint.y = point1.y + ((point2.y - point1.y) / 2);
+    return midpoint;
+}
+
+static CvPoint triangle_center(CvPoint points[3])
+{
+    CvPoint center;
+
+    center = midpoint(points[1], points[2]);
+    center = midpoint(points[0], center);
+    return center;
+}
+
+static double triangle_angle(CvPoint points[3])
+{
+    CvPoint mid;
+
+    mid = midpoint(points[1], points[2]);
+
+    return atan2(points[0].y - mid.y, points[0].x - mid.x);
+}
+
+
+static _Bool is_possible_obstacle(CvSeq *in)
+{
+    if((in->flags & CV_SEQ_FLAG_HOLE) == 0) {
+        return 0;
+    }
+
+    return is_circle(in);
+}
+
+static void find_obstacles_recursive(CvSeq *contours, Obstacle *out_obstacles, unsigned int max_obstacles,
+                                     unsigned int *num_obstacles)
+{
+    if(*num_obstacles >= max_obstacles) {
+        return;
+    }
+
+    CvSeq *h_seq = contours;
+
+    while(h_seq) {
+        if(is_possible_obstacle(h_seq)) {
+            if(h_seq->v_next) {
+                Obstacle obstacle;
+                obstacle.type = OBSTACLE_NONE;
+                CvSeq *obstacle_seq = h_seq->v_next;
+
+                if(is_circle_obstacle(obstacle_seq)) {
+                    obstacle.type = OBSTACLE_CIRCLE;
+                    CvPoint point = circle_center(obstacle_seq);
+                    obstacle.x = point.x;
+                    obstacle.y = point.y;
+                    obstacle.angle = 0;
+                } else if(is_triangle_obstacle(obstacle_seq)) {
+                    CvPoint points[3];
+
+                    if(triangle_points(points, obstacle_seq)) {
+                        obstacle.type = OBSTACLE_TRIANGLE;
+                        CvPoint point = triangle_center(points);
+                        obstacle.x = point.x;
+                        obstacle.y = point.y;
+                        obstacle.angle = triangle_angle(points);
+                    }
+                }
+
+                if(obstacle.type != OBSTACLE_NONE) {
+                    out_obstacles[*num_obstacles] = obstacle;
+                    ++*num_obstacles;
+
+                    if(*num_obstacles >= max_obstacles) {
+                        return;
+                    }
+                }
+            }
+        }
+
+        find_obstacles_recursive(h_seq->v_next, out_obstacles, max_obstacles, num_obstacles);
+        h_seq = h_seq->h_next;
+    }
+}
+
+#define OBSTACLE_POLY_APPROX 1
+
+unsigned int find_obstacles(CvMemStorage *storage, Obstacle *obstacles_out, unsigned int max_obstacles,
+                            IplImage *image_yuv)
+{
+    IplImage *image_black_white = threshold_image(image_yuv, OBSTACLES_YUV_LOWER_BOUND, OBSTACLES_YUV_UPPER_BOUND,
+                                  ERODE_DILATE_PIXELS);
+
+    CvSeq *contours = 0;
+    unsigned int num_obstacles = 0;
+
+    if(cvFindContours(image_black_white, storage, &contours, sizeof(CvContour), CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE,
+                      cvPoint(0, 0))) {
+        contours = cvApproxPoly(contours, sizeof(CvContour), storage, CV_POLY_APPROX_DP, OBSTACLE_POLY_APPROX, 1);
+
+        find_obstacles_recursive(contours, obstacles_out, max_obstacles, &num_obstacles);
+    }
+
+    cvReleaseImage(&image_black_white);
+    return num_obstacles;
 }
