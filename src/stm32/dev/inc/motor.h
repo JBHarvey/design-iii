@@ -19,5 +19,6 @@ void initDir(uint32_t RCCx, uint16_t GPIO_Pin1, uint16_t GPIO_Pin2,
 void setDir(GPIO_TypeDef* GPIOx, uint16_t Pin1, uint16_t Pin2,
 		uint8_t direction);
 void MotorSetDirection(uint8_t noMotor, uint8_t direction);
-void move(float XtargetPosition, float YtargetPosition);
-void calculateTravelledDistance();
+void move(float XtargetPosition, float YtargetPosition, int *numberOfEdges1,
+		int *numberOfEdges2, int *numberOfEdges3, int *numberOfEdges4);
+float calculateTravelledDistance(int *numberOfEdges);
