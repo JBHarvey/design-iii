@@ -436,6 +436,9 @@ int main(void) {
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 	initializeExternalInterruptLine7();
 
+	int consigneX;
+	int consigneY;
+
 	while (1) {
 
 		// Vite fait debounce pour le bouton bleu
@@ -504,7 +507,7 @@ int main(void) {
 
 			//Delayms(2000);
 
-			move(100);
+			//move(100);
 
 			MotorSetDirection(1, COUNTER_CLOCK);
 			MotorSetDirection(2, BRAKE_G);
@@ -589,8 +592,8 @@ int main(void) {
 			 MotorSetSpeed(4, 0);*/
 			break;
 		case MAIN_PID:
-			int consigneX = 10;
-			int consigneY = 22;
+			consigneX = 10;
+			consigneY = 22;
 			while (1) {
 
 				/* Initialization of PIDs */
