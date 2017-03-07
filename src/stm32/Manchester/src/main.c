@@ -7,13 +7,13 @@
 #include "tm_stm32f4_hd44780.h"
 
 // Buffer contenant tous les bits du manchester
-volatile uint8_t manchesterState = MANCHESTER_WAIT_FOR_DECODING;
 volatile uint8_t manchesterBuffer[MANCHESTER_BUFFER_LENGTH];
 volatile uint8_t manchesterIndex = 0;
-volatile uint8_t figureVerification = 0;
-volatile char orientationVerification[ORIENTATION_LENGTH] = { ' ', ' ', ' ',
-		' ', ' ' };
-volatile uint8_t factorVerification = 0;
+volatile uint8_t manchesterState = MANCHESTER_WAIT_FOR_DECODING;
+volatile uint8_t manchesterFigureVerification = 0;
+volatile char manchesterOrientationVerification[ORIENTATION_LENGTH] = { ' ',
+		' ', ' ', ' ', ' ' };
+volatile uint8_t manchesterFactorVerification = 0;
 
 void InitializeLEDs() {
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
@@ -27,7 +27,7 @@ void InitializeLEDs() {
 	GPIO_ResetBits(GPIOD, GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14);
 }
 
-void SetTimer(uint16_t period) {
+void SetTimer5(uint16_t period) {
 	TIM_TimeBaseInitTypeDef timerInitStructure;
 	timerInitStructure.TIM_Prescaler = MANCHESTER_PRESCALER;
 	timerInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
@@ -37,15 +37,15 @@ void SetTimer(uint16_t period) {
 	TIM_TimeBaseInit(TIM5, &timerInitStructure);
 }
 
-void InitializeTimer() {
+void InitializeTimer5() {
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, ENABLE);
-	SetTimer(MANCHESTER_PERIOD - 1);
+	SetTimer5(MANCHESTER_PERIOD - 1);
 	TIM_Cmd(TIM5, ENABLE);
 	TIM_ITConfig(TIM5, TIM_IT_Update, ENABLE);
 }
 
 // Initiliase l'input pour l'entrée du manchester
-void InitializeInput() {
+void InitializeManchesterInput() {
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
 	GPIO_InitTypeDef GPIO_InitStruct;
 	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN;
@@ -88,7 +88,7 @@ void initializeExternalInterruptLine7() {
 	NVIC_Init(&NVIC_InitStruct);
 }
 
-void EnableTimerInterrupt() {
+void EnableTimer5Interrupt() {
 	NVIC_InitTypeDef nvicStructure;
 	nvicStructure.NVIC_IRQChannel = TIM5_IRQn;
 	nvicStructure.NVIC_IRQChannelPreemptionPriority = 0;
@@ -97,7 +97,7 @@ void EnableTimerInterrupt() {
 	NVIC_Init(&nvicStructure);
 }
 
-void disableTimerInterrupt() {
+void disableTimer5Interrupt() {
 	NVIC_InitTypeDef nvicStructure;
 	nvicStructure.NVIC_IRQChannel = TIM5_IRQn;
 	nvicStructure.NVIC_IRQChannelPreemptionPriority = 0;
@@ -165,59 +165,10 @@ extern void EXTI9_5_IRQHandler(void) {
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line7);
 		manchesterState = MANCHESTER_FIRST;
-		InitializeTimer();
-		EnableTimerInterrupt();
+		InitializeTimer5();
+		EnableTimer5Interrupt();
 		disableExternalInterruptLine7();
 	}
-}
-
-uint8_t decodeInformationBits16(uint8_t indexOfBeginningCycle,
-		uint8_t *informationBits, uint8_t *manchesterBuffer) {
-	for (uint8_t i = 0; i < 16; i++) {
-		if (isNextBitsEqualToZero(indexOfBeginningCycle + 2 * i,
-				manchesterBuffer)) {
-			informationBits[i] = 0;
-		} else if (isNextBitsEqualToOne(indexOfBeginningCycle + 2 * i,
-				manchesterBuffer)) {
-			informationBits[i] = 1;
-		} else {
-			return BAD_INFORMATION;
-		}
-	}
-	return VALID_INFORMATION;
-}
-
-uint8_t decodeManchester16Bits(uint8_t * informationBits,
-		uint8_t *manchesterBuffer) {
-	uint8_t indexOfBeginningCycle = findAValidCycle(manchesterBuffer);
-	if (indexOfBeginningCycle != 0) {
-		uint8_t informationState = decodeInformationBits16(
-				indexOfBeginningCycle, informationBits, manchesterBuffer);
-		return informationState;
-	}
-	return BAD_INFORMATION;
-}
-
-void generateMessageToDisplay16(char *informationBits16,
-		char *messageToDisplay16) {
-
-	messageToDisplay16[0] = '0' + informationBits16[0];
-	messageToDisplay16[1] = '0' + informationBits16[1];
-	messageToDisplay16[2] = '0' + informationBits16[2];
-	messageToDisplay16[3] = '0' + informationBits16[3];
-	messageToDisplay16[4] = '0' + informationBits16[4];
-	messageToDisplay16[5] = '0' + informationBits16[5];
-	messageToDisplay16[6] = '0' + informationBits16[6];
-	messageToDisplay16[7] = '0' + informationBits16[7];
-	messageToDisplay16[8] = '0' + informationBits16[8];
-	messageToDisplay16[9] = '0' + informationBits16[9];
-	messageToDisplay16[10] = '0' + informationBits16[10];
-	messageToDisplay16[11] = '0' + informationBits16[11];
-	messageToDisplay16[12] = '0' + informationBits16[12];
-	messageToDisplay16[13] = '0' + informationBits16[13];
-	messageToDisplay16[14] = '0' + informationBits16[14];
-	messageToDisplay16[15] = '0' + informationBits16[15];
-
 }
 
 uint8_t isFigureEqual(uint8_t figure, uint8_t figureVerification) {
@@ -248,7 +199,7 @@ uint8_t isSameDataThanPreviousIteration(uint8_t figure,
 
 int main() {
 	InitializeLEDs();
-	InitializeInput();
+	InitializeManchesterInput();
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 	initializeExternalInterruptLine7();
 	TM_HD44780_Init(16, 2);
@@ -265,28 +216,29 @@ int main() {
 				setOrientationFromInformationBits(informationBits, orientation);
 				uint8_t factor = getFactorFromInformationBits(informationBits);
 
-				if (isSameDataThanPreviousIteration(figure, figureVerification,
-						orientation, orientationVerification, factor,
-						factorVerification)) {
+				if (isSameDataThanPreviousIteration(figure,
+						manchesterFigureVerification, orientation,
+						manchesterOrientationVerification, factor,
+						manchesterFactorVerification)) {
 					char messageToDisplay[MESSAGE_TO_DISPLAY_LENGTH];
 					setMessageToDisplay(figure, orientation, factor,
 							messageToDisplay);
 					displayManchesterMessage(messageToDisplay);
 					disableExternalInterruptLine7();
-					disableTimerInterrupt();
+					disableTimer5Interrupt();
 					manchesterState = MANCHESTER_IDLE;
 					GPIO_SetBits(GPIOD, GPIO_Pin_13);
 				} else {
-					figureVerification = figure;
-					strcpy(orientationVerification, orientation);
-					factorVerification = factor;
-					disableTimerInterrupt();
+					manchesterFigureVerification = figure;
+					strcpy(manchesterOrientationVerification, orientation);
+					manchesterFactorVerification = factor;
+					disableTimer5Interrupt();
 					manchesterState = MANCHESTER_WAIT_FOR_DECODING;
 					initializeExternalInterruptLine7();
 				}
 
 			} else {
-				disableTimerInterrupt();
+				disableTimer5Interrupt();
 				manchesterState = MANCHESTER_WAIT_FOR_DECODING;
 				initializeExternalInterruptLine7();
 			}
