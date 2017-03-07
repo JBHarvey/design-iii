@@ -1,3 +1,6 @@
+#ifndef TM_DEFINES_H
+#define TM_DEFINES_H
+
 /* Pin pour les moteurs
  * DIR1 : Première pin pour la direction
  * DIR2 : Deuxième pin pour la direction
@@ -44,7 +47,15 @@
 #define MSG_MANCH "Manchester"
 #define MSG_ERR "Etat invalide"
 
-#ifndef TM_DEFINES_H
-#define TM_DEFINES_H
+/* PID */
+// Paramètres en vitesse
+#define PID_SPEED_KP 0.0281896
+#define PID_SPEED_KI  0.6698803
+#define PID_SPEED_KD 0
+
+// Paramètres en position
+#define PID_POS_KP  680.33879051
+#define PID_POS_KI 0.01
+#define PID_POS_KD 146.4823
 
 #endif

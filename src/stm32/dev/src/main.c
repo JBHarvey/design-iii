@@ -24,6 +24,7 @@
 #include "tm_stm32f4_hd44780.h"
 #include "tm_stm32f4_delay.h"
 #include "manchester.h"
+#include "PID.h"
 
 #include <encoder.h>
 
@@ -39,7 +40,7 @@ enum State {
 };
 
 enum MainState {
-	MAIN_IDLE, MAIN_MANCH, MAIN_ACQUIS, MAIN_MOVE
+	MAIN_IDLE, MAIN_MANCH, MAIN_ACQUIS, MAIN_MOVE, MAIN_PID
 };
 
 #define INTERNAL_SYSTICK_FREQUENCY 500
@@ -52,11 +53,11 @@ volatile int numberOfEdges2 = 0;
 volatile int numberOfEdges3 = 0;
 volatile int numberOfEdges4 = 0;
 
-// L'int�gration du d�placement
-volatile int speedMoteur1 = 0;
-volatile int speedMoteur2 = 0;
-volatile int speedMoteur3 = 0;
-volatile int speedMoteur4 = 0;
+// Initialization of speed motor variables
+volatile int speedMotor1 = 0;
+volatile int speedMotor2 = 0;
+volatile int speedMotor3 = 0;
+volatile int speedMotor4 = 0;
 
 volatile int speedIndex = 0;
 volatile float timeDelay;
@@ -560,6 +561,49 @@ int main(void) {
 
 			mainState = MAIN_IDLE;
 
+			break;
+		case MAIN_PID:
+			int consigneX = 10;
+			int consigneY = 22;
+			while (1) {
+
+				/* Initialization of PIDs */
+				arm_pid_instance_f32 PID_SPEED;
+				arm_pid_instance_f32 PID_POS;
+				initPID(&PID_SPEED, &PID_POS);
+
+				if (consigneX > 0) {
+					MotorSetDirection(1, COUNTER_CLOCK);
+					MotorSetDirection(3, CLOCK);
+				} else if (consigneX < 0) {
+					MotorSetDirection(1, CLOCK);
+					MotorSetDirection(3, COUNTER_CLOCK);
+				} else {
+					MotorSetDirection(1, BRAKE_G);
+					MotorSetDirection(3, BRAKE_G);
+				}
+
+				if (consigneY > 0) {
+					MotorSetDirection(2, COUNTER_CLOCK);
+					MotorSetDirection(4, CLOCK);
+				} else if (consigneY < 0) {
+					MotorSetDirection(2, CLOCK);
+					MotorSetDirection(4, COUNTER_CLOCK);
+				} else {
+					MotorSetDirection(2, BRAKE_G);
+					MotorSetDirection(4, BRAKE_G);
+				}
+
+				int cmdMotor1 = getPID(&PID_SPEED, speedMotor1, 2);
+				int cmdMotor2 = getPID(&PID_SPEED, speedMotor2, 2);
+				int cmdMotor3 = getPID(&PID_SPEED, speedMotor3, 2);
+				int cmdMotor4 = getPID(&PID_SPEED, speedMotor4, 2);
+
+				MotorSetSpeed(1, cmdMotor1);
+				MotorSetSpeed(2, cmdMotor2);
+				MotorSetSpeed(3, cmdMotor3);
+				MotorSetSpeed(4, cmdMotor4);
+			}
 			break;
 		case MAIN_MANCH:
 			tryToDecodeManchesterCode();
