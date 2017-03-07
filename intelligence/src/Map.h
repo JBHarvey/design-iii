@@ -1,20 +1,25 @@
 #ifndef MAP_H_
 #define MAP_H_
 
+#include "Obstacle.h"
 #include "Pose.h"
 
 struct MapInitalValues; 
 
 struct Map {
     struct Object *object;
-    struct Pose *northEasternCorner;
-    struct Pose *northWesternCorner;
-    struct Pose *southEasternCorner;
-    struct Pose *southWesternCorner;
-    struct Pose *antennaZoneStart;
-    struct Pose *antennaZoneStop;
+    struct Coordinates *northEasternTableCorner;
+    struct Coordinates *northWesternTableCorner;
+    struct Coordinates *southEasternTableCorner;
+    struct Coordinates *southWesternTableCorner;
+    struct Coordinates *northEasternDrawingCorner;
+    struct Coordinates *northWesternDrawingCorner;
+    struct Coordinates *southEasternDrawingCorner;
+    struct Coordinates *southWesternDrawingCorner;
+    struct Coordinates *antennaZoneStart;
+    struct Coordinates *antennaZoneStop;
     int numberOfObstacles;
-//    struct Pose *obstacles[3];
+    struct Obstacle *obstacles[3];
     struct Pose *paintingZones[8];
 };
 

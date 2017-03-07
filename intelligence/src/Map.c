@@ -4,17 +4,23 @@
 struct Map *Map_new()
 {
     struct Object *new_object = Object_new();
-    struct Pose *new_northEasternCorner = Pose_zero();
-    struct Pose *new_northWesternCorner = Pose_zero();
-    struct Pose *new_southEasternCorner = Pose_zero();
-    struct Pose *new_southWesternCorner = Pose_zero();
+    struct Coordinates *new_northEasternTableCorner = Coordinates_zero();
+    struct Coordinates *new_northWesternTableCorner = Coordinates_zero();
+    struct Coordinates *new_southEasternTableCorner = Coordinates_zero();
+    struct Coordinates *new_southWesternTableCorner = Coordinates_zero();
+    struct Coordinates *new_northEasternDrawingCorner = Coordinates_zero();
+    struct Coordinates *new_northWesternDrawingCorner = Coordinates_zero();
+    struct Coordinates *new_southEasternDrawingCorner = Coordinates_zero();
+    struct Coordinates *new_southWesternDrawingCorner = Coordinates_zero();
+    struct Coordinates *new_antennaZoneStart = Coordinates_zero();
+    struct Coordinates *new_antennaZoneStop = Coordinates_zero();
+
     int initialNumberOfObstacles = 0;
     int i;
-    struct Pose *new_antennaZoneStart = Pose_zero();
-    struct Pose *new_antennaZoneStop = Pose_zero();
+    struct Obstacle *new_obstacles[3];
 
-    //    struct Obstacles *new_obstacles[3] = {Obstacles_new};
     for(i = 0; i < 3; ++i) {
+        new_obstacles[i] = Obstacle_new(0, 0, THEORICAL_OBSTACLE_RADIUS, CENTER);
     }
 
     struct Pose *new_paintingZones[8];
@@ -27,19 +33,31 @@ struct Map *Map_new()
 
     pointer->object = new_object;
 
-    pointer->northEasternCorner = new_northEasternCorner;
+    pointer->northEasternTableCorner = new_northEasternTableCorner;
 
-    pointer->northWesternCorner = new_northWesternCorner;
+    pointer->northWesternTableCorner = new_northWesternTableCorner;
 
-    pointer->southEasternCorner = new_southEasternCorner;
+    pointer->southEasternTableCorner = new_southEasternTableCorner;
 
-    pointer->southWesternCorner = new_southWesternCorner;
+    pointer->southWesternTableCorner = new_southWesternTableCorner;
 
-    pointer->numberOfObstacles = initialNumberOfObstacles;
+    pointer->northEasternDrawingCorner = new_northEasternDrawingCorner;
+
+    pointer->northWesternDrawingCorner = new_northWesternDrawingCorner;
+
+    pointer->southEasternDrawingCorner = new_southEasternDrawingCorner;
+
+    pointer->southWesternDrawingCorner = new_southWesternDrawingCorner;
 
     pointer->antennaZoneStart = new_antennaZoneStart;
 
     pointer->antennaZoneStop = new_antennaZoneStop;
+
+    pointer->numberOfObstacles = initialNumberOfObstacles;
+
+    for(i = 0; i < 3; ++i) {
+        pointer->obstacles[i] = new_obstacles[i];
+    }
 
     for(i = 0; i < 8; ++i) {
         pointer->paintingZones[i] = new_paintingZones[i];
@@ -54,15 +72,20 @@ void Map_delete(struct Map *map)
 
     if(Object_canBeDeleted(map->object)) {
         Object_delete(map->object);
-        Pose_delete(map->northEasternCorner);
-        Pose_delete(map->northWesternCorner);
-        Pose_delete(map->southEasternCorner);
-        Pose_delete(map->southWesternCorner);
-        Pose_delete(map->antennaZoneStart);
-        Pose_delete(map->antennaZoneStop);
+        Coordinates_delete(map->northEasternTableCorner);
+        Coordinates_delete(map->northWesternTableCorner);
+        Coordinates_delete(map->southEasternTableCorner);
+        Coordinates_delete(map->southWesternTableCorner);
+        Coordinates_delete(map->northEasternDrawingCorner);
+        Coordinates_delete(map->northWesternDrawingCorner);
+        Coordinates_delete(map->southEasternDrawingCorner);
+        Coordinates_delete(map->southWesternDrawingCorner);
+        Coordinates_delete(map->antennaZoneStart);
+        Coordinates_delete(map->antennaZoneStop);
         int i;
 
         for(i = 0; i < 3; ++i) {
+            Obstacle_delete(map->obstacles[i]);
         }
 
         for(i = 0; i < 8; ++i) {
