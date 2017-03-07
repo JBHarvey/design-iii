@@ -2,8 +2,10 @@
 #define ANGLE_H_
 #include "Object.h"
 
+#define HALF_PI 157080
 #define PI 314160
 #define MINUS_PI -314160
+#define MINUS_HALF_PI -157080
 
 enum RotationDirection {ANTICLOCKWISE, CLOCKWISE, STOP_TURNING};
 /*

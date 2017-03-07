@@ -151,8 +151,6 @@ Test(Map, given_newPaintingZones_when_updatesMap_then_theCorrespondingZonesHaveC
      , .init = setupMap
      , .fini = teardownMap)
 {
-    const int HALF_PI = 157080;
-    const int MINUS_HALF_PI = -157080;
     struct Pose *paintingZone0 = Pose_new(4060, 2500, MINUS_HALF_PI);
     struct Pose *paintingZone1 = Pose_new(1620, 2500, MINUS_HALF_PI);
     struct Pose *paintingZone2 = Pose_new(2500, 1710, PI);

@@ -1,6 +1,12 @@
 #include "RobotReceiver.h"
 
+//TODO: TEST THIS FILE.
 
+struct Mesurements RobotReceiver_fetchInputs(struct Mesurements(*communicationCallback)(void))
+{
+    struct Mesurements mesurements = (*communicationCallback)();
+    return mesurements;
+}
 static void updateWorld(struct WorldCamera *worldCamera, struct Communication_World world)
 {
     if(world.environmentHasChanged) {
