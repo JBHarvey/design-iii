@@ -60,7 +60,6 @@ volatile int speedMotor3 = 0;
 volatile int speedMotor4 = 0;
 
 volatile int speedIndex = 0;
-volatile float timeDelay;
 volatile uint16_t speedBuffer[MAX_SPEED_INDEX];
 
 // Buffer contenant tous les bits du manchester
@@ -82,33 +81,6 @@ void InitializeLEDs() {
 	GPIO_Init(GPIOD, &gpioStructure);
 
 	GPIO_ResetBits(GPIOD, GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14);
-}
-
-void SetTimer2(uint16_t period) {
-	TIM_TimeBaseInitTypeDef timerInitStructure;
-	timerInitStructure.TIM_Prescaler = 84 - 1;
-	timerInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
-	timerInitStructure.TIM_Period = period - 1;
-	timerInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
-	timerInitStructure.TIM_RepetitionCounter = 0;
-	TIM_TimeBaseInit(TIM2, &timerInitStructure);
-}
-
-/* timer to calculate wheel speed */
-void InitializeTimer2() {
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
-	SetTimer2(125 - 1);
-	TIM_Cmd(TIM2, ENABLE);
-	TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
-}
-
-void EnableTimer2Interrupt() {
-	NVIC_InitTypeDef nvicStructure;
-	nvicStructure.NVIC_IRQChannel = TIM2_IRQn;
-	nvicStructure.NVIC_IRQChannelPreemptionPriority = 0;
-	nvicStructure.NVIC_IRQChannelSubPriority = 1;
-	nvicStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&nvicStructure);
 }
 
 void SetTimer5(uint16_t period) {
@@ -324,10 +296,6 @@ void systickInit(uint16_t frequency) {
 
 }
 
-uint16_t calculateSpeed(int edges) {
-	return edges / (16000 * 2 * timeDelay);
-}
-
 void generateFirstPWM() {
 	MotorSetSpeed(1, 40);
 }
@@ -452,6 +420,9 @@ int main(void) {
 			}
 		}
 		uint8_t consigne = readUSB();
+
+		int consigneX = 10;
+		int consigneY = 22;
 		/* Main state machine */
 		switch (mainState) {
 		case MAIN_IDLE:
@@ -504,8 +475,6 @@ int main(void) {
 
 			//Delayms(2000);
 
-			move(100);
-
 			MotorSetDirection(1, COUNTER_CLOCK);
 			MotorSetDirection(2, BRAKE_G);
 			MotorSetDirection(3, CLOCK);
@@ -516,81 +485,83 @@ int main(void) {
 			MotorSetSpeed(3, 75);
 			MotorSetSpeed(4, 0);
 
-			/*Delayms(2000);
+			Delayms(2000);
 
-			 MotorSetDirection(1, CLOCK);
-			 MotorSetDirection(2, BRAKE_G);
-			 MotorSetDirection(3, COUNTER_CLOCK);
-			 MotorSetDirection(4, BRAKE_G);
+			MotorSetDirection(1, CLOCK);
+			MotorSetDirection(2, BRAKE_G);
+			MotorSetDirection(3, COUNTER_CLOCK);
+			MotorSetDirection(4, BRAKE_G);
 
-			 MotorSetSpeed(1, 75);
-			 MotorSetSpeed(2, 0);
-			 MotorSetSpeed(3, 75);
-			 MotorSetSpeed(4, 0);
+			MotorSetSpeed(1, 75);
+			MotorSetSpeed(2, 0);
+			MotorSetSpeed(3, 75);
+			MotorSetSpeed(4, 0);
 
-			 Delayms(2000);
+			Delayms(2000);
 
-			 MotorSetDirection(1, CLOCK);
-			 MotorSetDirection(2, CLOCK);
-			 MotorSetDirection(3, COUNTER_CLOCK);
-			 MotorSetDirection(4, COUNTER_CLOCK);
+			MotorSetDirection(1, CLOCK);
+			MotorSetDirection(2, CLOCK);
+			MotorSetDirection(3, COUNTER_CLOCK);
+			MotorSetDirection(4, COUNTER_CLOCK);
 
-			 MotorSetSpeed(1, 75);
-			 MotorSetSpeed(2, 75);
-			 MotorSetSpeed(3, 75);
-			 MotorSetSpeed(4, 75);
+			MotorSetSpeed(1, 75);
+			MotorSetSpeed(2, 75);
+			MotorSetSpeed(3, 75);
+			MotorSetSpeed(4, 75);
 
-			 Delayms(1000);
+			Delayms(1000);
 
-			 MotorSetDirection(1, CLOCK);
-			 MotorSetDirection(2, COUNTER_CLOCK);
-			 MotorSetDirection(3, COUNTER_CLOCK);
-			 MotorSetDirection(4, CLOCK);
+			MotorSetDirection(1, CLOCK);
+			MotorSetDirection(2, COUNTER_CLOCK);
+			MotorSetDirection(3, COUNTER_CLOCK);
+			MotorSetDirection(4, CLOCK);
 
-			 MotorSetSpeed(1, 75);
-			 MotorSetSpeed(2, 75);
-			 MotorSetSpeed(3, 75);
-			 MotorSetSpeed(4, 75);
+			MotorSetSpeed(1, 75);
+			MotorSetSpeed(2, 75);
+			MotorSetSpeed(3, 75);
+			MotorSetSpeed(4, 75);
 
-			 Delayms(1000);
+			Delayms(1000);
 
-			 MotorSetDirection(1, COUNTER_CLOCK);
-			 MotorSetDirection(2, COUNTER_CLOCK);
-			 MotorSetDirection(3, CLOCK);
-			 MotorSetDirection(4, CLOCK);
+			MotorSetDirection(1, COUNTER_CLOCK);
+			MotorSetDirection(2, COUNTER_CLOCK);
+			MotorSetDirection(3, CLOCK);
+			MotorSetDirection(4, CLOCK);
 
-			 MotorSetSpeed(1, 75);
-			 MotorSetSpeed(2, 75);
-			 MotorSetSpeed(3, 75);
-			 MotorSetSpeed(4, 75);
+			MotorSetSpeed(1, 75);
+			MotorSetSpeed(2, 75);
+			MotorSetSpeed(3, 75);
+			MotorSetSpeed(4, 75);
 
-			 Delayms(1000);
+			Delayms(1000);
 
-			 MotorSetDirection(1, COUNTER_CLOCK);
-			 MotorSetDirection(2, CLOCK);
-			 MotorSetDirection(3, CLOCK);
-			 MotorSetDirection(4, COUNTER_CLOCK);
+			MotorSetDirection(1, COUNTER_CLOCK);
+			MotorSetDirection(2, CLOCK);
+			MotorSetDirection(3, CLOCK);
+			MotorSetDirection(4, COUNTER_CLOCK);
 
-			 MotorSetSpeed(1, 75);
-			 MotorSetSpeed(2, 75);
-			 MotorSetSpeed(3, 75);
-			 MotorSetSpeed(4, 75);
+			MotorSetSpeed(1, 75);
+			MotorSetSpeed(2, 75);
+			MotorSetSpeed(3, 75);
+			MotorSetSpeed(4, 75);
 
-			 Delayms(1000);
+			Delayms(1000);
 
-			 MotorSetDirection(1, BRAKE_G);
-			 MotorSetDirection(2, BRAKE_G);
-			 MotorSetDirection(3, BRAKE_G);
-			 MotorSetDirection(4, BRAKE_G);
+			MotorSetDirection(1, BRAKE_G);
+			MotorSetDirection(2, BRAKE_G);
+			MotorSetDirection(3, BRAKE_G);
+			MotorSetDirection(4, BRAKE_G);
 
-			 MotorSetSpeed(1, 0);
-			 MotorSetSpeed(2, 0);
-			 MotorSetSpeed(3, 0);
-			 MotorSetSpeed(4, 0);*/
+			MotorSetSpeed(1, 0);
+			MotorSetSpeed(2, 0);
+			MotorSetSpeed(3, 0);
+			MotorSetSpeed(4, 0);
+
+			mainState = MAIN_IDLE;
+
 			break;
 		case MAIN_PID:
-			int consigneX = 10;
-			int consigneY = 22;
+
 			while (1) {
 
 				/* Initialization of PIDs */
@@ -620,10 +591,10 @@ int main(void) {
 					MotorSetDirection(4, BRAKE_G);
 				}
 
-				int cmdMotor1 = getPID(&PID_SPEED, speedMotor1, 2);
-				int cmdMotor2 = getPID(&PID_SPEED, speedMotor2, 2);
-				int cmdMotor3 = getPID(&PID_SPEED, speedMotor3, 2);
-				int cmdMotor4 = getPID(&PID_SPEED, speedMotor4, 2);
+				int cmdMotor1 = getPID(&PID_SPEED, speedMotor1, consigneX);
+				int cmdMotor2 = getPID(&PID_SPEED, speedMotor2, consigneY);
+				int cmdMotor3 = getPID(&PID_SPEED, speedMotor3, consigneX);
+				int cmdMotor4 = getPID(&PID_SPEED, speedMotor4, consigneY);
 
 				MotorSetSpeed(1, cmdMotor1);
 				MotorSetSpeed(2, cmdMotor2);
@@ -639,6 +610,18 @@ int main(void) {
 		}
 	}
 }
+
+/*extern void SysTick_Handler(void) {
+ if (speedIndex < MAX_SPEED_INDEX) {
+
+ speedBuffer[speedIndex] = numberOfEdges1; //calculateSpeed(numberOfEdges1);
+ speedIndex++;
+ numberOfEdges1 = 0;
+ } else {
+ TM_DISCO_LedOn (LED_ORANGE);
+ MotorSetSpeed(1, 0);
+ }
+ }*/
 
 extern void EXTI0_IRQHandler(void) {
 	/* Make sure that interrupt flag is set */
@@ -657,25 +640,15 @@ extern void EXTI0_IRQHandler(void) {
 extern void EXTI9_5_IRQHandler(void) {
 	/* Make sure that interrupt flag is set */
 	if (EXTI_GetITStatus(EXTI_Line5) != RESET) {
-
-		//STM_EVAL_LEDToggle (LED6);
-
 		/* increase ticks */
 		numberOfEdges1++;
-
-		//sdirection1 = calculateDirection();
-
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line5);
 	}
 
 	if (EXTI_GetITStatus(EXTI_Line6) != RESET) {
-
-		//STM_EVAL_LEDToggle (LED6);
-
 		/* increase ticks */
 		numberOfEdges1++;
-
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line6);
 	}
@@ -688,21 +661,65 @@ extern void EXTI9_5_IRQHandler(void) {
 		EnableTimer5Interrupt();
 		disableExternalInterruptLine7();
 	}
+
+	if (EXTI_GetITStatus(EXTI_Line8) != RESET) {
+		/* increase ticks */
+		numberOfEdges2++;
+		/* Clear interrupt flag */
+		EXTI_ClearITPendingBit (EXTI_Line8);
+	}
+
+	if (EXTI_GetITStatus(EXTI_Line9) != RESET) {
+		/* increase ticks */
+		numberOfEdges2++;
+		/* Clear interrupt flag */
+		EXTI_ClearITPendingBit (EXTI_Line9);
+	}
+}
+
+extern void EXTI15_10_IRQHandler(void) {
+	/* Make sure that interrupt flag is set */
+	if (EXTI_GetITStatus(EXTI_Line10) != RESET) {
+		/* increase ticks */
+		numberOfEdges3++;
+		/* Clear interrupt flag */
+		EXTI_ClearITPendingBit (EXTI_Line10);
+	}
+
+	if (EXTI_GetITStatus(EXTI_Line11) != RESET) {
+		/* increase ticks */
+		numberOfEdges3++;
+		/* Clear interrupt flag */
+		EXTI_ClearITPendingBit (EXTI_Line11);
+	}
+
+	if (EXTI_GetITStatus(EXTI_Line12) != RESET) {
+		/* increase ticks */
+		numberOfEdges4++;
+		/* Clear interrupt flag */
+		EXTI_ClearITPendingBit (EXTI_Line12);
+	}
+
+	if (EXTI_GetITStatus(EXTI_Line13) != RESET) {
+		/* increase ticks */
+		numberOfEdges4++;
+		/* Clear interrupt flag */
+		EXTI_ClearITPendingBit (EXTI_Line13);
+	}
 }
 
 extern void TIM2_IRQHandler() {
 	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
 
-		if (speedIndex < MAX_SPEED_INDEX) {
-
-			speedBuffer[speedIndex] = numberOfEdges1; //calculateSpeed(numberOfEdges1);
-			speedIndex++;
-			numberOfEdges1 = 0;
-		} else {
-			TM_DISCO_LedOn (LED_ORANGE);
-			MotorSetSpeed(1, 0);
-		}
+		speedMotor1 = calculateSpeed(numberOfEdges1);
+		numberOfEdges1 = 0;
+		speedMotor2 = calculateSpeed(numberOfEdges2);
+		numberOfEdges2 = 0;
+		speedMotor3 = calculateSpeed(numberOfEdges3);
+		numberOfEdges3 = 0;
+		speedMotor4 = calculateSpeed(numberOfEdges4);
+		numberOfEdges4 = 0;
 
 	}
 }

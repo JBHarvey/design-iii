@@ -6,11 +6,11 @@ Quadrature Encoder :
 	- Canal 1 : PD8 - Ligne 8 (EXTI9_5_IRQHandler)
 	- Canal 2 : PD9 - Ligne 9 (EXTI9_5_IRQHandler)
 	Motor 3 :
-	- Canal 1 : Px10 - Ligne 10 (EXTI15_10_IRQHandler)
-	- Canal 2 : Px11 - Ligne 11 (EXTI15_10_IRQHandler)
+	- Canal 1 : PD10 - Ligne 10 (EXTI15_10_IRQHandler)
+	- Canal 2 : PD11 - Ligne 11 (EXTI15_10_IRQHandler)
 	Motor 4 : 
-	- Canal 1 : Px12 - Ligne 12 (EXTI15_10_IRQHandler)
-	- Canal 2 : Px13 - Ligne 13(EXTI15_10_IRQHandler)
+	- Canal 1 : PD12 - Ligne 12 (EXTI15_10_IRQHandler)
+	- Canal 2 : PD13 - Ligne 13(EXTI15_10_IRQHandler)
 	
 USB VCP : 
 	- micro-B
