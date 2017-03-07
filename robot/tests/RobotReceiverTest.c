@@ -51,7 +51,7 @@ void setupRobotReceiver(void)
 {
     struct Mesurements mesurements = {
         .world = {
-            .environment = {
+            .environment = { // WARNING these values are repeated as they are here in other tests in this file
                 .northEasternTableCorner = {.x = MAP_TABLE_LENGTH, .y = MAP_TABLE_HEIGHT},
                 .northWesternTableCorner = {.x = 0, .y = MAP_TABLE_HEIGHT},
                 .southEasternTableCorner = {.x = MAP_TABLE_LENGTH, .y = 0},
@@ -194,46 +194,215 @@ Test(RobotReceiver, given_aCallbackFunction_when_askedFetchInputs_then_itIsCalle
                  "Expected %d, Got %d", TEST_OBSTACLE_0_ORIENTATION, returnedObstacleZeroOrientation);
 }
 
-/*
-Test(RobotReceiver, given_aNewWorldViewAndCorrespondingData_when_updatesWorldView_then_theWorldIsUpdated)
+Test(RobotReceiver, given_aPacket_when_updatesWorld_then_theRobotSensorHasNewData
+     , .init = setupRobotReceiver)
 {
-struct Map *map;
-map = Map_new();
-struct Coordinates *coordinatesZero = Coordinates_zero();
-struct Pose *poseZero = Pose_zero();
-cr_assert(Coordinates_haveTheSameValues(map->northEasternTableCorner, coordinatesZero));
-cr_assert(Coordinates_haveTheSameValues(map->northWesternTableCorner, coordinatesZero));
-cr_assert(Coordinates_haveTheSameValues(map->southEasternTableCorner, coordinatesZero));
-cr_assert(Coordinates_haveTheSameValues(map->southWesternTableCorner, coordinatesZero));
+    struct WorldCamera *worldCamera = WorldCamera_new();
+    RobotReceiver_updateWorld(worldCamera, mesurementsMock.world);
 
-cr_assert(Coordinates_haveTheSameValues(map->northEasternDrawingCorner, coordinatesZero));
-cr_assert(Coordinates_haveTheSameValues(map->northWesternDrawingCorner, coordinatesZero));
-cr_assert(Coordinates_haveTheSameValues(map->southEasternDrawingCorner, coordinatesZero));
-cr_assert(Coordinates_haveTheSameValues(map->southWesternDrawingCorner, coordinatesZero));
-
-cr_assert(Coordinates_haveTheSameValues(map->antennaZoneStart, coordinatesZero));
-cr_assert(Coordinates_haveTheSameValues(map->antennaZoneStop, coordinatesZero));
-
-cr_assert(Coordinates_haveTheSameValues(map->obstacles[0]->coordinates, coordinatesZero));
-cr_assert(Coordinates_haveTheSameValues(map->obstacles[1]->coordinates, coordinatesZero));
-cr_assert(Coordinates_haveTheSameValues(map->obstacles[2]->coordinates, coordinatesZero));
-cr_assert_eq(map->obstacles[0]->radius, THEORICAL_OBSTACLE_RADIUS);
-cr_assert_eq(map->obstacles[1]->radius, THEORICAL_OBSTACLE_RADIUS);
-cr_assert_eq(map->obstacles[2]->radius, THEORICAL_OBSTACLE_RADIUS);
-cr_assert_eq(map->obstacles[0]->orientation, CENTER);
-cr_assert_eq(map->obstacles[1]->orientation, CENTER);
-cr_assert_eq(map->obstacles[2]->orientation, CENTER);
-
-cr_assert(Pose_haveTheSameValues(map->paintingZones[0], poseZero));
-cr_assert(Pose_haveTheSameValues(map->paintingZones[1], poseZero));
-cr_assert(Pose_haveTheSameValues(map->paintingZones[2], poseZero));
-cr_assert(Pose_haveTheSameValues(map->paintingZones[3], poseZero));
-cr_assert(Pose_haveTheSameValues(map->paintingZones[4], poseZero));
-cr_assert(Pose_haveTheSameValues(map->paintingZones[5], poseZero));
-cr_assert(Pose_haveTheSameValues(map->paintingZones[6], poseZero));
-cr_assert(Pose_haveTheSameValues(map->paintingZones[7], poseZero));
-Coordinates_delete(coordinatesZero);
-Pose_delete(poseZero);
-Map_delete(map);
+    cr_assert(worldCamera->robotSensor->hasReceivedNewData);
+    WorldCamera_delete(worldCamera);
 }
-*/
+Test(RobotReceiver, given_environmentChanges_when_updatesWorld_then_theMapSenorHasNewData
+     , .init = setupRobotReceiver)
+{
+    struct WorldCamera *worldCamera = WorldCamera_new();
+    RobotReceiver_updateWorld(worldCamera, mesurementsMock.world);
+
+    cr_assert(worldCamera->mapSensor->hasReceivedNewData);
+    WorldCamera_delete(worldCamera);
+}
+
+Test(RobotReceiver, given_noEnvironmentChanges_when_updatesWorld_then_theMapSensorHasNoNewData
+     , .init = setupRobotReceiver)
+{
+    struct WorldCamera *worldCamera = WorldCamera_new();
+    mesurementsMock.world.environmentHasChanged = 0;
+    RobotReceiver_updateWorld(worldCamera, mesurementsMock.world);
+
+    cr_assert(worldCamera->mapSensor->hasReceivedNewData == 0);
+    WorldCamera_delete(worldCamera);
+}
+
+Test(RobotReceiver, given_noEnvironmentChanges_when_updatesWorld_then_onlyTheWorldCameraMapIsntChanged
+     , .init = setupRobotReceiver)
+{
+    struct WorldCamera *worldCamera = WorldCamera_new();
+    mesurementsMock.world.environmentHasChanged = 0;
+    RobotReceiver_updateWorld(worldCamera, mesurementsMock.world);
+
+    cr_assert(worldCamera->mapSensor->hasReceivedNewData == 0);
+
+    struct Map *map = worldCamera->map;
+
+    struct Coordinates *coordinatesZero = Coordinates_zero();
+    struct Pose *poseZero = Pose_zero();
+    cr_assert(Coordinates_haveTheSameValues(map->northEasternTableCorner, coordinatesZero));
+    cr_assert(Coordinates_haveTheSameValues(map->northWesternTableCorner, coordinatesZero));
+    cr_assert(Coordinates_haveTheSameValues(map->southEasternTableCorner, coordinatesZero));
+    cr_assert(Coordinates_haveTheSameValues(map->southWesternTableCorner, coordinatesZero));
+
+    cr_assert(Coordinates_haveTheSameValues(map->northEasternDrawingCorner, coordinatesZero));
+    cr_assert(Coordinates_haveTheSameValues(map->northWesternDrawingCorner, coordinatesZero));
+    cr_assert(Coordinates_haveTheSameValues(map->southEasternDrawingCorner, coordinatesZero));
+    cr_assert(Coordinates_haveTheSameValues(map->southWesternDrawingCorner, coordinatesZero));
+
+    cr_assert(Coordinates_haveTheSameValues(map->antennaZoneStart, coordinatesZero));
+    cr_assert(Coordinates_haveTheSameValues(map->antennaZoneStop, coordinatesZero));
+
+    cr_assert(Coordinates_haveTheSameValues(map->obstacles[0]->coordinates, coordinatesZero));
+    cr_assert(Coordinates_haveTheSameValues(map->obstacles[1]->coordinates, coordinatesZero));
+    cr_assert(Coordinates_haveTheSameValues(map->obstacles[2]->coordinates, coordinatesZero));
+    cr_assert_eq(map->obstacles[0]->radius, THEORICAL_OBSTACLE_RADIUS);
+    cr_assert_eq(map->obstacles[1]->radius, THEORICAL_OBSTACLE_RADIUS);
+    cr_assert_eq(map->obstacles[2]->radius, THEORICAL_OBSTACLE_RADIUS);
+    cr_assert_eq(map->obstacles[0]->orientation, CENTER);
+    cr_assert_eq(map->obstacles[1]->orientation, CENTER);
+    cr_assert_eq(map->obstacles[2]->orientation, CENTER);
+
+    cr_assert(Pose_haveTheSameValues(map->paintingZones[0], poseZero));
+    cr_assert(Pose_haveTheSameValues(map->paintingZones[1], poseZero));
+    cr_assert(Pose_haveTheSameValues(map->paintingZones[2], poseZero));
+    cr_assert(Pose_haveTheSameValues(map->paintingZones[3], poseZero));
+    cr_assert(Pose_haveTheSameValues(map->paintingZones[4], poseZero));
+    cr_assert(Pose_haveTheSameValues(map->paintingZones[5], poseZero));
+    cr_assert(Pose_haveTheSameValues(map->paintingZones[6], poseZero));
+    cr_assert(Pose_haveTheSameValues(map->paintingZones[7], poseZero));
+    Coordinates_delete(coordinatesZero);
+    Pose_delete(poseZero);
+    WorldCamera_delete(worldCamera);
+}
+
+Test(RobotReceiver, given_aPredeterminedMesurementPacket_when_updatesMesurements_then_theTableCoordinatesAreChanged
+     , .init = setupRobotReceiver)
+{
+    struct Coordinates *northEasternTableCorner = Coordinates_new(MAP_TABLE_LENGTH, MAP_TABLE_HEIGHT);
+    struct Coordinates *southEasternTableCorner = Coordinates_new(MAP_TABLE_LENGTH, 0);
+    struct Coordinates *southWesternTableCorner = Coordinates_new(0, 0);
+    struct Coordinates *northWesternTableCorner = Coordinates_new(0, MAP_TABLE_HEIGHT);
+
+    struct WorldCamera *worldCamera = WorldCamera_new();
+    RobotReceiver_updateWorld(worldCamera, mesurementsMock.world);
+
+    struct Map *map = worldCamera->map;
+
+    cr_assert(Coordinates_haveTheSameValues(map->northEasternTableCorner, northEasternTableCorner));
+    cr_assert(Coordinates_haveTheSameValues(map->northWesternTableCorner, northWesternTableCorner));
+    cr_assert(Coordinates_haveTheSameValues(map->southEasternTableCorner, southEasternTableCorner));
+    cr_assert(Coordinates_haveTheSameValues(map->southWesternTableCorner, southWesternTableCorner));
+
+    Coordinates_delete(northEasternTableCorner);
+    Coordinates_delete(southEasternTableCorner);
+    Coordinates_delete(southWesternTableCorner);
+    Coordinates_delete(northWesternTableCorner);
+    WorldCamera_delete(worldCamera);
+}
+
+Test(RobotReceiver,
+     given_aPredeterminedMesurementPacket_when_updatesMesurements_then_theDrawingZoneCoordinatesAreChanged
+     , .init = setupRobotReceiver)
+{
+    struct Coordinates *northEasternDrawingCorner = Coordinates_new(MAP_DRAWING_SIDE, MAP_DRAWING_SIDE);
+    struct Coordinates *southEasternDrawingCorner = Coordinates_new(MAP_DRAWING_SIDE, 0);
+    struct Coordinates *southWesternDrawingCorner = Coordinates_new(0, 0);
+    struct Coordinates *northWesternDrawingCorner = Coordinates_new(0, MAP_DRAWING_SIDE);
+
+    struct WorldCamera *worldCamera = WorldCamera_new();
+    RobotReceiver_updateWorld(worldCamera, mesurementsMock.world);
+
+    struct Map *map = worldCamera->map;
+
+    cr_assert(Coordinates_haveTheSameValues(map->northEasternDrawingCorner, northEasternDrawingCorner));
+    cr_assert(Coordinates_haveTheSameValues(map->northWesternDrawingCorner, northWesternDrawingCorner));
+    cr_assert(Coordinates_haveTheSameValues(map->southEasternDrawingCorner, southEasternDrawingCorner));
+    cr_assert(Coordinates_haveTheSameValues(map->southWesternDrawingCorner, southWesternDrawingCorner));
+
+    Coordinates_delete(northEasternDrawingCorner);
+    Coordinates_delete(southEasternDrawingCorner);
+    Coordinates_delete(southWesternDrawingCorner);
+    Coordinates_delete(northWesternDrawingCorner);
+    WorldCamera_delete(worldCamera);
+}
+
+Test(RobotReceiver,
+     given_aPredeterminedMesurementPacket_when_updatesMesurements_then_theAntennaZoneCoordinatesAreChanged
+     , .init = setupRobotReceiver)
+{
+    struct Coordinates * antennaZoneStart = Coordinates_new(ANTENNA_ZONE_X + ANTENNA_ZONE_LENGTH, ANTENNA_ZONE_Y);
+    struct Coordinates *antennaZoneStop = Coordinates_new(ANTENNA_ZONE_X, ANTENNA_ZONE_Y);
+    struct WorldCamera *worldCamera = WorldCamera_new();
+    RobotReceiver_updateWorld(worldCamera, mesurementsMock.world);
+
+    struct Map *map = worldCamera->map;
+
+    cr_assert(Coordinates_haveTheSameValues(map->antennaZoneStart, antennaZoneStart));
+    cr_assert(Coordinates_haveTheSameValues(map->antennaZoneStop, antennaZoneStop));
+
+    Coordinates_delete(antennaZoneStart);
+    Coordinates_delete(antennaZoneStop);
+    WorldCamera_delete(worldCamera);
+}
+
+Test(RobotReceiver,
+     given_aPredeterminedMesurementPacket_when_updatesMesurements_then_theObstaclesAreChanged
+     , .init = setupRobotReceiver)
+{
+    struct Coordinates *coordinates0 = Coordinates_new(TEST_OBSTACLE_0_X, TEST_OBSTACLE_0_Y);
+    struct Coordinates *coordinates1 = Coordinates_new(TEST_OBSTACLE_1_X, TEST_OBSTACLE_1_Y);
+    struct Coordinates *coordinates2 = Coordinates_new(TEST_OBSTACLE_2_X, TEST_OBSTACLE_2_Y);
+
+    struct WorldCamera *worldCamera = WorldCamera_new();
+    RobotReceiver_updateWorld(worldCamera, mesurementsMock.world);
+
+    struct Map *map = worldCamera->map;
+
+    cr_assert(Coordinates_haveTheSameValues(map->obstacles[0]->coordinates, coordinates0));
+    cr_assert(Coordinates_haveTheSameValues(map->obstacles[1]->coordinates, coordinates1));
+    cr_assert(Coordinates_haveTheSameValues(map->obstacles[2]->coordinates, coordinates2));
+    cr_assert_eq(map->obstacles[0]->orientation, NORTH);
+    cr_assert_eq(map->obstacles[1]->orientation, SOUTH);
+    cr_assert_eq(map->obstacles[2]->orientation, CENTER);
+
+    Coordinates_delete(coordinates0);
+    Coordinates_delete(coordinates1);
+    Coordinates_delete(coordinates2);
+    WorldCamera_delete(worldCamera);
+}
+
+Test(RobotReceiver,
+     given_aPredeterminedMesurementPacket_when_updatesMesurements_then_thePaintingZonesAreChanged
+     , .init = setupRobotReceiver)
+{
+    struct Pose *paintingZone0 = Pose_new(TEST_PAINTING_0_X, TEST_PAINTING_0_Y, TEST_PAINTING_0_ORIENTATION);
+    struct Pose *paintingZone1 = Pose_new(TEST_PAINTING_1_X, TEST_PAINTING_1_Y, TEST_PAINTING_1_ORIENTATION);
+    struct Pose *paintingZone2 = Pose_new(TEST_PAINTING_2_X, TEST_PAINTING_2_Y, TEST_PAINTING_2_ORIENTATION);
+    struct Pose *paintingZone3 = Pose_new(TEST_PAINTING_3_X, TEST_PAINTING_3_Y, TEST_PAINTING_3_ORIENTATION);
+    struct Pose *paintingZone4 = Pose_new(TEST_PAINTING_4_X, TEST_PAINTING_4_Y, TEST_PAINTING_4_ORIENTATION);
+    struct Pose *paintingZone5 = Pose_new(TEST_PAINTING_5_X, TEST_PAINTING_5_Y, TEST_PAINTING_5_ORIENTATION);
+    struct Pose *paintingZone6 = Pose_new(TEST_PAINTING_6_X, TEST_PAINTING_6_Y, TEST_PAINTING_6_ORIENTATION);
+    struct Pose *paintingZone7 = Pose_new(TEST_PAINTING_7_X, TEST_PAINTING_7_Y, TEST_PAINTING_7_ORIENTATION);
+
+    struct WorldCamera *worldCamera = WorldCamera_new();
+    RobotReceiver_updateWorld(worldCamera, mesurementsMock.world);
+
+    struct Map *map = worldCamera->map;
+
+    cr_assert(Pose_haveTheSameValues(map->paintingZones[0], paintingZone0));
+    cr_assert(Pose_haveTheSameValues(map->paintingZones[1], paintingZone1));
+    cr_assert(Pose_haveTheSameValues(map->paintingZones[2], paintingZone2));
+    cr_assert(Pose_haveTheSameValues(map->paintingZones[3], paintingZone3));
+    cr_assert(Pose_haveTheSameValues(map->paintingZones[4], paintingZone4));
+    cr_assert(Pose_haveTheSameValues(map->paintingZones[5], paintingZone5));
+    cr_assert(Pose_haveTheSameValues(map->paintingZones[6], paintingZone6));
+    cr_assert(Pose_haveTheSameValues(map->paintingZones[7], paintingZone7));
+
+    Pose_delete(paintingZone0);
+    Pose_delete(paintingZone1);
+    Pose_delete(paintingZone2);
+    Pose_delete(paintingZone3);
+    Pose_delete(paintingZone4);
+    Pose_delete(paintingZone5);
+    Pose_delete(paintingZone6);
+    Pose_delete(paintingZone7);
+    WorldCamera_delete(worldCamera);
+}
