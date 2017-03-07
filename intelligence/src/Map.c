@@ -15,7 +15,6 @@ struct Map *Map_new()
     struct Coordinates *new_antennaZoneStart = Coordinates_zero();
     struct Coordinates *new_antennaZoneStop = Coordinates_zero();
 
-    int initialNumberOfObstacles = 0;
     int i;
     struct Obstacle *new_obstacles[3];
 
@@ -52,8 +51,6 @@ struct Map *Map_new()
     pointer->antennaZoneStart = new_antennaZoneStart;
 
     pointer->antennaZoneStop = new_antennaZoneStop;
-
-    pointer->numberOfObstacles = initialNumberOfObstacles;
 
     for(i = 0; i < 3; ++i) {
         pointer->obstacles[i] = new_obstacles[i];
@@ -94,4 +91,41 @@ void Map_delete(struct Map *map)
 
         free(map);
     }
+}
+
+void Map_updateTableCorners(struct Map *map, struct Coordinates *northEastern,
+                            struct Coordinates *southEastern, struct Coordinates *southWestern,
+                            struct Coordinates *northWestern)
+{
+    Coordinates_copyValuesFrom(map->northEasternTableCorner, northEastern);
+    Coordinates_copyValuesFrom(map->southEasternTableCorner, southEastern);
+    Coordinates_copyValuesFrom(map->southWesternTableCorner, southWestern);
+    Coordinates_copyValuesFrom(map->northWesternTableCorner, northWestern);
+}
+
+void Map_updateDrawingCorners(struct Map *map, struct Coordinates *northEastern,
+                              struct Coordinates *southEastern, struct Coordinates *southWestern,
+                              struct Coordinates *northWestern)
+{
+    Coordinates_copyValuesFrom(map->northEasternDrawingCorner, northEastern);
+    Coordinates_copyValuesFrom(map->southEasternDrawingCorner, southEastern);
+    Coordinates_copyValuesFrom(map->southWesternDrawingCorner, southWestern);
+    Coordinates_copyValuesFrom(map->northWesternDrawingCorner, northWestern);
+}
+
+void Map_updateAntennaZone(struct Map *map, struct Coordinates *start, struct Coordinates *stop)
+{
+    Coordinates_copyValuesFrom(map->antennaZoneStart, start);
+    Coordinates_copyValuesFrom(map->antennaZoneStop, stop);
+}
+
+void Map_updateObstacle(struct Map *map, struct Coordinates *newCoordinates, enum CardinalDirection newOrientation,
+                        int index)
+{
+    Obstacle_changeCoordinates(map->obstacles[index], newCoordinates);
+    Obstacle_changeOrientation(map->obstacles[index], newOrientation);
+}
+void Map_updatePaintingZone(struct Map *map, struct Pose *newPose, int index)
+{
+    Pose_copyValuesFrom(map->paintingZones[index], newPose);
 }

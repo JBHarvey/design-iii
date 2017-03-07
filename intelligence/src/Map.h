@@ -4,8 +4,6 @@
 #include "Obstacle.h"
 #include "Pose.h"
 
-struct MapInitalValues; 
-
 struct Map {
     struct Object *object;
     struct Coordinates *northEasternTableCorner;
@@ -18,7 +16,6 @@ struct Map {
     struct Coordinates *southWesternDrawingCorner;
     struct Coordinates *antennaZoneStart;
     struct Coordinates *antennaZoneStop;
-    int numberOfObstacles;
     struct Obstacle *obstacles[3];
     struct Pose *paintingZones[8];
 };
@@ -26,4 +23,13 @@ struct Map {
 struct Map *Map_new(void);
 void Map_delete(struct Map *map);
 
+void Map_updateTableCorners(struct Map *map, struct Coordinates *northEastern, 
+        struct Coordinates *southEastern, struct Coordinates *southWestern, 
+        struct Coordinates *northWestern);
+void Map_updateDrawingCorners(struct Map *map, struct Coordinates *northEastern, 
+        struct Coordinates *southEastern, struct Coordinates *southWestern, 
+        struct Coordinates *northWestern);
+void Map_updateAntennaZone(struct Map *map, struct Coordinates *start, struct Coordinates *stop);
+void Map_updateObstacle(struct Map *map, struct Coordinates *newCoordinates, enum CardinalDirection newOrientation, int index);
+void Map_updatePaintingZone(struct Map *map, struct Pose *newPose, int index);
 #endif // MAP_H_
