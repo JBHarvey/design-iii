@@ -2,11 +2,15 @@
 #define WORLD_CAMERA_H_
 
 #include "Sensor.h"
-#include "Pose.h"
+#include "Map.h"
 
 struct WorldCamera {
     struct Object *object;
-    struct Sensor *sensor;
+    struct Sensor *mapSensor;
+    struct Sensor *robotSensor;
+    struct Map *map;
+    struct Pose *robotPose;
+    int robotRadius;
 };
 
 struct WorldCamera *WorldCamera_new(void);

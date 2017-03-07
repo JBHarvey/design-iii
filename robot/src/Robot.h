@@ -1,12 +1,13 @@
 #ifndef ROBOT_H_
 #define ROBOT_H_
 
-#include "State.h"
+#include "WorldCamera.h"
 
 struct Robot {
     struct Object *object;
     struct DefaultValues *defaultValues;
     struct State *currentState;
+    struct WorldCamera *worldCamera;
 };
 
 struct Robot *Robot_new();

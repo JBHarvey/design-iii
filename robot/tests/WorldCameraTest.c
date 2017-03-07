@@ -18,5 +18,10 @@ Test(WorldCamera, creation_destruction
      , .init = setupWorldCamera
      , .fini = teardownWorldCamera)
 {
-    cr_assert(worldCamera->sensor->hasReceivedNewData == 0);
+    struct Pose *poseZero = Pose_zero();
+    cr_assert(worldCamera->mapSensor->hasReceivedNewData == 0);
+    cr_assert(worldCamera->robotSensor->hasReceivedNewData == 0);
+    cr_assert(worldCamera->robotRadius == 0);
+    cr_assert(Pose_haveTheSameValues(worldCamera->robotPose, poseZero));
+    Pose_delete(poseZero);
 }

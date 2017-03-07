@@ -2,8 +2,9 @@
 
 rm -rf build/coverage
 mkdir -p build/coverage
-cp src/* build/coverage/.
-cp tests/*.c build/coverage/.
+cp ../shared/* build/coverage/.
+cp -r src/* build/coverage/.
+cp -r tests/* build/coverage/.
 
 cd build/coverage
 

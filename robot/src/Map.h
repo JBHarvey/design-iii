@@ -2,7 +2,7 @@
 #define MAP_H_
 
 #include "Obstacle.h"
-#include "Pose.h"
+#include "State.h"
 
 struct Map {
     struct Object *object;
