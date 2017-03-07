@@ -707,13 +707,17 @@ extern void TIM2_IRQHandler() {
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
 
 		speedMotor1 = calculateSpeed(numberOfEdges1);
-		numberOfEdges1 = 0;
+		//numberOfEdges1 = 0;
 		speedMotor2 = calculateSpeed(numberOfEdges2);
-		numberOfEdges2 = 0;
+		//numberOfEdges2 = 0;
 		speedMotor3 = calculateSpeed(numberOfEdges3);
-		numberOfEdges3 = 0;
+		//numberOfEdges3 = 0;
 		speedMotor4 = calculateSpeed(numberOfEdges4);
-		numberOfEdges4 = 0;
+		//numberOfEdges4 = 0;
 
+		TM_HD44780_Puts(0, 0, numberOfEdges1);
+		TM_HD44780_Puts(0, 8, numberOfEdges2);
+		TM_HD44780_Puts(1, 0, numberOfEdges3);
+		TM_HD44780_Puts(1, 8, numberOfEdges4);
 	}
 }
