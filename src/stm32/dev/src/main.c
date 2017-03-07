@@ -478,11 +478,8 @@ int main(void) {
 
 			//Delayms(2000);
 
-			<<<<<<< HEAD
 			//move(100);
 
-			=======
-			>>>>>>> d6156f0158fe56e9fb2669b30d552fc9d8234b09
 			MotorSetDirection(1, COUNTER_CLOCK);
 			MotorSetDirection(2, BRAKE_G);
 			MotorSetDirection(3, CLOCK);
@@ -619,18 +616,6 @@ int main(void) {
 		}
 	}
 }
-
-/*extern void SysTick_Handler(void) {
- if (speedIndex < MAX_SPEED_INDEX) {
-
- speedBuffer[speedIndex] = numberOfEdges1; //calculateSpeed(numberOfEdges1);
- speedIndex++;
- numberOfEdges1 = 0;
- } else {
- TM_DISCO_LedOn (LED_ORANGE);
- MotorSetSpeed(1, 0);
- }
- }*/
 
 extern void EXTI0_IRQHandler(void) {
 	/* Make sure that interrupt flag is set */
