@@ -83,6 +83,33 @@ void InitializeLEDs() {
 	GPIO_ResetBits(GPIOD, GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14);
 }
 
+void SetTimer2(uint16_t period) {
+	TIM_TimeBaseInitTypeDef timerInitStructure;
+	timerInitStructure.TIM_Prescaler = 84 - 1;
+	timerInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
+	timerInitStructure.TIM_Period = period - 1;
+	timerInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+	timerInitStructure.TIM_RepetitionCounter = 0;
+	TIM_TimeBaseInit(TIM2, &timerInitStructure);
+}
+
+/* timer to calculate wheel speed */
+void InitializeTimer2() {
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+	SetTimer2(125 - 1);
+	TIM_Cmd(TIM2, ENABLE);
+	TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+}
+
+void EnableTimer2Interrupt() {
+	NVIC_InitTypeDef nvicStructure;
+	nvicStructure.NVIC_IRQChannel = TIM2_IRQn;
+	nvicStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	nvicStructure.NVIC_IRQChannelSubPriority = 1;
+	nvicStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&nvicStructure);
+}
+
 void SetTimer5(uint16_t period) {
 	TIM_TimeBaseInitTypeDef timerInitStructure;
 	timerInitStructure.TIM_Prescaler = MANCHESTER_PRESCALER;
@@ -569,18 +596,6 @@ int main(void) {
 	}
 }
 
-/*extern void SysTick_Handler(void) {
- if (speedIndex < MAX_SPEED_INDEX) {
-
- speedBuffer[speedIndex] = numberOfEdges1; //calculateSpeed(numberOfEdges1);
- speedIndex++;
- numberOfEdges1 = 0;
- } else {
- TM_DISCO_LedOn (LED_ORANGE);
- MotorSetSpeed(1, 0);
- }
- }*/
-
 extern void EXTI0_IRQHandler(void) {
 	/* Make sure that interrupt flag is set */
 	if (EXTI_GetITStatus(EXTI_Line0) != RESET) {
@@ -628,5 +643,22 @@ extern void EXTI9_5_IRQHandler(void) {
 		InitializeTimer5();
 		EnableTimer5Interrupt();
 		disableExternalInterruptLine7();
+	}
+}
+
+extern void TIM2_IRQHandler() {
+	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
+		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+
+		if (speedIndex < MAX_SPEED_INDEX) {
+
+			speedBuffer[speedIndex] = numberOfEdges1; //calculateSpeed(numberOfEdges1);
+			speedIndex++;
+			numberOfEdges1 = 0;
+		} else {
+			TM_DISCO_LedOn (LED_ORANGE);
+			MotorSetSpeed(1, 0);
+		}
+
 	}
 }
