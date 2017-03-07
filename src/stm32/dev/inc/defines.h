@@ -58,4 +58,11 @@
 #define PID_POS_KI 0.01
 #define PID_POS_KD 146.4823
 
+#define SPEED_CALC_PERIOD 4000
+#define SPEED_CALC_TIME_DELAY 1/500
+
+// Pour utiliser la librairie sans que sa plante
+#define ARM_CORTEX_M3
+#define __FPU_PRESENT 1
+
 #endif

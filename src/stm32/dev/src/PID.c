@@ -5,6 +5,7 @@
  *      Author: Admin
  */
 #include "PID.h"
+#include "arm_math.h"
 
 void initPID(arm_pid_instance_f32* PID_SPEED, arm_pid_instance_f32* PID_POS) {
 	/* ARM PID Instance, float_32 format */
@@ -16,13 +17,13 @@ void initPID(arm_pid_instance_f32* PID_SPEED, arm_pid_instance_f32* PID_POS) {
 	PID_SPEED->Kd = PID_SPEED_KD; /* Derivative */
 
 	/* Initialize PID system, float32_t format */
-	arm_pid_init_f32(&PID_SPEED, 1);
+	arm_pid_init_f32(PID_SPEED, 1);
 
 	/* Initialize PID for position */
 	PID_POS->Kp = PID_POS_KP;
 	PID_POS->Ki = PID_POS_KI;
 	PID_POS->Kd = PID_POS_KD;
-	arm_pid_init_f32(&PID_POS, 1);
+	arm_pid_init_f32(PID_POS, 1);
 
 }
 

@@ -214,25 +214,3 @@ void MotorSetDirection(uint8_t noMotor, uint8_t direction) {
 	}
 }
 
-void move(float XtargetPosition, float YtargetPosition, int *numberOfEdges1,
-		int *numberOfEdges2, int *numberOfEdges3, int *numberOfEdges4) {
-	float XtravelledDistance = 0;
-	float YtravelledDistance = 0;
-	*numberOfEdges1 = 0;
-	*numberOfEdges2 = 0;
-	*numberOfEdges3 = 0;
-	*numberOfEdges4 = 0;
-	while (XtravelledDistance <= XtargetPosition
-			|| YtravelledDistance <= YtargetPosition) {
-		XtravelledDistance = calculateTravelledDistance(numberOfEdges1);
-		YtravelledDistance = calculateTravelledDistance(numberOfEdges2);
-		// calculate pid
-
-		// adjust motor command
-	}
-}
-
-float calculateTravelledDistance(int *numberOfEdges) {
-	return *numberOfEdges * 0.21677 / 64000;
-}
-
