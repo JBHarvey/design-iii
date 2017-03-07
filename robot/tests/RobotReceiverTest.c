@@ -203,6 +203,21 @@ Test(RobotReceiver, given_aPacket_when_updatesWorld_then_theRobotSensorHasNewDat
     cr_assert(worldCamera->robotSensor->hasReceivedNewData);
     WorldCamera_delete(worldCamera);
 }
+
+Test(RobotReceiver, given_aPacket_when_updatesWorld_then_theRobotInformationInWorldCameraAreUpdated
+     , .init = setupRobotReceiver)
+{
+    struct Pose *pose = Pose_new(RECEIVER_TEST_ROBOT_X, RECEIVER_TEST_ROBOT_Y, RECEIVER_TEST_ROBOT_THETA);
+
+    struct WorldCamera *worldCamera = WorldCamera_new();
+    RobotReceiver_updateWorld(worldCamera, mesurementsMock.world);
+
+    cr_assert(Pose_haveTheSameValues(worldCamera->robotPose, pose));
+    cr_assert(worldCamera->robotRadius == RECEIVER_TEST_ROBOT_RADIUS);
+    WorldCamera_delete(worldCamera);
+    Pose_delete(pose);
+}
+
 Test(RobotReceiver, given_environmentChanges_when_updatesWorld_then_theMapSenorHasNewData
      , .init = setupRobotReceiver)
 {

@@ -137,6 +137,22 @@ static void updatePaintingZone(struct Map *map, struct Communication_Environment
 
 }
 
+static void updateWorldCameraRobot(struct WorldCamera *worldCamera, struct Communication_Object robot)
+{
+    Sensor_receivesData(worldCamera->robotSensor);
+
+    int x = robot.zone.pose.coordinates.x;
+    int y = robot.zone.pose.coordinates.y;
+    int theta = robot.zone.pose.theta;
+    int radius = robot.radius;
+    struct Pose *pose = Pose_new(x, y, theta);
+
+    Pose_copyValuesFrom(worldCamera->robotPose, pose);
+    worldCamera->robotRadius = radius;
+
+    Pose_delete(pose);
+}
+
 // Add the handle_recv_packet somewhere here and make it call these
 void RobotReceiver_updateMesurements(struct Robot *robot)
 {
@@ -162,7 +178,8 @@ void RobotReceiver_updateWorld(struct WorldCamera *worldCamera, struct Communica
         updatePaintingZone(map, world.environment);
     }
 
-    Sensor_receivesData(worldCamera->robotSensor);
+    updateWorldCameraRobot(worldCamera, world.robot);
+
 
 }
 
