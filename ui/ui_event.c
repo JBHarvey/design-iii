@@ -1,5 +1,7 @@
 #include "ui_event.h"
 
+extern GMutex mutex;
+
 gboolean draw_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer pixbuf)
 {
     GdkPixbuf* source_pixbuf = GDK_PIXBUF(pixbuf);
@@ -7,7 +9,11 @@ gboolean draw_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer 
     if(source_pixbuf != NULL) {
 
         GdkWindow *window = gtk_widget_get_window(widget);
+
+        g_mutex_lock(&mutex);
         cairo_surface_t *cairo_surface = gdk_cairo_surface_create_from_pixbuf(source_pixbuf, 0, window);
+        g_mutex_unlock(&mutex);
+
         cairo_region_t *cairo_region = gdk_cairo_region_create_from_surface(cairo_surface);
         gfloat widget_width = gtk_widget_get_allocated_width(widget);
         gfloat widget_height = gtk_widget_get_allocated_height(widget);

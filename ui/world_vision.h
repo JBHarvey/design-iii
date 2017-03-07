@@ -19,4 +19,10 @@ gboolean world_camera_draw_event_callback(GtkWidget *widget, GdkEventExpose *eve
 
 gboolean world_camera_calibration_clicked_event_callback(GtkWidget *widget, gpointer data);
 
+void set_main_loop_status_running(void);
+
+void set_main_loop_status_terminated(void);
+
+GMutex mutex;
+
 #endif // __WORLD_VISION

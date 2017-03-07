@@ -1,5 +1,5 @@
 CC=clang
-CFLAGS+= -g `pkg-config --cflags gtk+-3.0 opencv gmodule-2.0`
+CFLAGS+= -g `pkg-config --cflags gtk+-3.0 opencv gmodule-2.0` -fsanitize=address
 LIBS=`pkg-config --libs gtk+-3.0 opencv gmodule-2.0`
 ODIR=obj
 RDIR=station-resources
