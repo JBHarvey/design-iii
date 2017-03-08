@@ -1,6 +1,12 @@
 
 #include "protocol.h"
 
+static void *globalPointer;
+
+void setPointer(void *pointer)
+{
+    globalPointer = pointer;
+}
 
 void callbackStartPacket()
 {
