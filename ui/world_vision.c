@@ -1,78 +1,92 @@
-#include "opencv2/videoio/videoio_c.h"
-#include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/calib3d/calib3d_c.h"
 #include "world_vision.h"
+#include "world_vision_calibration.h"
 #include "ui_event.h"
-#include <errno.h>
+#include "opencv2/videoio/videoio_c.h"
+#include "opencv2/calib3d/calib3d_c.h"
+
+/* Flags definitions */
 
 enum thread_status {TERMINATED, RUNNING};
+enum camera_status {UNCALIBRATED, CALIBRATED};
 
-enum thread_status main_loop_status;
+/* Constants */
 
 const int WORLD_CAMERA_WIDTH = 1280;
 const int WORLD_CAMERA_HEIGHT = 720;
 
-enum camera_status {UNCALIBRATED, CALIBRATED};
+/* Global variables */
 
-struct camera_intrinsics {
-    CvMat *camera_matrix;
-    CvMat *distortion_coefficients;
-};
+GMutex world_camera_feeder_mutex;
 
+enum thread_status main_loop_status;
 enum camera_status world_camera_status = UNCALIBRATED;
-struct camera_intrinsics *world_camera_intrinsics;
+struct camera_intrinsics *world_camera_intrinsics = NULL;
 GdkPixbuf *world_camera_pixbuf = NULL;
 
-static gboolean initialize_camera_matrix_and_distortion_coefficients_from_file(GtkWidget *widget);
+/* Event callbacks */
 
-void set_main_loop_status_running(void)
+gboolean world_camera_draw_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
-    g_mutex_lock(&mutex);
-    main_loop_status = RUNNING;
-    g_mutex_unlock(&mutex);
+    gboolean status = FALSE;
+
+    if(G_IS_OBJECT(world_camera_pixbuf)) {
+        g_mutex_lock(&world_camera_feeder_mutex);
+        status = draw_event_callback(widget, event, world_camera_pixbuf);
+        g_mutex_unlock(&world_camera_feeder_mutex);
+    }
+
+    return status;
 }
 
-void set_main_loop_status_terminated(void)
+gboolean world_camera_calibration_clicked_event_callback(GtkWidget *widget, gpointer data)
 {
-    g_mutex_lock(&mutex);
-    main_loop_status = TERMINATED;
-    g_mutex_unlock(&mutex);
+    if(initialize_camera_matrix_and_distortion_coefficients_from_file(widget, world_camera_intrinsics)) {
+        gtk_widget_hide(GTK_WIDGET(data));
+        //CvPoint3D64f green_square_model_points[4] = {cvPoint3D64f(0, 0, 0), cvPoint3D64f(0, 660, 0), cvPoint3D64f(660, 660, 0), cvPoint3D64f(660, 0, 0)};
+    }
+
+    return TRUE;
 }
+
+/* Worker thread functions */
 
 gpointer world_camera_feeder(gpointer data)
 {
-    CvCapture *cv_cap;
     IplImage* frame = NULL;
     IplImage* frame_BGR = NULL;
     IplImage* frame_BGR_corrected = NULL;
 
+    g_mutex_lock(&world_camera_feeder_mutex);
     world_camera_intrinsics = (struct camera_intrinsics *) malloc(sizeof(struct camera_intrinsics));
     world_camera_pixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, FALSE, IPL_DEPTH_8U, WORLD_CAMERA_WIDTH,
                                          WORLD_CAMERA_HEIGHT);
+    g_mutex_unlock(&world_camera_feeder_mutex);
+
+    CvCapture *world_camera_feed = NULL;
 
     /* Find camera. 0 is for the embedded webcam. */
     for(int i = 1; i < 100; i++) {
-        cv_cap = cvCreateCameraCapture(i);
+        world_camera_feed = cvCreateCameraCapture(i);
 
-        if(cv_cap) {
+        if(world_camera_feed) {
             break;
         }
     }
 
-    if(!cv_cap) {
-        cv_cap = cvCreateCameraCapture(0);
+    if(!world_camera_feed) {
+        world_camera_feed = cvCreateCameraCapture(0);
     }
 
-    cvSetCaptureProperty(cv_cap, CV_CAP_PROP_FRAME_WIDTH, WORLD_CAMERA_WIDTH);
-    cvSetCaptureProperty(cv_cap, CV_CAP_PROP_FRAME_HEIGHT, WORLD_CAMERA_HEIGHT);
+    cvSetCaptureProperty(world_camera_feed, CV_CAP_PROP_FRAME_WIDTH, WORLD_CAMERA_WIDTH);
+    cvSetCaptureProperty(world_camera_feed, CV_CAP_PROP_FRAME_HEIGHT, WORLD_CAMERA_HEIGHT);
 
     while(TRUE) {
-        g_mutex_lock(&mutex);
+        g_mutex_lock(&world_camera_feeder_mutex);
 
         if(main_loop_status == TERMINATED) {
             g_object_unref(world_camera_pixbuf);
-            g_mutex_unlock(&mutex);
-            cvReleaseCapture(&cv_cap);
+            g_mutex_unlock(&world_camera_feeder_mutex);
+            cvReleaseCapture(&world_camera_feed);
 
             if(world_camera_status != UNCALIBRATED) {
                 cvReleaseMat(&(world_camera_intrinsics->camera_matrix));
@@ -82,10 +96,10 @@ gpointer world_camera_feeder(gpointer data)
             free(world_camera_intrinsics);
             g_thread_exit(0);
         } else {
-            g_mutex_unlock(&mutex);
+            g_mutex_unlock(&world_camera_feeder_mutex);
         }
 
-        frame_BGR = cvQueryFrame(cv_cap);
+        frame_BGR = cvQueryFrame(world_camera_feed);
         frame = cvCloneImage(frame_BGR);
 
         if(world_camera_status == CALIBRATED) {
@@ -104,16 +118,14 @@ gpointer world_camera_feeder(gpointer data)
 
         cvCvtColor((CvArr*) frame_BGR_corrected, frame, CV_BGR2RGB);
 
-        g_mutex_lock(&mutex);
+        g_mutex_lock(&world_camera_feeder_mutex);
         g_object_unref(world_camera_pixbuf);
 
-        if(frame != NULL) {
-            world_camera_pixbuf = gdk_pixbuf_new_from_data((guchar*) frame->imageData,
-                                  GDK_COLORSPACE_RGB, FALSE, frame->depth, frame->width,
-                                  frame->height, (frame->widthStep), NULL, NULL);
-        }
+        world_camera_pixbuf = gdk_pixbuf_new_from_data((guchar*) frame->imageData,
+                              GDK_COLORSPACE_RGB, FALSE, frame->depth, frame->width,
+                              frame->height, (frame->widthStep), NULL, NULL);
 
-        g_mutex_unlock(&mutex);
+        g_mutex_unlock(&world_camera_feeder_mutex);
 
         cvReleaseImage(&frame_BGR_corrected);
         cvReleaseImage(&frame);
@@ -122,71 +134,25 @@ gpointer world_camera_feeder(gpointer data)
     return NULL;
 }
 
-gboolean world_camera_draw_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data)
+/* Public functions */
+
+void set_main_loop_status_running(void)
 {
-    return draw_event_callback(widget, event, world_camera_pixbuf);
+    g_mutex_lock(&world_camera_feeder_mutex);
+    main_loop_status = RUNNING;
+    g_mutex_unlock(&world_camera_feeder_mutex);
 }
 
-gboolean world_camera_calibration_clicked_event_callback(GtkWidget *widget, gpointer data)
+void set_main_loop_status_terminated(void)
 {
-    if(initialize_camera_matrix_and_distortion_coefficients_from_file(widget)) {
-    }
-
-    return TRUE;
+    g_mutex_lock(&world_camera_feeder_mutex);
+    main_loop_status = TERMINATED;
+    g_mutex_unlock(&world_camera_feeder_mutex);
 }
 
-static gboolean initialize_camera_matrix_and_distortion_coefficients_from_file(GtkWidget *widget)
+void set_world_camera_status_calibrated(void)
 {
-    gboolean isCalibrationFileValid;
-
-    do {
-        isCalibrationFileValid = TRUE;
-        GtkWidget *dialog = gtk_file_chooser_dialog_new("open calibration xml file",
-                            GTK_WINDOW(widget),
-                            GTK_FILE_CHOOSER_ACTION_OPEN,
-                            "cancel", GTK_RESPONSE_CANCEL,
-                            "select", GTK_RESPONSE_ACCEPT,
-                            NULL);
-        GtkFileFilter *filter = gtk_file_filter_new();
-        gint response;
-
-        gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
-        gtk_file_filter_set_name(filter, "xml data file");
-        gtk_file_filter_add_mime_type(filter, "application/xml");
-        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
-        response = gtk_dialog_run(GTK_DIALOG(dialog));
-
-        if(response == GTK_RESPONSE_ACCEPT) {
-            char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-            CvFileStorage *file_storage = cvOpenFileStorage(filename, NULL, CV_STORAGE_READ, NULL);
-            world_camera_intrinsics->camera_matrix = (CvMat*) cvReadByName(file_storage, NULL, "Camera_Matrix", NULL);
-            world_camera_intrinsics->distortion_coefficients = (CvMat*) cvReadByName(file_storage, NULL, "Distortion_Coefficients",
-                    NULL);
-
-            if(world_camera_intrinsics->camera_matrix == NULL || world_camera_intrinsics->distortion_coefficients == NULL) {
-                GtkWidget *errorDialog = gtk_message_dialog_new(GTK_WINDOW(widget),
-                                         GTK_DIALOG_DESTROY_WITH_PARENT,
-                                         GTK_MESSAGE_ERROR,
-                                         GTK_BUTTONS_CLOSE,
-                                         "Error reading “%s”: %s.\n Please, select a valid XML calibration file.",
-                                         filename,
-                                         g_strerror(EINVAL));
-                gtk_dialog_run(GTK_DIALOG(errorDialog));
-                gtk_widget_destroy(errorDialog);
-                isCalibrationFileValid = FALSE;
-            }
-
-            cvReleaseFileStorage(&file_storage);
-            g_free(filename);
-            gtk_widget_destroy(dialog);
-        } else if(response == GTK_RESPONSE_CANCEL) {
-            gtk_widget_destroy(dialog);
-
-            return FALSE;
-        }
-    } while(!isCalibrationFileValid);
-
+    g_mutex_lock(&world_camera_feeder_mutex);
     world_camera_status = CALIBRATED;
-
-    return TRUE;
+    g_mutex_unlock(&world_camera_feeder_mutex);
 }
