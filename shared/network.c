@@ -25,7 +25,7 @@ struct Packet {
 static struct Packet *first;
 static struct Packet *last;
 
-static void clear_first_packet()
+static void clearFirstPacket()
 {
     struct Packet *next = first->next;
     free(first);
@@ -37,7 +37,7 @@ static void clear_first_packet()
     first = next;
 }
 
-static void send_data_socket(int fd)
+static void sendDataSocket(int fd)
 {
     while(first) {
         uint8_t *buf = first->data + first->sent;
@@ -50,7 +50,7 @@ static void send_data_socket(int fd)
             break;
         } else {
             if(ret == length) {
-                clear_first_packet();
+                clearFirstPacket();
             } else if(ret < length) {
                 first->sent += ret;
                 break;
@@ -59,7 +59,7 @@ static void send_data_socket(int fd)
     }
 }
 
-void add_packet(uint8_t *data, uint32_t length)
+void addPacket(uint8_t *data, uint32_t length)
 {
     struct Packet *new_packet = malloc(sizeof(struct Packet) + sizeof(uint32_t) + length);
     printf("add %i\n", length);
@@ -79,7 +79,7 @@ void add_packet(uint8_t *data, uint32_t length)
 }
 
 /* Accept client requests */
-void accept_cb(struct ev_loop *loop, struct ev_io *watcher, int revents)
+void acceptCallback(struct ev_loop *loop, struct ev_io *watcher, int revents)
 {
     struct sockaddr_in client_addr;
     socklen_t client_len = sizeof(client_addr);
@@ -111,21 +111,21 @@ void accept_cb(struct ev_loop *loop, struct ev_io *watcher, int revents)
         }
 
         if(first && first->sent) {
-            clear_first_packet();
+            clearFirstPacket();
         }
     }
 
     printf("Successfully connected with client.\n");
 
     // Initialize and start watcher to read client requests
-    ev_io_init(w_client, read_cb, client_sd, EV_READ | EV_WRITE);
+    ev_io_init(w_client, readWriteCallback, client_sd, EV_READ | EV_WRITE);
     ev_io_start(loop, w_client);
 }
 
 /* Packet format [uint32 length][uint8 id] */
 
 /* Read client message */
-void read_cb(struct ev_loop *loop, struct ev_io *watcher, int revents)
+void readWriteCallback(struct ev_loop *loop, struct ev_io *watcher, int revents)
 {
     char buffer[BUFFER_SIZE];
     ssize_t read;
@@ -143,7 +143,7 @@ void read_cb(struct ev_loop *loop, struct ev_io *watcher, int revents)
     }
 
     if(EV_WRITE & revents) {
-        send_data_socket(watcher->fd);
+        sendDataSocket(watcher->fd);
     }
 
     if(!(EV_READ & revents)) {
@@ -154,7 +154,7 @@ void read_cb(struct ev_loop *loop, struct ev_io *watcher, int revents)
         int bytes_available = 0;
         ioctl(watcher->fd, FIONREAD, &bytes_available);
 
-        /* make sure packet beg can always be read at once */
+        /* make sure packet beggining can always be read at once */
         if(bytes_available < sizeof(total_packet_length)) {
             return;
         }
@@ -194,7 +194,7 @@ void read_cb(struct ev_loop *loop, struct ev_io *watcher, int revents)
 
             if(total_packet_length  == received_packet_length) {
                 //CALLBACK
-                handle_recv_packet(packet, received_packet_length);
+                handleReceivedPacket(packet, received_packet_length);
                 //printf("Message of length %u:%s\n", received_packet_length, packet);
                 //
                 free(packet);
