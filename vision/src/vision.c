@@ -34,6 +34,7 @@
 #define MIN_FIGURE_AREA (WIDTH_HEIGHT_EXTRACTED_SQUARE_IMAGE * WIDTH_HEIGHT_EXTRACTED_SQUARE_IMAGE * 0.05)
 #define MAX_FIGURE_AREA (WIDTH_HEIGHT_EXTRACTED_SQUARE_IMAGE * WIDTH_HEIGHT_EXTRACTED_SQUARE_IMAGE * 0.9)
 
+#define MIN_SQUARE_AREA 1000
 
 struct Square {
     CvPoint2D32f corner[4];
@@ -51,7 +52,7 @@ double angle(CvPoint *pt1, CvPoint *pt2, CvPoint *pt0)
 static _Bool isSquare(CvSeq *contours)
 {
     if(contours->total == 4 &&
-       fabs(cvContourArea(contours, CV_WHOLE_SEQ, 0)) > 1000 &&
+       fabs(cvContourArea(contours, CV_WHOLE_SEQ, 0)) > MIN_SQUARE_AREA &&
        cvCheckContourConvexity(contours)) {
         double s = 0;
 
@@ -190,7 +191,8 @@ static void findGreenSquaresRecursive(CvSeq *contours, struct Square *out_square
     }
 }
 
-static unsigned int findGreenSquares(CvMemStorage *storage, IplImage *image_black_white, struct Square *out_squares,
+static unsigned int findGreenSquares(CvMemStorage *opencv_storage, IplImage *image_black_white,
+                                     struct Square *out_squares,
                                      unsigned int max_squares)
 {
     unsigned int num_squares = 0;
@@ -201,10 +203,10 @@ static unsigned int findGreenSquares(CvMemStorage *storage, IplImage *image_blac
 
     CvSeq *contours = 0;
 
-    if(cvFindContours(image_black_white, storage, &contours, sizeof(CvContour),
+    if(cvFindContours(image_black_white, opencv_storage, &contours, sizeof(CvContour),
                       CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cvPoint(0, 0))) {
 
-        contours = cvApproxPoly(contours, sizeof(CvContour), storage, CV_POLY_APPROX_DP, GREEN_SQUARE_POLY_APPROX, 1);
+        contours = cvApproxPoly(contours, sizeof(CvContour), opencv_storage, CV_POLY_APPROX_DP, GREEN_SQUARE_POLY_APPROX, 1);
         findGreenSquaresRecursive(contours, out_squares, max_squares, &num_squares);
     }
 
@@ -230,13 +232,13 @@ static IplImage *imageInsideSquare(IplImage *image_yuv, struct Square square)
     return corrected_image;
 }
 
-static CvSeq *findFigureContours(CvMemStorage *storage, IplImage *image_black_white)
+static CvSeq *findFigureContours(CvMemStorage *opencv_storage, IplImage *image_black_white)
 {
     CvSeq *contours = NULL;
 
-    if(cvFindContours(image_black_white, storage, &contours, sizeof(CvContour), CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE,
+    if(cvFindContours(image_black_white, opencv_storage, &contours, sizeof(CvContour), CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE,
                       cvPoint(0, 0))) {
-        contours = cvApproxPoly(contours, sizeof(CvContour), storage, CV_POLY_APPROX_DP, FIGURE_POLY_APPROX, 1);
+        contours = cvApproxPoly(contours, sizeof(CvContour), opencv_storage, CV_POLY_APPROX_DP, FIGURE_POLY_APPROX, 1);
     }
 
     return contours;
@@ -284,7 +286,7 @@ static CvSeq *findFigure(CvSeq *in)
     return 0;
 }
 
-CvSeq *findFirstFigure(CvMemStorage *storage, IplImage *image_yuv)
+CvSeq *findFirstFigure(CvMemStorage *opencv_storage, IplImage *image_yuv)
 {
     CvSeq *figure_contours = NULL;
 
@@ -293,12 +295,12 @@ CvSeq *findFirstFigure(CvMemStorage *storage, IplImage *image_yuv)
 
     struct Square squares[1];
 
-    if(findGreenSquares(storage, image_black_white, squares, sizeof(squares) / sizeof(struct Square)) >= 1) {
+    if(findGreenSquares(opencv_storage, image_black_white, squares, sizeof(squares) / sizeof(struct Square)) >= 1) {
         IplImage *square_image = imageInsideSquare(image_yuv, squares[0]);
         IplImage *square_image_black_white = thresholdImage3D(square_image, ERODE_DILATE_PIXELS);
         cvReleaseImage(&square_image);
 
-        figure_contours = findFigureContours(storage, square_image_black_white);
+        figure_contours = findFigureContours(opencv_storage, square_image_black_white);
         cvReleaseImage(&square_image_black_white);
         figure_contours = findFigure(figure_contours);
     }
@@ -306,6 +308,8 @@ CvSeq *findFirstFigure(CvMemStorage *storage, IplImage *image_yuv)
     cvReleaseImage(&image_black_white);
     return figure_contours;
 }
+
+#define AREA_CIRCLE_TOLERANCE (0.04)
 
 static _Bool isCircle(CvSeq *in)
 {
@@ -320,13 +324,14 @@ static _Bool isCircle(CvSeq *in)
 
     double comp_area = contour_perimeter * contour_perimeter / (3.14159 * 4);
 
-    if(contour_area * 0.96 < comp_area && comp_area < contour_area * 1.04) {
+    if(comp_area < contour_area * (1.0 + AREA_CIRCLE_TOLERANCE)) {
         return 1;
     }
 
     return 0;
 }
 
+#define OBSTACLE_AREA_TOLERANCE 0.1
 #define OBSTACLE_CIRCLE_AREA 1465.0
 
 static _Bool isCircleObstacle(CvSeq *in)
@@ -341,7 +346,8 @@ static _Bool isCircleObstacle(CvSeq *in)
 
     double area = fabs(cvContourArea(in, CV_WHOLE_SEQ, 0));
 
-    if(OBSTACLE_CIRCLE_AREA * 0.90 < area && area < OBSTACLE_CIRCLE_AREA * 1.10) {
+    if(OBSTACLE_CIRCLE_AREA * (1.0 - OBSTACLE_AREA_TOLERANCE) < area
+       && area < OBSTACLE_CIRCLE_AREA * (1.0 + OBSTACLE_AREA_TOLERANCE)) {
         return 1;
     }
 
@@ -390,7 +396,8 @@ static _Bool isTriangleObstacle(CvSeq *in)
 
     double area = fabs(cvContourArea(in, CV_WHOLE_SEQ, 0));
 
-    if(OBSTACLE_TRIANGLE_AREA * 0.90 < area && area < OBSTACLE_TRIANGLE_AREA * 1.10) {
+    if(OBSTACLE_TRIANGLE_AREA * (1.0 - OBSTACLE_AREA_TOLERANCE) < area
+       && area < OBSTACLE_TRIANGLE_AREA * (1.0 + OBSTACLE_AREA_TOLERANCE)) {
         return 1;
     }
 
@@ -520,7 +527,7 @@ static void findObstaclesRecursive(CvSeq *contours, struct Obstacle *out_obstacl
 
 #define OBSTACLE_POLY_APPROX 1
 
-unsigned int findObstacles(CvMemStorage *storage, struct Obstacle *obstacles_out, unsigned int max_obstacles,
+unsigned int findObstacles(CvMemStorage *opencv_storage, struct Obstacle *obstacles_out, unsigned int max_obstacles,
                            IplImage *image_yuv)
 {
     IplImage *image_black_white = thresholdImage(image_yuv, OBSTACLES_YUV_LOWER_BOUND, OBSTACLES_YUV_UPPER_BOUND,
@@ -529,9 +536,9 @@ unsigned int findObstacles(CvMemStorage *storage, struct Obstacle *obstacles_out
     CvSeq *contours = 0;
     unsigned int num_obstacles = 0;
 
-    if(cvFindContours(image_black_white, storage, &contours, sizeof(CvContour), CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE,
+    if(cvFindContours(image_black_white, opencv_storage, &contours, sizeof(CvContour), CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE,
                       cvPoint(0, 0))) {
-        contours = cvApproxPoly(contours, sizeof(CvContour), storage, CV_POLY_APPROX_DP, OBSTACLE_POLY_APPROX, 1);
+        contours = cvApproxPoly(contours, sizeof(CvContour), opencv_storage, CV_POLY_APPROX_DP, OBSTACLE_POLY_APPROX, 1);
 
         findObstaclesRecursive(contours, obstacles_out, max_obstacles, &num_obstacles);
     }

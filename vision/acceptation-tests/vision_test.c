@@ -35,13 +35,13 @@ int main(int argc, char *argv[])
 
     _Bool non_black_pixels = 1;
 
-    CvMemStorage *storage = cvCreateMemStorage(0);
+    CvMemStorage *opencv_storage = cvCreateMemStorage(0);
 
     IplImage *image = cvLoadImage(argv[1], CV_LOAD_IMAGE_COLOR);
-    CvSeq *contours_compare = (CvSeq *)cvLoad(argv[2], storage, 0, 0);
+    CvSeq *contours_compare = (CvSeq *)cvLoad(argv[2], opencv_storage, 0, 0);
 
-    CvMat *camera_matrix = (CvMat *)cvLoad(argv[3], storage, "Camera_Matrix", 0);
-    CvMat *distortion_coeffs = (CvMat *)cvLoad(argv[3], storage, "Distortion_Coefficients", 0);
+    CvMat *camera_matrix = (CvMat *)cvLoad(argv[3], opencv_storage, "Camera_Matrix", 0);
+    CvMat *distortion_coeffs = (CvMat *)cvLoad(argv[3], opencv_storage, "Distortion_Coefficients", 0);
 
     //cvNamedWindow("Video", 0); // create window
     //cvNamedWindow("Video-lines", 0); // create window
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
         //cvShowImage("Video-orig", image);
         IplImage *image_yuv = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
         cvCvtColor(image, image_yuv, CV_BGR2YCrCb);
-        CvSeq *contour = findFirstFigure(storage, image_yuv);
+        CvSeq *contour = findFirstFigure(opencv_storage, image_yuv);
         cvReleaseImage(&image_yuv);
 
         IplImage *square_image = cvCreateImage(cvSize(1000, 1000), IPL_DEPTH_8U, 3);
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
     int c = cvWaitKey(0);
     #endif
     /* clean up */
-    cvReleaseMemStorage(&storage);
+    cvReleaseMemStorage(&opencv_storage);
     //cvDestroyWindow("Video-orig");
     //printf("%u\n", non_black_pixels);
     return non_black_pixels;

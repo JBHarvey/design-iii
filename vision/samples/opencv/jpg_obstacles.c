@@ -10,11 +10,11 @@ int main(int argc, char *argv[])
     IplImage *img;
     CvMat *camera_matrix = 0;
     CvMat *distortion_coeffs = 0;
-    CvMemStorage *storage = cvCreateMemStorage(0);
+    CvMemStorage *opencv_storage = cvCreateMemStorage(0);
 
     if(argc > 2) {
-        camera_matrix = (CvMat *)cvLoad(argv[2], storage, "Camera_Matrix", 0);
-        distortion_coeffs = (CvMat *)cvLoad(argv[2], storage, "Distortion_Coefficients", 0);
+        camera_matrix = (CvMat *)cvLoad(argv[2], opencv_storage, "Camera_Matrix", 0);
+        distortion_coeffs = (CvMat *)cvLoad(argv[2], opencv_storage, "Distortion_Coefficients", 0);
     }
 
     //cvNamedWindow("Video", 0); // create window
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
             IplImage *img_yuv = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
             cvCvtColor(img, img_yuv, CV_BGR2YCrCb);
             struct Obstacle obstacles[20];
-            int num_obstacles = findObstacles(storage, obstacles, 20, img_yuv);
+            int num_obstacles = findObstacles(opencv_storage, obstacles, 20, img_yuv);
             cvReleaseImage(&img_yuv);
 
             IplImage *im_square_image = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
     }
 
     /* clean up */
-    cvReleaseMemStorage(&storage);
+    cvReleaseMemStorage(&opencv_storage);
     cvDestroyWindow("Video-orig");
     cvDestroyWindow("Video-lines");
 }

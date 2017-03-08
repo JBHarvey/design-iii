@@ -9,7 +9,7 @@ double angle(CvPoint *pt1, CvPoint *pt2, CvPoint *pt0);
 _Bool isDualSquare(CvSeq *contours);
 _Bool isFigure(CvSeq *contours);
 
-CvSeq *findFirstFigure(CvMemStorage *storage, IplImage *image_yuv);
+CvSeq *findFirstFigure(CvMemStorage *opencv_storage, IplImage *image_yuv);
 
 enum ObstacleType {
     OBSTACLE_NONE,
@@ -24,5 +24,5 @@ struct Obstacle {
     double angle; /* rads */
 };
 
-unsigned int findObstacles(CvMemStorage *storage, struct Obstacle *obstacles_out, unsigned int max_obstacles,
+unsigned int findObstacles(CvMemStorage *opencv_storage, struct Obstacle *obstacles_out, unsigned int max_obstacles,
                            IplImage *image_yuv);
