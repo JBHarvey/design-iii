@@ -11,7 +11,7 @@
 #define OFF_AREA_TOLERANCE (60.0 / 1000.0)
 #define OFF_PIXEL_TOLERANCE ((unsigned int)(1000.0 / D_TOLERANCE))
 
-static _Bool has_nonblack_pixels(IplImage *image)
+static _Bool hasNonblackPixels(IplImage *image)
 {
     unsigned int size = image->imageSize;
     char *image_data = image->imageData;
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
         //cvShowImage("Video-orig", image);
         IplImage *image_yuv = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
         cvCvtColor(image, image_yuv, CV_BGR2YCrCb);
-        CvSeq *contour = find_first_figure(storage, image_yuv);
+        CvSeq *contour = findFirstFigure(storage, image_yuv);
         cvReleaseImage(&image_yuv);
 
         IplImage *square_image = cvCreateImage(cvSize(1000, 1000), IPL_DEPTH_8U, 3);
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
                 cvDrawContours(square_image, contours_compare, CV_RGB(0, 0, 0), CV_RGB(0, 0, 0), 0, OFF_PIXEL_TOLERANCE, 8, cvPoint(0,
                                0));
             #endif
-                non_black_pixels = has_nonblack_pixels(square_image);
+                non_black_pixels = hasNonblackPixels(square_image);
             }
         }
         #ifdef D_DEBUG

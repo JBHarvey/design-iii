@@ -12,24 +12,12 @@
  */
 #define ERODE_DILATE_PIXELS 1
 
-/* Upper bound of YUV channel coordinates to detect the green square.
- */
 #define GREEN_SQUARE_YUV_UPPER_BOUND (cvScalar(255, 120, 120, 255))
-
-/* Lower bound of YUV channel coordinates to detect the green square.
- */
 #define GREEN_SQUARE_YUV_LOWER_BOUND (cvScalar(10, 0, 0, 255))
 
-/* Upper bound of YUV channel coordinates to detect the green square.
- */
 #define OBSTACLES_YUV_UPPER_BOUND (cvScalar(120, 148, 148, 255))
-
-/* Lower bound of YUV channel coordinates to detect the green square.
- */
 #define OBSTACLES_YUV_LOWER_BOUND (cvScalar(0, 108, 108, 255))
 
-/* Upper bound of Y channel coordinates to detect the figure.
- */
 #define FIGURE_Y_UPPER_BOUND (150)
 
 /* Min distance between UV coordinates and the center to detect figure.
@@ -47,14 +35,10 @@
 #define MAX_FIGURE_AREA (WIDTH_HEIGHT_EXTRACTED_SQUARE_IMAGE * WIDTH_HEIGHT_EXTRACTED_SQUARE_IMAGE * 0.9)
 
 
-typedef struct {
+struct Square {
     CvPoint2D32f corner[4];
-} Square;
+};
 
-/* helper function:
- * finds a cosine of angle between vectors
- * from pt0->pt1 and from pt0->pt2
- */
 double angle(CvPoint *pt1, CvPoint *pt2, CvPoint *pt0)
 {
     double dx1 = pt1->x - pt0->x;
@@ -64,7 +48,7 @@ double angle(CvPoint *pt1, CvPoint *pt2, CvPoint *pt0)
     return (dx1 * dx2 + dy1 * dy2) / sqrt((dx1 * dx1 + dy1 * dy1) * (dx2 * dx2 + dy2 * dy2) + 1e-10);
 }
 
-static _Bool detect_square(CvSeq *contours)
+static _Bool isSquare(CvSeq *contours)
 {
     if(contours->total == 4 &&
        fabs(cvContourArea(contours, CV_WHOLE_SEQ, 0)) > 1000 &&
@@ -96,17 +80,17 @@ static _Bool detect_square(CvSeq *contours)
     return 0;
 }
 
-_Bool detect_dual_square(CvSeq *contours)
+_Bool isDualSquare(CvSeq *contours)
 {
-    if(contours->v_next && detect_square(contours) && detect_square(contours->v_next)) {
+    if(contours->v_next && isSquare(contours) && isSquare(contours->v_next)) {
         return 1;
     }
 
     return 0;
 }
 
-static IplImage *threshold_image(IplImage *image_yuv, CvScalar lower_bound, CvScalar upper_bound,
-                                 unsigned int erode_dilate_pixels)
+static IplImage *thresholdImage(IplImage *image_yuv, CvScalar lower_bound, CvScalar upper_bound,
+                                unsigned int erode_dilate_pixels)
 {
     IplImage *image_black_white = cvCreateImage(cvGetSize(image_yuv), IPL_DEPTH_8U, 1);
     cvInRangeS(image_yuv, lower_bound, upper_bound, image_black_white);
@@ -118,7 +102,7 @@ static IplImage *threshold_image(IplImage *image_yuv, CvScalar lower_bound, CvSc
 }
 
 
-static IplImage *threshold_image_3d(IplImage *image_yuv, unsigned int erode_dilate_pixels)
+static IplImage *thresholdImage3D(IplImage *image_yuv, unsigned int erode_dilate_pixels)
 {
     IplImage *image_black_white = cvCreateImage(cvGetSize(image_yuv), IPL_DEPTH_8U, 1);
     IplImage *image_y = cvCreateImage(cvGetSize(image_yuv), IPL_DEPTH_8U, 1);
@@ -166,22 +150,22 @@ static IplImage *threshold_image_3d(IplImage *image_yuv, unsigned int erode_dila
 }
 
 
-static void find_green_squares_recursive(CvSeq *contours, Square *out_squares, unsigned int max_squares,
-        unsigned int *num_squares)
+static void findGreenSquaresRecursive(CvSeq *contours, struct Square *out_squares, unsigned int max_squares,
+                                      unsigned int *num_squares)
 {
     if(*num_squares >= max_squares) {
         return;
     }
 
-    CvSeq *h_seq = contours;
+    CvSeq *horizontal_sequence = contours;
 
-    while(h_seq) {
-        if(detect_dual_square(h_seq)) {
-            Square square;
-            square.corner[0] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(h_seq->v_next, 0));
-            square.corner[1] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(h_seq->v_next, 1));
-            square.corner[2] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(h_seq->v_next, 2));
-            square.corner[3] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(h_seq->v_next, 3));
+    while(horizontal_sequence) {
+        if(isDualSquare(horizontal_sequence)) {
+            struct Square square;
+            square.corner[0] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(horizontal_sequence->v_next, 0));
+            square.corner[1] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(horizontal_sequence->v_next, 1));
+            square.corner[2] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(horizontal_sequence->v_next, 2));
+            square.corner[3] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(horizontal_sequence->v_next, 3));
 
             /* fix rotation */
             if(square.corner[0].x * square.corner[0].y > square.corner[3].x * square.corner[3].y) {
@@ -200,13 +184,13 @@ static void find_green_squares_recursive(CvSeq *contours, Square *out_squares, u
             }
         }
 
-        find_green_squares_recursive(h_seq->v_next, out_squares, max_squares, num_squares);
-        h_seq = h_seq->h_next;
+        findGreenSquaresRecursive(horizontal_sequence->v_next, out_squares, max_squares, num_squares);
+        horizontal_sequence = horizontal_sequence->h_next;
     }
 }
 
-static unsigned int find_green_squares(CvMemStorage *storage, IplImage *image_black_white, Square *out_squares,
-                                       unsigned int max_squares)
+static unsigned int findGreenSquares(CvMemStorage *storage, IplImage *image_black_white, struct Square *out_squares,
+                                     unsigned int max_squares)
 {
     unsigned int num_squares = 0;
 
@@ -220,13 +204,13 @@ static unsigned int find_green_squares(CvMemStorage *storage, IplImage *image_bl
                       CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cvPoint(0, 0))) {
 
         contours = cvApproxPoly(contours, sizeof(CvContour), storage, CV_POLY_APPROX_DP, GREEN_SQUARE_POLY_APPROX, 1);
-        find_green_squares_recursive(contours, out_squares, max_squares, &num_squares);
+        findGreenSquaresRecursive(contours, out_squares, max_squares, &num_squares);
     }
 
     return num_squares;
 }
 
-static IplImage *image_inside_square(IplImage *image_yuv, Square square)
+static IplImage *imageInsideSquare(IplImage *image_yuv, struct Square square)
 {
     CvPoint2D32f dst[4];
     dst[0] = cvPoint2D32f(0, 0);
@@ -245,7 +229,7 @@ static IplImage *image_inside_square(IplImage *image_yuv, Square square)
     return corrected_image;
 }
 
-static CvSeq *find_figure_contours(CvMemStorage *storage, IplImage *image_black_white)
+static CvSeq *findFigureContours(CvMemStorage *storage, IplImage *image_black_white)
 {
     CvSeq *contours = NULL;
 
@@ -257,8 +241,12 @@ static CvSeq *find_figure_contours(CvMemStorage *storage, IplImage *image_black_
     return contours;
 }
 
-_Bool detect_figure(CvSeq *contours)
+_Bool isFigure(CvSeq *contours)
 {
+    if((contours->flags & CV_SEQ_FLAG_HOLE) == 0) {
+        return 0;
+    }
+
     double countour_area = cvContourArea(contours, CV_WHOLE_SEQ, 0);
 
     if(countour_area < MAX_FIGURE_AREA && countour_area > MIN_FIGURE_AREA) {
@@ -269,56 +257,56 @@ _Bool detect_figure(CvSeq *contours)
 }
 
 
-static CvSeq *find_figure(CvSeq *in)
+static CvSeq *findFigure(CvSeq *in)
 {
     if(!in) {
         return 0;
     }
 
-    CvSeq *h_seq = in;
+    CvSeq *horizontal_sequence = in;
 
-    while(h_seq) {
-        if(detect_figure(h_seq)) {
-            return h_seq;
+    while(horizontal_sequence) {
+        if(isFigure(horizontal_sequence)) {
+            return horizontal_sequence;
         }
 
 
-        CvSeq *temp = find_figure(h_seq->v_next);
+        CvSeq *temp = findFigure(horizontal_sequence->v_next);
 
         if(temp) {
             return temp;
         }
 
-        h_seq = h_seq->h_next;
+        horizontal_sequence = horizontal_sequence->h_next;
     }
 
     return 0;
 }
 
-CvSeq *find_first_figure(CvMemStorage *storage, IplImage *image_yuv)
+CvSeq *findFirstFigure(CvMemStorage *storage, IplImage *image_yuv)
 {
     CvSeq *figure_contours = NULL;
 
-    IplImage *image_black_white = threshold_image(image_yuv, GREEN_SQUARE_YUV_LOWER_BOUND, GREEN_SQUARE_YUV_UPPER_BOUND,
+    IplImage *image_black_white = thresholdImage(image_yuv, GREEN_SQUARE_YUV_LOWER_BOUND, GREEN_SQUARE_YUV_UPPER_BOUND,
                                   ERODE_DILATE_PIXELS);
 
-    Square squares[1];
+    struct Square squares[1];
 
-    if(find_green_squares(storage, image_black_white, squares, sizeof(squares) / sizeof(Square)) >= 1) {
-        IplImage *square_image = image_inside_square(image_yuv, squares[0]);
-        IplImage *square_image_black_white = threshold_image_3d(square_image, ERODE_DILATE_PIXELS);
+    if(findGreenSquares(storage, image_black_white, squares, sizeof(squares) / sizeof(struct Square)) >= 1) {
+        IplImage *square_image = imageInsideSquare(image_yuv, squares[0]);
+        IplImage *square_image_black_white = thresholdImage3D(square_image, ERODE_DILATE_PIXELS);
         cvReleaseImage(&square_image);
 
-        figure_contours = find_figure_contours(storage, square_image_black_white);
+        figure_contours = findFigureContours(storage, square_image_black_white);
         cvReleaseImage(&square_image_black_white);
-        figure_contours = find_figure(figure_contours);
+        figure_contours = findFigure(figure_contours);
     }
 
     cvReleaseImage(&image_black_white);
     return figure_contours;
 }
 
-static _Bool is_circle(CvSeq *in)
+static _Bool isCircle(CvSeq *in)
 {
     CvPoint point = *(CvPoint *)cvGetSeqElem(in, 0);
 
@@ -340,13 +328,13 @@ static _Bool is_circle(CvSeq *in)
 
 #define OBSTACLE_CIRCLE_AREA 1465.0
 
-static _Bool is_circle_obstacle(CvSeq *in)
+static _Bool isCircleObstacle(CvSeq *in)
 {
     if((in->flags & CV_SEQ_FLAG_HOLE) != 0) {
         return 0;
     }
 
-    if(!is_circle(in)) {
+    if(!isCircle(in)) {
         return 0;
     }
 
@@ -359,7 +347,7 @@ static _Bool is_circle_obstacle(CvSeq *in)
     return 0;
 }
 
-static CvPoint circle_center(CvSeq *in)
+static CvPoint circleCenter(CvSeq *in)
 {
     unsigned int max_x = 0, max_y = 0;
     unsigned int min_x = -1, min_y = -1;
@@ -393,7 +381,7 @@ static CvPoint circle_center(CvSeq *in)
 
 #define OBSTACLE_TRIANGLE_AREA 1150.0
 
-static _Bool is_triangle_obstacle(CvSeq *in)
+static _Bool isTriangleObstacle(CvSeq *in)
 {
     if((in->flags & CV_SEQ_FLAG_HOLE) != 0) {
         return 0;
@@ -410,7 +398,7 @@ static _Bool is_triangle_obstacle(CvSeq *in)
 
 #define OBSTACLE_TRIANGLE_POLY_APPROX 10
 
-static _Bool triangle_points(CvPoint points[3], CvSeq *in)
+static _Bool trianglePoints(CvPoint points[3], CvSeq *in)
 {
     CvSeq *approxed = cvApproxPoly(in, sizeof(CvContour), in->storage, CV_POLY_APPROX_DP, OBSTACLE_TRIANGLE_POLY_APPROX, 1);
 
@@ -451,7 +439,7 @@ static CvPoint midpoint(CvPoint point1, CvPoint point2)
     return midpoint;
 }
 
-static CvPoint triangle_center(CvPoint points[3])
+static CvPoint triangleCenter(CvPoint points[3])
 {
     CvPoint center;
 
@@ -460,7 +448,7 @@ static CvPoint triangle_center(CvPoint points[3])
     return center;
 }
 
-static double triangle_angle(CvPoint points[3])
+static double triangleAngle(CvPoint points[3])
 {
     CvPoint mid;
 
@@ -470,46 +458,46 @@ static double triangle_angle(CvPoint points[3])
 }
 
 
-static _Bool is_possible_obstacle(CvSeq *in)
+static _Bool isPossibleObstacle(CvSeq *in)
 {
     if((in->flags & CV_SEQ_FLAG_HOLE) == 0) {
         return 0;
     }
 
-    return is_circle(in);
+    return isCircle(in);
 }
 
-static void find_obstacles_recursive(CvSeq *contours, Obstacle *out_obstacles, unsigned int max_obstacles,
-                                     unsigned int *num_obstacles)
+static void findObstaclesRecursive(CvSeq *contours, struct Obstacle *out_obstacles, unsigned int max_obstacles,
+                                   unsigned int *num_obstacles)
 {
     if(*num_obstacles >= max_obstacles) {
         return;
     }
 
-    CvSeq *h_seq = contours;
+    CvSeq *horizontal_sequence = contours;
 
-    while(h_seq) {
-        if(is_possible_obstacle(h_seq)) {
-            if(h_seq->v_next) {
-                Obstacle obstacle;
+    while(horizontal_sequence) {
+        if(isPossibleObstacle(horizontal_sequence)) {
+            if(horizontal_sequence->v_next) {
+                struct Obstacle obstacle;
                 obstacle.type = OBSTACLE_NONE;
-                CvSeq *obstacle_seq = h_seq->v_next;
+                CvSeq *obstacle_seq = horizontal_sequence->v_next;
 
-                if(is_circle_obstacle(obstacle_seq)) {
+                if(isCircleObstacle(obstacle_seq)) {
                     obstacle.type = OBSTACLE_CIRCLE;
-                    CvPoint point = circle_center(obstacle_seq);
+                    CvPoint point = circleCenter(obstacle_seq);
                     obstacle.x = point.x;
                     obstacle.y = point.y;
                     obstacle.angle = 0;
-                } else if(is_triangle_obstacle(obstacle_seq)) {
+                } else if(isTriangleObstacle(obstacle_seq)) {
                     CvPoint points[3];
 
-                    if(triangle_points(points, obstacle_seq)) {
+                    if(trianglePoints(points, obstacle_seq)) {
                         obstacle.type = OBSTACLE_TRIANGLE;
-                        CvPoint point = triangle_center(points);
+                        CvPoint point = triangleCenter(points);
                         obstacle.x = point.x;
                         obstacle.y = point.y;
-                        obstacle.angle = triangle_angle(points);
+                        obstacle.angle = triangleAngle(points);
                     }
                 }
 
@@ -524,17 +512,17 @@ static void find_obstacles_recursive(CvSeq *contours, Obstacle *out_obstacles, u
             }
         }
 
-        find_obstacles_recursive(h_seq->v_next, out_obstacles, max_obstacles, num_obstacles);
-        h_seq = h_seq->h_next;
+        findObstaclesRecursive(horizontal_sequence->v_next, out_obstacles, max_obstacles, num_obstacles);
+        horizontal_sequence = horizontal_sequence->h_next;
     }
 }
 
 #define OBSTACLE_POLY_APPROX 1
 
-unsigned int find_obstacles(CvMemStorage *storage, Obstacle *obstacles_out, unsigned int max_obstacles,
-                            IplImage *image_yuv)
+unsigned int findObstacles(CvMemStorage *storage, struct Obstacle *obstacles_out, unsigned int max_obstacles,
+                           IplImage *image_yuv)
 {
-    IplImage *image_black_white = threshold_image(image_yuv, OBSTACLES_YUV_LOWER_BOUND, OBSTACLES_YUV_UPPER_BOUND,
+    IplImage *image_black_white = thresholdImage(image_yuv, OBSTACLES_YUV_LOWER_BOUND, OBSTACLES_YUV_UPPER_BOUND,
                                   ERODE_DILATE_PIXELS);
 
     CvSeq *contours = 0;
@@ -544,7 +532,7 @@ unsigned int find_obstacles(CvMemStorage *storage, Obstacle *obstacles_out, unsi
                       cvPoint(0, 0))) {
         contours = cvApproxPoly(contours, sizeof(CvContour), storage, CV_POLY_APPROX_DP, OBSTACLE_POLY_APPROX, 1);
 
-        find_obstacles_recursive(contours, obstacles_out, max_obstacles, &num_obstacles);
+        findObstaclesRecursive(contours, obstacles_out, max_obstacles, &num_obstacles);
     }
 
     cvReleaseImage(&image_black_white);

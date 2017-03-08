@@ -6,24 +6,23 @@
  */
 double angle(CvPoint *pt1, CvPoint *pt2, CvPoint *pt0);
 
-_Bool detect_dual_square(CvSeq *contours);
-_Bool detect_figure(CvSeq *contours);
+_Bool isDualSquare(CvSeq *contours);
+_Bool isFigure(CvSeq *contours);
 
-CvSeq *find_first_figure(CvMemStorage *storage, IplImage *image_yuv);
+CvSeq *findFirstFigure(CvMemStorage *storage, IplImage *image_yuv);
 
-typedef enum {
+enum ObstacleType {
     OBSTACLE_NONE,
     OBSTACLE_CIRCLE,
     OBSTACLE_TRIANGLE
-} Obstacle_Type;
+};
 
-typedef struct {
-    Obstacle_Type type;
+struct Obstacle {
+    enum ObstacleType type;
     int x;
     int y;
     double angle; /* rads */
-}
-Obstacle;
+};
 
-unsigned int find_obstacles(CvMemStorage *storage, Obstacle *obstacles_out, unsigned int max_obstacles,
-                            IplImage *image_yuv);
+unsigned int findObstacles(CvMemStorage *storage, struct Obstacle *obstacles_out, unsigned int max_obstacles,
+                           IplImage *image_yuv);

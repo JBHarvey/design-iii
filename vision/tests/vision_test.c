@@ -14,20 +14,20 @@ Test(vision, angle)
     cr_assert(result == 0);
 }
 
-Test(vision, detect_dual_square)
+Test(vision, isDualSquare)
 {
     CvMemStorage *storage = cvCreateMemStorage(0);
     CvSeq *contours_dual_square = (CvSeq *)cvLoad("dual_square.xml", storage, 0, 0);
 
-    cr_assert(detect_dual_square(contours_dual_square));
+    cr_assert(isDualSquare(contours_dual_square));
     cvReleaseMemStorage(&storage);
 }
 
-Test(vision, detect_figure)
+Test(vision, isFigure)
 {
     CvMemStorage *storage = cvCreateMemStorage(0);
     CvSeq *figure = (CvSeq *)cvLoad("figure.xml", storage, 0, 0);
 
-    cr_assert(detect_figure(figure));
+    cr_assert(isFigure(figure));
     cvReleaseMemStorage(&storage);
 }
