@@ -1,12 +1,24 @@
 #include "world_vision_calibration.h"
 #include <errno.h>
 
+/* Global variables */
+
+extern GtkWidget *logger;
+CvPoint3D64f green_square_model_points[4] = {cvPoint3D64f(0, 0, 0), cvPoint3D64f(0, 660, 0), cvPoint3D64f(660, 660, 0), cvPoint3D64f(660, 0, 0)};
+
 /* Private functions prototypes */
 
 static void prompt_invalid_calibration_file_error(GtkWidget *widget, const char *filename);
 static gboolean set_camera_matrix_and_distortion_coefficients_from_file(struct camera_intrinsics
         *output_camera_intrinsics, const char *filename);
 
+/* Event callbacks */
+
+gboolean world_camera_button_press_event_callback(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+    printf("%f, ", ((GdkEventButton*)event)->x);
+    return TRUE;
+}
 
 /* Public functions */
 
@@ -47,6 +59,21 @@ gboolean initialize_camera_matrix_and_distortion_coefficients_from_file(GtkWidge
     return TRUE;
 }
 
+// NOTE: gather_user_inputs_for_camera_pose_computation(..., callback below)
+gboolean compute_camera_pose_from_user_inputs(struct camera_intrinsics *input_camera_intrinsics)
+{
+    char text_buffer[100];
+
+    GtkTextBuffer *logger_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(logger));
+    gtk_text_buffer_set_text(logger_buffer,
+                             "Mouse click on each of the green square corners in order to map them to these 3D world coordinates. \n\0", -1);
+    sprintf(text_buffer, "(%f, %f, %f) ->", green_square_model_points[0].x, green_square_model_points[0].y,
+            green_square_model_points[0].z);
+    gtk_text_buffer_insert_at_cursor(logger_buffer, text_buffer, -1);
+
+    return TRUE;
+}
+
 /* Private functions */
 
 static void prompt_invalid_calibration_file_error(GtkWidget *widget, const char *filename)
@@ -79,4 +106,3 @@ static gboolean set_camera_matrix_and_distortion_coefficients_from_file(struct c
 
     return isCalibrationFileValid;
 }
-

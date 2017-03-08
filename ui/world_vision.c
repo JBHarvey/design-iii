@@ -42,7 +42,10 @@ gboolean world_camera_calibration_clicked_event_callback(GtkWidget *widget, gpoi
 {
     if(initialize_camera_matrix_and_distortion_coefficients_from_file(widget, world_camera_intrinsics)) {
         gtk_widget_hide(GTK_WIDGET(data));
-        //CvPoint3D64f green_square_model_points[4] = {cvPoint3D64f(0, 0, 0), cvPoint3D64f(0, 660, 0), cvPoint3D64f(660, 660, 0), cvPoint3D64f(660, 0, 0)};
+
+        if(compute_camera_pose_from_user_inputs(world_camera_intrinsics)) {
+
+        }
     }
 
     return TRUE;

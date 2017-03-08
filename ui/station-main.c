@@ -2,9 +2,21 @@
 #include "ui_builder.h"
 #include "world_vision.h"
 
+/* Constants */
+
 const gchar *UI_RESOURCE_PATH = "/d3/station-resources/station.ui";
 const int VIDEO_FEED_REFRESH_RATE_IN_MS = 50; // 20 FPS
+
+/* Global variables */
+
 gint timer_tag;
+GtkWidget *logger = NULL;
+
+/* Private functions prototypes */
+
+static gboolean time_handler(GtkWidget *widget);
+
+/* Event callbacks */
 
 void ui_window_destroy_event_callback(GtkWidget *widget, gpointer data)
 {
@@ -13,12 +25,7 @@ void ui_window_destroy_event_callback(GtkWidget *widget, gpointer data)
     gtk_main_quit();
 }
 
-static gboolean time_handler(GtkWidget *widget)
-{
-    gtk_widget_queue_draw(GTK_WIDGET(widget));
-
-    return TRUE;
-}
+/* Main thread */
 
 int main(int argc, char *argv[])
 {
@@ -49,3 +56,13 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+
+/* Private functions */
+
+static gboolean time_handler(GtkWidget *widget)
+{
+    gtk_widget_queue_draw(GTK_WIDGET(widget));
+
+    return TRUE;
+}
+
