@@ -1,5 +1,7 @@
 #include "ui_event.h"
 
+/* Event callbacks */
+
 gboolean draw_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer pixbuf)
 {
     GdkPixbuf* source_pixbuf = GDK_PIXBUF(pixbuf);

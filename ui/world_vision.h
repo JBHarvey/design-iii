@@ -11,6 +11,16 @@ struct camera_intrinsics {
     CvMat *distortion_coefficients;
 };
 
+struct camera_extrinsics {
+    CvMat *rotation_vector;
+    CvMat *translation_vector;
+};
+
+struct camera {
+    struct camera_intrinsics *camera_intrinsics;
+    struct camera_extrinsics *camera_extrinsics;
+};
+
 /* Intended to be a worker thread that takes camera capture continuously and feed a pixel buffer with them. */
 gpointer world_camera_feeder(gpointer data);
 

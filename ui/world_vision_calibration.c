@@ -1,22 +1,49 @@
 #include "world_vision_calibration.h"
 #include <errno.h>
+#include "opencv2/calib3d/calib3d_c.h"
+
+/* Flag definitions */
+
+enum camera_calibration_process_mode {NONE, GET_USER_MOUSE_CLICKS_FOR_CAMERA_POSE_COMPUTATION};
+
+/* Constants */
+
+const int GREEN_SQUARE_NUMBER_OF_CORNERS = 4;
 
 /* Global variables */
 
 extern GtkWidget *logger;
-CvPoint3D64f green_square_model_points[4] = {cvPoint3D64f(0, 0, 0), cvPoint3D64f(0, 660, 0), cvPoint3D64f(660, 660, 0), cvPoint3D64f(660, 0, 0)};
+enum camera_calibration_process_mode world_camera_calibration_process_mode = NONE;
+CvPoint2D64f green_square_image_user_points[GREEN_SQUARE_NUMBER_OF_CORNERS];
+CvPoint3D64f green_square_world_model_points[GREEN_SQUARE_NUMBER_OF_CORNERS];
 
 /* Private functions prototypes */
 
 static void prompt_invalid_calibration_file_error(GtkWidget *widget, const char *filename);
 static gboolean set_camera_matrix_and_distortion_coefficients_from_file(struct camera_intrinsics
         *output_camera_intrinsics, const char *filename);
+static int get_amount_of_user_inputs_gathered(void);
+static void flatten_array_of_3d_cvpoints(const CvPoint3D64f cvpoint_array[], double output_flattened_array[],
+        int number_of_points);
+static void flatten_array_of_2d_cvpoints(const CvPoint2D64f cvpoint_array[], double output_flattened_array[],
+        int number_of_points);
 
 /* Event callbacks */
 
 gboolean world_camera_button_press_event_callback(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-    printf("%f, ", ((GdkEventButton*)event)->x);
+    if(world_camera_calibration_process_mode == GET_USER_MOUSE_CLICKS_FOR_CAMERA_POSE_COMPUTATION) {
+        int number_of_user_inputs_gathered = get_amount_of_user_inputs_gathered();
+
+        if(number_of_user_inputs_gathered < GREEN_SQUARE_NUMBER_OF_CORNERS) {
+            green_square_image_user_points[number_of_user_inputs_gathered] = cvPoint2D64f(((GdkEventButton*)event)->x,
+                    ((GdkEventButton*)event)->y);
+            gather_user_inputs_for_camera_pose_computation(number_of_user_inputs_gathered + 1);
+        } else {
+            return FALSE;
+        }
+    }
+
     return TRUE;
 }
 
@@ -59,17 +86,73 @@ gboolean initialize_camera_matrix_and_distortion_coefficients_from_file(GtkWidge
     return TRUE;
 }
 
-// NOTE: gather_user_inputs_for_camera_pose_computation(..., callback below)
-gboolean compute_camera_pose_from_user_inputs(struct camera_intrinsics *input_camera_intrinsics)
+gboolean compute_camera_pose_from_user_inputs(struct camera* input_camera)
+{
+    if(get_amount_of_user_inputs_gathered() < GREEN_SQUARE_NUMBER_OF_CORNERS) {
+        g_idle_add((GSourceFunc) compute_camera_pose_from_user_inputs, (gpointer) input_camera);
+        return FALSE;
+    } else {
+        input_camera->camera_extrinsics->translation_vector = cvCreateMat(3, 1, CV_64F);
+        input_camera->camera_extrinsics->rotation_vector = cvCreateMat(3, 1, CV_64F);
+        double object_points_array[GREEN_SQUARE_NUMBER_OF_CORNERS * 3];
+        double image_points_array[GREEN_SQUARE_NUMBER_OF_CORNERS * 2];
+        flatten_array_of_3d_cvpoints(green_square_world_model_points, object_points_array, GREEN_SQUARE_NUMBER_OF_CORNERS);
+        flatten_array_of_2d_cvpoints(green_square_image_user_points, image_points_array, GREEN_SQUARE_NUMBER_OF_CORNERS);
+        CvMat object_points, image_points;
+        CvMat *object_points_ptr = cvInitMatHeader(&object_points, GREEN_SQUARE_NUMBER_OF_CORNERS, 3, CV_64FC1,
+                                   object_points_array, CV_AUTOSTEP);
+        CvMat *image_points_ptr = cvInitMatHeader(&image_points, GREEN_SQUARE_NUMBER_OF_CORNERS, 2, CV_64FC1,
+                                  image_points_array, CV_AUTOSTEP);
+        cvFindExtrinsicCameraParams2(object_points_ptr, image_points_ptr, input_camera->camera_intrinsics->camera_matrix,
+                                     input_camera->camera_intrinsics->distortion_coefficients, input_camera->camera_extrinsics->rotation_vector,
+                                     input_camera->camera_extrinsics->translation_vector, 0);
+        return FALSE;
+    }
+}
+
+gboolean gather_user_inputs_for_camera_pose_computation(int input_index)
 {
     char text_buffer[100];
-
     GtkTextBuffer *logger_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(logger));
-    gtk_text_buffer_set_text(logger_buffer,
-                             "Mouse click on each of the green square corners in order to map them to these 3D world coordinates. \n\0", -1);
-    sprintf(text_buffer, "(%f, %f, %f) ->", green_square_model_points[0].x, green_square_model_points[0].y,
-            green_square_model_points[0].z);
-    gtk_text_buffer_insert_at_cursor(logger_buffer, text_buffer, -1);
+
+    switch(input_index) {
+        case 0:
+            for(int i = 0; i < GREEN_SQUARE_NUMBER_OF_CORNERS; i++) {
+                green_square_image_user_points[i] = cvPoint2D64f(-1, -1);
+            }
+
+            green_square_world_model_points[0] = cvPoint3D64f(0, 0, 0);
+            green_square_world_model_points[1] = cvPoint3D64f(0, 660, 0);
+            green_square_world_model_points[2] = cvPoint3D64f(660, 660, 0);
+            green_square_world_model_points[3] = cvPoint3D64f(660, 0, 0);
+
+            gtk_text_buffer_insert_at_cursor(logger_buffer,
+                                             "Mouse click on each of the green square corners in order to map them to these 3D world coordinates. \n\0", -1);
+            sprintf(text_buffer, "(%f, %f, %f) ->", green_square_world_model_points[0].x, green_square_world_model_points[0].y,
+                    green_square_world_model_points[0].z);
+            gtk_text_buffer_insert_at_cursor(logger_buffer, text_buffer, -1);
+            world_camera_calibration_process_mode = GET_USER_MOUSE_CLICKS_FOR_CAMERA_POSE_COMPUTATION;
+            break;
+
+        case GREEN_SQUARE_NUMBER_OF_CORNERS:
+            sprintf(text_buffer, " (%f, %f), \n", green_square_image_user_points[input_index - 1].x,
+                    green_square_image_user_points[input_index - 1].y);
+            gtk_text_buffer_insert_at_cursor(logger_buffer, text_buffer, -1);
+            gtk_text_buffer_insert_at_cursor(logger_buffer, "Completed ! \n\0", -1);
+            world_camera_calibration_process_mode = NONE;
+            break;
+
+        default:
+            sprintf(text_buffer, " (%f, %f), \n", green_square_image_user_points[input_index - 1].x,
+                    green_square_image_user_points[input_index - 1].y);
+            gtk_text_buffer_insert_at_cursor(logger_buffer, text_buffer, -1);
+            sprintf(text_buffer, "(%f, %f, %f) ->", green_square_world_model_points[input_index].x,
+                    green_square_world_model_points[input_index].y,
+                    green_square_world_model_points[input_index].z);
+            gtk_text_buffer_insert_at_cursor(logger_buffer, text_buffer, -1);
+            break;
+
+    }
 
     return TRUE;
 }
@@ -105,4 +188,40 @@ static gboolean set_camera_matrix_and_distortion_coefficients_from_file(struct c
     cvReleaseFileStorage(&file_storage);
 
     return isCalibrationFileValid;
+}
+
+static int get_amount_of_user_inputs_gathered(void)
+{
+    int number_of_inputs_gathered = 0;
+
+    for(; number_of_inputs_gathered < GREEN_SQUARE_NUMBER_OF_CORNERS; number_of_inputs_gathered++) {
+        if(green_square_image_user_points[number_of_inputs_gathered].x == -1
+           && green_square_image_user_points[number_of_inputs_gathered].y == -1) {
+            break;
+        } else if(number_of_inputs_gathered == GREEN_SQUARE_NUMBER_OF_CORNERS - 1) {
+            number_of_inputs_gathered = GREEN_SQUARE_NUMBER_OF_CORNERS;
+            break;
+        }
+    }
+
+    return number_of_inputs_gathered;
+}
+
+static void flatten_array_of_2d_cvpoints(const CvPoint2D64f cvpoint_array[], double output_flattened_array[],
+        int number_of_points)
+{
+    for(int i = 0; i < number_of_points; i++) {
+        output_flattened_array[2 * i] = cvpoint_array[i].x;
+        output_flattened_array[2 * i + 1] = cvpoint_array[i].y;
+    }
+}
+
+static void flatten_array_of_3d_cvpoints(const CvPoint3D64f cvpoint_array[], double output_flattened_array[],
+        int number_of_points)
+{
+    for(int i = 0; i < number_of_points; i++) {
+        output_flattened_array[3 * i] = cvpoint_array[i].x;
+        output_flattened_array[3 * i + 1] = cvpoint_array[i].y;
+        output_flattened_array[3 * i + 2] = cvpoint_array[i].z;
+    }
 }
