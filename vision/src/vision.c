@@ -101,6 +101,7 @@ static IplImage *thresholdImage(IplImage *image_yuv, CvScalar lower_bound, CvSca
     return image_black_white;
 }
 
+#define YUV_CENTER_OFFSET 128
 
 static IplImage *thresholdImage3D(IplImage *image_yuv, unsigned int erode_dilate_pixels)
 {
@@ -130,8 +131,8 @@ static IplImage *thresholdImage3D(IplImage *image_yuv, unsigned int erode_dilate
             int u = (uchar)image_yuv->imageData[i * 3 + 1 + source_row_index];
             int v = (uchar)image_yuv->imageData[i * 3 + 2 + source_row_index];
 
-            int px = (u - 128);
-            int py = (v - 128);
+            int px = (u - YUV_CENTER_OFFSET);
+            int py = (v - YUV_CENTER_OFFSET);
 
             unsigned int dest_row_index = j * dest_width_step;
 
