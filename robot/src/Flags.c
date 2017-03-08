@@ -10,8 +10,8 @@ struct Flags *Flags_new(void)
 
     pointer->object = new_object;
 
-    pointer->startCycleSignalReceived = FALSE;
-    pointer->pictureTaken = FALSE;
+    pointer->start_cycle_signal_received = FALSE;
+    pointer->picture_taken = FALSE;
 
     return pointer;
 }
@@ -28,26 +28,26 @@ void Flags_delete(struct Flags *flags)
 
 void Flags_copyValuesFrom(struct Flags *recipient, struct Flags *source)
 {
-    recipient->startCycleSignalReceived = source->startCycleSignalReceived;
-    recipient->pictureTaken = source->pictureTaken;
+    recipient->start_cycle_signal_received = source->start_cycle_signal_received;
+    recipient->picture_taken = source->picture_taken;
 }
 
 
-int Flags_haveTheSameValues(struct Flags *flags, struct Flags *otherFlags)
+int Flags_haveTheSameValues(struct Flags *flags, struct Flags *other_flags)
 {
     return
-        (flags->startCycleSignalReceived == otherFlags->startCycleSignalReceived
-         || flags->startCycleSignalReceived == IRRELEVANT || otherFlags->startCycleSignalReceived == IRRELEVANT)
-        && (flags->pictureTaken == otherFlags->pictureTaken
-            || flags->pictureTaken == IRRELEVANT || otherFlags->pictureTaken == IRRELEVANT);
+        (flags->start_cycle_signal_received == other_flags->start_cycle_signal_received
+         || flags->start_cycle_signal_received == IRRELEVANT || other_flags->start_cycle_signal_received == IRRELEVANT)
+        && (flags->picture_taken == other_flags->picture_taken
+            || flags->picture_taken == IRRELEVANT || other_flags->picture_taken == IRRELEVANT);
 }
 
-void Flags_setStartCycleSignalReceived(struct Flags *flags, int newValue)
+void Flags_setStartCycleSignalReceived(struct Flags *flags, int new_value)
 {
-    flags->startCycleSignalReceived = newValue;
+    flags->start_cycle_signal_received = new_value;
 }
 
-void Flags_setPictureTaken(struct Flags *flags, int newValue)
+void Flags_setPictureTaken(struct Flags *flags, int new_value)
 {
-    flags->pictureTaken = newValue;
+    flags->picture_taken = new_value;
 }

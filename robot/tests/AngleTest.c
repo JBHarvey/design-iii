@@ -37,77 +37,77 @@ Test(Angle, given_aValueSmallerThanMinusPi_when_created_then_valueIsWrappedBetwe
     Angle_delete(angle);
 }
 
-void assertDifferenceBetweenAnglesIs(int alphaValue, int betaValue, int expectedResult)
+void assert_difference_between_angles_is(int alpha_value, int beta_value, int expected_result)
 {
-    struct Angle *alpha = Angle_new(alphaValue);
-    struct Angle *beta = Angle_new(betaValue);
+    struct Angle *alpha = Angle_new(alpha_value);
+    struct Angle *beta = Angle_new(beta_value);
 
-    int betweenAngle = Angle_smallestAngleBetween(alpha, beta);
+    int between_angle = Angle_smallestAngleBetween(alpha, beta);
 
-    cr_assert_eq(betweenAngle, expectedResult, "Expected (Alpha: %d <-> Beta: %d) -->  %d, got %d"
-                 , alpha->theta, beta->theta, expectedResult,  betweenAngle);
+    cr_assert_eq(between_angle, expected_result, "Expected (Alpha: %d <-> Beta: %d) -->  %d, got %d"
+                 , alpha->theta, beta->theta, expected_result,  between_angle);
     Angle_delete(alpha);
     Angle_delete(beta);
 }
 
 Test(Angle, given_PiAndMinusPi_when_askedForDistance_returnsZero)
 {
-    assertDifferenceBetweenAnglesIs(PI, MINUS_PI, 0);
+    assert_difference_between_angles_is(PI, MINUS_PI, 0);
 }
 
 Test(Angle_Difference, given_twoDifferentPositiveAngles_when_askedForDistance_returnsBiggestMinusSmallest)
 {
-    assertDifferenceBetweenAnglesIs(PI / 2, PI / 3, PI / 6);
-    assertDifferenceBetweenAnglesIs(PI / 3, PI / 2, PI / 6);
+    assert_difference_between_angles_is(PI / 2, PI / 3, PI / 6);
+    assert_difference_between_angles_is(PI / 3, PI / 2, PI / 6);
 }
 
 Test(Angle_Difference, given_twoDifferentNegativeAngles_when_askedForDistance_returnsBiggestMinusSmallest)
 {
-    assertDifferenceBetweenAnglesIs(-3 * PI / 4, -7 * PI / 8, PI / 8);
-    assertDifferenceBetweenAnglesIs(-7 * PI / 8, -3 * PI / 4, PI / 8);
+    assert_difference_between_angles_is(-3 * PI / 4, -7 * PI / 8, PI / 8);
+    assert_difference_between_angles_is(-7 * PI / 8, -3 * PI / 4, PI / 8);
 }
 
 Test(Angle_Difference, given_twoDifferentPolaritiesAngles_when_askedForDistance_returnsWrappedAddition)
 {
-    assertDifferenceBetweenAnglesIs(-PI / 2, PI / 2, PI);
-    assertDifferenceBetweenAnglesIs(PI / 4, -PI / 3, 7 * PI / 12);
-    assertDifferenceBetweenAnglesIs(3 * PI / 4, -4 * PI / 5, 9 * PI / 20);
+    assert_difference_between_angles_is(-PI / 2, PI / 2, PI);
+    assert_difference_between_angles_is(PI / 4, -PI / 3, 7 * PI / 12);
+    assert_difference_between_angles_is(3 * PI / 4, -4 * PI / 5, 9 * PI / 20);
 }
 
-void assertRotationDirectionBetweenAnglesIs(int goalValue, int currentValue, enum RotationDirection expectedResult)
+void assert_rotation_direction_between_angles_is(int goal_value, int current_value, enum RotationDirection expected_result)
 {
-    struct Angle *goal = Angle_new(goalValue);
-    struct Angle *current = Angle_new(currentValue);
+    struct Angle *goal = Angle_new(goal_value);
+    struct Angle *current = Angle_new(current_value);
 
-    enum RotationDirection suggestedDirection = Angle_fetchOptimalRotationDirection(goal, current);
+    enum RotationDirection suggested_direction = Angle_fetchOptimalRotationDirection(goal, current);
 
-    cr_assert(suggestedDirection == expectedResult, "Rotating from %d to %d in %d direction (expected %d)",
-              currentValue, goalValue, expectedResult, suggestedDirection);
+    cr_assert(suggested_direction == expected_result, "Rotating from %d to %d in %d direction (expected %d)",
+              current_value, goal_value, expected_result, suggested_direction);
     Angle_delete(goal);
     Angle_delete(current);
 }
 
 Test(Angle, given_twoAnglesWithNullDistance_when_askedWhichDirectionToTurnToBringThemCloser_then_returnsSTOP_TURNING)
 {
-    assertRotationDirectionBetweenAnglesIs(PI, PI, STOP_TURNING);
+    assert_rotation_direction_between_angles_is(PI, PI, STOP_TURNING);
 }
 
 Test(Angle_RotationDirection,
      given_currentWithinLessThanPiDegreesAntiClockwiseFromGoal_when_askedWhichDirectionToTurnToBringThemCloser_then_returnsANTICLOCKWISE)
 {
-    assertRotationDirectionBetweenAnglesIs(PI, PI / 6, ANTICLOCKWISE);
-    assertRotationDirectionBetweenAnglesIs(0, 9 * PI / 8, ANTICLOCKWISE);
-    assertRotationDirectionBetweenAnglesIs(-3 * PI / 2, 3 * PI / 2, ANTICLOCKWISE);
-    assertRotationDirectionBetweenAnglesIs(PI / 12, PI / -6, ANTICLOCKWISE);
+    assert_rotation_direction_between_angles_is(PI, PI / 6, ANTICLOCKWISE);
+    assert_rotation_direction_between_angles_is(0, 9 * PI / 8, ANTICLOCKWISE);
+    assert_rotation_direction_between_angles_is(-3 * PI / 2, 3 * PI / 2, ANTICLOCKWISE);
+    assert_rotation_direction_between_angles_is(PI / 12, PI / -6, ANTICLOCKWISE);
 }
 
 Test(Angle_RotationDirection,
      given_currentWithinMoreThanPiDegreesAntiClockwiseFromGoal_when_askedWhichDirectionToTurnToBringThemCloser_then_returnsCLOCKWISE)
 {
-    assertRotationDirectionBetweenAnglesIs(PI / 6, PI, CLOCKWISE);
-    assertRotationDirectionBetweenAnglesIs(9 * PI / 8, 0, CLOCKWISE);
-    assertRotationDirectionBetweenAnglesIs(3 * PI / 4, -4 * PI / 5, CLOCKWISE);
-    assertRotationDirectionBetweenAnglesIs(PI / -6, PI / 12, CLOCKWISE);
+    assert_rotation_direction_between_angles_is(PI / 6, PI, CLOCKWISE);
+    assert_rotation_direction_between_angles_is(9 * PI / 8, 0, CLOCKWISE);
+    assert_rotation_direction_between_angles_is(3 * PI / 4, -4 * PI / 5, CLOCKWISE);
+    assert_rotation_direction_between_angles_is(PI / -6, PI / 12, CLOCKWISE);
 }
 
 

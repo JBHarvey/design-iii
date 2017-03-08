@@ -17,7 +17,7 @@ struct __attribute__((__packed__)) Mesurements
 
 
 void RobotReceiver_updateMesurements(struct Robot *robot);
-void RobotReceiver_updateWorld(struct WorldCamera *worldCamera, struct Communication_World world);
-struct Mesurements RobotReceiver_fetchInputs(struct Mesurements (*communicationCallback)(void));
+void RobotReceiver_updateWorld(struct WorldCamera *world_camera, struct Communication_World world);
+struct Mesurements RobotReceiver_fetchInputs(struct Mesurements (*communication_callback)(void));
 
 #endif // ROBOTRECEIVER_H_

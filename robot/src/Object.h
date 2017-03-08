@@ -24,7 +24,7 @@
  * You don't want to create an infinitely recursive structure.
  */
 struct Object {
-    int referenceCount;
+    int reference_count;
 };
 
 struct Object *Object_new(void);

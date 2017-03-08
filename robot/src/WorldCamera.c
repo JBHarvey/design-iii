@@ -4,33 +4,33 @@
 struct WorldCamera *WorldCamera_new(void)
 {
     struct Object *new_object = Object_new();
-    struct Sensor *new_mapSensor = Sensor_new();
-    struct Sensor *new_robotSensor = Sensor_new();
+    struct Sensor *new_map_sensor = Sensor_new();
+    struct Sensor *new_robot_sensor = Sensor_new();
     struct Map *new_map = Map_new();
-    struct Pose *new_robotPose = Pose_zero();
-    int new_robotRadius = 0;
+    struct Pose *new_robot_pose = Pose_zero();
+    int new_robot_radius = 0;
     struct WorldCamera *pointer = (struct WorldCamera *) malloc(sizeof(struct WorldCamera));
 
     pointer->object = new_object;
-    pointer->mapSensor = new_mapSensor;
-    pointer->robotSensor = new_robotSensor;
+    pointer->map_sensor = new_map_sensor;
+    pointer->robot_sensor = new_robot_sensor;
     pointer->map = new_map;
-    pointer->robotPose = new_robotPose;
-    pointer->robotRadius = new_robotRadius;
+    pointer->robot_pose = new_robot_pose;
+    pointer->robot_radius = new_robot_radius;
 
     return pointer;
 }
 
-void WorldCamera_delete(struct WorldCamera *worldCamera)
+void WorldCamera_delete(struct WorldCamera *world_camera)
 {
-    Object_removeOneReference(worldCamera->object);
+    Object_removeOneReference(world_camera->object);
 
-    if(Object_canBeDeleted(worldCamera->object)) {
-        Object_delete(worldCamera->object);
-        Sensor_delete(worldCamera->mapSensor);
-        Sensor_delete(worldCamera->robotSensor);
-        Map_delete(worldCamera->map);
-        Pose_delete(worldCamera->robotPose);
-        free(worldCamera);
+    if(Object_canBeDeleted(world_camera->object)) {
+        Object_delete(world_camera->object);
+        Sensor_delete(world_camera->map_sensor);
+        Sensor_delete(world_camera->robot_sensor);
+        Map_delete(world_camera->map);
+        Pose_delete(world_camera->robot_pose);
+        free(world_camera);
     }
 }

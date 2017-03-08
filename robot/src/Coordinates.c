@@ -8,15 +8,15 @@ struct Coordinates *Coordinates_zero(void)
     return Coordinates_new(0, 0);
 }
 
-struct Coordinates *Coordinates_new(int new_x, int new_y)
+struct Coordinates *Coordinates_new(int newX, int newY)
 {
     struct Object *new_object = Object_new();
     struct Coordinates *pointer = (struct Coordinates *) malloc(sizeof(struct Coordinates));
 
     pointer->object = new_object;
 
-    pointer->x = new_x;
-    pointer->y = new_y;
+    pointer->x = newX;
+    pointer->y = newY;
 
     return pointer;
 }
@@ -37,11 +37,11 @@ void Coordinates_copyValuesFrom(struct Coordinates *recipient, struct Coordinate
     recipient->y = source->y;
 }
 
-int Coordinates_haveTheSameValues(struct Coordinates *coordinates, struct Coordinates *otherCoordinates)
+int Coordinates_haveTheSameValues(struct Coordinates *coordinates, struct Coordinates *other_coordinates)
 {
     return(
-              coordinates->x == otherCoordinates->x &&
-              coordinates->y == otherCoordinates->y
+              coordinates->x == other_coordinates->x &&
+              coordinates->y == other_coordinates->y
           );
 }
 

@@ -27,24 +27,24 @@ struct __attribute__((__packed__)) Communication_Object
 
 struct __attribute__((__packed__)) Communication_Environment 
 {
-    struct Communication_Coordinates northEasternTableCorner;
-    struct Communication_Coordinates northWesternTableCorner;
-    struct Communication_Coordinates southEasternTableCorner;
-    struct Communication_Coordinates southWesternTableCorner;
-    struct Communication_Coordinates northEasternDrawingCorner;
-    struct Communication_Coordinates northWesternDrawingCorner;
-    struct Communication_Coordinates southEasternDrawingCorner;
-    struct Communication_Coordinates southWesternDrawingCorner;
-    struct Communication_Coordinates antennaZoneStart;
-    struct Communication_Coordinates antennaZoneStop;
+    struct Communication_Coordinates north_eastern_table_corner;
+    struct Communication_Coordinates north_western_table_corner;
+    struct Communication_Coordinates south_eastern_table_corner;
+    struct Communication_Coordinates south_western_table_corner;
+    struct Communication_Coordinates north_eastern_drawing_corner;
+    struct Communication_Coordinates north_western_drawing_corner;
+    struct Communication_Coordinates south_eastern_drawing_corner;
+    struct Communication_Coordinates south_western_drawing_corner;
+    struct Communication_Coordinates antenna_zone_start;
+    struct Communication_Coordinates antenna_zone_stop;
     struct Communication_Object obstacles[3];
-    struct Communication_Zone paintingZone[8];
+    struct Communication_Zone painting_zone[8];
 };
 
 struct __attribute__((__packed__)) Communication_World
 {
     struct Communication_Environment environment;
-    int environmentHasChanged;
+    int environment_has_changed;
     struct Communication_Object robot;
 };
 

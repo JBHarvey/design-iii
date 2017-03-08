@@ -5,9 +5,9 @@
 
 struct Robot {
     struct Object *object;
-    struct DefaultValues *defaultValues;
-    struct State *currentState;
-    struct WorldCamera *worldCamera;
+    struct DefaultValues *default_values;
+    struct State *current_state;
+    struct WorldCamera *world_camera;
 };
 
 struct Robot *Robot_new();

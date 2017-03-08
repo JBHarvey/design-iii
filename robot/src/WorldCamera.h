@@ -6,14 +6,14 @@
 
 struct WorldCamera {
     struct Object *object;
-    struct Sensor *mapSensor;
-    struct Sensor *robotSensor;
+    struct Sensor *map_sensor;
+    struct Sensor *robot_sensor;
     struct Map *map;
-    struct Pose *robotPose;
-    int robotRadius;
+    struct Pose *robot_pose;
+    int robot_radius;
 };
 
 struct WorldCamera *WorldCamera_new(void);
-void WorldCamera_delete(struct WorldCamera *worldCamera);
+void WorldCamera_delete(struct WorldCamera *world_camera);
 
 #endif // WORLD_CAMERA_H_

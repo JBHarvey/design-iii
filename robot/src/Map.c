@@ -4,16 +4,16 @@
 struct Map *Map_new()
 {
     struct Object *new_object = Object_new();
-    struct Coordinates *new_northEasternTableCorner = Coordinates_zero();
-    struct Coordinates *new_northWesternTableCorner = Coordinates_zero();
-    struct Coordinates *new_southEasternTableCorner = Coordinates_zero();
-    struct Coordinates *new_southWesternTableCorner = Coordinates_zero();
-    struct Coordinates *new_northEasternDrawingCorner = Coordinates_zero();
-    struct Coordinates *new_northWesternDrawingCorner = Coordinates_zero();
-    struct Coordinates *new_southEasternDrawingCorner = Coordinates_zero();
-    struct Coordinates *new_southWesternDrawingCorner = Coordinates_zero();
-    struct Coordinates *new_antennaZoneStart = Coordinates_zero();
-    struct Coordinates *new_antennaZoneStop = Coordinates_zero();
+    struct Coordinates *new_north_eastern_table_corner = Coordinates_zero();
+    struct Coordinates *new_north_western_table_corner = Coordinates_zero();
+    struct Coordinates *new_south_eastern_table_corner = Coordinates_zero();
+    struct Coordinates *new_south_western_table_corner = Coordinates_zero();
+    struct Coordinates *new_north_eastern_drawing_corner = Coordinates_zero();
+    struct Coordinates *new_north_western_drawing_corner = Coordinates_zero();
+    struct Coordinates *new_south_eastern_drawing_corner = Coordinates_zero();
+    struct Coordinates *new_south_western_drawing_corner = Coordinates_zero();
+    struct Coordinates *new_antenna_zone_start = Coordinates_zero();
+    struct Coordinates *new_antenna_zone_stop = Coordinates_zero();
 
     int i;
     struct Obstacle *new_obstacles[3];
@@ -22,42 +22,42 @@ struct Map *Map_new()
         new_obstacles[i] = Obstacle_new(0, 0, THEORICAL_OBSTACLE_RADIUS, CENTER);
     }
 
-    struct Pose *new_paintingZones[8];
+    struct Pose *new_painting_zones[8];
 
     for(i = 0; i < 8; ++i) {
-        new_paintingZones[i] = Pose_zero();
+        new_painting_zones[i] = Pose_zero();
     }
 
     struct Map *pointer = (struct Map *) malloc(sizeof(struct Map));
 
     pointer->object = new_object;
 
-    pointer->northEasternTableCorner = new_northEasternTableCorner;
+    pointer->north_eastern_table_corner = new_north_eastern_table_corner;
 
-    pointer->northWesternTableCorner = new_northWesternTableCorner;
+    pointer->north_western_table_corner = new_north_western_table_corner;
 
-    pointer->southEasternTableCorner = new_southEasternTableCorner;
+    pointer->south_eastern_table_corner = new_south_eastern_table_corner;
 
-    pointer->southWesternTableCorner = new_southWesternTableCorner;
+    pointer->south_western_table_corner = new_south_western_table_corner;
 
-    pointer->northEasternDrawingCorner = new_northEasternDrawingCorner;
+    pointer->north_eastern_drawing_corner = new_north_eastern_drawing_corner;
 
-    pointer->northWesternDrawingCorner = new_northWesternDrawingCorner;
+    pointer->north_western_drawing_corner = new_north_western_drawing_corner;
 
-    pointer->southEasternDrawingCorner = new_southEasternDrawingCorner;
+    pointer->south_eastern_drawing_corner = new_south_eastern_drawing_corner;
 
-    pointer->southWesternDrawingCorner = new_southWesternDrawingCorner;
+    pointer->south_western_drawing_corner = new_south_western_drawing_corner;
 
-    pointer->antennaZoneStart = new_antennaZoneStart;
+    pointer->antenna_zone_start = new_antenna_zone_start;
 
-    pointer->antennaZoneStop = new_antennaZoneStop;
+    pointer->antenna_zone_stop = new_antenna_zone_stop;
 
     for(i = 0; i < 3; ++i) {
         pointer->obstacles[i] = new_obstacles[i];
     }
 
     for(i = 0; i < 8; ++i) {
-        pointer->paintingZones[i] = new_paintingZones[i];
+        pointer->painting_zones[i] = new_painting_zones[i];
     }
 
     return pointer;
@@ -69,16 +69,16 @@ void Map_delete(struct Map *map)
 
     if(Object_canBeDeleted(map->object)) {
         Object_delete(map->object);
-        Coordinates_delete(map->northEasternTableCorner);
-        Coordinates_delete(map->northWesternTableCorner);
-        Coordinates_delete(map->southEasternTableCorner);
-        Coordinates_delete(map->southWesternTableCorner);
-        Coordinates_delete(map->northEasternDrawingCorner);
-        Coordinates_delete(map->northWesternDrawingCorner);
-        Coordinates_delete(map->southEasternDrawingCorner);
-        Coordinates_delete(map->southWesternDrawingCorner);
-        Coordinates_delete(map->antennaZoneStart);
-        Coordinates_delete(map->antennaZoneStop);
+        Coordinates_delete(map->north_eastern_table_corner);
+        Coordinates_delete(map->north_western_table_corner);
+        Coordinates_delete(map->south_eastern_table_corner);
+        Coordinates_delete(map->south_western_table_corner);
+        Coordinates_delete(map->north_eastern_drawing_corner);
+        Coordinates_delete(map->north_western_drawing_corner);
+        Coordinates_delete(map->south_eastern_drawing_corner);
+        Coordinates_delete(map->south_western_drawing_corner);
+        Coordinates_delete(map->antenna_zone_start);
+        Coordinates_delete(map->antenna_zone_stop);
         int i;
 
         for(i = 0; i < 3; ++i) {
@@ -86,46 +86,46 @@ void Map_delete(struct Map *map)
         }
 
         for(i = 0; i < 8; ++i) {
-            Pose_delete(map->paintingZones[i]);
+            Pose_delete(map->painting_zones[i]);
         }
 
         free(map);
     }
 }
 
-void Map_updateTableCorners(struct Map *map, struct Coordinates *northEastern,
-                            struct Coordinates *southEastern, struct Coordinates *southWestern,
-                            struct Coordinates *northWestern)
+void Map_updateTableCorners(struct Map *map, struct Coordinates *north_eastern,
+                            struct Coordinates *south_eastern, struct Coordinates *south_western,
+                            struct Coordinates *north_western)
 {
-    Coordinates_copyValuesFrom(map->northEasternTableCorner, northEastern);
-    Coordinates_copyValuesFrom(map->southEasternTableCorner, southEastern);
-    Coordinates_copyValuesFrom(map->southWesternTableCorner, southWestern);
-    Coordinates_copyValuesFrom(map->northWesternTableCorner, northWestern);
+    Coordinates_copyValuesFrom(map->north_eastern_table_corner, north_eastern);
+    Coordinates_copyValuesFrom(map->south_eastern_table_corner, south_eastern);
+    Coordinates_copyValuesFrom(map->south_western_table_corner, south_western);
+    Coordinates_copyValuesFrom(map->north_western_table_corner, north_western);
 }
 
-void Map_updateDrawingCorners(struct Map *map, struct Coordinates *northEastern,
-                              struct Coordinates *southEastern, struct Coordinates *southWestern,
-                              struct Coordinates *northWestern)
+void Map_updateDrawingCorners(struct Map *map, struct Coordinates *north_eastern,
+                              struct Coordinates *south_eastern, struct Coordinates *south_western,
+                              struct Coordinates *north_western)
 {
-    Coordinates_copyValuesFrom(map->northEasternDrawingCorner, northEastern);
-    Coordinates_copyValuesFrom(map->southEasternDrawingCorner, southEastern);
-    Coordinates_copyValuesFrom(map->southWesternDrawingCorner, southWestern);
-    Coordinates_copyValuesFrom(map->northWesternDrawingCorner, northWestern);
+    Coordinates_copyValuesFrom(map->north_eastern_drawing_corner, north_eastern);
+    Coordinates_copyValuesFrom(map->south_eastern_drawing_corner, south_eastern);
+    Coordinates_copyValuesFrom(map->south_western_drawing_corner, south_western);
+    Coordinates_copyValuesFrom(map->north_western_drawing_corner, north_western);
 }
 
 void Map_updateAntennaZone(struct Map *map, struct Coordinates *start, struct Coordinates *stop)
 {
-    Coordinates_copyValuesFrom(map->antennaZoneStart, start);
-    Coordinates_copyValuesFrom(map->antennaZoneStop, stop);
+    Coordinates_copyValuesFrom(map->antenna_zone_start, start);
+    Coordinates_copyValuesFrom(map->antenna_zone_stop, stop);
 }
 
-void Map_updateObstacle(struct Map *map, struct Coordinates *newCoordinates, enum CardinalDirection newOrientation,
+void Map_updateObstacle(struct Map *map, struct Coordinates *new_coordinates, enum CardinalDirection new_orientation,
                         int index)
 {
-    Obstacle_changeCoordinates(map->obstacles[index], newCoordinates);
-    Obstacle_changeOrientation(map->obstacles[index], newOrientation);
+    Obstacle_changeCoordinates(map->obstacles[index], new_coordinates);
+    Obstacle_changeOrientation(map->obstacles[index], new_orientation);
 }
-void Map_updatePaintingZone(struct Map *map, struct Pose *newPose, int index)
+void Map_updatePaintingZone(struct Map *map, struct Pose *new_pose, int index)
 {
-    Pose_copyValuesFrom(map->paintingZones[index], newPose);
+    Pose_copyValuesFrom(map->painting_zones[index], new_pose);
 }

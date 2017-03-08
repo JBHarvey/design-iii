@@ -12,11 +12,11 @@ struct Coordinates {
 };
 
 struct Coordinates *Coordinates_zero(void);
-struct Coordinates *Coordinates_new(int new_x, int new_y);
+struct Coordinates *Coordinates_new(int newX, int newY);
 void Coordinates_delete(struct Coordinates *coordinates);
 
 void Coordinates_copyValuesFrom(struct Coordinates *recipient, struct Coordinates *source);
-int Coordinates_haveTheSameValues(struct Coordinates *coordinates, struct Coordinates *otherCoordinates);
+int Coordinates_haveTheSameValues(struct Coordinates *coordinates, struct Coordinates *other_coordinates);
 
 /**
  * The axis being:

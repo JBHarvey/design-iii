@@ -5,7 +5,7 @@
 
 struct Sensor {
     struct Object *object;
-    int hasReceivedNewData;
+    int has_received_new_data;
 };
 
 struct Sensor *Sensor_new(void);

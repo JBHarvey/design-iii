@@ -22,10 +22,10 @@ struct Angle *Angle_new(int new_theta)
 {
     struct Object *new_object = Object_new();
     struct Angle *pointer = (struct Angle *) malloc(sizeof(struct Angle));
-    int wrappedTheta = Angle_wrap(new_theta);
+    int wrapped_theta = Angle_wrap(new_theta);
 
     pointer->object = new_object;
-    pointer->theta = wrappedTheta;
+    pointer->theta = wrapped_theta;
 
     return pointer;
 }
@@ -42,15 +42,15 @@ void Angle_delete(struct Angle *angle)
 
 int Angle_smallestAngleBetween(struct Angle *alpha, struct Angle *beta)
 {
-    int wrappedAlpha = Angle_wrap(alpha->theta);
-    int wrappedBeta = Angle_wrap(beta->theta);
+    int wrapped_alpha = Angle_wrap(alpha->theta);
+    int wrapped_beta = Angle_wrap(beta->theta);
     int distance = 0;
 
-    if((wrappedAlpha > 0 && wrappedBeta > 0)
-       || (wrappedAlpha < 0 && wrappedBeta < 0)) {
-        distance = abs(wrappedAlpha - wrappedBeta);
+    if((wrapped_alpha > 0 && wrapped_beta > 0)
+       || (wrapped_alpha < 0 && wrapped_beta < 0)) {
+        distance = abs(wrapped_alpha - wrapped_beta);
     } else {
-        distance = abs(wrappedBeta) + abs(wrappedAlpha);
+        distance = abs(wrapped_beta) + abs(wrapped_alpha);
 
         if(distance > PI) {
             distance = 2 * PI - distance;
@@ -63,16 +63,16 @@ int Angle_smallestAngleBetween(struct Angle *alpha, struct Angle *beta)
 
 enum RotationDirection Angle_fetchOptimalRotationDirection(struct Angle *goal, struct Angle *current)
 {
-    int goalValue = Angle_wrap(goal->theta);
-    int currentValue = Angle_wrap(current->theta);
+    int goal_value = Angle_wrap(goal->theta);
+    int current_value = Angle_wrap(current->theta);
 
-    if(goalValue == currentValue) {
+    if(goal_value == current_value) {
         return STOP_TURNING;
     }
 
     int distance = Angle_smallestAngleBetween(goal, current);
 
-    if(Angle_wrap(goalValue - distance) == currentValue) {
+    if(Angle_wrap(goal_value - distance) == current_value) {
         return ANTICLOCKWISE;
     }
 

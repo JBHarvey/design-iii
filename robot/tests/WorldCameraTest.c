@@ -2,26 +2,26 @@
 #include <stdio.h>
 #include "WorldCamera.h"
 
-struct WorldCamera *worldCamera;
+struct WorldCamera *world_camera;
 
-void setupWorldCamera(void)
+void setup_world_camera(void)
 {
-    worldCamera = WorldCamera_new();
+    world_camera = WorldCamera_new();
 }
 
-void teardownWorldCamera(void)
+void teardown_world_camera(void)
 {
-    WorldCamera_delete(worldCamera);
+    WorldCamera_delete(world_camera);
 }
 
 Test(WorldCamera, creation_destruction
-     , .init = setupWorldCamera
-     , .fini = teardownWorldCamera)
+     , .init = setup_world_camera
+     , .fini = teardown_world_camera)
 {
-    struct Pose *poseZero = Pose_zero();
-    cr_assert(worldCamera->mapSensor->hasReceivedNewData == 0);
-    cr_assert(worldCamera->robotSensor->hasReceivedNewData == 0);
-    cr_assert(worldCamera->robotRadius == 0);
-    cr_assert(Pose_haveTheSameValues(worldCamera->robotPose, poseZero));
-    Pose_delete(poseZero);
+    struct Pose *pose_zero = Pose_zero();
+    cr_assert(world_camera->map_sensor->has_received_new_data == 0);
+    cr_assert(world_camera->robot_sensor->has_received_new_data == 0);
+    cr_assert(world_camera->robot_radius == 0);
+    cr_assert(Pose_haveTheSameValues(world_camera->robot_pose, pose_zero));
+    Pose_delete(pose_zero);
 }

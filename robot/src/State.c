@@ -5,11 +5,11 @@
 struct State *State_new(struct Pose *new_pose)
 {
     struct Object *new_object = Object_new();
-    struct Flags *newFlags = Flags_new();
+    struct Flags *new_flags = Flags_new();
     struct State *pointer = (struct State *) malloc(sizeof(struct State));
 
     pointer->object = new_object;
-    pointer->flags = newFlags;
+    pointer->flags = new_flags;
     pointer->pose = new_pose;
 
     Object_addOneReference(new_pose->object);

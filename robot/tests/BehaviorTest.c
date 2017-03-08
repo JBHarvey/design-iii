@@ -3,18 +3,18 @@
 #include "Robot.h"
 #include "BehaviorBuilder.h"
 
-struct State *currentState;
+struct State *current_state;
 
-void setupBehavior(void)
+void setup_behavior(void)
 {
     struct Pose *pose = Pose_new(DEFAULT_GOAL_X, DEFAULT_GOAL_Y, DEFAULT_GOAL_THETA);
-    currentState = State_new(pose);
+    current_state = State_new(pose);
     Pose_delete(pose);
 }
 
-void teardownBehavior(void)
+void teardown_behavior(void)
 {
-    State_delete(currentState);
+    State_delete(current_state);
 }
 
 Test(Behavior, creation_destruction)
@@ -22,73 +22,73 @@ Test(Behavior, creation_destruction)
     int x = 10000;
     int y = 10000;
     int theta = 78540;
-    struct Pose *goalPose = Pose_new(x, y, theta);
-    struct State *goalState = State_new(goalPose);
-    struct Pose *maxPoseTolerances = Pose_new(X_TOLERANCE_MAX, Y_TOLERANCE_MAX, THETA_TOLERANCE_MAX);
-    struct State *tolerances = State_new(maxPoseTolerances);
-    Pose_delete(maxPoseTolerances);
-    struct Objective *objective = Objective_new(goalState, tolerances);
+    struct Pose *goal_pose = Pose_new(x, y, theta);
+    struct State *goal_state = State_new(goal_pose);
+    struct Pose *max_pose_tolerances = Pose_new(X_TOLERANCE_MAX, Y_TOLERANCE_MAX, THETA_TOLERANCE_MAX);
+    struct State *tolerances = State_new(max_pose_tolerances);
+    Pose_delete(max_pose_tolerances);
+    struct Objective *objective = Objective_new(goal_state, tolerances);
     struct Behavior *behavior = Behavior_new(objective);
 
-    cr_assert(behavior->entryConditions == objective);
+    cr_assert(behavior->entry_conditions == objective);
 
-    Pose_delete(goalPose);
+    Pose_delete(goal_pose);
     State_delete(tolerances);
-    State_delete(goalState);
+    State_delete(goal_state);
     Objective_delete(objective);
     Behavior_delete(behavior);
 }
 
 Test(Behavior, given_aDefaultValuedBehaviorAndDefaultValuedState_when_checksIfIsReached_then_isReached
-     , .init = setupBehavior
-     , .fini = teardownBehavior)
+     , .init = setup_behavior
+     , .fini = teardown_behavior)
 {
     struct Behavior *behavior = BehaviorBuilder_default();
 
-    int isReached = Behavior_areEntryConditionsReached(behavior, currentState);
-    cr_assert(isReached);
+    int is_reached = Behavior_areEntryConditionsReached(behavior, current_state);
+    cr_assert(is_reached);
 
     Behavior_delete(behavior);
 }
 
 Test(Behavior, given_aDefaultValuedBehaviorAndOffValuedState_when_checksIfIsReached_then_isNotReached)
 {
-    struct Pose *offPose = Pose_new(DEFAULT_GOAL_X, Y_TOLERANCE_MAX, DEFAULT_GOAL_THETA);
-    struct State *offState = State_new(offPose);
+    struct Pose *off_pose = Pose_new(DEFAULT_GOAL_X, Y_TOLERANCE_MAX, DEFAULT_GOAL_THETA);
+    struct State *off_state = State_new(off_pose);
     struct Behavior *behavior = BehaviorBuilder_default();
 
-    int isReached = Behavior_areEntryConditionsReached(behavior, offState);
-    cr_assert(isReached == 0);
+    int is_reached = Behavior_areEntryConditionsReached(behavior, off_state);
+    cr_assert(is_reached == 0);
 
-    Pose_delete(offPose);
-    State_delete(offState);
+    Pose_delete(off_pose);
+    State_delete(off_state);
     Behavior_delete(behavior);
 }
 
 Test(Behavior, given_aBehaviorWithNoChild_when_askedToUpdateBehavior_then_returnsSelf
-     , .init = setupBehavior
-     , .fini = teardownBehavior)
+     , .init = setup_behavior
+     , .fini = teardown_behavior)
 {
     struct Behavior *behavior = BehaviorBuilder_default();
-    struct Behavior *nextBehavior = Behavior_fetchFirstReachedChildOrReturnSelf(behavior, currentState);
+    struct Behavior *next_behavior = Behavior_fetchFirstReachedChildOrReturnSelf(behavior, current_state);
 
-    cr_assert_eq(behavior, nextBehavior);
+    cr_assert_eq(behavior, next_behavior);
 
     Behavior_delete(behavior);
 }
 
 Test(Behavior, given_aBehaviorWithAReachableChild_when_askedToUpdateBehavior_then_returnsChild
-     , .init = setupBehavior
-     , .fini = teardownBehavior)
+     , .init = setup_behavior
+     , .fini = teardown_behavior)
 {
     struct Behavior *behavior = BehaviorBuilder_default();
     struct Behavior *child = BehaviorBuilder_default();
 
     Behavior_addChild(behavior, child);
 
-    struct Behavior *nextBehavior = Behavior_fetchFirstReachedChildOrReturnSelf(behavior, currentState);
+    struct Behavior *next_behavior = Behavior_fetchFirstReachedChildOrReturnSelf(behavior, current_state);
 
-    cr_assert_eq(child, nextBehavior);
+    cr_assert_eq(child, next_behavior);
 
     Behavior_delete(behavior);
     Behavior_delete(child);
@@ -96,8 +96,8 @@ Test(Behavior, given_aBehaviorWithAReachableChild_when_askedToUpdateBehavior_the
 
 Test(Behavior,
      given_aBehaviorWithAnNoreachableChild_when_askedToUpdateBehavior_then_returnsSelf
-     , .init = setupBehavior
-     , .fini = teardownBehavior)
+     , .init = setup_behavior
+     , .fini = teardown_behavior)
 {
     struct Behavior *behavior = BehaviorBuilder_default();
     struct Behavior *child = BehaviorBuilder_build(
@@ -106,39 +106,39 @@ Test(Behavior,
 
     Behavior_addChild(behavior, child);
 
-    struct Behavior *nextBehavior = Behavior_fetchFirstReachedChildOrReturnSelf(behavior, currentState);
+    struct Behavior *next_behavior = Behavior_fetchFirstReachedChildOrReturnSelf(behavior, current_state);
 
-    cr_assert_eq(behavior, nextBehavior);
+    cr_assert_eq(behavior, next_behavior);
 
     Behavior_delete(behavior);
     Behavior_delete(child);
 }
 
 Test(Behavior, given_aBehaviorWithOneChild_when_itReceivesANewChild_then_itIsPlacedLast
-     , .init = setupBehavior
-     , .fini = teardownBehavior)
+     , .init = setup_behavior
+     , .fini = teardown_behavior)
 {
     struct Behavior *behavior = BehaviorBuilder_default();
-    struct Behavior *firstBehavior = BehaviorBuilder_default();
-    struct Behavior *secondBehavior = BehaviorBuilder_build(
+    struct Behavior *first_behavior = BehaviorBuilder_default();
+    struct Behavior *second_behavior = BehaviorBuilder_build(
                                           BehaviorBuilder_withGoalX(X_TOLERANCE_MAX + DEFAULT_GOAL_X,
                                                   BehaviorBuilder_end()));
 
-    Behavior_addChild(behavior, firstBehavior);
-    Behavior_addChild(behavior, secondBehavior);
+    Behavior_addChild(behavior, first_behavior);
+    Behavior_addChild(behavior, second_behavior);
 
-    cr_assert_eq(firstBehavior->nextSibling, secondBehavior);
-    cr_assert_eq(secondBehavior->nextSibling, secondBehavior);
+    cr_assert_eq(first_behavior->next_sibling, second_behavior);
+    cr_assert_eq(second_behavior->next_sibling, second_behavior);
 
     Behavior_delete(behavior);
-    Behavior_delete(firstBehavior);
-    Behavior_delete(secondBehavior);
+    Behavior_delete(first_behavior);
+    Behavior_delete(second_behavior);
 }
 
 Test(Behavior,
      given_aBehavior_when_askedToAddHimselfToItsChildren_then_NothingHappens
-     , .init = setupBehavior
-     , .fini = teardownBehavior)
+     , .init = setup_behavior
+     , .fini = teardown_behavior)
 {
     struct Behavior *behavior = BehaviorBuilder_default();
     struct Behavior *child = BehaviorBuilder_build(
@@ -149,8 +149,8 @@ Test(Behavior,
     Behavior_addChild(behavior, child);
     Behavior_addChild(behavior, behavior);
 
-    cr_assert_eq(behavior->firstChild, child);
-    cr_assert_eq(child->nextSibling, child);
+    cr_assert_eq(behavior->first_child, child);
+    cr_assert_eq(child->next_sibling, child);
 
     Behavior_delete(behavior);
     Behavior_delete(child);
@@ -158,53 +158,53 @@ Test(Behavior,
 
 Test(Behavior_WithTwoChildren,
      given_theFirstChildIsReachable_when_askedToUpdateBehavior_then_returnsFirstChild
-     , .init = setupBehavior
-     , .fini = teardownBehavior)
+     , .init = setup_behavior
+     , .fini = teardown_behavior)
 {
     struct Behavior *behavior = BehaviorBuilder_default();
-    struct Behavior *reachableChild = BehaviorBuilder_default();
-    struct Behavior *unreachableChild = BehaviorBuilder_build(
+    struct Behavior *reachable_child = BehaviorBuilder_default();
+    struct Behavior *unreachable_child = BehaviorBuilder_build(
                                             BehaviorBuilder_withGoalX(X_TOLERANCE_MAX + DEFAULT_GOAL_X,
                                                     BehaviorBuilder_end()));
 
-    Behavior_addChild(behavior, reachableChild);
-    Behavior_addChild(behavior, unreachableChild);
+    Behavior_addChild(behavior, reachable_child);
+    Behavior_addChild(behavior, unreachable_child);
 
-    struct Behavior *nextBehavior = Behavior_fetchFirstReachedChildOrReturnSelf(behavior, currentState);
+    struct Behavior *next_behavior = Behavior_fetchFirstReachedChildOrReturnSelf(behavior, current_state);
 
-    cr_assert_eq(reachableChild, nextBehavior);
+    cr_assert_eq(reachable_child, next_behavior);
 
     Behavior_delete(behavior);
-    Behavior_delete(reachableChild);
-    Behavior_delete(unreachableChild);
+    Behavior_delete(reachable_child);
+    Behavior_delete(unreachable_child);
 }
 
 Test(Behavior_WithTwoChildren,
      given_theSecondChildIsReachable_when_askedToUpdateBehavior_then_returnsSecondChild
-     , .init = setupBehavior
-     , .fini = teardownBehavior)
+     , .init = setup_behavior
+     , .fini = teardown_behavior)
 {
     struct Behavior *behavior = BehaviorBuilder_default();
-    struct Behavior *reachableChild = BehaviorBuilder_default();
-    struct Behavior *unreachableChild = BehaviorBuilder_build(
+    struct Behavior *reachable_child = BehaviorBuilder_default();
+    struct Behavior *unreachable_child = BehaviorBuilder_build(
                                             BehaviorBuilder_withGoalX(X_TOLERANCE_MAX + DEFAULT_GOAL_X,
                                                     BehaviorBuilder_end()));
 
-    Behavior_addChild(behavior, unreachableChild);
-    Behavior_addChild(behavior, reachableChild);
+    Behavior_addChild(behavior, unreachable_child);
+    Behavior_addChild(behavior, reachable_child);
 
-    struct Behavior *nextBehavior = Behavior_fetchFirstReachedChildOrReturnSelf(behavior, currentState);
+    struct Behavior *next_behavior = Behavior_fetchFirstReachedChildOrReturnSelf(behavior, current_state);
 
-    cr_assert_eq(reachableChild, nextBehavior);
+    cr_assert_eq(reachable_child, next_behavior);
 
     Behavior_delete(behavior);
-    Behavior_delete(reachableChild);
-    Behavior_delete(unreachableChild);
+    Behavior_delete(reachable_child);
+    Behavior_delete(unreachable_child);
 }
 
 Test(Behavior, given_aDefaultBehavior_when__then_itsActionIsDummyAction
-     , .init = setupBehavior
-     , .fini = teardownBehavior)
+     , .init = setup_behavior
+     , .fini = teardown_behavior)
 {
     struct Behavior *behavior = BehaviorBuilder_default();
     void (*action)(struct Robot *) = &Behavior_dummyAction;
@@ -215,8 +215,8 @@ Test(Behavior, given_aDefaultBehavior_when__then_itsActionIsDummyAction
 }
 
 Test(Behavior, given_aDefaultBehavior_when_changesItsAction_then_itsActionIsChanged
-     , .init = setupBehavior
-     , .fini = teardownBehavior)
+     , .init = setup_behavior
+     , .fini = teardown_behavior)
 {
     struct Behavior *behavior = BehaviorBuilder_default();
     void (*action)(struct Robot *) = &Robot_takePicture;
@@ -233,11 +233,11 @@ void BehaviorActionTest(struct Robot *robot)
 }
 
 Test(Behavior, given_aSpecificFunction_when_acts_then_theActionTakesPlace
-     , .init = setupBehavior
-     , .fini = teardownBehavior)
+     , .init = setup_behavior
+     , .fini = teardown_behavior)
 {
     struct Robot *robot = Robot_new();
-    cr_assert(robot->currentState->flags->pictureTaken == FALSE);
+    cr_assert(robot->current_state->flags->picture_taken == FALSE);
 
     struct Behavior *behavior = BehaviorBuilder_build(
                                     BehaviorBuilder_withAction(&BehaviorActionTest,
@@ -245,7 +245,7 @@ Test(Behavior, given_aSpecificFunction_when_acts_then_theActionTakesPlace
 
     Behavior_act(behavior, robot);
 
-    cr_assert(robot->currentState->flags->pictureTaken == TRUE);
+    cr_assert(robot->current_state->flags->picture_taken == TRUE);
 
     Behavior_delete(behavior);
     Robot_delete(robot);

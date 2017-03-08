@@ -1,64 +1,64 @@
 #include "RobotReceiver.h"
 
-static void updateTableCorners(struct Map *map, struct Communication_Environment environment)
+static void update_table_corners(struct Map *map, struct Communication_Environment environment)
 {
-    int northEastX = environment.northEasternTableCorner.x;
-    int northEastY = environment.northEasternTableCorner.y;
-    int southEastX = environment.southEasternTableCorner.x;
-    int southEastY = environment.southEasternTableCorner.y;
-    int southWestX = environment.southWesternTableCorner.x;
-    int southWestY = environment.southWesternTableCorner.y;
-    int northWestX = environment.northWesternTableCorner.x;
-    int northWestY = environment.northWesternTableCorner.y;
+    int northEastX = environment.north_eastern_table_corner.x;
+    int northEastY = environment.north_eastern_table_corner.y;
+    int southEastX = environment.south_eastern_table_corner.x;
+    int southEastY = environment.south_eastern_table_corner.y;
+    int southWestX = environment.south_western_table_corner.x;
+    int southWestY = environment.south_western_table_corner.y;
+    int northWestX = environment.north_western_table_corner.x;
+    int northWestY = environment.north_western_table_corner.y;
 
-    struct Coordinates *northEasternTableCorner = Coordinates_new(northEastX, northEastY);
-    struct Coordinates *southEasternTableCorner = Coordinates_new(southEastX, southEastY);
-    struct Coordinates *southWesternTableCorner = Coordinates_new(southWestX, southWestY);
-    struct Coordinates *northWesternTableCorner = Coordinates_new(northWestX, northWestY);
+    struct Coordinates *north_eastern_table_corner = Coordinates_new(northEastX, northEastY);
+    struct Coordinates *south_eastern_table_corner = Coordinates_new(southEastX, southEastY);
+    struct Coordinates *south_western_table_corner = Coordinates_new(southWestX, southWestY);
+    struct Coordinates *north_western_table_corner = Coordinates_new(northWestX, northWestY);
 
-    Map_updateTableCorners(map, northEasternTableCorner,
-                           southEasternTableCorner, southWesternTableCorner,
-                           northWesternTableCorner);
+    Map_updateTableCorners(map, north_eastern_table_corner,
+                           south_eastern_table_corner, south_western_table_corner,
+                           north_western_table_corner);
 
-    Coordinates_delete(northEasternTableCorner);
-    Coordinates_delete(southEasternTableCorner);
-    Coordinates_delete(southWesternTableCorner);
-    Coordinates_delete(northWesternTableCorner);
+    Coordinates_delete(north_eastern_table_corner);
+    Coordinates_delete(south_eastern_table_corner);
+    Coordinates_delete(south_western_table_corner);
+    Coordinates_delete(north_western_table_corner);
 }
 
-static void updateDrawingCorners(struct Map *map, struct Communication_Environment environment)
+static void update_drawing_corners(struct Map *map, struct Communication_Environment environment)
 {
-    int northEastX = environment.northEasternDrawingCorner.x;
-    int northEastY = environment.northEasternDrawingCorner.y;
-    int southEastX = environment.southEasternDrawingCorner.x;
-    int southEastY = environment.southEasternDrawingCorner.y;
-    int southWestX = environment.southWesternDrawingCorner.x;
-    int southWestY = environment.southWesternDrawingCorner.y;
-    int northWestX = environment.northWesternDrawingCorner.x;
-    int northWestY = environment.northWesternDrawingCorner.y;
+    int northEastX = environment.north_eastern_drawing_corner.x;
+    int northEastY = environment.north_eastern_drawing_corner.y;
+    int southEastX = environment.south_eastern_drawing_corner.x;
+    int southEastY = environment.south_eastern_drawing_corner.y;
+    int southWestX = environment.south_western_drawing_corner.x;
+    int southWestY = environment.south_western_drawing_corner.y;
+    int northWestX = environment.north_western_drawing_corner.x;
+    int northWestY = environment.north_western_drawing_corner.y;
 
-    struct Coordinates *northEasternDrawingCorner = Coordinates_new(northEastX, northEastY);
-    struct Coordinates *southEasternDrawingCorner = Coordinates_new(southEastX, southEastY);
-    struct Coordinates *southWesternDrawingCorner = Coordinates_new(southWestX, southWestY);
-    struct Coordinates *northWesternDrawingCorner = Coordinates_new(northWestX, northWestY);
+    struct Coordinates *north_eastern_drawing_corner = Coordinates_new(northEastX, northEastY);
+    struct Coordinates *south_eastern_drawing_corner = Coordinates_new(southEastX, southEastY);
+    struct Coordinates *south_western_drawing_corner = Coordinates_new(southWestX, southWestY);
+    struct Coordinates *north_western_drawing_corner = Coordinates_new(northWestX, northWestY);
 
 
-    Map_updateDrawingCorners(map, northEasternDrawingCorner,
-                             southEasternDrawingCorner, southWesternDrawingCorner,
-                             northWesternDrawingCorner);
+    Map_updateDrawingCorners(map, north_eastern_drawing_corner,
+                             south_eastern_drawing_corner, south_western_drawing_corner,
+                             north_western_drawing_corner);
 
-    Coordinates_delete(northEasternDrawingCorner);
-    Coordinates_delete(southEasternDrawingCorner);
-    Coordinates_delete(southWesternDrawingCorner);
-    Coordinates_delete(northWesternDrawingCorner);
+    Coordinates_delete(north_eastern_drawing_corner);
+    Coordinates_delete(south_eastern_drawing_corner);
+    Coordinates_delete(south_western_drawing_corner);
+    Coordinates_delete(north_western_drawing_corner);
 }
 
-static void updateAntennaZone(struct Map *map, struct Communication_Environment environment)
+static void update_antenna_zone(struct Map *map, struct Communication_Environment environment)
 {
-    int startX = environment.antennaZoneStart.x;
-    int startY = environment.antennaZoneStart.y;
-    int stopX = environment.antennaZoneStop.x;
-    int stopY = environment.antennaZoneStop.y;
+    int startX = environment.antenna_zone_start.x;
+    int startY = environment.antenna_zone_start.y;
+    int stopX = environment.antenna_zone_stop.x;
+    int stopY = environment.antenna_zone_stop.y;
 
     struct Coordinates *start = Coordinates_new(startX, startY);
     struct Coordinates *stop = Coordinates_new(stopX, stopY);
@@ -69,7 +69,7 @@ static void updateAntennaZone(struct Map *map, struct Communication_Environment 
     Coordinates_delete(stop);
 }
 
-enum CardinalDirection orientAngle(int theta)
+enum CardinalDirection orient_angle(int theta)
 {
     enum CardinalDirection orientation;
 
@@ -77,7 +77,7 @@ enum CardinalDirection orientAngle(int theta)
     return orientation;
 }
 
-static void updateObstacles(struct Map *map, struct Communication_Environment environment)
+static void update_obstacles(struct Map *map, struct Communication_Environment environment)
 {
     int x;
     int y;
@@ -114,17 +114,17 @@ static void updateObstacles(struct Map *map, struct Communication_Environment en
 
 }
 
-static void updatePaintingZone(struct Map *map, struct Communication_Environment environment)
+static void update_painting_zone(struct Map *map, struct Communication_Environment environment)
 {
     int x;
     int y;
     int theta;
-    int i = environment.paintingZone[0].index;
+    int i = environment.painting_zone[0].index;
 
     while(i < 8) {
-        x = environment.paintingZone[i].pose.coordinates.x;
-        y = environment.paintingZone[i].pose.coordinates.y;
-        theta = environment.paintingZone[i].pose.theta;
+        x = environment.painting_zone[i].pose.coordinates.x;
+        y = environment.painting_zone[i].pose.coordinates.y;
+        theta = environment.painting_zone[i].pose.theta;
 
         struct Pose *pose = Pose_new(x, y, theta);
 
@@ -137,9 +137,9 @@ static void updatePaintingZone(struct Map *map, struct Communication_Environment
 
 }
 
-static void updateWorldCameraRobot(struct WorldCamera *worldCamera, struct Communication_Object robot)
+static void update_world_camera_robot(struct WorldCamera *world_camera, struct Communication_Object robot)
 {
-    Sensor_receivesData(worldCamera->robotSensor);
+    Sensor_receivesData(world_camera->robot_sensor);
 
     int x = robot.zone.pose.coordinates.x;
     int y = robot.zone.pose.coordinates.y;
@@ -147,8 +147,8 @@ static void updateWorldCameraRobot(struct WorldCamera *worldCamera, struct Commu
     int radius = robot.radius;
     struct Pose *pose = Pose_new(x, y, theta);
 
-    Pose_copyValuesFrom(worldCamera->robotPose, pose);
-    worldCamera->robotRadius = radius;
+    Pose_copyValuesFrom(world_camera->robot_pose, pose);
+    world_camera->robot_radius = radius;
 
     Pose_delete(pose);
 }
@@ -158,33 +158,33 @@ void RobotReceiver_updateMesurements(struct Robot *robot)
 {
     // TODO: Integrate the handle_recv_packet function to call these callbacks:
     struct Communication_World world;
-    RobotReceiver_updateWorld(robot->worldCamera, world);
+    RobotReceiver_updateWorld(robot->world_camera, world);
 
     // THESE DON'T EXIST YET
-    //updateWheels(robot->wheels);
-    //updateOtherSensor??
-    //updatePen(robot->pen);
+    //update_wheels(robot->wheels);
+    //update_other_sensor??
+    //update_pen(robot->pen);
 }
 
-void RobotReceiver_updateWorld(struct WorldCamera *worldCamera, struct Communication_World world)
+void RobotReceiver_updateWorld(struct WorldCamera *world_camera, struct Communication_World world)
 {
-    if(world.environmentHasChanged) {
-        Sensor_receivesData(worldCamera->mapSensor);
-        struct Map *map = worldCamera->map;
-        updateTableCorners(map, world.environment);
-        updateDrawingCorners(map, world.environment);
-        updateAntennaZone(map, world.environment);
-        updateObstacles(map, world.environment);
-        updatePaintingZone(map, world.environment);
+    if(world.environment_has_changed) {
+        Sensor_receivesData(world_camera->map_sensor);
+        struct Map *map = world_camera->map;
+        update_table_corners(map, world.environment);
+        update_drawing_corners(map, world.environment);
+        update_antenna_zone(map, world.environment);
+        update_obstacles(map, world.environment);
+        update_painting_zone(map, world.environment);
     }
 
-    updateWorldCameraRobot(worldCamera, world.robot);
+    update_world_camera_robot(world_camera, world.robot);
 
 
 }
 
-struct Mesurements RobotReceiver_fetchInputs(struct Mesurements(*communicationCallback)(void))
+struct Mesurements RobotReceiver_fetchInputs(struct Mesurements(*communication_callback)(void))
 {
-    struct Mesurements mesurements = (*communicationCallback)();
+    struct Mesurements mesurements = (*communication_callback)();
     return mesurements;
 }

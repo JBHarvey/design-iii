@@ -8,7 +8,7 @@ struct Sensor *Sensor_new(void)
     struct Sensor *pointer = (struct Sensor *) malloc(sizeof(struct Sensor));
 
     pointer->object = new_object;
-    pointer->hasReceivedNewData = 0;
+    pointer->has_received_new_data = 0;
 
     return pointer;
 }
@@ -25,10 +25,10 @@ void Sensor_delete(struct Sensor *sensor)
 
 void Sensor_receivesData(struct Sensor *sensor)
 {
-    sensor->hasReceivedNewData = 1;
+    sensor->has_received_new_data = 1;
 }
 
 void Sensor_readsData(struct Sensor *sensor)
 {
-    sensor->hasReceivedNewData = 0;
+    sensor->has_received_new_data = 0;
 }

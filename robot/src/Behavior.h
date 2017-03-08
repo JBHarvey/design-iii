@@ -7,18 +7,18 @@ struct Robot;
 
 struct Behavior {
     struct Object *object;
-    struct Objective *entryConditions;
-    struct Behavior *firstChild;
-    struct Behavior *nextSibling;
+    struct Objective *entry_conditions;
+    struct Behavior *first_child;
+    struct Behavior *next_sibling;
     void (*action)(struct Robot *);
 };
 
-struct Behavior *Behavior_new(struct Objective *new_entryCondition);
+struct Behavior *Behavior_new(struct Objective *new_entry_condition);
 void Behavior_delete(struct Behavior *behavior);
 
-int Behavior_areEntryConditionsReached(struct Behavior *behavior, struct State *currentState);
-struct Behavior *Behavior_fetchFirstReachedChildOrReturnSelf(struct Behavior *self, struct State *currentState);
-void Behavior_addChild(struct Behavior *behavior, struct Behavior *newChild);
+int Behavior_areEntryConditionsReached(struct Behavior *behavior, struct State *current_state);
+struct Behavior *Behavior_fetchFirstReachedChildOrReturnSelf(struct Behavior *self, struct State *current_state);
+void Behavior_addChild(struct Behavior *behavior, struct Behavior *new_child);
 void Behavior_changeAction(struct Behavior *behavior, void (*new_action)(struct Robot *));
 void Behavior_act(struct Behavior *behavior, struct Robot *robot);
 

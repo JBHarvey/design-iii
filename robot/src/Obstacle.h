@@ -11,10 +11,10 @@ struct Obstacle {
     enum CardinalDirection orientation;
 };
 
-struct Obstacle *Obstacle_new(int new_x, int new_y, int new_radius, enum CardinalDirection new_orientation);
+struct Obstacle *Obstacle_new(int newX, int newY, int new_radius, enum CardinalDirection new_orientation);
 void Obstacle_delete(struct Obstacle *obstacle);
 
-void Obstacle_changeCoordinates(struct Obstacle *obstacle, struct Coordinates *newCoordinates);
-void Obstacle_changeOrientation(struct Obstacle *obstacle, enum CardinalDirection newOrientation);
+void Obstacle_changeCoordinates(struct Obstacle *obstacle, struct Coordinates *new_coordinates);
+void Obstacle_changeOrientation(struct Obstacle *obstacle, enum CardinalDirection new_orientation);
 
 #endif // OBSTACLE_H_

@@ -3,26 +3,26 @@
 
 static int Behavior_hasChild(struct Behavior *behavior)
 {
-    return behavior->firstChild != behavior;
+    return behavior->first_child != behavior;
 }
 
 static int Behavior_hasSibling(struct Behavior *behavior)
 {
-    return behavior->nextSibling != behavior;
+    return behavior->next_sibling != behavior;
 }
 
-struct Behavior *Behavior_new(struct Objective *new_entryConditions)
+struct Behavior *Behavior_new(struct Objective *new_entry_conditions)
 {
     struct Object *new_object = Object_new();
     struct Behavior *pointer = (struct Behavior *) malloc(sizeof(struct Behavior));
 
     pointer->object = new_object;
-    pointer->entryConditions = new_entryConditions;
-    pointer->firstChild = pointer;
-    pointer->nextSibling = pointer;
+    pointer->entry_conditions = new_entry_conditions;
+    pointer->first_child = pointer;
+    pointer->next_sibling = pointer;
     pointer->action = &Behavior_dummyAction;
 
-    Object_addOneReference(new_entryConditions->object);
+    Object_addOneReference(new_entry_conditions->object);
 
     return pointer;
 }
@@ -33,42 +33,42 @@ void Behavior_delete(struct Behavior *behavior)
 
     if(Object_canBeDeleted(behavior->object)) {
         Object_delete(behavior->object);
-        Objective_delete(behavior->entryConditions);
+        Objective_delete(behavior->entry_conditions);
 
         if(Behavior_hasChild(behavior)) {
-            Behavior_delete(behavior->firstChild);
+            Behavior_delete(behavior->first_child);
         }
 
         if(Behavior_hasSibling(behavior)) {
-            Behavior_delete(behavior->nextSibling);
+            Behavior_delete(behavior->next_sibling);
         }
 
         free(behavior);
     }
 }
 
-int Behavior_areEntryConditionsReached(struct Behavior *behavior, struct State *currentState)
+int Behavior_areEntryConditionsReached(struct Behavior *behavior, struct State *current_state)
 {
-    int reached = Objective_isReached(behavior->entryConditions, currentState);
+    int reached = Objective_isReached(behavior->entry_conditions, current_state);
 
     return reached;
 }
 
-struct Behavior *Behavior_fetchFirstReachedChildOrReturnSelf(struct Behavior *self, struct State *currentState)
+struct Behavior *Behavior_fetchFirstReachedChildOrReturnSelf(struct Behavior *self, struct State *current_state)
 {
 
     if(Behavior_hasChild(self)) {
 
-        struct Behavior *child = self->firstChild;
+        struct Behavior *child = self->first_child;
 
-        if(Behavior_areEntryConditionsReached(child, currentState)) {
+        if(Behavior_areEntryConditionsReached(child, current_state)) {
             return child;
         }
 
         while(Behavior_hasSibling(child)) {
-            child = child->nextSibling;
+            child = child->next_sibling;
 
-            if(Behavior_areEntryConditionsReached(child, currentState)) {
+            if(Behavior_areEntryConditionsReached(child, current_state)) {
                 return child;
             }
 
@@ -78,28 +78,28 @@ struct Behavior *Behavior_fetchFirstReachedChildOrReturnSelf(struct Behavior *se
     return self;
 }
 
-void Behavior_addChild(struct Behavior *behavior, struct Behavior *newChild)
+void Behavior_addChild(struct Behavior *behavior, struct Behavior *new_child)
 {
 
-    if(behavior == newChild) {
+    if(behavior == new_child) {
         return;
     }
 
     if(Behavior_hasChild(behavior)) {
 
-        struct Behavior *lastChild = behavior->firstChild;
+        struct Behavior *last_child = behavior->first_child;
 
-        while(Behavior_hasSibling(lastChild)) {
-            lastChild = lastChild->nextSibling;
+        while(Behavior_hasSibling(last_child)) {
+            last_child = last_child->next_sibling;
         }
 
-        lastChild->nextSibling = newChild;
+        last_child->next_sibling = new_child;
 
     } else {
-        behavior->firstChild = newChild;
+        behavior->first_child = new_child;
     }
 
-    Object_addOneReference(newChild->object);
+    Object_addOneReference(new_child->object);
 }
 
 /* This here is present for safety purposes.

@@ -10,10 +10,10 @@ struct Pose {
 };
 
 struct Pose *Pose_zero(void);
-struct Pose *Pose_new(int new_x, int new_y, int new_theta);
+struct Pose *Pose_new(int newX, int newY, int new_theta);
 void Pose_delete(struct Pose *pose);
 
 void Pose_copyValuesFrom(struct Pose *recipient, struct Pose *source);
-int Pose_haveTheSameValues(struct Pose *pose, struct Pose *otherPose);
+int Pose_haveTheSameValues(struct Pose *pose, struct Pose *other_pose);
 
 #endif // POSE_H_
