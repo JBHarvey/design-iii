@@ -23,9 +23,12 @@
 #include "tm_stm32f4_hd44780.h"
 #include "tm_stm32f4_delay.h"
 #include "manchester.h"
-#include "PID.h"
-
-#include <encoder.h>
+#include "PID_v1.h"
+#include "encoder.h"
+#include "externalInterrupts.h"
+#include "timers.h"
+#include "pushButtons.h"
+#include "leds.h"
 
 #define TAILLE 500
 
@@ -60,6 +63,17 @@ volatile int speedMotor4 = 0;
 
 volatile int speedIndex = 0;
 volatile uint16_t speedBuffer[MAX_SPEED_INDEX];
+
+// declaration of pids
+PidType PID_SPEED1;
+PidType PID_SPEED2;
+PidType PID_SPEED3;
+PidType PID_SPEED4;
+
+PidType PID_POSITION1;
+PidType PID_POSITION2;
+PidType PID_POSITION3;
+PidType PID_POSITION4;
 
 // Buffer contenant tous les bits du manchester
 volatile uint8_t manchesterBuffer[MANCHESTER_BUFFER_LENGTH];
@@ -215,8 +229,8 @@ int main(void) {
 		}
 		uint8_t consigne = readUSB();
 
-		int consigneX = 10;
-		int consigneY = 22;
+		consigneX = 10;
+		consigneY = 22;
 		/* Main state machine */
 		switch (mainState) {
 		case MAIN_IDLE:
@@ -359,12 +373,30 @@ int main(void) {
 		case MAIN_PID:
 			consigneX = 10;
 			consigneY = 22;
-			while (1) {
 
-				/* Initialization of PIDs */
-				arm_pid_instance_f32 PID_SPEED;
-				arm_pid_instance_f32 PID_POS;
-				initPID(&PID_SPEED, &PID_POS);
+			/* Initialization of PIDs */
+			PID_init(&PID_SPEED1, PID_SPEED_KP, PID_SPEED_KI, PID_SPEED_KD,
+					PID_Direction_Direct);
+			PID_init(&PID_POSITION1, PID_POSITION_KP, PID_POSITION_KI,
+					PID_POSITION_KD, PID_Direction_Direct);
+			PID_init(&PID_SPEED2, PID_SPEED_KP, PID_SPEED_KI, PID_SPEED_KD,
+					PID_Direction_Direct);
+			PID_init(&PID_POSITION2, PID_POSITION_KP, PID_POSITION_KI,
+					PID_POSITION_KD, PID_Direction_Direct);
+			PID_init(&PID_SPEED3, PID_SPEED_KP, PID_SPEED_KI, PID_SPEED_KD,
+					PID_Direction_Direct);
+			PID_init(&PID_POSITION3, PID_POSITION_KP, PID_POSITION_KI,
+					PID_POSITION_KD, PID_Direction_Direct);
+			PID_init(&PID_SPEED4, PID_SPEED_KP, PID_SPEED_KI, PID_SPEED_KD,
+					PID_Direction_Direct);
+			PID_init(&PID_POSITION4, PID_POSITION_KP, PID_POSITION_KI,
+					PID_POSITION_KD, PID_Direction_Direct);
+
+			PID_SPEED1.mySetpoint = consigneX;
+			PID_SPEED2.mySetpoint = consigneY;
+			PID_SPEED3.mySetpoint = consigneX;
+			PID_SPEED4.mySetpoint = consigneY;
+			while (1) {
 
 				if (consigneX > 0) {
 					MotorSetDirection(1, COUNTER_CLOCK);
@@ -388,15 +420,25 @@ int main(void) {
 					MotorSetDirection(4, BRAKE_G);
 				}
 
-				int cmdMotor1 = getPID(&PID_SPEED, speedMotor1, consigneX);
-				int cmdMotor2 = getPID(&PID_SPEED, speedMotor2, consigneY);
-				int cmdMotor3 = getPID(&PID_SPEED, speedMotor3, consigneX);
-				int cmdMotor4 = getPID(&PID_SPEED, speedMotor4, consigneY);
+				if (PID_Compute(&PID_SPEED1)) {
+					int cmdMotor1 = PID_SPEED1.myOutput;
+					MotorSetSpeed(1, cmdMotor1);
+				}
 
-				MotorSetSpeed(1, cmdMotor1);
-				MotorSetSpeed(2, cmdMotor2);
-				MotorSetSpeed(3, cmdMotor3);
-				MotorSetSpeed(4, cmdMotor4);
+				if (PID_Compute(&PID_SPEED2)) {
+					int cmdMotor2 = PID_SPEED2.myOutput;
+					MotorSetSpeed(2, cmdMotor2);
+
+				}
+				if (PID_Compute(&PID_SPEED3)) {
+					int cmdMotor3 = PID_SPEED3.myOutput;
+					MotorSetSpeed(3, cmdMotor3);
+				}
+				if (PID_Compute(&PID_SPEED4)) {
+					int cmdMotor4 = PID_SPEED4.myOutput;
+					MotorSetSpeed(4, cmdMotor4);
+				}
+
 			}
 			break;
 		case MAIN_MANCH:
@@ -500,14 +542,19 @@ extern void TIM2_IRQHandler() {
 	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
 
-		speedMotor1 = calculateSpeed(numberOfEdges1);
-		//numberOfEdges1 = 0;
-		speedMotor2 = calculateSpeed(numberOfEdges2);
-		//numberOfEdges2 = 0;
-		speedMotor3 = calculateSpeed(numberOfEdges3);
-		//numberOfEdges3 = 0;
-		speedMotor4 = calculateSpeed(numberOfEdges4);
-		//numberOfEdges4 = 0;
+		PID_SPEED1.myInput = calculateSpeed(numberOfEdges1);
+		numberOfEdges1 = 0;
+		PID_SPEED2.myInput = calculateSpeed(numberOfEdges2);
+		numberOfEdges2 = 0;
+		PID_SPEED3.myInput = calculateSpeed(numberOfEdges3);
+		numberOfEdges3 = 0;
+		PID_SPEED4.myInput = calculateSpeed(numberOfEdges4);
+		numberOfEdges4 = 0;
+
+		PID_SetMode(&PID_SPEED1, PID_Mode_Automatic);
+		PID_SetMode(&PID_SPEED2, PID_Mode_Automatic);
+		PID_SetMode(&PID_SPEED3, PID_Mode_Automatic);
+		PID_SetMode(&PID_SPEED4, PID_Mode_Automatic);
 
 		TM_HD44780_Puts(0, 0, numberOfEdges1);
 		TM_HD44780_Puts(0, 8, numberOfEdges2);

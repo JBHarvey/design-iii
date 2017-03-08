@@ -19,9 +19,9 @@ void initPID(arm_pid_instance_f32* PID_SPEED, arm_pid_instance_f32* PID_POS) {
 	/* Initialize PID system, float32_t format */
 	//arm_pid_init_f32(PID_SPEED, 1);
 	/* Initialize PID for position */
-	PID_POS->Kp = PID_POS_KP;
-	PID_POS->Ki = PID_POS_KI;
-	PID_POS->Kd = PID_POS_KD;
+	PID_POS->Kp = PID_POSITION_KP;
+	PID_POS->Ki = PID_POSITION_KI;
+	PID_POS->Kd = PID_POSITION_KD;
 	//arm_pid_init_f32(PID_POS, 1);
 
 }

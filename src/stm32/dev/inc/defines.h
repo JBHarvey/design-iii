@@ -2,13 +2,13 @@
 #define TM_DEFINES_H
 
 /* Pin pour les moteurs
- * DIR1 : Première pin pour la direction
- * DIR2 : Deuxième pin pour la direction
- * PWM : Pin qui génère le PWM
+ * DIR1 : Premiï¿½re pin pour la direction
+ * DIR2 : Deuxiï¿½me pin pour la direction
+ * PWM : Pin qui gï¿½nï¿½re le PWM
  * */
 
 // Configuration PWM pour tous les moteurs
-// Fréquence = (84 000 000 / (PWM_PRESCALER + 1)) / PWM_PERIOD
+// Frï¿½quence = (84 000 000 / (PWM_PRESCALER + 1)) / PWM_PERIOD
 #define PWM_PRESCALER 3 // 0 = 1
 #define PWM_PERIOD 52500
 
@@ -48,15 +48,15 @@
 #define MSG_ERR "Etat invalide"
 
 /* PID */
-// Paramètres en vitesse
+// Paramï¿½tres en vitesse
 #define PID_SPEED_KP 0.0281896
 #define PID_SPEED_KI  0.6698803
 #define PID_SPEED_KD 0
 
-// Paramètres en position
-#define PID_POS_KP  680.33879051
-#define PID_POS_KI 0.01
-#define PID_POS_KD 146.4823
+// Paramï¿½tres en position
+#define PID_POSITION_KP  680.33879051
+#define PID_POSITION_KI 0.01
+#define PID_POSITION_KD 146.4823
 
 #define SPEED_CALC_PERIOD 4000
 #define SPEED_CALC_TIME_DELAY 1/500

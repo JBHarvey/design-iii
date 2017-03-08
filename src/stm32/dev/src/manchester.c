@@ -193,8 +193,10 @@ void tryToDecodeManchesterCode(uint8_t *manchesterState,
 				== VALID_INFORMATION) {
 
 			uint8_t figure = getFigureFromInformationBits(informationBits);
+
 			char orientation[ORIENTATION_LENGTH];
 			setOrientationFromInformationBits(informationBits, orientation);
+
 			uint8_t factor = getFactorFromInformationBits(informationBits);
 
 			if (isSameDataThanPreviousIteration(&figure,
@@ -208,20 +210,20 @@ void tryToDecodeManchesterCode(uint8_t *manchesterState,
 				displayManchesterMessage(messageToDisplay);
 				disableExternalInterruptLine7();
 				disableTimer5Interrupt();
-				manchesterState = MANCHESTER_IDLE;
+				*manchesterState = MANCHESTER_IDLE;
 				GPIO_SetBits(GPIOD, GPIO_Pin_13);
 			} else {
-				manchesterFigureVerification = figure;
+				*manchesterFigureVerification = figure;
 				strcpy(manchesterOrientationVerification, orientation);
-				manchesterFactorVerification = factor;
+				*manchesterFactorVerification = factor;
 				disableTimer5Interrupt();
-				manchesterState = MANCHESTER_WAIT_FOR_DECODING;
+				*manchesterState = MANCHESTER_WAIT_FOR_DECODING;
 				initializeExternalInterruptLine7();
 			}
 
 		} else {
 			disableTimer5Interrupt();
-			manchesterState = MANCHESTER_WAIT_FOR_DECODING;
+			*manchesterState = MANCHESTER_WAIT_FOR_DECODING;
 			initializeExternalInterruptLine7();
 		}
 	}
