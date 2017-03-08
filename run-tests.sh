@@ -3,7 +3,7 @@ fail=0
 
 #### Intelligence
 echo "----------     Running Intelligence module tests      ----------"
-cd intelligence
+cd robot
 ./runtest.sh
 
 cd ..
