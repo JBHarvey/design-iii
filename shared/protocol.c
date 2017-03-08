@@ -12,11 +12,11 @@ void sendContinuePacket()
     addPacket(&data, sizeof(data));
 }
 
-void sendStationData(struct PackedStationData station_data)
+void sendStationData(struct Communication_World station_data)
 {
-    uint8_t data[1 + sizeof(struct PackedStationData)];
+    uint8_t data[1 + sizeof(struct Communication_World)];
     data[0] = PACKET_STATION_DATA;
-    memcpy(data + 1, &station_data, sizeof(struct PackedStationData));
+    memcpy(data + 1, &station_data, sizeof(struct Communication_World));
     addPacket(data, sizeof(data));
 }
 
@@ -36,14 +36,14 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             break;
 
         case PACKET_STATION_DATA:
-            if(length != (sizeof(struct PackedStationData) + 1)) {
-                printf("wrong struct PackedStationData length\n");
+            if(length != (sizeof(struct Communication_World) + 1)) {
+                printf("wrong struct Communication_World length\n");
                 break;
             }
 
-            struct PackedStationData station_data;
+            struct Communication_World station_data;
 
-            memcpy(&station_data, data + 1, sizeof(struct PackedStationData));
+            memcpy(&station_data, data + 1, sizeof(struct Communication_World));
 
             callbackStationData(station_data);
 

@@ -18,7 +18,7 @@ void callbackContinuePacket()
     printf("continue packet\n");
 }
 
-void callbackStationData(struct PackedStationData station_data)
+void callbackStationData(struct Communication_World station_data)
 {
     printf("station data packet\n");
 }
