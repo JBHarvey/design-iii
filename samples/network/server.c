@@ -8,16 +8,16 @@
 #define PORT_NO 3033
 
 #include "protocol.h"
-#include "ev_init.h"
+#include "Communication.h"
 
 int main()
 {
-    struct Communication *communication = communication_initServer(PORT_NO);
+    struct Communication *communication = Communication_initServer(PORT_NO);
 
     // Start infinite loop
     while(1) {
         sendContinuePacket();
-        communication_do(communication, 1);
+        Communication_do(communication, 1);
     }
 
     return 0;

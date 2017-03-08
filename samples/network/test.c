@@ -7,7 +7,7 @@
 #include <strings.h>
 
 #include "network.h"
-#include "ev_init.h"
+#include "Communication.h"
 
 #define PORT_NO 3033
 #define BUFFER_SIZE 1024
@@ -36,9 +36,9 @@ int main()
     struct Communication *communication;
 
     if(pid) {
-        communication = communication_initServer(PORT_NO);
+        communication = Communication_initServer(PORT_NO);
     } else {
-        communication = communication_initClient("127.0.0.1", PORT_NO);
+        communication = Communication_initClient("127.0.0.1", PORT_NO);
     }
 
     uint8_t *test_large = malloc(1 << 17);
@@ -48,7 +48,7 @@ int main()
     unsigned int i;
 
     for(i = 0; i < 1000; ++i) {
-        communication_do(communication, 10);
+        Communication_do(communication, 10);
 
         if(test_passed) {
             break;
@@ -56,7 +56,7 @@ int main()
     }
 
     free(test_large);
-    communication_close(communication);
+    Communication_close(communication);
 
     if(test_passed) {
         return 0;

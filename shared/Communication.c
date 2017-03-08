@@ -8,7 +8,7 @@
 #include <strings.h>
 
 #include "protocol.h"
-#include "ev_init.h"
+#include "Communication.h"
 
 static _Bool initTCPServer(struct Communication *communication, unsigned short port)
 {
@@ -49,7 +49,7 @@ static _Bool initTCPServer(struct Communication *communication, unsigned short p
     return 1;
 }
 
-struct Communication *communication_initServer(unsigned short port)
+struct Communication *Communication_initServer(unsigned short port)
 {
     struct Communication *communication = calloc(sizeof(struct Communication), 1);
     communication->loop = ev_default_loop(0);
@@ -108,7 +108,7 @@ static _Bool initTCPCLient(struct Communication *communication, char *ip, unsign
     return 1;
 }
 
-struct Communication *communication_initClient(char *ip, unsigned short port)
+struct Communication *Communication_initClient(char *ip, unsigned short port)
 {
     struct Communication *communication = calloc(sizeof(struct Communication), 1);
     communication->loop = ev_default_loop(0);
@@ -121,12 +121,12 @@ struct Communication *communication_initClient(char *ip, unsigned short port)
     return communication;
 }
 
-void communication_do(struct Communication *communication, unsigned int milliseconds)
+void Communication_do(struct Communication *communication, unsigned int milliseconds)
 {
     ev_loop(communication->loop, 1);
 }
 
-void communication_close(struct Communication *communication)
+void Communication_close(struct Communication *communication)
 {
     //TODO
     free(communication);
