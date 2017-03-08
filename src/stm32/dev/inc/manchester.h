@@ -9,6 +9,7 @@
 #define MANCHESTER_H_
 
 #include "misc.h"
+#include "tm_stm32f4_hd44780.h"
 
 enum ManchState {
 	MANCHESTER_IDLE,
@@ -65,5 +66,23 @@ void setMessageToDisplay(uint8_t figure, char *orientation, uint8_t factor,
 		char *messageToDisplay);
 
 void displayManchesterMessage(char *messageToDisplay);
+
+uint8_t isFigureEqual(uint8_t *figure, uint8_t *figureVerification);
+
+uint8_t isOrientationEqual(char *orientation, char *orientationVerification);
+
+uint8_t isFactorEqual(uint8_t *factor, uint8_t *factorVerification);
+
+uint8_t isSameDataThanPreviousIteration(uint8_t *figure,
+		uint8_t *figureVerification, char *orientation,
+		char *orientationVerification, uint8_t *factor,
+		uint8_t *factorVerification);
+
+void tryToDecodeManchesterCode(uint8_t *manchesterState,
+		uint8_t *manchesterBuffer, uint8_t *manchesterFigureVerification,
+		char *manchesterOrientationVerification,
+		uint8_t *manchesterFactorVerification);
+
+void InitializeManchesterInput();
 
 #endif /* MANCHESTER_H_ */

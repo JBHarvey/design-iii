@@ -21,10 +21,4 @@ void initializeExternalInterruptLine6();
 void intializeExternalInterrupts();
 void initEncoders();
 
-void SetTimer2(uint16_t period);
-void InitializeTimer2();
-void EnableTimer2Interrupt();
-
-uint16_t calculateSpeed(int edges);
-
 #endif /* ENCODER_H_ */
