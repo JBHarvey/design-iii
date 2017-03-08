@@ -24,7 +24,6 @@ int main(int argc, char *argv[])
     //cvNamedWindow("Video-bw", 0); // create window
     {
         img = cvLoadImage(argv[1], CV_LOAD_IMAGE_COLOR);
-        //img = cvLoadImage(argv[1],CV_LOAD_IMAGE_COLOR);
 
         if(img != 0) {
             cvShowImage("Video-orig", img);
