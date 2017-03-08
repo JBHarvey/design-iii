@@ -1,5 +1,14 @@
 # design-iii
 
+## Coding Standart
+We use the following notations:
+ - Structure :  `struct StructureName {};`
+ - Enum  `enum EnumName {};`
+ - Variable :  `struct StructureName structure_name;`  
+ - Private Functions :  `void functionName(void);`  
+ - Public Functions : `void Module_functionName(void);`
+ - Constant :  `const type CONSTANT_NAME;`  
+
 ## Vision
 
 Dependencies: opencv clang  
