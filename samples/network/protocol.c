@@ -1,26 +1,26 @@
 #include "protocol.h"
 
-void send_start_packet()
+void sendStartPacket()
 {
     uint8_t data = PACKET_START;
-    add_packet(&data, sizeof(data));
+    addPacket(&data, sizeof(data));
 }
 
-void send_continue_packet()
+void sendContinuePacket()
 {
     uint8_t data = PACKET_CONTINUE;
-    add_packet(&data, sizeof(data));
+    addPacket(&data, sizeof(data));
 }
 
-void send_station_data(Station_Data station_data)
+void sendStationData(struct PackedStationData station_data)
 {
-    uint8_t data[1 + sizeof(Station_Data)];
+    uint8_t data[1 + sizeof(struct PackedStationData)];
     data[0] = PACKET_STATION_DATA;
-    memcpy(data + 1, &station_data, sizeof(Station_Data));
-    add_packet(data, sizeof(data));
+    memcpy(data + 1, &station_data, sizeof(struct PackedStationData));
+    addPacket(data, sizeof(data));
 }
 
-void handle_recv_packet(uint8_t *data, uint32_t length)
+void handleReceivedPacket(uint8_t *data, uint32_t length)
 {
     if(length == 0) {
         return;
@@ -28,22 +28,25 @@ void handle_recv_packet(uint8_t *data, uint32_t length)
 
     switch(data[0]) {
         case PACKET_START:
-            cb_start_packet();
+            callbackStartPacket();
             break;
 
         case PACKET_CONTINUE:
-            cb_continue_packet();
+            callbackContinuePacket();
             break;
 
         case PACKET_STATION_DATA:
-            if(length != (sizeof(Station_Data) + 1)) {
-                printf("wrong Station_Data length\n");
+            if(length != (sizeof(struct PackedStationData) + 1)) {
+                printf("wrong struct PackedStationData length\n");
                 break;
             }
 
-            Station_Data station_data;
-            memcpy(&station_data, data + 1, sizeof(Station_Data));
-            cb_station_data(station_data);
+            struct PackedStationData station_data;
+
+            memcpy(&station_data, data + 1, sizeof(struct PackedStationData));
+
+            callbackStationData(station_data);
+
             break;
     }
 }

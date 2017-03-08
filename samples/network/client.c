@@ -48,17 +48,17 @@ int main()
         return -1;
     }
 
-    ev_io_init(w_client, read_cb, sd, EV_READ | EV_WRITE);
+    ev_io_init(w_client, readWriteCallback, sd, EV_READ | EV_WRITE);
     ev_io_start(loop, w_client);
 
     // Start infinite loop
     uint8_t *test_large = malloc(1 << 17);
     memset(test_large, 'X', 1 << 17);
     test_large[(1 << 17) - 1] = 0;
-    send_start_packet();
+    sendStartPacket();
 
     while(1) {
-        //add_packet(test_large, 1 << 17);
+        //addPacket(test_large, 1 << 17);
         ev_loop(loop, 10);
     }
 

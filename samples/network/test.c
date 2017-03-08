@@ -13,7 +13,7 @@
 
 _Bool test_passed;
 
-void handle_recv_packet(uint8_t *data, uint32_t length)
+void handleReceivedPacket(uint8_t *data, uint32_t length)
 {
     if(length == (1 << 17)) {
         unsigned int i;
@@ -66,7 +66,7 @@ int main()
         }
 
         // Initialize and start a watcher to accepts client requests
-        ev_io_init(&w_accept, accept_cb, sd, EV_READ);
+        ev_io_init(&w_accept, acceptCallback, sd, EV_READ);
         ev_io_start(loop, &w_accept);
     } else {
         struct ev_io *w_client = malloc(sizeof(struct ev_io));
@@ -98,14 +98,14 @@ int main()
             return -1;
         }
 
-        ev_io_init(w_client, read_cb, sd, EV_READ | EV_WRITE);
+        ev_io_init(w_client, readWriteCallback, sd, EV_READ | EV_WRITE);
         ev_io_start(loop, w_client);
     }
 
     uint8_t *test_large = malloc(1 << 17);
     memset(test_large, 'X', 1 << 17);
 
-    add_packet(test_large, 1 << 17);
+    addPacket(test_large, 1 << 17);
     unsigned int i;
 
     for(i = 0; i < 1000; ++i) {

@@ -43,12 +43,12 @@ int main()
     }
 
     // Initialize and start a watcher to accepts client requests
-    ev_io_init(&w_accept, accept_cb, sd, EV_READ);
+    ev_io_init(&w_accept, acceptCallback, sd, EV_READ);
     ev_io_start(loop, &w_accept);
 
     // Start infinite loop
     while(1) {
-        send_continue_packet();
+        sendContinuePacket();
         ev_loop(loop, 1);
     }
 

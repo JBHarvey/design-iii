@@ -2,17 +2,17 @@
 #include "protocol.h"
 
 
-void cb_start_packet()
+void callbackStartPacket()
 {
     printf("start packet\n");
 }
 
-void cb_continue_packet()
+void callbackContinuePacket()
 {
     printf("continue packet\n");
 }
 
-void cb_station_data(Station_Data station_data)
+void callbackStationData(struct PackedStationData station_data)
 {
     printf("station data packet\n");
 }
