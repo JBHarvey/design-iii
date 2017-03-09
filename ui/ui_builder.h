@@ -3,10 +3,8 @@
 
 #include <gtk/gtk.h>
 
-/* Build GUI from resource file
- * resource_path: the path to the resource file appended by the project prefix.
- * return: a pointer to the top level widget (the application window) */
-GtkWidget* build_ui(const gchar* resource_path);
+/* The resource_path must be appended by the project prefix. */
+GtkWidget* build_ui_and_return_top_level_window(const gchar* resource_path);
 
 #endif // __UI_BUILDER
 

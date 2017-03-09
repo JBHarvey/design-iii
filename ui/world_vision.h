@@ -2,19 +2,35 @@
 #define __WORLD_VISION
 
 #include <gtk/gtk.h>
+#include "opencv2/imgproc/imgproc_c.h"
 
-/* Intended to be a worker thread that takes camera capture continuously and feed a pixel buffer with them.
- * data: not used (g_thread requests it)
- * return: NULL (g_thread requests it)*/
-gpointer world_camera_feeder(gpointer data);
+/* Type definitions */
 
-/* Callback used by draw event on the world camera's GtkDrawingArea that process a redraw of the area with 
- * the world camera feed's pixel buffer.
- * SHOULD NOT BE CALLED IMPLICITLY
- * widget: the widget that has generated the draw event. (handled by g_signal)
- * event: the draw event object. (handled by g_signal)
- * data: not used. (handled by g_signal)
- * return: TRUE (handled by g_signal)*/
+struct camera_intrinsics {
+    CvMat *camera_matrix;
+    CvMat *distortion_coefficients;
+};
+
+struct camera_extrinsics {
+    CvMat *rotation_vector;
+    CvMat *translation_vector;
+};
+
+struct camera {
+    struct camera_intrinsics *camera_intrinsics;
+    struct camera_extrinsics *camera_extrinsics;
+};
+
+gpointer prepare_image_from_world_camera_for_drawing(gpointer data);
+
 gboolean world_camera_draw_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data);
+ 
+gboolean world_camera_calibration_clicked_event_callback(GtkWidget *widget, gpointer data);
+
+void set_main_loop_status_running(void);
+
+void set_main_loop_status_terminated(void);
+
+void set_world_camera_status_calibrated(void);
 
 #endif // __WORLD_VISION
