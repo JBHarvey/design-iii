@@ -11,5 +11,8 @@
 #include "stm32f4xx.h"
 
 void InitializeLEDs();
-
+void initLEDsSignals();
+void turnOnRedLED();
+void turnOnGreenLED();
+void turnOffLEDs();
 #endif /* LEDS_H_ */
