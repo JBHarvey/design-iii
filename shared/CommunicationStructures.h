@@ -1,6 +1,14 @@
 #ifndef COMMUNICATIONSTRUCTURES_H_
 #define COMMUNICATIONSTRUCTURES_H_
 
+enum {
+    PACKET_START,
+    PACKET_CONTINUE,
+    PACKET_WORLD
+};
+
+void sendStartPacket();
+
 struct __attribute__((__packed__)) Communication_Coordinates {
     int x;
     int y;
