@@ -107,6 +107,20 @@ extern void TIM5_IRQHandler() {
 	}
 }
 
+void cleanNumberString(char *numberString, int size) {
+	int arrayPosition = size - 1;
+	while (numberString[arrayPosition] != 0) {
+		numberString[arrayPosition] = ' ';
+		arrayPosition--;
+	}
+
+	while (numberString[arrayPosition] == 0) {
+		numberString[arrayPosition] = ' ';
+		arrayPosition--;
+	}
+	numberString[size - 1] = 0;
+}
+
 /* Change the state of the main
  * IN : the new state
  */
@@ -181,12 +195,12 @@ int main(void) {
 	/* System Init */
 	SystemInit();
 
-	// Motors initialization
+// Motors initialization
 	initMotors();
 
-	// Encoder initialization
+// Encoder initialization
 	initEncoders();
-	// LCD initialization
+// LCD initialization
 	TM_HD44780_Init(16, 2);
 
 	/* Initialize LED's. Make sure to check settings for your board in tm_stm32f4_disco.h file */
@@ -197,20 +211,20 @@ int main(void) {
 
 	initBtn();
 
-	// Initialisation des variables
-	int mainState = MAIN_IDLE;
-	//setState(&mainState, MAIN_MOVE);
+// Initialisation des variables
+	int mainState = MAIN_PID;
+//setState(&mainState, MAIN_MOVE);
 
 	int state = IDLE;
 
-	// initializations for manchester signal
+// initializations for manchester signal
 	InitializeLEDs();
 	InitializeManchesterInput();
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 	initializeExternalInterruptLine7();
 
-	int consigneX;
-	int consigneY;
+	float consigneX;
+	float consigneY;
 
 	while (1) {
 
@@ -222,15 +236,13 @@ int main(void) {
 			TM_DISCO_LedOn (LED_BLUE);
 			switch (mainState) {
 			case MAIN_IDLE:
-				mainState = MAIN_MOVE;
+				mainState = MAIN_PID;
 				//setState(&mainState, MAIN_MOVE);
 				break;
 			}
 		}
 		uint8_t consigne = readUSB();
 
-		consigneX = 10;
-		consigneY = 22;
 		/* Main state machine */
 		switch (mainState) {
 		case MAIN_IDLE:
@@ -371,24 +383,33 @@ int main(void) {
 
 			break;
 		case MAIN_PID:
-			consigneX = 10;
-			consigneY = 22;
+			consigneX = 0.2;
+			consigneY = 0.2;
 
 			/* Initialization of PIDs */
 			PID_init(&PID_SPEED1, PID_SPEED_KP, PID_SPEED_KI, PID_SPEED_KD,
 					PID_Direction_Direct);
+			PID_SetOutputLimits(&PID_SPEED1, 0, 100);
+
 			PID_init(&PID_POSITION1, PID_POSITION_KP, PID_POSITION_KI,
 					PID_POSITION_KD, PID_Direction_Direct);
+
 			PID_init(&PID_SPEED2, PID_SPEED_KP, PID_SPEED_KI, PID_SPEED_KD,
 					PID_Direction_Direct);
+			PID_SetOutputLimits(&PID_SPEED2, 0, 100);
 			PID_init(&PID_POSITION2, PID_POSITION_KP, PID_POSITION_KI,
 					PID_POSITION_KD, PID_Direction_Direct);
+
 			PID_init(&PID_SPEED3, PID_SPEED_KP, PID_SPEED_KI, PID_SPEED_KD,
 					PID_Direction_Direct);
+			PID_SetOutputLimits(&PID_SPEED3, 0, 100);
+
 			PID_init(&PID_POSITION3, PID_POSITION_KP, PID_POSITION_KI,
 					PID_POSITION_KD, PID_Direction_Direct);
 			PID_init(&PID_SPEED4, PID_SPEED_KP, PID_SPEED_KI, PID_SPEED_KD,
 					PID_Direction_Direct);
+
+			PID_SetOutputLimits(&PID_SPEED4, 0, 100);
 			PID_init(&PID_POSITION4, PID_POSITION_KP, PID_POSITION_KI,
 					PID_POSITION_KD, PID_Direction_Direct);
 
@@ -421,24 +442,58 @@ int main(void) {
 				}
 
 				if (PID_Compute(&PID_SPEED1)) {
-					int cmdMotor1 = PID_SPEED1.myOutput;
+					int cmdMotor1 = PID_SPEED1.myOutput + 0.5;
 					MotorSetSpeed(1, cmdMotor1);
+					PID_SetMode(&PID_SPEED1, PID_Mode_Manual);
+
+					char numberString[4] = { '5', '5', '5', 0 };
+					sprintf(numberString, "%d", numberOfEdges1);
+					cleanNumberString(numberString, 4);
+					TM_HD44780_Puts(0, 0, numberString);
+					sprintf(numberString, "%d", cmdMotor1);
+					cleanNumberString(numberString, 4);
+					TM_HD44780_Puts(3, 0, numberString);
 				}
 
 				if (PID_Compute(&PID_SPEED2)) {
-					int cmdMotor2 = PID_SPEED2.myOutput;
+					int cmdMotor2 = PID_SPEED2.myOutput + 0.5;
 					MotorSetSpeed(2, cmdMotor2);
+					PID_SetMode(&PID_SPEED2, PID_Mode_Manual);
 
+					char numberString[4] = { '5', '5', '5', 0 };
+					sprintf(numberString, "%d", numberOfEdges2);
+					cleanNumberString(numberString, 4);
+					TM_HD44780_Puts(8, 0, numberString);
+					sprintf(numberString, "%d", cmdMotor2);
+					cleanNumberString(numberString, 4);
+					TM_HD44780_Puts(11, 0, numberString);
 				}
 				if (PID_Compute(&PID_SPEED3)) {
-					int cmdMotor3 = PID_SPEED3.myOutput;
+					int cmdMotor3 = PID_SPEED3.myOutput + 0.5;
 					MotorSetSpeed(3, cmdMotor3);
+					PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
+
+					char numberString[4] = { '5', '5', '5', 0 };
+					sprintf(numberString, "%d", numberOfEdges3);
+					cleanNumberString(numberString, 4);
+					TM_HD44780_Puts(0, 1, numberString);
+					sprintf(numberString, "%d", cmdMotor3);
+					cleanNumberString(numberString, 4);
+					TM_HD44780_Puts(3, 1, numberString);
 				}
 				if (PID_Compute(&PID_SPEED4)) {
-					int cmdMotor4 = PID_SPEED4.myOutput;
+					int cmdMotor4 = PID_SPEED4.myOutput + 0.5;
 					MotorSetSpeed(4, cmdMotor4);
-				}
+					PID_SetMode(&PID_SPEED4, PID_Mode_Manual);
 
+					char numberString[4] = { '5', '5', '5', 0 };
+					sprintf(numberString, "%d", numberOfEdges4);
+					cleanNumberString(numberString, 4);
+					TM_HD44780_Puts(8, 1, numberString);
+					sprintf(numberString, "%d", cmdMotor4);
+					cleanNumberString(numberString, 4);
+					TM_HD44780_Puts(11, 1, numberString);
+				}
 			}
 			break;
 		case MAIN_MANCH:
@@ -450,20 +505,6 @@ int main(void) {
 		default:
 			setState(&mainState, MAIN_IDLE);
 		}
-	}
-}
-
-extern void EXTI0_IRQHandler(void) {
-	/* Make sure that interrupt flag is set */
-	if (EXTI_GetITStatus(EXTI_Line0) != RESET) {
-
-		/* Toggle RED led */
-		//STM_EVAL_LEDToggle (LED6);
-		/* increase ticks */
-		numberOfEdges1++;
-
-		/* Clear interrupt flag */
-		EXTI_ClearITPendingBit (EXTI_Line0);
 	}
 }
 
@@ -543,12 +584,13 @@ extern void TIM2_IRQHandler() {
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
 
 		PID_SPEED1.myInput = calculateSpeed(numberOfEdges1);
-		numberOfEdges1 = 0;
 		PID_SPEED2.myInput = calculateSpeed(numberOfEdges2);
-		numberOfEdges2 = 0;
 		PID_SPEED3.myInput = calculateSpeed(numberOfEdges3);
-		numberOfEdges3 = 0;
 		PID_SPEED4.myInput = calculateSpeed(numberOfEdges4);
+
+		numberOfEdges1 = 0;
+		numberOfEdges2 = 0;
+		numberOfEdges3 = 0;
 		numberOfEdges4 = 0;
 
 		PID_SetMode(&PID_SPEED1, PID_Mode_Automatic);
@@ -556,9 +598,5 @@ extern void TIM2_IRQHandler() {
 		PID_SetMode(&PID_SPEED3, PID_Mode_Automatic);
 		PID_SetMode(&PID_SPEED4, PID_Mode_Automatic);
 
-		TM_HD44780_Puts(0, 0, numberOfEdges1);
-		TM_HD44780_Puts(0, 8, numberOfEdges2);
-		TM_HD44780_Puts(1, 0, numberOfEdges3);
-		TM_HD44780_Puts(1, 8, numberOfEdges4);
 	}
 }

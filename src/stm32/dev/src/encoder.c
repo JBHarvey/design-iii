@@ -318,6 +318,7 @@ void initEncoders(void) {
 	EnableTimer2Interrupt();
 }
 
-uint16_t calculateSpeed(int edges) {
-	return edges / (32000 * 2 * SPEED_CALC_TIME_DELAY);
+float calculateSpeed(int edges) {
+	float speedResult = (float) edges / (32000.0 * 2.0 * SPEED_CALC_TIME_DELAY);
+	return speedResult;
 }
