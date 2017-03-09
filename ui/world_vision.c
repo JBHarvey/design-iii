@@ -11,8 +11,11 @@ enum camera_status {UNCALIBRATED, CALIBRATED};
 
 /* Constants */
 
-const int WORLD_CAMERA_WIDTH = 1280;
-const int WORLD_CAMERA_HEIGHT = 720;
+const int WORLD_CAMERA_WIDTH = 1600;
+const int WORLD_CAMERA_HEIGHT = 1200;
+const int WORLD_CAMERA_DEVICE_ID = 1;
+const int NUMBER_OF_ROW_OF_CAMERA_MATRIX = 3;
+const int NUMBER_OF_COLUMN_OF_CAMERA_MATRIX = 3;
 
 /* Type definitions */
 
@@ -28,14 +31,6 @@ enum thread_status main_loop_status;
 enum camera_status world_camera_status = UNCALIBRATED;
 struct camera *world_camera = NULL;
 GdkPixbuf *world_camera_pixbuf = NULL;
-
-/* Private functions prototypes */
-
-static void initialize_camera_capture(struct camera_capture *output_camera_capture, int capture_width,
-                                      int capture_height);
-static void initialize_world_camera(void);
-static void release_camera_capture(struct camera_capture *input_camera_capture);
-static void release_camera(struct camera *input_camera, enum camera_status input_camera_status);
 
 /* Event callbacks */
 
@@ -56,60 +51,110 @@ gboolean world_camera_calibration_clicked_event_callback(GtkWidget *widget, gpoi
 {
     if(initialize_camera_matrix_and_distortion_coefficients_from_file(widget, world_camera->camera_intrinsics)) {
         gtk_widget_hide(GTK_WIDGET(data));
-        gather_user_inputs_for_camera_pose_computation(0);
-        compute_camera_pose_from_user_inputs(world_camera);
+        gather_user_points_for_camera_pose_computation(0);
+        compute_camera_pose_from_user_points(world_camera);
     }
 
     return TRUE;
 }
 
-/* Worker thread functions */
+static void initialize_world_camera(void)
+{
+    world_camera = malloc(sizeof(struct camera));
+    world_camera->camera_intrinsics = malloc(sizeof(struct camera_intrinsics));
+    world_camera->camera_extrinsics = malloc(sizeof(struct camera_extrinsics));
+}
 
-gpointer world_camera_feeder(gpointer data)
+static void initialize_camera_capture(struct camera_capture *output_camera_capture, int capture_width,
+                                      int capture_height)
+{
+    output_camera_capture->camera_capture_feed = cvCreateCameraCapture(WORLD_CAMERA_DEVICE_ID);
+
+    if(!output_camera_capture->camera_capture_feed) {
+        output_camera_capture->camera_capture_feed  = cvCreateCameraCapture(CV_CAP_ANY);
+    }
+
+    cvSetCaptureProperty(output_camera_capture->camera_capture_feed, CV_CAP_PROP_FRAME_WIDTH, capture_width);
+    cvSetCaptureProperty(output_camera_capture->camera_capture_feed, CV_CAP_PROP_FRAME_HEIGHT, capture_height);
+}
+
+static void release_camera_capture(struct camera_capture *input_camera_capture)
+{
+    cvReleaseCapture(&(input_camera_capture->camera_capture_feed));
+    free(input_camera_capture);
+}
+
+static void release_camera(struct camera *input_camera, enum camera_status input_camera_status)
+{
+    if(input_camera_status == CALIBRATED) {
+        cvReleaseMat(&(input_camera->camera_intrinsics->camera_matrix));
+        cvReleaseMat(&(input_camera->camera_intrinsics->distortion_coefficients));
+        cvReleaseMat(&(input_camera->camera_extrinsics->rotation_vector));
+        cvReleaseMat(&(input_camera->camera_extrinsics->translation_vector));
+    }
+
+    free(input_camera->camera_intrinsics);
+    free(input_camera->camera_extrinsics);
+    free(input_camera);
+}
+
+static void clean_exit_if_main_loop_terminated(struct camera_capture *world_camera_capture)
+{
+    g_mutex_lock(&world_camera_feeder_mutex);
+
+    if(main_loop_status == TERMINATED) {
+        g_object_unref(world_camera_pixbuf);
+        g_mutex_unlock(&world_camera_feeder_mutex);
+        release_camera_capture(world_camera_capture);
+        release_camera(world_camera, world_camera_status);
+        g_thread_exit(0);
+    } else {
+        g_mutex_unlock(&world_camera_feeder_mutex);
+    }
+}
+
+static void undistort_camera_capture(IplImage *input_frame, IplImage *output_undistorted_frame)
+{
+    CvMat *optimal_camera_matrix = cvCreateMat(NUMBER_OF_ROW_OF_CAMERA_MATRIX, NUMBER_OF_COLUMN_OF_CAMERA_MATRIX, CV_64F);
+    cvGetOptimalNewCameraMatrix(world_camera->camera_intrinsics->camera_matrix,
+                                world_camera->camera_intrinsics->distortion_coefficients,
+                                cvSize(WORLD_CAMERA_WIDTH, WORLD_CAMERA_HEIGHT),
+                                1, optimal_camera_matrix,
+                                cvSize(WORLD_CAMERA_WIDTH, WORLD_CAMERA_HEIGHT), 0, 0);
+    cvUndistort2(input_frame, output_undistorted_frame, world_camera->camera_intrinsics->camera_matrix,
+                 world_camera->camera_intrinsics->distortion_coefficients, optimal_camera_matrix);
+    cvReleaseMat(&optimal_camera_matrix);
+}
+
+/* Worker thread */
+
+gpointer prepare_image_from_world_camera_for_drawing(gpointer data)
 {
     IplImage* frame = NULL;
     IplImage* frame_BGR = NULL;
     IplImage* frame_BGR_corrected = NULL;
 
-    g_mutex_lock(&world_camera_feeder_mutex);
     initialize_world_camera();
+
+    g_mutex_lock(&world_camera_feeder_mutex);
     world_camera_pixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, FALSE, IPL_DEPTH_8U, WORLD_CAMERA_WIDTH,
                                          WORLD_CAMERA_HEIGHT);
     g_mutex_unlock(&world_camera_feeder_mutex);
 
-    struct camera_capture *world_camera_feed = malloc(sizeof(struct camera_capture));
+    struct camera_capture *world_camera_capture = malloc(sizeof(struct camera_capture));
 
-    initialize_camera_capture(world_camera_feed, WORLD_CAMERA_WIDTH, WORLD_CAMERA_HEIGHT);
+    initialize_camera_capture(world_camera_capture, WORLD_CAMERA_WIDTH, WORLD_CAMERA_HEIGHT);
 
     while(TRUE) {
-        g_mutex_lock(&world_camera_feeder_mutex);
 
-        if(main_loop_status == TERMINATED) {
-            g_object_unref(world_camera_pixbuf);
-            g_mutex_unlock(&world_camera_feeder_mutex);
-            release_camera_capture(world_camera_feed);
-            release_camera(world_camera, world_camera_status);
-            g_thread_exit(0);
-        } else {
-            g_mutex_unlock(&world_camera_feeder_mutex);
-        }
+        clean_exit_if_main_loop_terminated(world_camera_capture);
 
-        frame_BGR = cvQueryFrame(world_camera_feed->camera_capture_feed);
+        frame_BGR = cvQueryFrame(world_camera_capture->camera_capture_feed);
+        frame_BGR_corrected = cvCloneImage(frame_BGR);
         frame = cvCloneImage(frame_BGR);
 
         if(world_camera_status == CALIBRATED) {
-            CvMat *optimal_camera_matrix = cvCreateMat(3, 3, CV_64F);
-            cvGetOptimalNewCameraMatrix(world_camera->camera_intrinsics->camera_matrix,
-                                        world_camera->camera_intrinsics->distortion_coefficients,
-                                        cvSize(WORLD_CAMERA_WIDTH, WORLD_CAMERA_HEIGHT),
-                                        1.0, optimal_camera_matrix,
-                                        cvSize(WORLD_CAMERA_WIDTH, WORLD_CAMERA_HEIGHT), 0, 0);
-            frame_BGR_corrected = cvCloneImage(frame_BGR);
-            cvUndistort2(frame_BGR, frame_BGR_corrected, world_camera->camera_intrinsics->camera_matrix,
-                         world_camera->camera_intrinsics->distortion_coefficients, optimal_camera_matrix);
-            cvReleaseMat(&optimal_camera_matrix);
-        } else if(world_camera_status == UNCALIBRATED) {
-            frame_BGR_corrected = cvCloneImage(frame_BGR);
+            undistort_camera_capture(frame_BGR, frame_BGR_corrected);
         }
 
         cvCvtColor((CvArr*) frame_BGR_corrected, frame, CV_BGR2RGB);
@@ -129,8 +174,6 @@ gpointer world_camera_feeder(gpointer data)
 
     return NULL;
 }
-
-/* Public functions */
 
 void set_main_loop_status_running(void)
 {
@@ -153,51 +196,3 @@ void set_world_camera_status_calibrated(void)
     g_mutex_unlock(&world_camera_feeder_mutex);
 }
 
-/* Private functions */
-
-static void initialize_camera_capture(struct camera_capture *output_camera_capture, int capture_width,
-                                      int capture_height)
-{
-    /* Find camera. 0 is for the embedded webcam. */
-    for(int i = 1; i < 100; i++) {
-        output_camera_capture->camera_capture_feed = cvCreateCameraCapture(i);
-
-        if(output_camera_capture->camera_capture_feed) {
-            break;
-        }
-    }
-
-    if(!output_camera_capture->camera_capture_feed) {
-        output_camera_capture->camera_capture_feed  = cvCreateCameraCapture(0);
-    }
-
-    cvSetCaptureProperty(output_camera_capture->camera_capture_feed, CV_CAP_PROP_FRAME_WIDTH, capture_width);
-    cvSetCaptureProperty(output_camera_capture->camera_capture_feed, CV_CAP_PROP_FRAME_HEIGHT, capture_height);
-}
-
-static void initialize_world_camera(void)
-{
-    world_camera = malloc(sizeof(struct camera));
-    world_camera->camera_intrinsics = malloc(sizeof(struct camera_intrinsics));
-    world_camera->camera_extrinsics = malloc(sizeof(struct camera_extrinsics));
-}
-
-static void release_camera_capture(struct camera_capture *input_camera_capture)
-{
-    cvReleaseCapture(&(input_camera_capture->camera_capture_feed));
-    free(input_camera_capture);
-}
-
-static void release_camera(struct camera *input_camera, enum camera_status input_camera_status)
-{
-    if(input_camera_status == CALIBRATED) {
-        cvReleaseMat(&(input_camera->camera_intrinsics->camera_matrix));
-        cvReleaseMat(&(input_camera->camera_intrinsics->distortion_coefficients));
-        cvReleaseMat(&(input_camera->camera_extrinsics->rotation_vector));
-        cvReleaseMat(&(input_camera->camera_extrinsics->translation_vector));
-    }
-
-    free(input_camera->camera_intrinsics);
-    free(input_camera->camera_extrinsics);
-    free(input_camera);
-}
