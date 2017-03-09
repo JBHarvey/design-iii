@@ -9,8 +9,8 @@ Quadrature Encoder :
 	- Canal 1 : PD10 - Ligne 10 (EXTI15_10_IRQHandler)
 	- Canal 2 : PD11 - Ligne 11 (EXTI15_10_IRQHandler)
 	Motor 4 : 
-	- Canal 1 : PD12 - Ligne 12 (EXTI15_10_IRQHandler)
-	- Canal 2 : PD13 - Ligne 13(EXTI15_10_IRQHandler)
+	- Canal 1 : PC12 - Ligne 12 (EXTI15_10_IRQHandler)
+	- Canal 2 : PC13 - Ligne 13(EXTI15_10_IRQHandler)
 	
 USB VCP : 
 	- micro-B
@@ -45,8 +45,8 @@ LCD :
 	- D1 : pas de connexion
 	- D2 : pas de connexion
 	- D3 : pas de connexion
-	- D4 : PC12
-	- D5 : PC13
+	- D4 : PC14
+	- D5 : PC15
 	- D6 : PB12
 	- D7 : PB13
 	- A : 3V (Backlight)
