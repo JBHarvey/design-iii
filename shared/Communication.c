@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <strings.h>
 
-#include "protocol.h"
 #include "Communication.h"
 
 static _Bool initTCPServer(struct Communication *communication, unsigned short port)

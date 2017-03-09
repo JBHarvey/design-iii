@@ -1,15 +1,9 @@
 #ifndef ROBOTRECEIVER_H_
 #define ROBOTRECEIVER_H_
 
-#include "Robot.h"
 #include "CommunicationStructures.h"
+#include "Robot.h"
 
-/*
-enum {
-    PACKET_WORLD
-};
-
- */
 struct __attribute__((__packed__)) Mesurements
 {
     struct Communication_World world;

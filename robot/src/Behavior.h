@@ -1,9 +1,8 @@
 #ifndef BEHAVIOR_H_
 #define BEHAVIOR_H_
 
+#include "Robot.h"
 #include "Objective.h"
-
-struct Robot;
 
 struct Behavior {
     struct Object *object;

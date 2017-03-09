@@ -1,5 +1,5 @@
 #include "network.h"
-#include "CommunicationStructures.h"
+#include "DataReceptionCallbacks.h"
 
 enum {
     PACKET_START,
@@ -9,10 +9,5 @@ enum {
 
 void sendStartPacket();
 void sendContinuePacket();
-void sendStationData(struct Communication_World station_data);
+void sendWorldToRobot(struct Communication_World communication_world);
 
-
-/* Callbacks */
-void callbackStartPacket();
-void callbackContinuePacket();
-void callbackStationData(struct Communication_World station_data);

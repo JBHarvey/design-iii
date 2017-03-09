@@ -12,11 +12,11 @@ void sendContinuePacket()
     addPacket(&data, sizeof(data));
 }
 
-void sendStationData(struct Communication_World station_data)
+void sendWorldToRobot(struct Communication_World communication_world)
 {
     uint8_t data[1 + sizeof(struct Communication_World)];
     data[0] = PACKET_STATION_DATA;
-    memcpy(data + 1, &station_data, sizeof(struct Communication_World));
+    memcpy(data + 1, &communication_world, sizeof(struct Communication_World));
     addPacket(data, sizeof(data));
 }
 
@@ -41,11 +41,11 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
                 break;
             }
 
-            struct Communication_World station_data;
+            struct Communication_World communication_world;
 
-            memcpy(&station_data, data + 1, sizeof(struct Communication_World));
+            memcpy(&communication_world, data + 1, sizeof(struct Communication_World));
 
-            callbackStationData(station_data);
+            callbackStationData(communication_world);
 
             break;
     }
