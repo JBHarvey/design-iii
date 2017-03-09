@@ -14,14 +14,14 @@ GtkWidget *logger = NULL;
 
 /* Event callbacks */
 
-void ui_window_destroy_event_callback(GtkWidget *widget, gpointer data)
+void uiWindowDestroyEventCallback(GtkWidget *widget, gpointer data)
 {
     g_source_remove(timer_tag);
     g_object_unref(widget);
     gtk_main_quit();
 }
 
-static gboolean time_handler(GtkWidget *widget)
+static gboolean timeHandler(GtkWidget *widget)
 {
     gtk_widget_queue_draw(GTK_WIDGET(widget));
 
@@ -37,16 +37,16 @@ int main(int argc, char *argv[])
 
     gtk_init(&argc, &argv);
 
-    ui_window = build_ui_and_return_top_level_window(UI_RESOURCE_PATH);
+    ui_window = buildUiAndReturnTopLevelWindow(UI_RESOURCE_PATH);
 
     /* Handles re-drawing in UI */
     g_object_ref(ui_window);
-    timer_tag = g_timeout_add(VIDEO_FEED_REFRESH_RATE_IN_MS, (GSourceFunc) time_handler, (gpointer) ui_window);
+    timer_tag = g_timeout_add(VIDEO_FEED_REFRESH_RATE_IN_MS, (GSourceFunc) timeHandler, (gpointer) ui_window);
 
-    set_main_loop_status_running();
+    setMainLoopStatusRunning();
 
     /* Starts worker threads */
-    world_vision_worker_thread = g_thread_new("world_camera_feeder", prepare_image_from_world_camera_for_drawing, NULL);
+    world_vision_worker_thread = g_thread_new("world_camera_feeder", prepareImageFromWorldCameraForDrawing, NULL);
 
     gtk_window_fullscreen(GTK_WINDOW(ui_window));
 
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 
     gtk_main();
 
-    set_main_loop_status_terminated();
+    setMainLoopStatusTerminated();
 
     g_thread_join(world_vision_worker_thread);
 

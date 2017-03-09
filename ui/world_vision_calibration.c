@@ -4,7 +4,7 @@
 
 /* Flag definitions */
 
-enum camera_calibration_process_mode {NONE, GET_USER_MOUSE_CLICKS_FOR_CAMERA_POSE_COMPUTATION};
+enum CameraCalibrationProcessMode {NONE, GET_USER_MOUSE_CLICKS_FOR_CAMERA_POSE_COMPUTATION};
 
 /* Constants */
 
@@ -21,11 +21,11 @@ const int WIDTH_OF_THE_GREEN_SQUARE_IN_MM = 660;
 /* Global variables */
 
 extern GtkWidget *logger;
-enum camera_calibration_process_mode world_camera_calibration_process_mode = NONE;
+enum CameraCalibrationProcessMode world_camera_calibration_process_mode = NONE;
 CvPoint2D64f image_user_points_defining_the_green_square[NUMBER_OF_CORNERS_OF_GREEN_SQUARE];
 CvPoint3D64f world_model_points_defining_the_green_square[NUMBER_OF_CORNERS_OF_GREEN_SQUARE];
 
-static int count_the_amount_of_user_points_gathered(void)
+static int countTheAmountOfUserPointsGathered(void)
 {
     int number_of_user_points_gathered = 0;
 
@@ -44,15 +44,15 @@ static int count_the_amount_of_user_points_gathered(void)
 
 /* Event callbacks */
 
-gboolean world_camera_button_press_event_callback(GtkWidget *widget, GdkEvent *event, gpointer data)
+gboolean worldCameraButtonPressEventCallback(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
     if(world_camera_calibration_process_mode == GET_USER_MOUSE_CLICKS_FOR_CAMERA_POSE_COMPUTATION) {
-        int number_of_user_points_gathered = count_the_amount_of_user_points_gathered();
+        int number_of_user_points_gathered = countTheAmountOfUserPointsGathered();
 
         if(number_of_user_points_gathered < NUMBER_OF_CORNERS_OF_GREEN_SQUARE) {
             image_user_points_defining_the_green_square[number_of_user_points_gathered] = cvPoint2D64f(((GdkEventButton*)event)->x,
                     ((GdkEventButton*)event)->y);
-            gather_user_points_for_camera_pose_computation(number_of_user_points_gathered + 1);
+            gatherUserPointsForCameraPoseComputation(number_of_user_points_gathered + 1);
         } else {
             return FALSE;
         }
@@ -61,7 +61,7 @@ gboolean world_camera_button_press_event_callback(GtkWidget *widget, GdkEvent *e
     return TRUE;
 }
 
-static gboolean set_camera_matrix_and_distortion_coefficients_from_file(struct camera_intrinsics
+static gboolean setCameraMatrixAndDistortionCoefficientsFromFile(struct CameraIntrinsics
         *output_camera_intrinsics, const char *filename)
 {
     gboolean is_calibration_file_valid = TRUE;
@@ -79,7 +79,7 @@ static gboolean set_camera_matrix_and_distortion_coefficients_from_file(struct c
     return is_calibration_file_valid;
 }
 
-static void prompt_invalid_calibration_file_error(GtkWidget *widget, const char *filename)
+static void promptInvalidCalibrationFileError(GtkWidget *widget, const char *filename)
 {
     GtkWidget *errorDialog = gtk_message_dialog_new(GTK_WINDOW(widget),
                              GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -92,8 +92,8 @@ static void prompt_invalid_calibration_file_error(GtkWidget *widget, const char 
     gtk_widget_destroy(errorDialog);
 }
 
-gboolean initialize_camera_matrix_and_distortion_coefficients_from_file(GtkWidget *widget,
-        struct camera_intrinsics *output_camera_intrinsics)
+gboolean initializeCameraMatrixAndDistortionCoefficientsFromFile(GtkWidget *widget,
+        struct CameraIntrinsics *output_camera_intrinsics)
 {
     gboolean isInitialized;
 
@@ -110,10 +110,10 @@ gboolean initialize_camera_matrix_and_distortion_coefficients_from_file(GtkWidge
 
         if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
             char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-            isInitialized = set_camera_matrix_and_distortion_coefficients_from_file(output_camera_intrinsics, filename);
+            isInitialized = setCameraMatrixAndDistortionCoefficientsFromFile(output_camera_intrinsics, filename);
 
             if(!isInitialized) {
-                prompt_invalid_calibration_file_error(widget, filename);
+                promptInvalidCalibrationFileError(widget, filename);
             }
 
             g_free(filename);
@@ -124,12 +124,12 @@ gboolean initialize_camera_matrix_and_distortion_coefficients_from_file(GtkWidge
         }
     } while(!isInitialized);
 
-    set_world_camera_status_calibrated();
+    setWorldCameraStatusCalibrated();
 
     return TRUE;
 }
 
-static void flatten_array_of_two_dimensions_cvpoints(const CvPoint2D64f cvpoint_array[],
+static void flattenArrayOfTwoDimensionsCvPoints(const CvPoint2D64f cvpoint_array[],
         double output_flattened_array[],
         int number_of_points)
 {
@@ -139,7 +139,7 @@ static void flatten_array_of_two_dimensions_cvpoints(const CvPoint2D64f cvpoint_
     }
 }
 
-static void flatten_array_of_three_dimensions_cvpoints(const CvPoint3D64f cvpoint_array[],
+static void flattenArrayOfThreeDimensionsCvPoints(const CvPoint3D64f cvpoint_array[],
         double output_flattened_array[],
         int number_of_points)
 {
@@ -150,7 +150,7 @@ static void flatten_array_of_three_dimensions_cvpoints(const CvPoint3D64f cvpoin
     }
 }
 
-static void initialize_camera_extrinsics(struct camera *input_camera)
+static void initializeCameraExtrinsics(struct Camera *input_camera)
 {
     input_camera->camera_extrinsics->translation_vector = cvCreateMat(NUMBER_OF_ROW_OF_TRANSLATION_VECTOR,
             NUMBER_OF_COLUMN_OF_TRANSLATION_VECTOR, CV_64F);
@@ -159,21 +159,21 @@ static void initialize_camera_extrinsics(struct camera *input_camera)
 }
 
 
-gboolean compute_camera_pose_from_user_points(struct camera *input_camera)
+gboolean computeCameraPoseFromUserPoints(struct Camera *input_camera)
 {
-    int enough_user_points_gathered = count_the_amount_of_user_points_gathered() < NUMBER_OF_CORNERS_OF_GREEN_SQUARE;
+    int enough_user_points_gathered = countTheAmountOfUserPointsGathered() < NUMBER_OF_CORNERS_OF_GREEN_SQUARE;
 
     if(enough_user_points_gathered) {
-        g_idle_add((GSourceFunc) compute_camera_pose_from_user_points, (gpointer) input_camera);
+        g_idle_add((GSourceFunc) computeCameraPoseFromUserPoints, (gpointer) input_camera);
         return FALSE;
     } else {
         double three_dimensions_world_points_array[NUMBER_OF_CORNERS_OF_GREEN_SQUARE * TRHEE_DIMENSIONS];
         double two_dimensions_image_points_array[NUMBER_OF_CORNERS_OF_GREEN_SQUARE * TWO_DIMENSIONS];
-        flatten_array_of_three_dimensions_cvpoints(world_model_points_defining_the_green_square,
-                three_dimensions_world_points_array,
-                NUMBER_OF_CORNERS_OF_GREEN_SQUARE);
-        flatten_array_of_two_dimensions_cvpoints(image_user_points_defining_the_green_square, two_dimensions_image_points_array,
-                NUMBER_OF_CORNERS_OF_GREEN_SQUARE);
+        flattenArrayOfThreeDimensionsCvPoints(world_model_points_defining_the_green_square,
+                                              three_dimensions_world_points_array,
+                                              NUMBER_OF_CORNERS_OF_GREEN_SQUARE);
+        flattenArrayOfTwoDimensionsCvPoints(image_user_points_defining_the_green_square, two_dimensions_image_points_array,
+                                            NUMBER_OF_CORNERS_OF_GREEN_SQUARE);
         CvMat three_dimensions_world_points, two_dimensions_image_points;
         CvMat * three_dimensions_world_points_ptr = cvInitMatHeader(&three_dimensions_world_points,
                 NUMBER_OF_CORNERS_OF_GREEN_SQUARE, TRHEE_DIMENSIONS,
@@ -184,7 +184,7 @@ gboolean compute_camera_pose_from_user_points(struct camera *input_camera)
                 CV_64FC1,
                 two_dimensions_image_points_array, CV_AUTOSTEP);
 
-        initialize_camera_extrinsics(input_camera);
+        initializeCameraExtrinsics(input_camera);
         cvFindExtrinsicCameraParams2(three_dimensions_world_points_ptr, two_dimensions_image_points_ptr,
                                      input_camera->camera_intrinsics->camera_matrix,
                                      input_camera->camera_intrinsics->distortion_coefficients, input_camera->camera_extrinsics->rotation_vector,
@@ -193,7 +193,7 @@ gboolean compute_camera_pose_from_user_points(struct camera *input_camera)
     }
 }
 
-gboolean gather_user_points_for_camera_pose_computation(int input_index)
+gboolean gatherUserPointsForCameraPoseComputation(int input_index)
 {
     char text_buffer[DEFAULT_TEXT_BUFFER_MAX_LENGTH];
     GtkTextBuffer *logger_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(logger));

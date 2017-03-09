@@ -3,6 +3,7 @@
 *.lo
 *.o
 *.obj
+*.d
 
 # Precompiled Headers
 *.gch
@@ -27,6 +28,7 @@
 *.exe
 *.out
 *.app
+ui/station-main
 
 # Automation-related files
 *ToCompile
