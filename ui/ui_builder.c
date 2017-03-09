@@ -4,7 +4,7 @@
 
 extern GtkWidget *logger;
 
-GtkWidget* build_ui_and_return_top_level_window(const gchar* resource_path)
+GtkWidget* buildUiAndReturnTopLevelWindow(const gchar* resource_path)
 {
     GtkBuilder *builder = gtk_builder_new_from_resource(resource_path);
 

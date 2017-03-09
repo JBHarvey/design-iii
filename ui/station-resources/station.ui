@@ -22,7 +22,7 @@
     <property name="is_focus">True</property>
     <property name="title" translatable="yes">Station de base</property>
     <property name="window_position">center</property>
-    <signal name="destroy" handler="ui_window_destroy_event_callback" swapped="no"/>
+    <signal name="destroy" handler="uiWindowDestroyEventCallback" swapped="no"/>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
@@ -99,7 +99,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <signal name="clicked" handler="world_camera_calibration_clicked_event_callback" object="ui_window" swapped="yes"/>
+                    <signal name="clicked" handler="worldCameraCalibrationClickedEventCallback" object="ui_window" swapped="yes"/>
                   </object>
                   <packing>
                     <property name="expand">True</property>
@@ -148,14 +148,14 @@
                       <object class="GtkEventBox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <signal name="button-press-event" handler="world_camera_button_press_event_callback" swapped="no"/>
+                        <signal name="button-press-event" handler="worldCameraButtonPressEventCallback" swapped="no"/>
                         <child>
                           <object class="GtkDrawingArea" id="world_camera">
                             <property name="width_request">200</property>
                             <property name="visible">True</property>
                             <property name="app_paintable">True</property>
                             <property name="can_focus">False</property>
-                            <signal name="draw" handler="world_camera_draw_event_callback" swapped="no"/>
+                            <signal name="draw" handler="worldCameraDrawEventCallback" swapped="no"/>
                           </object>
                         </child>
                       </object>
