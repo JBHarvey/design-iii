@@ -13,8 +13,8 @@ const int NUMBER_OF_ROW_OF_TRANSLATION_VECTOR = 3;
 const int NUMBER_OF_COLUMN_OF_TRANSLATION_VECTOR = 1;
 const int NUMBER_OF_ROW_OF_ROTATION_VECTOR = 3;
 const int NUMBER_OF_COLUMN_OF_ROTATION_VECTOR = 1;
-const int 2_DIMENSIONS = 2;
-const int 3_DIMENSIONS = 3;
+const int TWO_DIMENSIONS = 2;
+const int TRHEE_DIMENSIONS = 3;
 const int DEFAULT_TEXT_BUFFER_MAX_LENGTH = 100;
 const int WIDTH_OF_THE_GREEN_SQUARE_IN_MM = 660;
 
@@ -25,17 +25,34 @@ enum camera_calibration_process_mode world_camera_calibration_process_mode = NON
 CvPoint2D64f image_user_points_defining_the_green_square[NUMBER_OF_CORNERS_OF_GREEN_SQUARE];
 CvPoint3D64f world_model_points_defining_the_green_square[NUMBER_OF_CORNERS_OF_GREEN_SQUARE];
 
+static int count_the_amount_of_user_points_gathered(void)
+{
+    int number_of_user_points_gathered = 0;
+
+    for(; number_of_user_points_gathered < NUMBER_OF_CORNERS_OF_GREEN_SQUARE; number_of_user_points_gathered++) {
+        if(image_user_points_defining_the_green_square[number_of_user_points_gathered].x == -1
+           && image_user_points_defining_the_green_square[number_of_user_points_gathered].y == -1) {
+            break;
+        } else if(number_of_user_points_gathered == NUMBER_OF_CORNERS_OF_GREEN_SQUARE - 1) {
+            number_of_user_points_gathered = NUMBER_OF_CORNERS_OF_GREEN_SQUARE;
+            break;
+        }
+    }
+
+    return number_of_user_points_gathered;
+}
+
 /* Event callbacks */
 
 gboolean world_camera_button_press_event_callback(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
     if(world_camera_calibration_process_mode == GET_USER_MOUSE_CLICKS_FOR_CAMERA_POSE_COMPUTATION) {
-        int number_of_user_inputs_gathered = get_amount_of_user_inputs_gathered();
+        int number_of_user_points_gathered = count_the_amount_of_user_points_gathered();
 
-        if(number_of_user_inputs_gathered < NUMBER_OF_CORNERS_OF_GREEN_SQUARE) {
-            image_user_points_defining_the_green_square[number_of_user_inputs_gathered] = cvPoint2D64f(((GdkEventButton*)event)->x,
+        if(number_of_user_points_gathered < NUMBER_OF_CORNERS_OF_GREEN_SQUARE) {
+            image_user_points_defining_the_green_square[number_of_user_points_gathered] = cvPoint2D64f(((GdkEventButton*)event)->x,
                     ((GdkEventButton*)event)->y);
-            gather_user_points_for_camera_pose_computation(number_of_user_inputs_gathered + 1);
+            gather_user_points_for_camera_pose_computation(number_of_user_points_gathered + 1);
         } else {
             return FALSE;
         }
@@ -112,39 +129,24 @@ gboolean initialize_camera_matrix_and_distortion_coefficients_from_file(GtkWidge
     return TRUE;
 }
 
-static int count_the_amount_of_user_points_gathered(void)
-{
-    int number_of_user_points_gathered = 0;
-
-    for(; number_of_user_points_gathered < NUMBER_OF_CORNERS_OF_GREEN_SQUARE; number_of_user_points_gathered++) {
-        if(image_user_points_defining_the_green_square[number_of_user_points_gathered].x == -1
-           && image_user_points_defining_the_green_square[number_of_user_points_gathered].y == -1) {
-            break;
-        } else if(number_of_inputs_gathered == NUMBER_OF_CORNERS_OF_GREEN_SQUARE - 1) {
-            number_of_user_points_gathered = NUMBER_OF_CORNERS_OF_GREEN_SQUARE;
-            break;
-        }
-    }
-
-    return number_of_user_points_gathered;
-}
-
-static void flatten_array_of_2d_cvpoints(const CvPoint2D64f cvpoint_array[], double output_flattened_array[],
+static void flatten_array_of_two_dimensions_cvpoints(const CvPoint2D64f cvpoint_array[],
+        double output_flattened_array[],
         int number_of_points)
 {
     for(int i = 0; i < number_of_points; i++) {
-        output_flattened_array[2_DIMENSIONS * i] = cvpoint_array[i].x;
-        output_flattened_array[2_DIMENSIONS * i + 1] = cvpoint_array[i].y;
+        output_flattened_array[TWO_DIMENSIONS * i] = cvpoint_array[i].x;
+        output_flattened_array[TWO_DIMENSIONS * i + 1] = cvpoint_array[i].y;
     }
 }
 
-static void flatten_array_of_3d_cvpoints(const CvPoint3D64f cvpoint_array[], double output_flattened_array[],
+static void flatten_array_of_three_dimensions_cvpoints(const CvPoint3D64f cvpoint_array[],
+        double output_flattened_array[],
         int number_of_points)
 {
     for(int i = 0; i < number_of_points; i++) {
-        output_flattened_array[3_DIMENSIONS * i] = cvpoint_array[i].x;
-        output_flattened_array[3_DIMENSIONS * i + 1] = cvpoint_array[i].y;
-        output_flattened_array[3_DIMENSIONS * i + 2] = cvpoint_array[i].z;
+        output_flattened_array[TRHEE_DIMENSIONS * i] = cvpoint_array[i].x;
+        output_flattened_array[TRHEE_DIMENSIONS * i + 1] = cvpoint_array[i].y;
+        output_flattened_array[TRHEE_DIMENSIONS * i + 2] = cvpoint_array[i].z;
     }
 }
 
@@ -165,22 +167,26 @@ gboolean compute_camera_pose_from_user_points(struct camera *input_camera)
         g_idle_add((GSourceFunc) compute_camera_pose_from_user_points, (gpointer) input_camera);
         return FALSE;
     } else {
-        double 3d_world_points_array[NUMBER_OF_CORNERS_OF_GREEN_SQUARE * 3_DIMENSIONS];
-        double 2d_image_points_array[NUMBER_OF_CORNERS_OF_GREEN_SQUARE * 2_DIMENSIONS];
-        flatten_array_of_3d_cvpoints(world_model_points_defining_the_green_square, 3d_world_points_array,
-                                     NUMBER_OF_CORNERS_OF_GREEN_SQUARE);
-        flatten_array_of_2d_cvpoints(image_user_points_defining_the_green_square, 2d_image_points_array,
-                                     NUMBER_OF_CORNERS_OF_GREEN_SQUARE);
-        CvMat 3d_world_points, 2d_image_points;
-        CvMat * 3d_world_points_ptr = cvInitMatHeader( & 3d_world_points, NUMBER_OF_CORNERS_OF_GREEN_SQUARE, 3_DIMENSIONS,
-                                      CV_64FC1,
-                                      3d_world_points_array, CV_AUTOSTEP);
-        CvMat * 2d_image_points_ptr = cvInitMatHeader( & 2d_image_points, NUMBER_OF_CORNERS_OF_GREEN_SQUARE, 2_DIMENSIONS,
-                                      CV_64FC1,
-                                      2d_image_points_array, CV_AUTOSTEP);
+        double three_dimensions_world_points_array[NUMBER_OF_CORNERS_OF_GREEN_SQUARE * TRHEE_DIMENSIONS];
+        double two_dimensions_image_points_array[NUMBER_OF_CORNERS_OF_GREEN_SQUARE * TWO_DIMENSIONS];
+        flatten_array_of_three_dimensions_cvpoints(world_model_points_defining_the_green_square,
+                three_dimensions_world_points_array,
+                NUMBER_OF_CORNERS_OF_GREEN_SQUARE);
+        flatten_array_of_two_dimensions_cvpoints(image_user_points_defining_the_green_square, two_dimensions_image_points_array,
+                NUMBER_OF_CORNERS_OF_GREEN_SQUARE);
+        CvMat three_dimensions_world_points, two_dimensions_image_points;
+        CvMat * three_dimensions_world_points_ptr = cvInitMatHeader(&three_dimensions_world_points,
+                NUMBER_OF_CORNERS_OF_GREEN_SQUARE, TRHEE_DIMENSIONS,
+                CV_64FC1,
+                three_dimensions_world_points_array, CV_AUTOSTEP);
+        CvMat * two_dimensions_image_points_ptr = cvInitMatHeader(&two_dimensions_image_points,
+                NUMBER_OF_CORNERS_OF_GREEN_SQUARE, TWO_DIMENSIONS,
+                CV_64FC1,
+                two_dimensions_image_points_array, CV_AUTOSTEP);
 
         initialize_camera_extrinsics(input_camera);
-        cvFindExtrinsicCameraParams2(3d_world_points_ptr, 2d_image_points_ptr, input_camera->camera_intrinsics->camera_matrix,
+        cvFindExtrinsicCameraParams2(three_dimensions_world_points_ptr, two_dimensions_image_points_ptr,
+                                     input_camera->camera_intrinsics->camera_matrix,
                                      input_camera->camera_intrinsics->distortion_coefficients, input_camera->camera_extrinsics->rotation_vector,
                                      input_camera->camera_extrinsics->translation_vector, 0);
         return FALSE; // Even if it succeeds, return FALSE in order to remove this function from the g_idle state.
