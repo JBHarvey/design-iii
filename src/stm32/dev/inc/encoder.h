@@ -20,6 +20,5 @@ void initializeExternalInterruptLine5();
 void initializeExternalInterruptLine6();
 void intializeExternalInterrupts();
 void initEncoders();
-float calculateSpeed(int edges);
 
 #endif /* ENCODER_H_ */
