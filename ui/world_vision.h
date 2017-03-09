@@ -21,16 +21,12 @@ struct Camera {
     struct CameraExtrinsics *camera_extrinsics;
 };
 
-gpointer prepareImageFromWorldCameraForDrawing(gpointer data);
+gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data);
 
-gboolean worldCameraDrawEventCallback(GtkWidget *widget, GdkEventExpose *event, gpointer data);
- 
-gboolean worldCameraCalibrationClickedEventCallback(GtkWidget *widget, gpointer data);
+void WorldVision_setMainLoopStatusRunning(void);
 
-void setMainLoopStatusRunning(void);
+void WorldVision_setMainLoopStatusTerminated(void);
 
-void setMainLoopStatusTerminated(void);
-
-void setWorldCameraStatusCalibrated(void);
+void WorldVision_setWorldCameraStatusCalibrated(void);
 
 #endif // __WORLD_VISION

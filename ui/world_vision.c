@@ -32,8 +32,6 @@ enum CameraStatus world_camera_status = UNCALIBRATED;
 struct Camera *world_camera = NULL;
 GdkPixbuf *world_camera_pixbuf = NULL;
 
-/* Event callbacks */
-
 gboolean worldCameraDrawEventCallback(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
     gboolean status = FALSE;
@@ -49,10 +47,11 @@ gboolean worldCameraDrawEventCallback(GtkWidget *widget, GdkEventExpose *event, 
 
 gboolean worldCameraCalibrationClickedEventCallback(GtkWidget *widget, gpointer data)
 {
-    if(initializeCameraMatrixAndDistortionCoefficientsFromFile(widget, world_camera->camera_intrinsics)) {
+    if(WorldVisionCalibration_initializeCameraMatrixAndDistortionCoefficientsFromFile(widget,
+            world_camera->camera_intrinsics)) {
         gtk_widget_hide(GTK_WIDGET(data));
-        gatherUserPointsForCameraPoseComputation(0);
-        computeCameraPoseFromUserPoints(world_camera);
+        WorldVisionCalibration_gatherUserPointsForCameraPoseComputation(0);
+        WorldVisionCalibration_computeCameraPoseFromUserPoints(world_camera);
     }
 
     return TRUE;
@@ -128,7 +127,7 @@ static void undistortCameraCapture(IplImage *input_frame, IplImage *output_undis
 
 /* Worker thread */
 
-gpointer prepareImageFromWorldCameraForDrawing(gpointer data)
+gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data)
 {
     IplImage* frame = NULL;
     IplImage* frame_BGR = NULL;
@@ -175,21 +174,21 @@ gpointer prepareImageFromWorldCameraForDrawing(gpointer data)
     return NULL;
 }
 
-void setMainLoopStatusRunning(void)
+void WorldVision_setMainLoopStatusRunning(void)
 {
     g_mutex_lock(&world_camera_feeder_mutex);
     main_loop_status = RUNNING;
     g_mutex_unlock(&world_camera_feeder_mutex);
 }
 
-void setMainLoopStatusTerminated(void)
+void WorldVision_setMainLoopStatusTerminated(void)
 {
     g_mutex_lock(&world_camera_feeder_mutex);
     main_loop_status = TERMINATED;
     g_mutex_unlock(&world_camera_feeder_mutex);
 }
 
-void setWorldCameraStatusCalibrated(void)
+void WorldVision_setWorldCameraStatusCalibrated(void)
 {
     g_mutex_lock(&world_camera_feeder_mutex);
     world_camera_status = CALIBRATED;

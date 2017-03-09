@@ -1,8 +1,5 @@
 #include "ui_builder.h"
-
-/* Global variables */
-
-extern GtkWidget *logger;
+#include "logger.h"
 
 GtkWidget* buildUiAndReturnTopLevelWindow(const gchar* resource_path)
 {
@@ -14,7 +11,7 @@ GtkWidget* buildUiAndReturnTopLevelWindow(const gchar* resource_path)
     */
     gtk_builder_connect_signals(builder, NULL);
     GObject *ui_window = gtk_builder_get_object(builder, "ui_window");
-    logger = GTK_WIDGET(gtk_builder_get_object(builder, "logger"));
+    Logger_initialize(GTK_WIDGET(gtk_builder_get_object(builder, "logger")));
     g_object_unref(builder);
 
     return GTK_WIDGET(ui_window);
