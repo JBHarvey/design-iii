@@ -304,7 +304,7 @@ void InitializeTimer2() {
 void EnableTimer2Interrupt() {
 	NVIC_InitTypeDef nvicStructure;
 	nvicStructure.NVIC_IRQChannel = TIM2_IRQn;
-	nvicStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	nvicStructure.NVIC_IRQChannelPreemptionPriority = 1;
 	nvicStructure.NVIC_IRQChannelSubPriority = 1;
 	nvicStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&nvicStructure);
@@ -319,6 +319,8 @@ void initEncoders(void) {
 }
 
 float calculateSpeed(int edges) {
-	float speedResult = (float) edges / (32000.0 * 2.0 * SPEED_CALC_TIME_DELAY);
+	float speedResult = ((float) edges * METERS_PER_TICK)
+			/ SPEED_CALC_TIME_DELAY;
+
 	return speedResult;
 }

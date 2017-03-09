@@ -10,8 +10,8 @@
 
 #include "stm32f4xx_exti.h"
 
-void initializeExternalInterruptLine7();
+void initializeExternalInterruptLine4();
 
-void disableExternalInterruptLine7();
+void disableExternalInterruptLine4();
 
 #endif /* EXTERNALINTERRUPTS_H_ */

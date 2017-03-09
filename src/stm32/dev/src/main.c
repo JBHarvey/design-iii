@@ -49,6 +49,8 @@ enum MainState {
 #define TIME_DELAY 1/(float) INTERNAL_SYSTICK_FREQUENCY
 #define MAX_SPEED_INDEX 2000
 
+volatile int lcdCounter = 0;
+
 // Variables avec le nombre de Ticks
 volatile int numberOfEdges1 = 0;
 volatile int numberOfEdges2 = 0;
@@ -221,7 +223,7 @@ int main(void) {
 	InitializeLEDs();
 	InitializeManchesterInput();
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
-	initializeExternalInterruptLine7();
+	initializeExternalInterruptLine4();
 
 	float consigneX;
 	float consigneY;
@@ -379,37 +381,41 @@ int main(void) {
 			MotorSetSpeed(3, 0);
 			MotorSetSpeed(4, 0);
 
-			mainState = MAIN_IDLE;
+			mainState = MAIN_MANCH;
 
 			break;
 		case MAIN_PID:
-			consigneX = 0.2;
-			consigneY = 0.2;
+			consigneX = 0.01;
+			consigneY = 0.01;
 
 			/* Initialization of PIDs */
 			PID_init(&PID_SPEED1, PID_SPEED_KP, PID_SPEED_KI, PID_SPEED_KD,
 					PID_Direction_Direct);
-			PID_SetOutputLimits(&PID_SPEED1, 0, 100);
+			PID_SetOutputLimits(&PID_SPEED1, MIN_SPEED_COMMAND,
+					MAX_SPEED_COMMAND);
 
 			PID_init(&PID_POSITION1, PID_POSITION_KP, PID_POSITION_KI,
 					PID_POSITION_KD, PID_Direction_Direct);
 
 			PID_init(&PID_SPEED2, PID_SPEED_KP, PID_SPEED_KI, PID_SPEED_KD,
 					PID_Direction_Direct);
-			PID_SetOutputLimits(&PID_SPEED2, 0, 100);
+			PID_SetOutputLimits(&PID_SPEED2, MIN_SPEED_COMMAND,
+					MAX_SPEED_COMMAND);
 			PID_init(&PID_POSITION2, PID_POSITION_KP, PID_POSITION_KI,
 					PID_POSITION_KD, PID_Direction_Direct);
 
 			PID_init(&PID_SPEED3, PID_SPEED_KP, PID_SPEED_KI, PID_SPEED_KD,
 					PID_Direction_Direct);
-			PID_SetOutputLimits(&PID_SPEED3, 0, 100);
+			PID_SetOutputLimits(&PID_SPEED3, MIN_SPEED_COMMAND,
+					MAX_SPEED_COMMAND);
 
 			PID_init(&PID_POSITION3, PID_POSITION_KP, PID_POSITION_KI,
 					PID_POSITION_KD, PID_Direction_Direct);
 			PID_init(&PID_SPEED4, PID_SPEED_KP, PID_SPEED_KI, PID_SPEED_KD,
 					PID_Direction_Direct);
 
-			PID_SetOutputLimits(&PID_SPEED4, 0, 100);
+			PID_SetOutputLimits(&PID_SPEED4, MIN_SPEED_COMMAND,
+					MAX_SPEED_COMMAND);
 			PID_init(&PID_POSITION4, PID_POSITION_KP, PID_POSITION_KI,
 					PID_POSITION_KD, PID_Direction_Direct);
 
@@ -446,12 +452,12 @@ int main(void) {
 					MotorSetSpeed(1, cmdMotor1);
 					PID_SetMode(&PID_SPEED1, PID_Mode_Manual);
 
-					char numberString[4] = { '5', '5', '5', 0 };
+					char numberString[MAX_DISPLAY_CHARACTERS];
 					sprintf(numberString, "%d", numberOfEdges1);
-					cleanNumberString(numberString, 4);
+					cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
 					TM_HD44780_Puts(0, 0, numberString);
 					sprintf(numberString, "%d", cmdMotor1);
-					cleanNumberString(numberString, 4);
+					cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
 					TM_HD44780_Puts(3, 0, numberString);
 				}
 
@@ -460,12 +466,12 @@ int main(void) {
 					MotorSetSpeed(2, cmdMotor2);
 					PID_SetMode(&PID_SPEED2, PID_Mode_Manual);
 
-					char numberString[4] = { '5', '5', '5', 0 };
+					char numberString[MAX_DISPLAY_CHARACTERS];
 					sprintf(numberString, "%d", numberOfEdges2);
-					cleanNumberString(numberString, 4);
+					cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
 					TM_HD44780_Puts(8, 0, numberString);
 					sprintf(numberString, "%d", cmdMotor2);
-					cleanNumberString(numberString, 4);
+					cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
 					TM_HD44780_Puts(11, 0, numberString);
 				}
 				if (PID_Compute(&PID_SPEED3)) {
@@ -473,9 +479,9 @@ int main(void) {
 					MotorSetSpeed(3, cmdMotor3);
 					PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
 
-					char numberString[4] = { '5', '5', '5', 0 };
+					char numberString[MAX_DISPLAY_CHARACTERS];
 					sprintf(numberString, "%d", numberOfEdges3);
-					cleanNumberString(numberString, 4);
+					cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
 					TM_HD44780_Puts(0, 1, numberString);
 					sprintf(numberString, "%d", cmdMotor3);
 					cleanNumberString(numberString, 4);
@@ -486,12 +492,12 @@ int main(void) {
 					MotorSetSpeed(4, cmdMotor4);
 					PID_SetMode(&PID_SPEED4, PID_Mode_Manual);
 
-					char numberString[4] = { '5', '5', '5', 0 };
+					char numberString[MAX_DISPLAY_CHARACTERS];
 					sprintf(numberString, "%d", numberOfEdges4);
-					cleanNumberString(numberString, 4);
+					cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
 					TM_HD44780_Puts(8, 1, numberString);
 					sprintf(numberString, "%d", cmdMotor4);
-					cleanNumberString(numberString, 4);
+					cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
 					TM_HD44780_Puts(11, 1, numberString);
 				}
 			}
@@ -508,6 +514,18 @@ int main(void) {
 	}
 }
 
+extern void EXTI4_IRQHandler(void) {
+	if (EXTI_GetITStatus(EXTI_Line4) != RESET) {
+		/* Clear interrupt flag */
+		EXTI_ClearITPendingBit (EXTI_Line4);
+		manchesterState = MANCHESTER_FIRST;
+		InitializeTimer5();
+		EnableTimer5Interrupt();
+		disableExternalInterruptLine4();
+	}
+
+}
+
 extern void EXTI9_5_IRQHandler(void) {
 	/* Make sure that interrupt flag is set */
 	if (EXTI_GetITStatus(EXTI_Line5) != RESET) {
@@ -522,15 +540,6 @@ extern void EXTI9_5_IRQHandler(void) {
 		numberOfEdges1++;
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line6);
-	}
-
-	if (EXTI_GetITStatus(EXTI_Line7) != RESET) {
-		/* Clear interrupt flag */
-		EXTI_ClearITPendingBit (EXTI_Line7);
-		manchesterState = MANCHESTER_FIRST;
-		InitializeTimer5();
-		EnableTimer5Interrupt();
-		disableExternalInterruptLine7();
 	}
 
 	if (EXTI_GetITStatus(EXTI_Line8) != RESET) {
@@ -583,10 +592,10 @@ extern void TIM2_IRQHandler() {
 	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
 
-		PID_SPEED1.myInput = calculateSpeed(numberOfEdges1);
-		PID_SPEED2.myInput = calculateSpeed(numberOfEdges2);
-		PID_SPEED3.myInput = calculateSpeed(numberOfEdges3);
-		PID_SPEED4.myInput = calculateSpeed(numberOfEdges4);
+		PID_SPEED1.myInput = numberOfEdges1;
+		PID_SPEED2.myInput = numberOfEdges2;
+		PID_SPEED3.myInput = numberOfEdges3;
+		PID_SPEED4.myInput = numberOfEdges4;
 
 		numberOfEdges1 = 0;
 		numberOfEdges2 = 0;

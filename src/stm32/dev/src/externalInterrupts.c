@@ -8,15 +8,15 @@
 #include "externalInterrupts.h"
 
 // Initilise l'interruption pour le font de l'entrée manchester
-void initializeExternalInterruptLine7() {
+void initializeExternalInterruptLine4() {
 	EXTI_InitTypeDef EXTI_InitStruct;
 	NVIC_InitTypeDef NVIC_InitStruct;
 
-	/* Tell system that you will use PD0 for EXTI_Line0 */
-	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOD, EXTI_PinSource7);
+	/* Tell system that you will use PD4 for EXTI_Line4 */
+	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOD, EXTI_PinSource4);
 
-	/* PD0 is connected to EXTI_Line0 */
-	EXTI_InitStruct.EXTI_Line = EXTI_Line7;
+	/* PD0 is connected to EXTI_Line4 */
+	EXTI_InitStruct.EXTI_Line = EXTI_Line4;
 	/* Enable interrupt */
 	EXTI_InitStruct.EXTI_LineCmd = ENABLE;
 	/* Interrupt mode */
@@ -28,7 +28,7 @@ void initializeExternalInterruptLine7() {
 
 	/* Add IRQ vector to NVIC */
 	/* PD0 is connected to EXTI_Line0, which has EXTI0_IRQn vector */
-	NVIC_InitStruct.NVIC_IRQChannel = EXTI9_5_IRQn;
+	NVIC_InitStruct.NVIC_IRQChannel = EXTI4_IRQn;
 	/* Set priority */
 	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0x00;
 	/* Set sub priority */
@@ -39,15 +39,15 @@ void initializeExternalInterruptLine7() {
 	NVIC_Init(&NVIC_InitStruct);
 }
 
-void disableExternalInterruptLine7() {
+void disableExternalInterruptLine4() {
 	EXTI_InitTypeDef EXTI_InitStruct;
 	NVIC_InitTypeDef NVIC_InitStruct;
 
-	/* Tell system that you will use PD7 for EXTI_Line7 */
-	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOD, EXTI_PinSource7);
+	/* Tell system that you will use PD4 for EXTI_Line4 */
+	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOD, EXTI_PinSource4);
 
 	/* PD7 is connected to EXTI_Line7 */
-	EXTI_InitStruct.EXTI_Line = EXTI_Line7;
+	EXTI_InitStruct.EXTI_Line = EXTI_Line4;
 	/* Enable interrupt */
 	EXTI_InitStruct.EXTI_LineCmd = DISABLE;
 	/* Interrupt mode */
@@ -59,7 +59,7 @@ void disableExternalInterruptLine7() {
 
 	/* Add IRQ vector to NVIC */
 	/* PD0 is connected to EXTI_Line0, which has EXTI0_IRQn vector */
-	NVIC_InitStruct.NVIC_IRQChannel = EXTI9_5_IRQn;
+	NVIC_InitStruct.NVIC_IRQChannel = EXTI4_IRQn;
 	/* Set priority */
 	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0x00;
 	/* Set sub priority */

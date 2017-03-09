@@ -208,7 +208,7 @@ void tryToDecodeManchesterCode(uint8_t *manchesterState,
 				setMessageToDisplay(figure, orientation, factor,
 						messageToDisplay);
 				displayManchesterMessage(messageToDisplay);
-				disableExternalInterruptLine7();
+				disableExternalInterruptLine4();
 				disableTimer5Interrupt();
 				*manchesterState = MANCHESTER_IDLE;
 				GPIO_SetBits(GPIOD, GPIO_Pin_13);
@@ -218,13 +218,13 @@ void tryToDecodeManchesterCode(uint8_t *manchesterState,
 				*manchesterFactorVerification = factor;
 				disableTimer5Interrupt();
 				*manchesterState = MANCHESTER_WAIT_FOR_DECODING;
-				initializeExternalInterruptLine7();
+				initializeExternalInterruptLine4();
 			}
 
 		} else {
 			disableTimer5Interrupt();
 			*manchesterState = MANCHESTER_WAIT_FOR_DECODING;
-			initializeExternalInterruptLine7();
+			initializeExternalInterruptLine4();
 		}
 	}
 }

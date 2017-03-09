@@ -25,7 +25,7 @@ void PID_init(PidType* pid, FloatType Kp, FloatType Ki, FloatType Kd,
 	PID_SetOutputLimits(pid, 0, 0xffff);
 
 	//default Controller Sample Time is 0.1 seconds
-	pid->SampleTime = 100;
+	pid->SampleTime = 2;
 
 	PID_SetControllerDirection(pid, ControllerDirection);
 	PID_SetTunings(pid, Kp, Ki, Kd);
@@ -47,7 +47,7 @@ bool PID_Compute(PidType* pid) {
 //  unsigned long timeChange = (now - pid->lastTime);
 //  if (timeChange >= pid->SampleTime) {
 	/*Compute all the working error variables*/
-	FloatType input = pid->myInput;
+	FloatType input = calculateSpeed(pid->myInput);
 	FloatType error = pid->mySetpoint - input;
 	pid->ITerm += (pid->ki * error);
 	if (pid->ITerm > pid->outMax)

@@ -58,8 +58,14 @@
 #define PID_POSITION_KI 0.01
 #define PID_POSITION_KD 146.4823
 
+#define MAX_DISPLAY_CHARACTERS 8
+#define PI 3.14159
 #define SPEED_CALC_PERIOD 4000
 #define SPEED_CALC_TIME_DELAY 1/500
+#define DOUBLE_CHANNEL_TICKS 6400
+#define METERS_PER_TICK (6.9*PI)/(100*DOUBLE_CHANNEL_TICKS)
+#define MAX_SPEED_COMMAND 60
+#define MIN_SPEED_COMMAND 0
 
 // Pour utiliser la librairie sans que sa plante
 #define ARM_CORTEX_M3
