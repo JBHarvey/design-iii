@@ -7,7 +7,7 @@
 /* Flags definitions */
 
 enum ThreadStatus {TERMINATED, RUNNING};
-enum CameraStatus {UNCALIBRATED, CALIBRATED};
+enum CaptureMode {DISTORTED, UNDISTORTED};
 
 /* Constants */
 
@@ -29,7 +29,7 @@ struct CameraCapture {
 GMutex world_camera_feeder_mutex;
 
 enum ThreadStatus main_loop_status;
-enum CameraStatus world_camera_status = UNCALIBRATED;
+enum CaptureMode world_camera_capture_mode = DISTORTED;
 struct Camera *world_camera = NULL;
 GdkPixbuf *world_camera_pixbuf = NULL;
 
@@ -49,10 +49,9 @@ gboolean worldCameraDrawEventCallback(GtkWidget *widget, GdkEventExpose *event, 
 gboolean worldCameraCalibrationClickedEventCallback(GtkWidget *widget, gpointer data)
 {
     if(WorldVisionCalibration_initializeCameraMatrixAndDistortionCoefficientsFromFile(widget,
-            world_camera->camera_intrinsics)) {
+            world_camera)) {
         gtk_widget_hide(GTK_WIDGET(data));
-        WorldVisionCalibration_gatherUserPointsForCameraPoseComputation(0);
-        WorldVisionCalibration_computeCameraPoseFromUserPoints(world_camera);
+        WorldVisionCalibration_calibrate(world_camera);
     }
 
     return TRUE;
@@ -63,6 +62,7 @@ static void initializeWorldCamera(void)
     world_camera = malloc(sizeof(struct Camera));
     world_camera->camera_intrinsics = malloc(sizeof(struct CameraIntrinsics));
     world_camera->camera_extrinsics = malloc(sizeof(struct CameraExtrinsics));
+    world_camera->camera_status = UNCALIBRATED;
 }
 
 static void initializeCameraCapture(struct CameraCapture *output_camera_capture, int capture_width,
@@ -84,9 +84,9 @@ static void releaseCameraCapture(struct CameraCapture *input_camera_capture)
     free(input_camera_capture);
 }
 
-static void releaseCamera(struct Camera *input_camera, enum CameraStatus input_camera_status)
+static void releaseCamera(struct Camera *input_camera, enum CaptureMode input_camera_capture_mode)
 {
-    if(input_camera_status == CALIBRATED) {
+    if(input_camera_capture_mode == UNDISTORTED) {
         cvReleaseMat(&(input_camera->camera_intrinsics->camera_matrix));
         cvReleaseMat(&(input_camera->camera_intrinsics->distortion_coefficients));
         cvReleaseMat(&(input_camera->camera_extrinsics->rotation_vector));
@@ -106,7 +106,7 @@ static void cleanExitIfMainLoopTerminated(struct CameraCapture *world_camera_cap
         g_object_unref(world_camera_pixbuf);
         g_mutex_unlock(&world_camera_feeder_mutex);
         releaseCameraCapture(world_camera_capture);
-        releaseCamera(world_camera, world_camera_status);
+        releaseCamera(world_camera, world_camera_capture_mode);
         g_thread_exit((gpointer) TRUE);
     } else {
         g_mutex_unlock(&world_camera_feeder_mutex);
@@ -159,7 +159,7 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data)
         frame_BGR_corrected = cvCloneImage(frame_BGR);
         frame = cvCloneImage(frame_BGR);
 
-        if(world_camera_status == CALIBRATED) {
+        if(world_camera_capture_mode == UNDISTORTED) {
             undistortCameraCapture(frame_BGR, frame_BGR_corrected);
         }
 
@@ -195,10 +195,10 @@ void WorldVision_setMainLoopStatusTerminated(void)
     g_mutex_unlock(&world_camera_feeder_mutex);
 }
 
-void WorldVision_setWorldCameraStatusCalibrated(void)
+void WorldVision_setWorldCameraCaptureModeUndistorted(void)
 {
     g_mutex_lock(&world_camera_feeder_mutex);
-    world_camera_status = CALIBRATED;
+    world_camera_capture_mode = UNDISTORTED;
     g_mutex_unlock(&world_camera_feeder_mutex);
 }
 

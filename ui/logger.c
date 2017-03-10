@@ -39,7 +39,7 @@ void Logger_appendDouble(double value)
     gtk_text_buffer_insert_at_cursor(logger_text_buffer, text_buffer, -1);
 }
 
-void Logger_appendCvPoint2D64f(CvPoint2D64f point)
+void Logger_appendPoint2D(struct Point2D point)
 {
     char text_buffer[DEFAULT_TEXT_BUFFER_MAX_LENGTH];
     sprintf(text_buffer, "(%f, %f)", point.x, point.y);
@@ -48,7 +48,7 @@ void Logger_appendCvPoint2D64f(CvPoint2D64f point)
     gtk_text_buffer_insert_at_cursor(logger_text_buffer, text_buffer, -1);
 }
 
-void Logger_appendCvPoint3D64f(CvPoint3D64f point)
+void Logger_appendPoint3D(struct Point3D point)
 {
     char text_buffer[DEFAULT_TEXT_BUFFER_MAX_LENGTH];
     sprintf(text_buffer, "(%f, %f, %f)", point.x, point.y, point.z);

@@ -1,5 +1,6 @@
 #include "world_vision_calibration.h"
 #include "logger.h"
+#include "point_types.h"
 #include <errno.h>
 #include <math.h>
 #include "opencv2/calib3d/calib3d_c.h"
@@ -22,36 +23,65 @@ const int WIDTH_OF_THE_GREEN_SQUARE_IN_MM = 660;
 /* Global variables */
 
 enum CameraCalibrationProcessMode world_camera_calibration_process_mode = NONE;
-CvPoint2D64f image_user_points_defining_the_green_square[NUMBER_OF_CORNERS_OF_GREEN_SQUARE];
-CvPoint3D64f world_model_points_defining_the_green_square[NUMBER_OF_CORNERS_OF_GREEN_SQUARE];
+struct Point2DSet *image_point_set_defining_the_green_square = NULL;
+struct Point3DSet *object_point_set_defining_the_green_square = NULL;
 
-static int countTheAmountOfUserPointsGathered(void)
+static void initializePointsArraysForCameraPoseComputation(void)
 {
-    int number_of_user_points_gathered = 0;
+    PointTypes_initializePoint2DSet(image_point_set_defining_the_green_square, NUMBER_OF_CORNERS_OF_GREEN_SQUARE);
+    PointTypes_initializePoint3DSet(object_point_set_defining_the_green_square, NUMBER_OF_CORNERS_OF_GREEN_SQUARE);
 
-    for(; number_of_user_points_gathered < NUMBER_OF_CORNERS_OF_GREEN_SQUARE; number_of_user_points_gathered++) {
-        if(image_user_points_defining_the_green_square[number_of_user_points_gathered].x == -1
-           && image_user_points_defining_the_green_square[number_of_user_points_gathered].y == -1) {
+    PointTypes_addPointToPoint3DSet(object_point_set_defining_the_green_square, PointTypes_createPoint3D(0, 0, 0));
+    PointTypes_addPointToPoint3DSet(object_point_set_defining_the_green_square, PointTypes_createPoint3D(0,
+                                    WIDTH_OF_THE_GREEN_SQUARE_IN_MM, 0));
+    PointTypes_addPointToPoint3DSet(object_point_set_defining_the_green_square,
+                                    PointTypes_createPoint3D(WIDTH_OF_THE_GREEN_SQUARE_IN_MM, WIDTH_OF_THE_GREEN_SQUARE_IN_MM, 0));
+    PointTypes_addPointToPoint3DSet(object_point_set_defining_the_green_square,
+                                    PointTypes_createPoint3D(WIDTH_OF_THE_GREEN_SQUARE_IN_MM, 0, 0));
+}
+
+static gboolean gatherUserPointsForCameraPoseComputation(int point_index)
+{
+    switch(point_index) {
+        case 0:
+            initializePointsArraysForCameraPoseComputation();
+            Logger_startMessageSectionAndAppend("Mouse click on each of the green square corners in order to map them to these 3D world coordinates. \n");
+            Logger_appendPoint3D(PointTypes_getPointFromPoint3DSet(object_point_set_defining_the_green_square, 0));
+            Logger_append(" -> ");
+            world_camera_calibration_process_mode = GET_USER_MOUSE_CLICKS_FOR_CAMERA_POSE_COMPUTATION;
             break;
-        } else if(number_of_user_points_gathered == NUMBER_OF_CORNERS_OF_GREEN_SQUARE - 1) {
-            number_of_user_points_gathered = NUMBER_OF_CORNERS_OF_GREEN_SQUARE;
+
+        case NUMBER_OF_CORNERS_OF_GREEN_SQUARE:
+            Logger_appendPoint2D(PointTypes_getPointFromPoint2DSet(image_point_set_defining_the_green_square, point_index - 1));
+            Logger_append(".");
+            Logger_startMessageSectionAndAppend("Camera pose computation completed.");
+            world_camera_calibration_process_mode = NONE;
             break;
-        }
+
+        default:
+            Logger_appendPoint2D(PointTypes_getPointFromPoint2DSet(image_point_set_defining_the_green_square, point_index - 1));
+            Logger_append(", \n");
+            Logger_appendPoint3D(PointTypes_getPointFromPoint3DSet(object_point_set_defining_the_green_square, point_index));
+            Logger_append(" -> ");
+            break;
     }
 
-    return number_of_user_points_gathered;
+    return TRUE;
 }
 
 gboolean worldCameraButtonPressEventCallback(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
     if(world_camera_calibration_process_mode == GET_USER_MOUSE_CLICKS_FOR_CAMERA_POSE_COMPUTATION) {
-        int number_of_user_points_gathered = countTheAmountOfUserPointsGathered();
+        int number_of_user_points_gathered = PointTypes_getNumberOfPointStoredInPoint2DSet(
+                image_point_set_defining_the_green_square);
+        int not_enough_user_points_gathered = number_of_user_points_gathered < NUMBER_OF_CORNERS_OF_GREEN_SQUARE;
 
-        if(number_of_user_points_gathered < NUMBER_OF_CORNERS_OF_GREEN_SQUARE) {
-            image_user_points_defining_the_green_square[number_of_user_points_gathered] =
-                cvPoint2D64f(((GdkEventButton*)event)->x * WORLD_CAMERA_WIDTH / (double) gtk_widget_get_allocated_width(widget),
-                             ((GdkEventButton*)event)->y * WORLD_CAMERA_HEIGHT / (double) gtk_widget_get_allocated_height(widget));
-            WorldVisionCalibration_gatherUserPointsForCameraPoseComputation(number_of_user_points_gathered + 1);
+        if(not_enough_user_points_gathered) {
+            PointTypes_addPointToPoint2DSet(image_point_set_defining_the_green_square,
+                                            PointTypes_createPoint2D(((GdkEventButton*)event)->x * WORLD_CAMERA_WIDTH / (double) gtk_widget_get_allocated_width(
+                                                    widget),
+                                                    ((GdkEventButton*)event)->y * WORLD_CAMERA_HEIGHT / (double) gtk_widget_get_allocated_height(widget)));
+            gatherUserPointsForCameraPoseComputation(number_of_user_points_gathered + 1);
         } else {
             return FALSE;
         }
@@ -92,7 +122,7 @@ static void promptInvalidCalibrationFileError(GtkWidget *widget, const char *fil
 }
 
 gboolean WorldVisionCalibration_initializeCameraMatrixAndDistortionCoefficientsFromFile(GtkWidget *widget,
-        struct CameraIntrinsics *output_camera_intrinsics)
+        struct Camera *output_camera)
 {
     gboolean isInitialized;
 
@@ -109,7 +139,7 @@ gboolean WorldVisionCalibration_initializeCameraMatrixAndDistortionCoefficientsF
 
         if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
             char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-            isInitialized = setCameraMatrixAndDistortionCoefficientsFromFile(output_camera_intrinsics, filename);
+            isInitialized = setCameraMatrixAndDistortionCoefficientsFromFile(output_camera->camera_intrinsics, filename);
 
             if(!isInitialized) {
                 promptInvalidCalibrationFileError(widget, filename);
@@ -123,7 +153,9 @@ gboolean WorldVisionCalibration_initializeCameraMatrixAndDistortionCoefficientsF
         }
     } while(!isInitialized);
 
-    WorldVision_setWorldCameraStatusCalibrated();
+    WorldVision_setWorldCameraCaptureModeUndistorted();
+    output_camera->camera_status = INTRINSICALLY_CALIBRATED;
+    Logger_startMessageSectionAndAppend("Camera intrinsic parameters loaded from file.");
 
     return TRUE;
 }
@@ -181,83 +213,78 @@ static double checkReprojectionErrorOnCameraPose(CvMat *three_dimensions_world_p
     return reprojection_error;
 }
 
-gboolean WorldVisionCalibration_computeCameraPoseFromUserPoints(struct Camera *input_camera)
+static void createObjectAndImagePointsMatrix(CvMat *output_world_points_mat, CvMat *output_image_points_mat)
 {
-    int enough_user_points_gathered = countTheAmountOfUserPointsGathered() < NUMBER_OF_CORNERS_OF_GREEN_SQUARE;
+    double *three_dimensions_world_points_array = malloc(sizeof(double) * NUMBER_OF_CORNERS_OF_GREEN_SQUARE *
+            TRHEE_DIMENSIONS);
+    double *two_dimensions_image_points_array = malloc(sizeof(double) * NUMBER_OF_CORNERS_OF_GREEN_SQUARE *
+            TWO_DIMENSIONS);
+    flattenArrayOfThreeDimensionsCvPoints(object_point_set_defining_the_green_square,
+                                          three_dimensions_world_points_array,
+                                          NUMBER_OF_CORNERS_OF_GREEN_SQUARE);
+    flattenArrayOfTwoDimensionsCvPoints(image_point_set_defining_the_green_square, two_dimensions_image_points_array,
+                                        NUMBER_OF_CORNERS_OF_GREEN_SQUARE);
+    cvSetData(output_world_points_mat, three_dimensions_world_points_array, CV_AUTOSTEP);
+    cvSetData(output_image_points_mat, two_dimensions_image_points_array, CV_AUTOSTEP);
 
-    if(enough_user_points_gathered) {
-        g_idle_add((GSourceFunc) WorldVisionCalibration_computeCameraPoseFromUserPoints, (gpointer) input_camera);
+}
+
+static gboolean computeCameraPoseFromUserPoints(struct Camera *input_camera)
+{
+    int not_enough_user_points_gathered = countTheAmountOfUserPointsGathered() < NUMBER_OF_CORNERS_OF_GREEN_SQUARE;
+
+    if(not_enough_user_points_gathered) {
+        g_idle_add((GSourceFunc) computeCameraPoseFromUserPoints, (gpointer) input_camera);
         return FALSE;
     } else {
-        double three_dimensions_world_points_array[NUMBER_OF_CORNERS_OF_GREEN_SQUARE * TRHEE_DIMENSIONS];
-        double two_dimensions_image_points_array[NUMBER_OF_CORNERS_OF_GREEN_SQUARE * TWO_DIMENSIONS];
-        flattenArrayOfThreeDimensionsCvPoints(world_model_points_defining_the_green_square,
-                                              three_dimensions_world_points_array,
-                                              NUMBER_OF_CORNERS_OF_GREEN_SQUARE);
-        flattenArrayOfTwoDimensionsCvPoints(image_user_points_defining_the_green_square, two_dimensions_image_points_array,
-                                            NUMBER_OF_CORNERS_OF_GREEN_SQUARE);
-        CvMat three_dimensions_world_points, two_dimensions_image_points;
-        CvMat * three_dimensions_world_points_ptr = cvInitMatHeader(&three_dimensions_world_points,
-                NUMBER_OF_CORNERS_OF_GREEN_SQUARE, TRHEE_DIMENSIONS,
-                CV_64FC1,
-                three_dimensions_world_points_array, CV_AUTOSTEP);
-        CvMat * two_dimensions_image_points_ptr = cvInitMatHeader(&two_dimensions_image_points,
-                NUMBER_OF_CORNERS_OF_GREEN_SQUARE, TWO_DIMENSIONS,
-                CV_64FC1,
-                two_dimensions_image_points_array, CV_AUTOSTEP);
-
+        CvMat *three_dimensions_world_points = cvCreateMatHeader(NUMBER_OF_CORNERS_OF_GREEN_SQUARE, TRHEE_DIMENSIONS,
+                                               CV_64FC1);
+        CvMat *two_dimensions_image_points = cvCreateMatHeader(NUMBER_OF_CORNERS_OF_GREEN_SQUARE, TWO_DIMENSIONS,
+                                             CV_64FC1);
+        createObjectAndImagePointsMatrix(three_dimensions_world_points, two_dimensions_image_points);
+        printf("\n DEBUG: %f", CV_MAT_ELEM(*two_dimensions_image_points, double, 0, 0));
         initializeCameraExtrinsics(input_camera);
-        cvFindExtrinsicCameraParams2(three_dimensions_world_points_ptr, two_dimensions_image_points_ptr,
+        cvFindExtrinsicCameraParams2(three_dimensions_world_points, two_dimensions_image_points,
                                      input_camera->camera_intrinsics->camera_matrix,
                                      input_camera->camera_intrinsics->distortion_coefficients, input_camera->camera_extrinsics->rotation_vector,
                                      input_camera->camera_extrinsics->translation_vector, 0);
 
-        double reprojection_error = checkReprojectionErrorOnCameraPose(three_dimensions_world_points_ptr,
-                                    two_dimensions_image_points_ptr, input_camera);
+        double reprojection_error = checkReprojectionErrorOnCameraPose(three_dimensions_world_points,
+                                    two_dimensions_image_points, input_camera);
         Logger_append("\n Reprojection error on camera pose: ");
         Logger_appendDouble(reprojection_error);
+        input_camera->camera_status = CALIBRATED;
+
+        uchar *data;
+        cvGetRawData((CvArr*) three_dimensions_world_points, &data, NULL, NULL);
+        free(&data);
+        cvGetRawData((CvArr*) two_dimensions_image_points, &data, NULL, NULL);
+        free(&data);
+
+        cvReleaseMat(&three_dimensions_world_points);
+        cvReleaseMat(&two_dimensions_image_points);
 
         return FALSE; // Even if it succeeds, return FALSE in order to remove this function from the g_idle state.
     }
 }
 
-static void initializePointsArraysForCameraPoseComputation(void)
+static gboolean computePlaneEquation(struct Camera *input_camera)
 {
-    for(int i = 0; i < NUMBER_OF_CORNERS_OF_GREEN_SQUARE; i++) {
-        image_user_points_defining_the_green_square[i] = cvPoint2D64f(-1, -1);
-    }
+    int not_enough_user_points_gathered = countTheAmountOfUserPointsGathered() < NUMBER_OF_CORNERS_OF_GREEN_SQUARE;
 
-    world_model_points_defining_the_green_square[0] = cvPoint3D64f(0, 0, 0);
-    world_model_points_defining_the_green_square[1] = cvPoint3D64f(0, WIDTH_OF_THE_GREEN_SQUARE_IN_MM, 0);
-    world_model_points_defining_the_green_square[2] = cvPoint3D64f(WIDTH_OF_THE_GREEN_SQUARE_IN_MM,
-            WIDTH_OF_THE_GREEN_SQUARE_IN_MM, 0);
-    world_model_points_defining_the_green_square[3] = cvPoint3D64f(WIDTH_OF_THE_GREEN_SQUARE_IN_MM, 0, 0);
+    if(not_enough_user_points_gathered || input_camera->camera_status != CALIBRATED) {
+        g_idle_add((GSourceFunc) computePlaneEquation, (gpointer) input_camera);
+        return FALSE;
+    } else {
+        return FALSE; // Even if it succeeds, return FALSE in order to remove this function from the g_idle state.
+    }
 }
 
-gboolean WorldVisionCalibration_gatherUserPointsForCameraPoseComputation(int input_index)
+gboolean WorldVisionCalibration_calibrate(struct Camera * input_camera)
 {
-    switch(input_index) {
-        case 0:
-            initializePointsArraysForCameraPoseComputation();
-            Logger_startMessageSectionAndAppend("Mouse click on each of the green square corners in order to map them to these 3D world coordinates. \n");
-            Logger_appendCvPoint3D64f(world_model_points_defining_the_green_square[0]);
-            Logger_append(" -> ");
-            world_camera_calibration_process_mode = GET_USER_MOUSE_CLICKS_FOR_CAMERA_POSE_COMPUTATION;
-            break;
-
-        case NUMBER_OF_CORNERS_OF_GREEN_SQUARE:
-            Logger_appendCvPoint2D64f(image_user_points_defining_the_green_square[input_index - 1]);
-            Logger_append(".\n Completed !");
-            world_camera_calibration_process_mode = NONE;
-            break;
-
-        default:
-            Logger_appendCvPoint2D64f(image_user_points_defining_the_green_square[input_index - 1]);
-            Logger_append(", \n");
-            Logger_appendCvPoint3D64f(world_model_points_defining_the_green_square[input_index]);
-            Logger_append(" -> ");
-            break;
-    }
+    gatherUserPointsForCameraPoseComputation(0);
+    computeCameraPoseFromUserPoints(input_camera);
+    computePlaneEquation(input_camera);
 
     return TRUE;
 }

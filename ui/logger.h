@@ -2,7 +2,7 @@
 #define __LOGGER
 
 #include <gtk/gtk.h>
-#include "opencv2/core/types_c.h"
+#include "point_types.h"
 
 void Logger_initialize(GtkWidget *widget);
 
@@ -12,8 +12,8 @@ void Logger_startMessageSectionAndAppend(const char *text);
 
 void Logger_appendDouble(double value);
 
-void Logger_appendCvPoint2D64f(CvPoint2D64f point);
+void Logger_appendPoint2D(struct Point2D point);
 
-void Logger_appendCvPoint3D64f(CvPoint3D64f point);
+void Logger_appendPoint3D(struct Point3D point);
 
 #endif // __LOGGER
