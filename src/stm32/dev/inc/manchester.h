@@ -10,6 +10,8 @@
 
 #include "misc.h"
 #include "tm_stm32f4_hd44780.h"
+#include "externalInterrupts.h"
+#include "timers.h"
 
 enum ManchState {
 	MANCHESTER_IDLE,

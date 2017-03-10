@@ -285,7 +285,7 @@ void intializeExternalInterrupts() {
 
 void SetTimer2(uint16_t period) {
 	TIM_TimeBaseInitTypeDef timerInitStructure;
-	timerInitStructure.TIM_Prescaler = 84 - 1;
+	timerInitStructure.TIM_Prescaler = 84 - 1; // prescaler 84 avant
 	timerInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
 	timerInitStructure.TIM_Period = period - 1;
 	timerInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
@@ -316,11 +316,4 @@ void initEncoders(void) {
 	intializeExternalInterrupts();
 	InitializeTimer2();
 	EnableTimer2Interrupt();
-}
-
-float calculateSpeed(int edges) {
-	float speedResult = ((float) edges * METERS_PER_TICK)
-			/ SPEED_CALC_TIME_DELAY;
-
-	return speedResult;
 }

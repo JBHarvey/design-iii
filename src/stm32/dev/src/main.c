@@ -11,6 +11,7 @@
  * #define USE_USB_OTG_HS
  */
 #include <motor.h>
+#include <PID_SPEED_v1.h>
 #include "tm_stm32f4_usb_vcp.h"
 #include "tm_stm32f4_disco.h"
 #include "defines.h"
@@ -23,7 +24,6 @@
 #include "tm_stm32f4_hd44780.h"
 #include "tm_stm32f4_delay.h"
 #include "manchester.h"
-#include "PID_v1.h"
 #include "encoder.h"
 #include "externalInterrupts.h"
 #include "timers.h"
@@ -49,8 +49,11 @@ enum MainState {
 #define INTERNAL_SYSTICK_FREQUENCY 500
 #define TIME_DELAY 1/(float) INTERNAL_SYSTICK_FREQUENCY
 #define MAX_SPEED_INDEX 2000
+#define TICKS_BUFFER_SIZE 100
 
-volatile int lcdCounter = 0;
+// buffer ticks for debug
+volatile int ticksIndex4 = 0;
+volatile int ticksBuffer4[TICKS_BUFFER_SIZE];
 
 // Variables avec le nombre de Ticks
 volatile int numberOfEdges1 = 0;
@@ -394,8 +397,8 @@ int main(void) {
 
 			break;
 		case MAIN_PID:
-			consigneX = 0.01;
-			consigneY = 0.01;
+			consigneX = 0.24;
+			consigneY = 0.24;
 
 			/* Initialization of PIDs */
 			PID_init(&PID_SPEED1, PID_SPEED_KP, PID_SPEED_KI, PID_SPEED_KD,
@@ -605,6 +608,12 @@ extern void TIM2_IRQHandler() {
 		PID_SPEED2.myInput = numberOfEdges2;
 		PID_SPEED3.myInput = numberOfEdges3;
 		PID_SPEED4.myInput = numberOfEdges4;
+
+		ticksBuffer4[ticksIndex4] = numberOfEdges2;
+		ticksIndex4++;
+		if (ticksIndex4 >= TICKS_BUFFER_SIZE) {
+			ticksIndex4 = 0;
+		}
 
 		numberOfEdges1 = 0;
 		numberOfEdges2 = 0;
