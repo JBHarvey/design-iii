@@ -6,7 +6,8 @@
  * This Library is licensed under a GPLv3 License
  **********************************************************************************************/
 
-#include <PID_SPEED_v1.h>
+#include <PID_v1.h>
+
 void PID_Initialize(PidType* pid);
 
 volatile int ticksIndex5 = 0;
@@ -42,7 +43,7 @@ void PID_init(PidType* pid, FloatType Kp, FloatType Ki, FloatType Kd,
  *   pid Output needs to be computed.  returns true when the output is computed,
  *   false when nothing has been done.
  **********************************************************************************/
-bool PID_Compute(PidType* pid) {
+bool PID_Compute_Speed(PidType* pid) {
 	if (!pid->inAuto) {
 		return false;
 	}
@@ -53,6 +54,51 @@ bool PID_Compute(PidType* pid) {
 	float preInput = pid->myInput;
 	FloatType input = calculateSpeed(preInput);
 	FloatType error = pid->mySetpoint - input;
+	pid->ITerm += (pid->ki * error);
+	if (pid->ITerm > pid->outMax)
+		pid->ITerm = pid->outMax;
+	else if (pid->ITerm < pid->outMin)
+		pid->ITerm = pid->outMin;
+	FloatType dInput = (input - pid->lastInput);
+
+	/*Compute PID Output*/
+	FloatType output = pid->kp * error + pid->ITerm - pid->kd * dInput;
+
+	if (output > pid->outMax)
+		output = pid->outMax;
+	else if (output < pid->outMin)
+		output = pid->outMin;
+	pid->myOutput = output;
+
+	/*Remember some variables for next time*/
+	pid->lastInput = input;
+//    pid->lastTime = now;
+	return true;
+//  } else {
+//    return false;
+//  }
+}
+
+/* Compute() **********************************************************************
+ *     This, as they say, is where the magic happens.  this function should be called
+ *   every time "void loop()" executes.  the function will decide for itself whether a new
+ *   pid Output needs to be computed.  returns true when the output is computed,
+ *   false when nothing has been done.
+ **********************************************************************************/
+bool PID_Compute_Position(PidType* pid) {
+	if (!pid->inAuto) {
+		return false;
+	}
+//  unsigned long now = millis();
+//  unsigned long timeChange = (now - pid->lastTime);
+//  if (timeChange >= pid->SampleTime) {
+	/*Compute all the working error variables*/
+	float preInput = pid->myInput;
+	FloatType input = calculatePosition(preInput);
+	FloatType error = pid->mySetpoint - input;
+	if (error > -0.01 && error < 0.01) {
+		error = 0;
+	}
 	pid->ITerm += (pid->ki * error);
 	if (pid->ITerm > pid->outMax)
 		pid->ITerm = pid->outMax;
@@ -211,9 +257,10 @@ PidDirectionType PID_GetDirection(PidType* pid) {
 	return pid->controllerDirection;
 }
 
-FloatType calculateSpeed(FloatType edges) {
+FloatType calculateSpeed(FloatType speedEdges) {
 
-	FloatType speedResult = (edges * METERS_PER_TICK) / SPEED_CALC_TIME_DELAY;
+	FloatType speedResult = (speedEdges * METERS_PER_TICK)
+			/ SPEED_CALC_TIME_DELAY;
 
 	ticksBuffer5[ticksIndex5] = speedResult;
 	ticksIndex5++;
@@ -222,5 +269,10 @@ FloatType calculateSpeed(FloatType edges) {
 	}
 
 	return speedResult;
+}
+
+FloatType calculatePosition(FloatType positionEdges) {
+	FloatType positionResult = (positionEdges * METERS_PER_TICK);
+	return positionResult;
 }
 

@@ -49,14 +49,15 @@
 
 /* PID */
 // Param�tres en vitesse
-#define PID_SPEED_KP 1
-#define PID_SPEED_KI  0.6698803
+#define PID_SPEED_KP 15
+#define PID_SPEED_KI  1//0.6698803
 #define PID_SPEED_KD 0
 
 // Param�tres en position
-#define PID_POSITION_KP  680.33879051
-#define PID_POSITION_KI 0.01
-#define PID_POSITION_KD 146.4823
+#define PID_POSITION_KP  400.33
+#define PID_POSITION_KI 0.001
+#define PID_POSITION_KD 100.48
+#define PID_POSITION_N 170
 
 #define MAX_DISPLAY_CHARACTERS 8
 #define PI 3.14159
@@ -65,7 +66,9 @@
 #define DOUBLE_CHANNEL_TICKS 6400
 #define METERS_PER_TICK 0.00003387
 #define MAX_SPEED_COMMAND 60
-#define MIN_SPEED_COMMAND 0
+#define MIN_SPEED_COMMAND -60
+#define MIN_POS_COMMAND -1
+#define MAX_POS_COMMAND 1
 
 // Pour utiliser la librairie sans que sa plante
 #define ARM_CORTEX_M3

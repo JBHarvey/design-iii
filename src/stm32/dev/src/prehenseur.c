@@ -1,5 +1,8 @@
 #include "prehenseur.h"
 
+TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+TIM_OCInitTypeDef TIM_OCInitStructure;
+
 void initPrehensor() {
 	initPrehensorTIM();
 	initPrehensorPWM();

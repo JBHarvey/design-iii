@@ -1,5 +1,5 @@
-#ifndef PID_H
-#define PID_H
+#ifndef PID_V1_H_
+#define PID_V1_H_
 
 typedef float FloatType;
 //typedef double floatType;
@@ -53,7 +53,7 @@ void PID_SetMode(PidType* pid, PidModeType mode);
 // called every time loop() cycles. ON/OFF and
 // calculation frequency can be set using SetMode
 // SetSampleTime respectively
-bool PID_Compute(PidType* pid);
+bool PID_Compute_Speed(PidType* pid);
 
 // clamps the output to a specific range. 0-255 by default, but
 // it's likely the user will want to change this depending on
@@ -88,7 +88,9 @@ FloatType PID_GetKd(PidType* pid);
 PidModeType PID_GetMode(PidType* pid);
 PidDirectionType PID_GetDirection(PidType* pid);
 
-FloatType calculateSpeed(FloatType edges);
+FloatType calculateSpeed(FloatType speedEdges);
+
+FloatType calculatePosition(FloatType positionEdges);
 
 //void PID_Initialize(PidType* pid);
 #endif
