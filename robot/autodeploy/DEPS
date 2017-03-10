@@ -1,1 +1,1 @@
-DEPS= Angle.h BehaviorBuilder.h Behavior.h CommunicationStructures.h Coordinates.h Flags.h Map.h network.h Object.h Objective.h Obstacle.h Pose.h Robot.h RobotReceiver.h RobotServer.h Sensor.h State.h WorldCamera.h
+DEPS= Angle.h BehaviorBuilder.h Behavior.h CommunicationStructures.h Coordinates.h Flags.h Map.h network.h Object.h Objective.h Obstacle.h Pose.h Robot.h RobotReceiver.h RobotServer.h Sensor.h State.h Wheels.h WorldCamera.h

@@ -1,27 +1,22 @@
 #include <criterion/criterion.h>
 #include <stdio.h>
-#include "WorldCamera.h"
+#include "Wheels.h"
 
-struct WorldCamera *world_camera;
+struct Wheels *wheels;
 
-void setup_world_camera(void)
+void setup_wheels(void)
 {
-    world_camera = WorldCamera_new();
+    wheels = Wheels_new();
 }
 
-void teardown_world_camera(void)
+void teardown_wheels(void)
 {
-    WorldCamera_delete(world_camera);
+    Wheels_delete(wheels);
 }
 
-Test(WorldCamera, creation_destruction
-     , .init = setup_world_camera
-     , .fini = teardown_world_camera)
+Test(Wheels, creation_destruction
+     , .init = setup_wheels
+     , .fini = teardown_wheels)
 {
-    struct Pose *pose_zero = Pose_zero();
-    cr_assert(world_camera->map_sensor->has_received_new_data == 0);
-    cr_assert(world_camera->robot_sensor->has_received_new_data == 0);
-    cr_assert(world_camera->robot_radius == 0);
-    cr_assert(Pose_haveTheSameValues(world_camera->robot_pose, pose_zero));
-    Pose_delete(pose_zero);
+    cr_assert(wheels->sensor->has_received_new_data == 0);
 }

@@ -152,3 +152,13 @@ Test(Coordinates, given_aCoordinateWithSmallerXAndBiggerYValue_when_checksCardin
     assert_cardinal_direction_from_coordinate_to_other_coordinate_is(NORTHWEST);
 }
 
+Test(Coordinates, given_twoCoordinates_when_computeDistanceBetween_then_returnsTheCorrectDistanceBetween
+     , .init = setup_coordinates
+     , .fini = setup_coordinates)
+{
+    other_coordinates->y = COORDINATES_Y + COORDINATES_DELTA;
+    int distance = Coordinates_computeDistanceBetween(coordinates, other_coordinates);
+    cr_assert(distance == COORDINATES_DELTA,
+              "Expected the distance to be: %d. It returned: %d"
+              , COORDINATES_DELTA, distance);
+}

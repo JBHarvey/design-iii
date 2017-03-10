@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include "Coordinates.h"
 
 
@@ -114,4 +115,12 @@ enum CardinalDirection Coordinates_cardinalDirectionTo(struct Coordinates *from,
     }
 
     return direction;
+}
+
+int Coordinates_computeDistanceBetween(struct Coordinates *origin, struct Coordinates *destination)
+{
+    int distance_x = abs(origin->x - destination->x);
+    int distance_y = abs(origin->y - destination->y);
+    int distance = sqrt(pow(distance_x, 2) + pow(distance_y, 2));
+    return distance;
 }

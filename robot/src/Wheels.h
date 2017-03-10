@@ -1,19 +1,14 @@
-#ifndef WORLD_CAMERA_H_
-#define WORLD_CAMERA_H_
+#ifndef WHEELS_H_
+#define WHEELS_H_
 
 #include "Sensor.h"
-#include "Map.h"
 
-struct WorldCamera {
+struct Wheels {
     struct Object *object;
-    struct Sensor *map_sensor;
-    struct Sensor *robot_sensor;
-    struct Map *map;
-    struct Pose *robot_pose;
-    int robot_radius;
+    struct Sensor *sensor;
 };
 
-struct WorldCamera *WorldCamera_new(void);
-void WorldCamera_delete(struct WorldCamera *world_camera);
+struct Wheels *Wheels_new(void);
+void Wheels_delete(struct Wheels *wheels);
 
-#endif // WORLD_CAMERA_H_
+#endif // WHEELS_H_
