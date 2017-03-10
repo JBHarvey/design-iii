@@ -29,7 +29,6 @@
 #include "timers.h"
 #include "pushButtons.h"
 #include "leds.h"
-#include "prehenseur.h"
 
 #define TAILLE 500
 
@@ -233,12 +232,8 @@ int main(void) {
 
 	initBtn();
 
-	/* Initialization of Prehensor */
-	initPrehensor();
-	moveDownPrehensor();
-
 // Initialisation des variables
-	int mainState = MAIN_MANCH;
+	int mainState = MAIN_MOVE;
 //setState(&mainState, MAIN_MOVE);
 
 	int state = IDLE;
@@ -248,10 +243,6 @@ int main(void) {
 	InitializeManchesterInput();
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 	initializeExternalInterruptLine4();
-
-	/* LEDS ON */
-	turnOnGreenLED();
-	turnOnRedLED();
 
 	float consigneX;
 	float consigneY;
@@ -455,7 +446,10 @@ int main(void) {
 			 PID_SPEED3.mySetpoint = consigneX;
 			 PID_SPEED4.mySetpoint = consigneY;*/
 
-			PID_POSITION1.mySetpoint = -7;
+			PID_POSITION1.mySetpoint = 1;
+			PID_POSITION2.mySetpoint = 1;
+			PID_POSITION3.mySetpoint = 1;
+			PID_POSITION4.mySetpoint = 1;
 
 			while (1) {
 
@@ -478,18 +472,18 @@ int main(void) {
 						int cmdMotor1 = PID_SPEED1.myOutput;
 						if (cmdMotor1 > 0) {
 							speedDirection1 = SPEED_DIRECTION_FORWARD;
-							MotorSetDirection(1, COUNTER_CLOCK);
-							MotorSetDirection(3, CLOCK);
+							MotorSetDirection(1, CLOCK);
+							//MotorSetDirection(3, CLOCK);
 						} else if (cmdMotor1 < 0) {
 
 							speedDirection1 = SPEED_DIRECTION_BACKWARD;
-							MotorSetDirection(1, CLOCK);
-							MotorSetDirection(3, COUNTER_CLOCK);
+							MotorSetDirection(1, COUNTER_CLOCK);
+							//MotorSetDirection(3, COUNTER_CLOCK);
 							cmdMotor1 = -cmdMotor1;
 						} else {
 							speedDirection1 = SPEED_DIRECTION_NONE;
 							MotorSetDirection(1, BRAKE_G);
-							MotorSetDirection(3, BRAKE_G);
+							//MotorSetDirection(3, BRAKE_G);
 
 						}
 						MotorSetSpeed(1, cmdMotor1);
@@ -503,47 +497,111 @@ int main(void) {
 						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
 						TM_HD44780_Puts(3, 0, numberString);
 					}
-
 				}
 
-				if (PID_Compute_Speed(&PID_SPEED2)) {
-					int cmdMotor2 = PID_SPEED2.myOutput + 0.5;
-					//MotorSetSpeed(2, cmdMotor2);
-					PID_SetMode(&PID_SPEED2, PID_Mode_Manual);
+				if (PID_Compute_Position(&PID_POSITION2)) {
+					float positionOutput = PID_POSITION2.myOutput;
+					PID_SPEED2.mySetpoint = positionOutput;
 
-					char numberString[MAX_DISPLAY_CHARACTERS];
-					sprintf(numberString, "%d", numberOfSpeedEdges2);
-					cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-					TM_HD44780_Puts(8, 0, numberString);
-					sprintf(numberString, "%d", cmdMotor2);
-					cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-					TM_HD44780_Puts(11, 0, numberString);
+					if (PID_Compute_Speed(&PID_SPEED2)) {
+						int cmdMotor2 = PID_SPEED2.myOutput;
+						if (cmdMotor2 > 0) {
+							speedDirection2 = SPEED_DIRECTION_FORWARD;
+							MotorSetDirection(2, CLOCK);
+							//MotorSetDirection(4, CLOCK);
+						} else if (cmdMotor2 < 0) {
+
+							speedDirection2 = SPEED_DIRECTION_BACKWARD;
+							MotorSetDirection(2, COUNTER_CLOCK);
+							//MotorSetDirection(4, CLOCK);
+							cmdMotor2 = -cmdMotor2;
+						} else {
+							speedDirection2 = SPEED_DIRECTION_NONE;
+							MotorSetDirection(2, BRAKE_G);
+							//MotorSetDirection(4, BRAKE_G);
+
+						}
+						MotorSetSpeed(2, cmdMotor2);
+						PID_SetMode(&PID_SPEED2, PID_Mode_Manual);
+
+						char numberString[MAX_DISPLAY_CHARACTERS];
+						sprintf(numberString, "%d", numberOfSpeedEdges2);
+						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+						TM_HD44780_Puts(0, 0, numberString);
+						sprintf(numberString, "%d", cmdMotor2);
+						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+						TM_HD44780_Puts(3, 0, numberString);
+					}
 				}
-				if (PID_Compute_Speed(&PID_SPEED3)) {
-					/*int cmdMotor3 = PID_SPEED3.myOutput + 0.5;
-					 MotorSetSpeed(3, cmdMotor3);
-					 PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
 
-					 char numberString[MAX_DISPLAY_CHARACTERS];
-					 sprintf(numberString, "%d", numberOfSpeedEdges3);
-					 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-					 TM_HD44780_Puts(0, 1, numberString);
-					 sprintf(numberString, "%d", cmdMotor3);
-					 cleanNumberString(numberString, 4);
-					 TM_HD44780_Puts(3, 1, numberString);*/
+				if (PID_Compute_Position(&PID_POSITION3)) {
+					float positionOutput = PID_POSITION3.myOutput;
+					PID_SPEED3.mySetpoint = positionOutput;
+
+					if (PID_Compute_Speed(&PID_SPEED3)) {
+						int cmdMotor3 = PID_SPEED3.myOutput;
+						if (cmdMotor3 > 0) {
+							speedDirection3 = SPEED_DIRECTION_FORWARD;
+							MotorSetDirection(3, COUNTER_CLOCK);
+							//MotorSetDirection(1, COUNTER_CLOCK);
+						} else if (cmdMotor3 < 0) {
+
+							speedDirection3 = SPEED_DIRECTION_BACKWARD;
+							MotorSetDirection(3, CLOCK);
+							//MotorSetDirection(1, CLOCK);
+							cmdMotor3 = -cmdMotor3;
+						} else {
+							speedDirection3 = SPEED_DIRECTION_NONE;
+							MotorSetDirection(3, BRAKE_G);
+							//MotorSetDirection(1, BRAKE_G);
+
+						}
+						MotorSetSpeed(3, cmdMotor3);
+						PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
+
+						char numberString[MAX_DISPLAY_CHARACTERS];
+						sprintf(numberString, "%d", numberOfSpeedEdges3);
+						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+						TM_HD44780_Puts(0, 0, numberString);
+						sprintf(numberString, "%d", cmdMotor3);
+						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+						TM_HD44780_Puts(3, 0, numberString);
+					}
 				}
-				if (PID_Compute_Speed(&PID_SPEED4)) {
-					/*int cmdMotor4 = PID_SPEED4.myOutput + 0.5;
-					 MotorSetSpeed(4, cmdMotor4);
-					 PID_SetMode(&PID_SPEED4, PID_Mode_Manual);
+				if (PID_Compute_Position(&PID_POSITION4)) {
+					float positionOutput = PID_POSITION4.myOutput;
+					PID_SPEED4.mySetpoint = positionOutput;
 
-					 char numberString[MAX_DISPLAY_CHARACTERS];
-					 sprintf(numberString, "%d", numberOfSpeedEdges4);
-					 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-					 TM_HD44780_Puts(8, 1, numberString);
-					 sprintf(numberString, "%d", cmdMotor4);
-					 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-					 TM_HD44780_Puts(11, 1, numberString);*/
+					if (PID_Compute_Speed(&PID_SPEED4)) {
+						int cmdMotor4 = PID_SPEED4.myOutput;
+						if (cmdMotor4 > 0) {
+							speedDirection4 = SPEED_DIRECTION_FORWARD;
+							MotorSetDirection(4, COUNTER_CLOCK);
+							//MotorSetDirection(2, COUNTER_CLOCK);
+						} else if (cmdMotor4 < 0) {
+
+							speedDirection4 = SPEED_DIRECTION_BACKWARD;
+							MotorSetDirection(4, CLOCK);
+							//MotorSetDirection(2, CLOCK);
+							cmdMotor4 = -cmdMotor4;
+						} else {
+							speedDirection4 = SPEED_DIRECTION_NONE;
+							MotorSetDirection(4, BRAKE_G);
+							//MotorSetDirection(2, BRAKE_G);
+
+						}
+						MotorSetSpeed(4, cmdMotor4);
+						PID_SetMode(&PID_SPEED4, PID_Mode_Manual);
+
+						char numberString[MAX_DISPLAY_CHARACTERS];
+						sprintf(numberString, "%d", numberOfSpeedEdges4);
+						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+						TM_HD44780_Puts(0, 0, numberString);
+						sprintf(numberString, "%d", cmdMotor4);
+						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+						TM_HD44780_Puts(3, 0, numberString);
+					}
+
 				}
 			}
 			break;
@@ -600,7 +658,12 @@ extern void EXTI9_5_IRQHandler(void) {
 	if (EXTI_GetITStatus(EXTI_Line8) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges2++;
-		numberOfPositionEdges2++;
+		if (speedDirection2 == SPEED_DIRECTION_FORWARD) {
+			numberOfPositionEdges2++;
+		} else if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
+			numberOfPositionEdges2--;
+
+		}
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line8);
 	}
@@ -608,7 +671,9 @@ extern void EXTI9_5_IRQHandler(void) {
 	if (EXTI_GetITStatus(EXTI_Line9) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges2++;
-		numberOfPositionEdges2++;
+		if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
+			numberOfPositionEdges2--;
+		}
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line9);
 	}
@@ -620,7 +685,12 @@ extern void EXTI15_10_IRQHandler(void) {
 		/* increase ticks */
 		numberOfSpeedEdges3++;
 
-		numberOfPositionEdges3++;
+		if (speedDirection3 == SPEED_DIRECTION_FORWARD) {
+			numberOfPositionEdges3++;
+		} else if (speedDirection3 == SPEED_DIRECTION_BACKWARD) {
+			numberOfPositionEdges3--;
+
+		}
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line10);
 	}
@@ -628,7 +698,14 @@ extern void EXTI15_10_IRQHandler(void) {
 	if (EXTI_GetITStatus(EXTI_Line11) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges3++;
-		numberOfPositionEdges3++;
+
+		if (speedDirection3 == SPEED_DIRECTION_FORWARD) {
+			numberOfPositionEdges3++;
+		}
+
+		else if (speedDirection3 == SPEED_DIRECTION_BACKWARD) {
+			numberOfPositionEdges3--;
+		}
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line11);
 	}
@@ -636,7 +713,11 @@ extern void EXTI15_10_IRQHandler(void) {
 	if (EXTI_GetITStatus(EXTI_Line12) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges4++;
-		numberOfPositionEdges4++;
+		if (speedDirection4 == SPEED_DIRECTION_FORWARD) {
+			numberOfPositionEdges4++;
+		} else if (speedDirection4 == SPEED_DIRECTION_BACKWARD) {
+			numberOfPositionEdges4--;
+		}
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line12);
 	}
@@ -644,7 +725,12 @@ extern void EXTI15_10_IRQHandler(void) {
 	if (EXTI_GetITStatus(EXTI_Line13) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges4++;
-		numberOfPositionEdges4++;
+		if (speedDirection4 == SPEED_DIRECTION_FORWARD) {
+			numberOfPositionEdges4++;
+		} else if (speedDirection4 == SPEED_DIRECTION_BACKWARD) {
+
+			numberOfPositionEdges4--;
+		}
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line13);
 	}
