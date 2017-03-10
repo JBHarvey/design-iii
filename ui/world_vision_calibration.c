@@ -1,6 +1,7 @@
 #include "world_vision_calibration.h"
 #include "logger.h"
 #include <errno.h>
+#include <math.h>
 #include "opencv2/calib3d/calib3d_c.h"
 
 /* Flag definitions */
@@ -47,8 +48,9 @@ gboolean worldCameraButtonPressEventCallback(GtkWidget *widget, GdkEvent *event,
         int number_of_user_points_gathered = countTheAmountOfUserPointsGathered();
 
         if(number_of_user_points_gathered < NUMBER_OF_CORNERS_OF_GREEN_SQUARE) {
-            image_user_points_defining_the_green_square[number_of_user_points_gathered] = cvPoint2D64f(((GdkEventButton*)event)->x,
-                    ((GdkEventButton*)event)->y);
+            image_user_points_defining_the_green_square[number_of_user_points_gathered] =
+                cvPoint2D64f(((GdkEventButton*)event)->x * WORLD_CAMERA_WIDTH / (double) gtk_widget_get_allocated_width(widget),
+                             ((GdkEventButton*)event)->y * WORLD_CAMERA_HEIGHT / (double) gtk_widget_get_allocated_height(widget));
             WorldVisionCalibration_gatherUserPointsForCameraPoseComputation(number_of_user_points_gathered + 1);
         } else {
             return FALSE;
@@ -155,6 +157,29 @@ static void initializeCameraExtrinsics(struct Camera *input_camera)
             NUMBER_OF_COLUMN_OF_ROTATION_VECTOR, CV_64F);
 }
 
+static double checkReprojectionErrorOnCameraPose(CvMat *three_dimensions_world_points,
+        CvMat *two_dimensions_image_points, struct Camera *input_camera)
+{
+    CvMat projected_points;
+    double initialization_array[NUMBER_OF_CORNERS_OF_GREEN_SQUARE * 2] = {0};
+    CvMat *projected_points_ptr = cvInitMatHeader(&projected_points, NUMBER_OF_CORNERS_OF_GREEN_SQUARE, TWO_DIMENSIONS,
+                                  CV_64FC1, initialization_array, CV_AUTOSTEP);
+    cvProjectPoints2(three_dimensions_world_points, input_camera->camera_extrinsics->rotation_vector,
+                     input_camera->camera_extrinsics->translation_vector, input_camera->camera_intrinsics->camera_matrix,
+                     input_camera->camera_intrinsics->distortion_coefficients, projected_points_ptr, NULL, NULL, NULL, NULL, NULL, 0);
+    double reprojection_error = 0.0;
+
+    for(int i = 0; i < NUMBER_OF_CORNERS_OF_GREEN_SQUARE; i++) {
+        reprojection_error += pow(CV_MAT_ELEM(projected_points, double, i, 0) -
+                                  CV_MAT_ELEM(*two_dimensions_image_points, double, i, 0), 2.0) +
+                              pow(CV_MAT_ELEM(projected_points, double, i, 1) -
+                                  CV_MAT_ELEM(*two_dimensions_image_points, double, i, 1), 2.0);
+    }
+
+    reprojection_error = sqrt(reprojection_error / NUMBER_OF_CORNERS_OF_GREEN_SQUARE);
+
+    return reprojection_error;
+}
 
 gboolean WorldVisionCalibration_computeCameraPoseFromUserPoints(struct Camera *input_camera)
 {
@@ -186,6 +211,12 @@ gboolean WorldVisionCalibration_computeCameraPoseFromUserPoints(struct Camera *i
                                      input_camera->camera_intrinsics->camera_matrix,
                                      input_camera->camera_intrinsics->distortion_coefficients, input_camera->camera_extrinsics->rotation_vector,
                                      input_camera->camera_extrinsics->translation_vector, 0);
+
+        double reprojection_error = checkReprojectionErrorOnCameraPose(three_dimensions_world_points_ptr,
+                                    two_dimensions_image_points_ptr, input_camera);
+        Logger_append("\n Reprojection error on camera pose: ");
+        Logger_appendDouble(reprojection_error);
+
         return FALSE; // Even if it succeeds, return FALSE in order to remove this function from the g_idle state.
     }
 }

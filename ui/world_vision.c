@@ -16,6 +16,7 @@ const int WORLD_CAMERA_HEIGHT = 1200;
 const int WORLD_CAMERA_DEVICE_ID = 1;
 const int NUMBER_OF_ROW_OF_CAMERA_MATRIX = 3;
 const int NUMBER_OF_COLUMN_OF_CAMERA_MATRIX = 3;
+const char FILE_PATH_OF_DEBUG_MODE_VIDEO_CAPTURE[] = "./camera_calibration/camera_3015_1/video_feed.avi";
 
 /* Type definitions */
 
@@ -70,7 +71,7 @@ static void initializeCameraCapture(struct CameraCapture *output_camera_capture,
     output_camera_capture->camera_capture_feed = cvCreateCameraCapture(WORLD_CAMERA_DEVICE_ID);
 
     if(!output_camera_capture->camera_capture_feed) {
-        output_camera_capture->camera_capture_feed  = cvCreateCameraCapture(CV_CAP_ANY);
+        output_camera_capture->camera_capture_feed = cvCreateFileCapture(FILE_PATH_OF_DEBUG_MODE_VIDEO_CAPTURE);
     }
 
     cvSetCaptureProperty(output_camera_capture->camera_capture_feed, CV_CAP_PROP_FRAME_WIDTH, capture_width);
@@ -106,7 +107,7 @@ static void cleanExitIfMainLoopTerminated(struct CameraCapture *world_camera_cap
         g_mutex_unlock(&world_camera_feeder_mutex);
         releaseCameraCapture(world_camera_capture);
         releaseCamera(world_camera, world_camera_status);
-        g_thread_exit(0);
+        g_thread_exit((gpointer) TRUE);
     } else {
         g_mutex_unlock(&world_camera_feeder_mutex);
     }
@@ -149,6 +150,12 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data)
         cleanExitIfMainLoopTerminated(world_camera_capture);
 
         frame_BGR = cvQueryFrame(world_camera_capture->camera_capture_feed);
+
+        if(frame_BGR == NULL) {
+            cvSetCaptureProperty(world_camera_capture->camera_capture_feed, CV_CAP_PROP_POS_AVI_RATIO, 0);
+            continue;
+        }
+
         frame_BGR_corrected = cvCloneImage(frame_BGR);
         frame = cvCloneImage(frame_BGR);
 
