@@ -2,6 +2,7 @@
 #define ROBOTSERVER_H_
 
 
+#include "network.h"
 #include "RobotReceiver.h"
 
 struct RobotServer {

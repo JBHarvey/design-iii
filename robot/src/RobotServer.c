@@ -60,6 +60,10 @@ struct RobotServer *RobotServer_new(struct Robot *new_robot, int new_port)
     pointer->loop = ev_default_loop(0);
     pointer->port = new_port;
 
+    if(!pointer->loop) {
+        perror("Error in initializing libev. Bad $LIBEV_FLAGS in the environment?");
+    }
+
     while(initTCPServer(pointer, pointer->port) != 1);
 
     Object_addOneReference(new_robot->object);
@@ -75,10 +79,8 @@ void RobotServer_delete(struct RobotServer *robot_server)
         Object_delete(robot_server->object);
         Robot_delete(robot_server->robot);
 
-
-        ev_loop_destoy(robot_server->loop);
-        free(watcher);
         free(robot_server);
+
     }
 }
 

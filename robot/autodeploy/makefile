@@ -1,5 +1,5 @@
 CC=clang
-CFLAGS+= -g `pkg-config --cflags opencv`
+CFLAGS+= -g `pkg-config --cflags opencv` -g -lm -fsanitize=address -fno-omit-frame-pointer -I -lev
 LIBS=`pkg-config --libs opencv`
 ODIR=obj
 DEPS= Angle.h BehaviorBuilder.h Behavior.h CommunicationStructures.h Coordinates.h Flags.h Map.h network.h Object.h Objective.h Obstacle.h Pose.h Robot.h RobotReceiver.h RobotServer.h Sensor.h State.h WorldCamera.h
