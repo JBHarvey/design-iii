@@ -26,19 +26,16 @@ void InitializeLEDs() {
  * Green LED 	: PC5
  */
 void initLEDsSignals() {
-	// Enable the clock for GPIOC
+	GPIO_InitTypeDef GPIO_InitDef;
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
-	// Init the struct to initialize the pin
-	GPIO_InitTypeDef gpioStructure;
-	// Set the pin number to be used
-	gpioStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5;
-	// Set the direction of the pin, OUTPUT in this case
-	gpioStructure.GPIO_Mode = GPIO_Mode_OUT;
-	// Set the refresh speed, speed doesn't matter in this case
-	gpioStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	// Call the initialization
-	GPIO_Init(GPIOC, &gpioStructure);
-	// Set the BIT to zero to have LED turned down by default
+
+	GPIO_InitDef.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5;
+	GPIO_InitDef.GPIO_Mode = GPIO_Mode_OUT;
+	GPIO_InitDef.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitDef.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_InitDef.GPIO_Speed = GPIO_Speed_100MHz;
+	//Initialize pins
+	GPIO_Init(GPIOC, &GPIO_InitDef);
 	turnOffLEDs();
 }
 
@@ -46,19 +43,17 @@ void initLEDsSignals() {
  * and asset that all the light are off before
  */
 void turnOnRedLED() {
-	turnOffLEDs();
-GPIO_SetBits(GPIOC GPIO_Pin_4);
+	GPIO_SetBits(GPIOC, GPIO_Pin_4);
 }
 
 /* Turn on the Green LED for signal
  * and asset that all the LEDs are off before
  */
 void turnOnGreenLED() {
-turnOffLEDs();
-GPIO_SetBits(GPIOC, GPIO_Pin_5);
+	GPIO_SetBits(GPIOC, GPIO_Pin_5);
 }
 
 // Turn off the LEDs for signals
 void turnOffLEDs() {
-GPIO_ResetBits(GPIOC, GPIO_Pin_5);
+	GPIO_ResetBits(GPIOC, GPIO_Pin_5 | GPIO_Pin_4);
 }

@@ -51,7 +51,8 @@ void initPrehensorPWM() {
 	 function to update SystemCoreClock variable value. Otherwise, any configuration
 	 based on this variable will be incorrect.
 	 ----------------------------------------------------------------------- */
-
+	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+	TIM_OCInitTypeDef TIM_OCInitStructure;
 	/* Compute the prescaler value */
 	//PrescalerValue = (uint16_t)((SystemCoreClock / 2) / 28000000) - 1;
 	/* Time base configuration */
@@ -70,7 +71,7 @@ void initPrehensorPWM() {
 
 	TIM_OC1Init(TIM4, &TIM_OCInitStructure);
 
-	TIM_OC1PreloadConfig(4, TIM_OCPreload_Enable);
+	TIM_OC1PreloadConfig(TIM4, TIM_OCPreload_Enable);
 
 	TIM_ARRPreloadConfig(TIM4, ENABLE);
 
