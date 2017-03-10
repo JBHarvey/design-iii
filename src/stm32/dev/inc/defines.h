@@ -27,8 +27,8 @@
 // Moteur 2
 #define MOTOR2_DIR_GPIO 	GPIOE
 #define MOTOR2_DIR_RCC		RCC_AHB1Periph_GPIOE
-#define MOTOR2_DIR1_PIN 	GPIO_Pin_9
-#define MOTOR2_DIR2_PIN 	GPIO_Pin_10
+#define MOTOR2_DIR1_PIN 	GPIO_Pin_10
+#define MOTOR2_DIR2_PIN 	GPIO_Pin_9
 
 // Moteur 3
 #define MOTOR3_DIR_GPIO 	GPIOE
@@ -39,8 +39,8 @@
 // Moteur 4
 #define MOTOR4_DIR_GPIO 	GPIOE
 #define MOTOR4_DIR_RCC		RCC_AHB1Periph_GPIOE
-#define MOTOR4_DIR1_PIN 	GPIO_Pin_13
-#define MOTOR4_DIR2_PIN 	GPIO_Pin_14
+#define MOTOR4_DIR1_PIN 	GPIO_Pin_14
+#define MOTOR4_DIR2_PIN 	GPIO_Pin_13
 
 /* Les messages */
 #define MSG_IDLE "IDLE"
