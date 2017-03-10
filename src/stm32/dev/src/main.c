@@ -29,6 +29,7 @@
 #include "timers.h"
 #include "pushButtons.h"
 #include "leds.h"
+#include "prehenseur.h"
 
 #define TAILLE 500
 
@@ -232,8 +233,12 @@ int main(void) {
 
 	initBtn();
 
+	/* Initialization of Prehensor */
+	initPrehensor();
+	moveDownPrehensor();
+
 // Initialisation des variables
-	int mainState = MAIN_PID;
+	int mainState = MAIN_MANCH;
 //setState(&mainState, MAIN_MOVE);
 
 	int state = IDLE;
@@ -243,6 +248,10 @@ int main(void) {
 	InitializeManchesterInput();
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 	initializeExternalInterruptLine4();
+
+	/* LEDS ON */
+	turnOnGreenLED();
+	turnOnRedLED();
 
 	float consigneX;
 	float consigneY;
