@@ -2,6 +2,7 @@
 #define ANGLE_H_
 #include "Object.h"
 
+#define ANGLE_BASE_UNIT 0.00001
 #define HALF_PI 157080
 #define PI 314160
 #define MINUS_PI -314160

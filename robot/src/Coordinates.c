@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+
 #include "Coordinates.h"
 
 
@@ -117,10 +118,32 @@ enum CardinalDirection Coordinates_cardinalDirectionTo(struct Coordinates *from,
     return direction;
 }
 
-int Coordinates_computeDistanceBetween(struct Coordinates *origin, struct Coordinates *destination)
+int Coordinates_distanceBetween(struct Coordinates *origin, struct Coordinates *destination)
 {
     int distance_x = abs(origin->x - destination->x);
     int distance_y = abs(origin->y - destination->y);
     int distance = sqrt(pow(distance_x, 2) + pow(distance_y, 2));
     return distance;
+}
+
+int Coordinates_distanceFromOrigin(struct Coordinates *destination)
+{
+    struct Coordinates *origin = Coordinates_zero();
+    int distance = Coordinates_distanceBetween(origin, destination);
+    Coordinates_delete(origin);
+    return distance;
+}
+
+void Coordinates_rotateOfAngleAround(struct Coordinates *toRotate, struct Angle *angle,
+                                     struct Coordinates *rotationOrigin)
+{
+    int distance = Coordinates_distanceBetween(toRotate, rotationOrigin);
+    int delta_x = toRotate->x - rotationOrigin->x;
+    int delta_y = toRotate->y - rotationOrigin->y;
+    double preexisting_theta = atan2(delta_y, delta_x);
+    double theta = angle->theta * ANGLE_BASE_UNIT + preexisting_theta;
+    int new_x = ceil(rotationOrigin->x + (distance * cos(theta)));
+    int new_y = ceil(rotationOrigin->y + (distance * sin(theta)));
+    toRotate->x = new_x;
+    toRotate->y = new_y;
 }

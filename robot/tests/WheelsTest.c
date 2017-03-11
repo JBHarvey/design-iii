@@ -20,3 +20,4 @@ Test(Wheels, creation_destruction
 {
     cr_assert(wheels->sensor->has_received_new_data == 0);
 }
+
