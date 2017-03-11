@@ -84,13 +84,17 @@ static void releaseCameraCapture(struct CameraCapture *input_camera_capture)
     free(input_camera_capture);
 }
 
-static void releaseCamera(struct Camera *input_camera, enum CaptureMode input_camera_capture_mode)
+static void releaseCamera(struct Camera *input_camera)
 {
-    if(input_camera_capture_mode == UNDISTORTED) {
+    if(input_camera->camera_status == INTRINSICALLY_AND_EXTRINSICALLY_CALIBRATED ||
+       input_camera->camera_status == FULLY_CALIBRATED) {
         cvReleaseMat(&(input_camera->camera_intrinsics->camera_matrix));
         cvReleaseMat(&(input_camera->camera_intrinsics->distortion_coefficients));
         cvReleaseMat(&(input_camera->camera_extrinsics->rotation_vector));
         cvReleaseMat(&(input_camera->camera_extrinsics->translation_vector));
+    } else if(input_camera->camera_status == INTRINSICALLY_CALIBRATED) {
+        cvReleaseMat(&(input_camera->camera_intrinsics->camera_matrix));
+        cvReleaseMat(&(input_camera->camera_intrinsics->distortion_coefficients));
     }
 
     free(input_camera->camera_intrinsics);
@@ -106,7 +110,7 @@ static void cleanExitIfMainLoopTerminated(struct CameraCapture *world_camera_cap
         g_object_unref(world_camera_pixbuf);
         g_mutex_unlock(&world_camera_feeder_mutex);
         releaseCameraCapture(world_camera_capture);
-        releaseCamera(world_camera, world_camera_capture_mode);
+        releaseCamera(world_camera);
         g_thread_exit((gpointer) TRUE);
     } else {
         g_mutex_unlock(&world_camera_feeder_mutex);
