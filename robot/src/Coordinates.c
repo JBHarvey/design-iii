@@ -147,3 +147,10 @@ void Coordinates_rotateOfAngleAround(struct Coordinates *toRotate, struct Angle 
     toRotate->x = new_x;
     toRotate->y = new_y;
 }
+
+void Coordinates_rotateOfAngle(struct Coordinates *toRotate, struct Angle *angle)
+{
+    struct Coordinates *zero = Coordinates_zero();
+    Coordinates_rotateOfAngleAround(toRotate, angle, zero);
+    Coordinates_delete(zero);
+}
