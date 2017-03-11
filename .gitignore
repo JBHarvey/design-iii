@@ -27,6 +27,7 @@
 *.exe
 *.out
 *.app
+*robot-main
 
 # Automation-related files
 *ToCompile
