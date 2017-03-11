@@ -1,6 +1,7 @@
 #include "ui_builder.h"
+#include "logger.h"
 
-GtkWidget* build_ui(const gchar* resource_path)
+GtkWidget* buildUiAndReturnTopLevelWindow(const gchar* resource_path)
 {
     GtkBuilder *builder = gtk_builder_new_from_resource(resource_path);
 
@@ -10,6 +11,7 @@ GtkWidget* build_ui(const gchar* resource_path)
     */
     gtk_builder_connect_signals(builder, NULL);
     GObject *ui_window = gtk_builder_get_object(builder, "ui_window");
+    Logger_initialize(GTK_WIDGET(gtk_builder_get_object(builder, "logger")));
     g_object_unref(builder);
 
     return GTK_WIDGET(ui_window);

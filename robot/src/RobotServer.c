@@ -85,78 +85,12 @@ void RobotServer_delete(struct RobotServer *robot_server)
 }
 
 /*
-
-
-static _Bool initTCPCLient(struct RobotServer *robot_server, char *ip, unsigned short port)
-{
-    int sd;
-    struct sockaddr_in addr;
-    int addr_len = sizeof(addr);
-
-    bzero(&addr, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-
-    if(inet_pton(AF_INET, ip, &addr.sin_addr) <= 0) {
-        printf("\n inet_pton error occured\n");
-        return 0;
-    }
-
-    // Create server socket
-    if((sd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
-        perror("socket error");
-        return 0;
-    }
-
-    // Bind socket to address
-    if(connect(sd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-        close(sd);
-        perror("connect error");
-        return 0;
-    }
-
-    int flags = fcntl(sd, F_GETFL, 0);
-
-    if(fcntl(sd, F_SETFL, flags | O_NONBLOCK) < 0) {
-        close(sd);
-        perror("fcntl error");
-        return 0;
-    }
-
-    struct ev_io *w_client = malloc(sizeof(struct ev_io));
-
-    ev_io_init(w_client, readWriteCallback, sd, EV_READ | EV_WRITE);
-
-    ev_io_start(robot_server->loop, w_client);
-
-    return 1;
-}
-
-struct RobotServer *RobotServer_initClient(char *ip, unsigned short port)
-{
-    struct RobotServer *robot_server = calloc(sizeof(struct RobotServer), 1);
-    robot_server->loop = ev_default_loop(0);
-
-    if(!initTCPCLient(robot_server, ip, port)) {
-        free(robot_server);
-        return 0;
-    }
-
-    return robot_server;
-}
-
 void RobotServer_do(struct RobotServer *robot_server, unsigned int milliseconds)
 {
     ev_loop(robot_server->loop, milliseconds);
 }
 
-void RobotServer_close(struct RobotServer *robot_server)
-{
-    //TODO
-    free(robot_server);
-}
 */
-
 static void callbackStartPacket()
 {
 }
@@ -171,19 +105,6 @@ static void callbackWorld(struct Communication_World communication_world)
     RobotReceiver_updateWorld(robot_server->robot->world_camera, communication_world);
 }
 /*
-from protocol:
-
-void sendStartPacket()
-{
-    uint8_t data = PACKET_START;
-    addPacket(&data, sizeof(data));
-}
-
-void sendContinuePacket()
-{
-    uint8_t data = PACKET_CONTINUE;
-    addPacket(&data, sizeof(data));
-}
 
 void sendWorldToRobot(struct Communication_World communication_world)
 {
