@@ -36,6 +36,9 @@
 *Makefile.am
 *build
 *Dockerfile
+*DEPS
+*_OBJ
+*makefile
 
 # Compilation Database
 compile_commands.json

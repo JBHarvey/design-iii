@@ -1,1 +1,1 @@
-_OBJ= robot-main.o Actuator.o Angle.o BehaviorBuilder.o Behavior.o CommunicationStructures.o Coordinates.o Flags.o Map.o network.o Object.o Objective.o Obstacle.o Pose.o Robot.o RobotReceiver.o RobotServer.o Sensor.o State.o Wheels.o WorldCamera.o
+_OBJ= robot-main.o Actuator.o Angle.o BehaviorBuilder.o Behavior.o CommandSender.o CommunicationStructures.o Coordinates.o DataReceiver.o Flags.o Map.o network.o Object.o Objective.o Obstacle.o Pose.o Robot.o RobotServer.o Sensor.o State.o Wheels.o WorldCamera.o

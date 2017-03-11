@@ -2,8 +2,8 @@ CC=clang
 CFLAGS+= -g -O0 `pkg-config --cflags opencv` -I/usr/include/libevdev-1.0 -fsanitize=address
 LIBS=`pkg-config --libs opencv` -lev -lm
 ODIR=obj
-DEPS= Actuator.h Angle.h BehaviorBuilder.h Behavior.h CommunicationStructures.h Coordinates.h Flags.h Map.h network.h Object.h Objective.h Obstacle.h Pose.h Robot.h RobotReceiver.h RobotServer.h Sensor.h State.h Wheels.h WorldCamera.h
-_OBJ= robot-main.o Actuator.o Angle.o BehaviorBuilder.o Behavior.o CommunicationStructures.o Coordinates.o Flags.o Map.o network.o Object.o Objective.o Obstacle.o Pose.o Robot.o RobotReceiver.o RobotServer.o Sensor.o State.o Wheels.o WorldCamera.o
+DEPS= Actuator.h Angle.h BehaviorBuilder.h Behavior.h CommandSender.h CommunicationStructures.h Coordinates.h DataReceiver.h Flags.h Map.h network.h Object.h Objective.h Obstacle.h Pose.h Robot.h RobotServer.h Sensor.h State.h Wheels.h WorldCamera.h
+_OBJ= robot-main.o Actuator.o Angle.o BehaviorBuilder.o Behavior.o CommandSender.o CommunicationStructures.o Coordinates.o DataReceiver.o Flags.o Map.o network.o Object.o Objective.o Obstacle.o Pose.o Robot.o RobotServer.o Sensor.o State.o Wheels.o WorldCamera.o
 OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
 
 -include $(OBJ:.o=.d)
