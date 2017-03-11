@@ -1,5 +1,5 @@
 CC=clang
-CFLAGS+= -g `pkg-config --cflags opencv` -I/usr/include/libevdev-1.0
+CFLAGS+= -g -O0 `pkg-config --cflags opencv` -I/usr/include/libevdev-1.0 -fsanitize=address
 LIBS=`pkg-config --libs opencv` -lev -lm
 ODIR=obj
 DEPS=HFILES

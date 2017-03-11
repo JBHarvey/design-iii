@@ -211,8 +211,6 @@ void assertRotationResultIs(int initial_x, int initial_y, int origin_x, int orig
               initial_x, initial_y, theta, origin_x, origin_y,
               other_coordinates->x, other_coordinates->y,
               expected_x, expected_y);
-
-
 }
 
 Test(Coordinates,
