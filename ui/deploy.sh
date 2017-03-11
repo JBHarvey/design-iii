@@ -1,23 +1,16 @@
 #!/bin/sh
 
-#Keep the previously built code
-#If nothing has changed, a file won't be recompiled
-rm -rf autodeploy/obj
-mkdir autodeploy/obj
-cp build/deploy/obj/* autodeploy/obj/.
-
 #Cleans the building directory
-rm -rf build/deploy
-mkdir -p build/deploy
-mkdir build/deploy/obj
-mkdir build/deploy/station-resources
+mkdir -p build/deploy/obj
+mkdir -p build/deploy/station-resources
+find build/deploy/ -type f ! \( -name "*.d" -o -name "*.o" \) -delete
+cp -rf src/camera_calibration/ build/deploy/. 
 
 #Updates shared code
-cp ../shared/CommunicationStructures.h src
+cp -u --preserve=all ../shared/CommunicationStructures.h src
 
 #Prepares compilation files
-find src -type f -regex '.*\.\(c\|\h\)' -exec cp \{\} build/deploy \;
-cp station-main.c build/deploy/.
+find src -type f -regex '.*\.\(c\|\h\)' -exec cp -u --preserve=all \{\} build/deploy \;
 
 #Prepares the list of file to check for dependency
 echo "DEPS=" > autodeploy/DEPS
@@ -45,8 +38,7 @@ rm autodeploy/tmpmakefile
 
 #Copies the finalized files for compilation in the build directory
 cp autodeploy/makefile build/deploy/makefile
-cp autodeploy/obj/* build/deploy/obj/.
-cp src/station-resources/* build/deploy/station-resources/.
+cp -u --preserve=all src/station-resources/* build/deploy/station-resources/.
 
 #Launches the build
 cd build/deploy

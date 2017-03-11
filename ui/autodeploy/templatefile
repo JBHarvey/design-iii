@@ -26,11 +26,13 @@ $(ODIR)/%.o: %.c $(DEPS)
 station-main: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
-all: resources.c station-main 
+all: $(ODIR)/resources.o station-main 
 
 .PHONY: clean
 
 clean:
 	rm -f $(ODIR)/*.o $(ODIR)/*.d
 	rm -f station-main
-	rm -f resources.c
+	rm -f ./*.c
+	rm -f ./*.h
+

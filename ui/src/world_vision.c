@@ -16,7 +16,7 @@ const int WORLD_CAMERA_HEIGHT = 1200;
 const int WORLD_CAMERA_DEVICE_ID = 1;
 const int NUMBER_OF_ROW_OF_CAMERA_MATRIX = 3;
 const int NUMBER_OF_COLUMN_OF_CAMERA_MATRIX = 3;
-const char FILE_PATH_OF_DEBUG_MODE_VIDEO_CAPTURE[] = "./camera_calibration/camera_3015_1/video_feed.avi";
+const char FILE_PATH_OF_DEBUG_MODE_VIDEO_CAPTURE[] = "./build/deploy/camera_calibration/camera_3015_1/video_feed.avi";
 
 /* Type definitions */
 

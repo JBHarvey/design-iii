@@ -9,86 +9,13 @@
 
 #include "station_client.h"
 
+/* Constants */
 
-extern struct RobotServer *robot_server;
+const int MAX_IP_ADDRESS_LENGTH = 45;
+
 static struct ev_io *watcher;
 
-static _Bool initTCPServer(struct RobotServer *robot_server, unsigned short port)
-{
-    int sd;
-    struct sockaddr_in addr;
-    int addr_len = sizeof(addr);
-
-    // Create server socket
-    if((sd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
-        perror("socket error");
-        return -1;
-    }
-
-    bzero(&addr, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = INADDR_ANY;
-
-    // Bind socket to address
-    if(bind(sd, (struct sockaddr *) &addr, sizeof(addr)) != 0) {
-        close(sd);
-        perror("bind error");
-        return 0;
-    }
-
-    // Start listing on the socket
-    if(listen(sd, 2) < 0) {
-        close(sd);
-        perror("listen error");
-        return 0;
-    }
-
-    // Initialize and start a watcher to accepts client requests
-    watcher = malloc(sizeof(struct ev_io));
-    ev_io_init(watcher, acceptCallback, sd, EV_READ);
-    ev_io_start(robot_server->loop, watcher);
-
-    return 1;
-}
-
-struct RobotServer *RobotServer_new(struct Robot *new_robot, int new_port)
-{
-    struct Object *new_object = Object_new();
-    struct RobotServer *pointer = (struct RobotServer *) malloc(sizeof(struct RobotServer));
-    pointer->object = new_object;
-    pointer->robot = new_robot;
-    pointer->loop = ev_default_loop(0);
-    pointer->port = new_port;
-
-    if(!pointer->loop) {
-        perror("Error in initializing libev. Bad $LIBEV_FLAGS in the environment?");
-    }
-
-    while(initTCPServer(pointer, pointer->port) != 1);
-
-    Object_addOneReference(new_robot->object);
-
-    return pointer;
-}
-
-void RobotServer_delete(struct RobotServer *robot_server)
-{
-    Object_removeOneReference(robot_server->object);
-
-    if(Object_canBeDeleted(robot_server->object)) {
-        Object_delete(robot_server->object);
-        Robot_delete(robot_server->robot);
-
-        free(robot_server);
-
-    }
-}
-
-/*
-
-
-static _Bool initTCPCLient(struct RobotServer *robot_server, char *ip, unsigned short port)
+static _Bool initTCPClient(struct StationClient *station_client)
 {
     int sd;
     struct sockaddr_in addr;
@@ -96,9 +23,9 @@ static _Bool initTCPCLient(struct RobotServer *robot_server, char *ip, unsigned 
 
     bzero(&addr, sizeof(addr));
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
+    addr.sin_port = htons(station_client->port);
 
-    if(inet_pton(AF_INET, ip, &addr.sin_addr) <= 0) {
+    if(inet_pton(AF_INET, station_client->server_ip, &addr.sin_addr) <= 0) {
         printf("\n inet_pton error occured\n");
         return 0;
     }
@@ -128,17 +55,42 @@ static _Bool initTCPCLient(struct RobotServer *robot_server, char *ip, unsigned 
 
     ev_io_init(w_client, readWriteCallback, sd, EV_READ | EV_WRITE);
 
-    ev_io_start(robot_server->loop, w_client);
+    ev_io_start(station_client->loop, w_client);
 
     return 1;
 }
 
+struct StationClient *StationClient_new(int new_port, const char *server_ip)
+{
+    struct StationClient *station_client = malloc(sizeof(struct StationClient));
+    station_client->loop = ev_default_loop(0);
+    station_client->port = new_port;
+    station_client->server_ip = malloc(sizeof(char) * (MAX_IP_ADDRESS_LENGTH + 1));
+    strcpy(station_client->server_ip, server_ip);
+
+    if(!station_client->loop) {
+        perror("Error in initializing libev. Bad $LIBEV_FLAGS in the environment?");
+    }
+
+    //while(initTCPClient(pointer, pointer->port) != 1);
+
+    return station_client;
+}
+
+void StationClient_delete(struct StationClient *station_client)
+{
+    free(station_client->server_ip);
+    free(station_client);
+    station_client = NULL;
+}
+
+/*
 struct RobotServer *RobotServer_initClient(char *ip, unsigned short port)
 {
     struct RobotServer *robot_server = calloc(sizeof(struct RobotServer), 1);
     robot_server->loop = ev_default_loop(0);
 
-    if(!initTCPCLient(robot_server, ip, port)) {
+    if(!initTCPClient(robot_server, ip, port)) {
         free(robot_server);
         return 0;
     }
@@ -150,12 +102,6 @@ void RobotServer_do(struct RobotServer *robot_server, unsigned int milliseconds)
 {
     ev_loop(robot_server->loop, milliseconds);
 }
-
-void RobotServer_close(struct RobotServer *robot_server)
-{
-    //TODO
-    free(robot_server);
-}
 */
 
 static void callbackStartPacket()
@@ -166,11 +112,6 @@ static void callbackContinuePacket()
 {
 }
 
-static void callbackWorld(struct Communication_World communication_world)
-{
-
-    RobotReceiver_updateWorld(robot_server->robot->world_camera, communication_world);
-}
 /*
 from protocol:
 
@@ -194,6 +135,7 @@ void sendWorldToRobot(struct Communication_World communication_world)
     addPacket(data, sizeof(data));
 }
 */
+
 void handleReceivedPacket(uint8_t *data, uint32_t length)
 {
     if(length == 0) {
@@ -219,7 +161,8 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 
             memcpy(&communication_world, data + 1, sizeof(struct Communication_World));
 
-            callbackWorld(communication_world);
+            //callbackWorld(communication_world);
+            printf("TEST");
 
             break;
     }

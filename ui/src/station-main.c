@@ -1,7 +1,9 @@
 #include <gtk/gtk.h>
+
 #include "ui_builder.h"
 #include "logger.h"
 #include "world_vision.h"
+#include "station_client.h"
 
 /* Constants */
 
@@ -32,6 +34,7 @@ int main(int argc, char *argv[])
 {
     GThread* world_vision_worker_thread = NULL;
     GtkWidget *ui_window = NULL;
+    struct StationClient *station_client = NULL;
 
     gtk_init(&argc, &argv);
 
@@ -47,6 +50,8 @@ int main(int argc, char *argv[])
     world_vision_worker_thread = g_thread_new("world_camera_feeder", WorldVision_prepareImageFromWorldCameraForDrawing,
                                  NULL);
 
+    station_client = StationClient_new(34567, "192:168:0:1");
+
     gtk_window_fullscreen(GTK_WINDOW(ui_window));
 
     gtk_widget_show_all(GTK_WIDGET(ui_window));
@@ -55,7 +60,10 @@ int main(int argc, char *argv[])
 
     gtk_main();
 
+
     WorldVision_setMainLoopStatusTerminated();
+
+    StationClient_delete(station_client);
 
     g_thread_join(world_vision_worker_thread);
 
