@@ -102,7 +102,7 @@ static void callbackContinuePacket()
 static void callbackWorld(struct Communication_World communication_world)
 {
 
-    RobotReceiver_updateWorld(robot_server->robot->world_camera, communication_world);
+    DataReceiver_updateWorld(robot_server->robot->world_camera, communication_world);
 }
 /*
 

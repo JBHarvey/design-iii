@@ -1,4 +1,4 @@
-#include "RobotReceiver.h"
+#include "DataReceiver.h"
 
 static void update_table_corners(struct Map *map, struct Communication_Environment environment)
 {
@@ -153,20 +153,8 @@ static void update_world_camera_robot(struct WorldCamera *world_camera, struct C
     Pose_delete(pose);
 }
 
-// Add the handle_recv_packet somewhere here and make it call these
-void RobotReceiver_updateMesurements(struct Robot *robot)
-{
-    // TODO: Integrate the handle_recv_packet function to call these callbacks:
-    struct Communication_World world;
-    RobotReceiver_updateWorld(robot->world_camera, world);
 
-    // THESE DON'T EXIST YET
-    //update_wheels(robot->wheels);
-    //update_other_sensor??
-    //update_pen(robot->pen);
-}
-
-void RobotReceiver_updateWorld(struct WorldCamera *world_camera, struct Communication_World world)
+void DataReceiver_updateWorld(struct WorldCamera *world_camera, struct Communication_World world)
 {
     if(world.environment_has_changed) {
         Sensor_receivesData(world_camera->map_sensor);
@@ -183,8 +171,22 @@ void RobotReceiver_updateWorld(struct WorldCamera *world_camera, struct Communic
 
 }
 
-struct Mesurements RobotReceiver_fetchInputs(struct Mesurements(*communication_callback)(void))
+struct Mesurements DataReceiver_fetchInputs(struct Mesurements(*communication_callback)(void))
 {
     struct Mesurements mesurements = (*communication_callback)();
     return mesurements;
 }
+
+/*
+ * CURRENTLY UNUSED FUNCTION BUT IS THE BASE OF A DEBUGGING/LOGGING TOOL FOR INPUTS
+void DataReceiver_updateMesurements(struct Robot *robot, struct Mesurements mesurements)
+{
+    // TODO: Integrate the handle_recv_packet function to call these callbacks:
+    DataReceiver_updateWorld(robot->world_camera, mesurements.world);
+
+    // THESE DON'T EXIST YET
+    //update_wheels(robot->wheels);
+    //update_other_sensor??
+    //update_pen(robot->pen);
+}
+*/
