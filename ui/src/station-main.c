@@ -50,7 +50,9 @@ int main(int argc, char *argv[])
     world_vision_worker_thread = g_thread_new("world_camera_feeder", WorldVision_prepareImageFromWorldCameraForDrawing,
                                  NULL);
 
-    station_client = StationClient_new(34567, "192:168:0:1");
+    station_client = StationClient_new(35794, "192.222.179.126");
+
+    StationClient_init(station_client);
 
     gtk_window_fullscreen(GTK_WINDOW(ui_window));
 
@@ -59,7 +61,6 @@ int main(int argc, char *argv[])
     Logger_startMessageSectionAndAppend("Hit the \"Calibrate\" button and follow the instructions.");
 
     gtk_main();
-
 
     WorldVision_setMainLoopStatusTerminated();
 

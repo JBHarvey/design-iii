@@ -15,6 +15,30 @@ const int MAX_IP_ADDRESS_LENGTH = 45;
 
 static struct ev_io *watcher;
 
+struct StationClient *StationClient_new(int new_port, const char *server_ip)
+{
+    struct StationClient *station_client = malloc(sizeof(struct StationClient));
+    station_client->loop = ev_default_loop(0);
+    station_client->port = new_port;
+    station_client->server_ip = malloc(sizeof(char) * (MAX_IP_ADDRESS_LENGTH + 1));
+    strcpy(station_client->server_ip, server_ip);
+
+    if(!station_client->loop) {
+        perror("Error in initializing libev. Bad $LIBEV_FLAGS in the environment?");
+    }
+
+    //while(initTCPClient(pointer, pointer->port) != 1);
+
+    return station_client;
+}
+
+void StationClient_delete(struct StationClient *station_client)
+{
+    free(station_client->server_ip);
+    free(station_client);
+    station_client = NULL;
+}
+
 static _Bool initTCPClient(struct StationClient *station_client)
 {
     int sd;
@@ -60,44 +84,18 @@ static _Bool initTCPClient(struct StationClient *station_client)
     return 1;
 }
 
-struct StationClient *StationClient_new(int new_port, const char *server_ip)
+gboolean StationClient_init(struct StationClient *station_client)
 {
-    struct StationClient *station_client = malloc(sizeof(struct StationClient));
-    station_client->loop = ev_default_loop(0);
-    station_client->port = new_port;
-    station_client->server_ip = malloc(sizeof(char) * (MAX_IP_ADDRESS_LENGTH + 1));
-    strcpy(station_client->server_ip, server_ip);
-
-    if(!station_client->loop) {
-        perror("Error in initializing libev. Bad $LIBEV_FLAGS in the environment?");
+    if(!initTCPClient(station_client)) {
+        printf("\nConnection to robot failed. Retry.\n");
+        g_idle_add((GSourceFunc) StationClient_init, (gpointer) station_client);
+        return FALSE;
     }
 
-    //while(initTCPClient(pointer, pointer->port) != 1);
-
-    return station_client;
-}
-
-void StationClient_delete(struct StationClient *station_client)
-{
-    free(station_client->server_ip);
-    free(station_client);
-    station_client = NULL;
+    return FALSE; // Even if it succeeds, return FALSE in order to remove this function from the g_idle state.
 }
 
 /*
-struct RobotServer *RobotServer_initClient(char *ip, unsigned short port)
-{
-    struct RobotServer *robot_server = calloc(sizeof(struct RobotServer), 1);
-    robot_server->loop = ev_default_loop(0);
-
-    if(!initTCPClient(robot_server, ip, port)) {
-        free(robot_server);
-        return 0;
-    }
-
-    return robot_server;
-}
-
 void RobotServer_do(struct RobotServer *robot_server, unsigned int milliseconds)
 {
     ev_loop(robot_server->loop, milliseconds);
