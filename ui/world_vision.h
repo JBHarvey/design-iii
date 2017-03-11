@@ -4,6 +4,11 @@
 #include <gtk/gtk.h>
 #include "opencv2/imgproc/imgproc_c.h"
 
+/* Constants */
+
+const int WORLD_CAMERA_WIDTH;
+const int WORLD_CAMERA_HEIGHT;
+
 /* Type definitions */
 
 struct CameraIntrinsics {
