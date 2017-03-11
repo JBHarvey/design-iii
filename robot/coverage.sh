@@ -9,7 +9,7 @@ cp -r tests/* build/coverage/.
 
 cd build/coverage
 
-clang -Ofast  -o coverageTestSuite *.c -g -lm -fsanitize=address -fno-omit-frame-pointer -fprofile-arcs -ftest-coverage -I ../../../criterion/include/ ../../../criterion/lib/libcriterion.so -lev || exit 1
+clang -O0 -o coverageTestSuite *.c -g -lm -fsanitize=address -fno-omit-frame-pointer -fprofile-arcs -ftest-coverage -I ../../../criterion/include/ ../../../criterion/lib/libcriterion.so -lev || exit 1
 
 LD_LIBRARY_PATH=`pwd`/../../../criterion/lib/ ./coverageTestSuite || exit 1
 

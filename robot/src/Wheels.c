@@ -90,3 +90,16 @@ void Wheels_prepareTranslationCommand(struct Wheels *wheels, struct Coordinates 
     Coordinates_delete(coordinates_zero);
     Angle_delete(correction_angle);
 }
+
+struct Angle *Wheels_readRotationData(struct Wheels *wheels)
+{
+    Sensor_readsData(wheels->rotation_sensor);
+    return wheels->rotation_data;
+}
+
+struct Coordinates *Wheels_readTranslationData(struct Wheels *wheels, struct Angle *current_angle)
+{
+    Sensor_readsData(wheels->translation_sensor);
+    Coordinates_rotateOfAngle(wheels->translation_data, current_angle);
+    return wheels->translation_data;
+}
