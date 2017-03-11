@@ -1,10 +1,10 @@
 CC=clang
-CFLAGS+= -g `pkg-config --cflags gtk+-3.0 opencv gmodule-2.0`
+CFLAGS+= -g -O0 `pkg-config --cflags gtk+-3.0 opencv gmodule-2.0` -fsanitize=address
 LIBS=`pkg-config --libs gtk+-3.0 opencv gmodule-2.0`
 ODIR=obj
 RDIR=station-resources
-DEPS=ui_builder.h ui_event.h world_vision.h
-_OBJ=station-main.o resources.o ui_builder.o ui_event.o world_vision.o
+DEPS=ui_builder.h ui_event.h world_vision.h world_vision_calibration.h logger.h
+_OBJ=station-main.o resources.o ui_builder.o ui_event.o world_vision.o world_vision_calibration.o logger.o
 OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
 _RES=ui.gresource.xml
 RES=$(patsubst %,$(RDIR)/%,$(_RES))
