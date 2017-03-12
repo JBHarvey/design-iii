@@ -309,7 +309,7 @@ CvSeq *findFirstFigure(CvMemStorage *opencv_storage, IplImage *image_yuv)
     return figure_contours;
 }
 
-#define AREA_CIRCLE_TOLERANCE (0.04)
+#define AREA_CIRCLE_TOLERANCE (0.06)
 
 static _Bool isCircle(CvSeq *in)
 {
@@ -386,7 +386,7 @@ static CvPoint circleCenter(CvSeq *in)
     return point;
 }
 
-#define OBSTACLE_TRIANGLE_AREA 1150.0
+#define OBSTACLE_TRIANGLE_AREA 1180.0
 
 static _Bool isTriangleObstacle(CvSeq *in)
 {
@@ -404,7 +404,39 @@ static _Bool isTriangleObstacle(CvSeq *in)
     return 0;
 }
 
-#define OBSTACLE_TRIANGLE_POLY_APPROX 10
+#define OBSTACLE_TRIANGLE_POLY_APPROX 5
+#define TRIANGLE_SIDES_RATIO 1.4
+#define TRIANGLE_SIDES_TOLERANCE 0.1
+
+static _Bool validateTriangle(CvPoint points[3])
+{
+    double distance_small = sqrt(((points[1].y - points[2].y) * (points[1].y - points[2].y)) + ((
+                                     points[1].x - points[2].x) * (points[1].x - points[2].x)));
+    double distance1 = sqrt(((points[0].y - points[1].y) * (points[0].y - points[1].y)) + ((points[0].x - points[1].x) *
+                            (points[0].x - points[1].x)));
+    double distance2 = sqrt(((points[0].y - points[2].y) * (points[0].y - points[2].y)) + ((points[0].x - points[2].x) *
+                            (points[0].x - points[2].x)));
+
+    double comp_distance = distance_small * TRIANGLE_SIDES_RATIO;
+
+    if(distance1 < comp_distance * (1.0 - TRIANGLE_SIDES_TOLERANCE)) {
+        return 0;
+    }
+
+    if(distance2 < comp_distance * (1.0 - TRIANGLE_SIDES_TOLERANCE)) {
+        return 0;
+    }
+
+    if(distance1 > comp_distance * (1.0 + TRIANGLE_SIDES_TOLERANCE)) {
+        return 0;
+    }
+
+    if(distance2 > comp_distance * (1.0 + TRIANGLE_SIDES_TOLERANCE)) {
+        return 0;
+    }
+
+    return 1;
+}
 
 static _Bool trianglePoints(CvPoint points[3], CvSeq *in)
 {
@@ -435,7 +467,7 @@ static _Bool trianglePoints(CvPoint points[3], CvSeq *in)
         points[i] = *(CvPoint *)cvGetSeqElem(approxed, (i + index_smallest_dist + 2) % 3);
     }
 
-    return 1;
+    return validateTriangle(points);
 }
 
 static CvPoint midpoint(CvPoint point1, CvPoint point2)
@@ -485,38 +517,34 @@ static void findObstaclesRecursive(CvSeq *contours, struct Obstacle *out_obstacl
     CvSeq *horizontal_sequence = contours;
 
     while(horizontal_sequence) {
-        if(isPossibleObstacle(horizontal_sequence)) {
-            if(horizontal_sequence->v_next) {
-                struct Obstacle obstacle;
-                obstacle.type = OBSTACLE_NONE;
-                CvSeq *obstacle_seq = horizontal_sequence->v_next;
+        struct Obstacle obstacle;
+        obstacle.type = OBSTACLE_NONE;
+        CvSeq *obstacle_seq = horizontal_sequence;
 
-                if(isCircleObstacle(obstacle_seq)) {
-                    obstacle.type = OBSTACLE_CIRCLE;
-                    CvPoint point = circleCenter(obstacle_seq);
-                    obstacle.x = point.x;
-                    obstacle.y = point.y;
-                    obstacle.angle = 0;
-                } else if(isTriangleObstacle(obstacle_seq)) {
-                    CvPoint points[3];
+        if(isCircleObstacle(obstacle_seq)) {
+            obstacle.type = OBSTACLE_CIRCLE;
+            CvPoint point = circleCenter(obstacle_seq);
+            obstacle.x = point.x;
+            obstacle.y = point.y;
+            obstacle.angle = 0;
+        } else if(isTriangleObstacle(obstacle_seq)) {
+            CvPoint points[3];
 
-                    if(trianglePoints(points, obstacle_seq)) {
-                        obstacle.type = OBSTACLE_TRIANGLE;
-                        CvPoint point = triangleCenter(points);
-                        obstacle.x = point.x;
-                        obstacle.y = point.y;
-                        obstacle.angle = triangleAngle(points);
-                    }
-                }
+            if(trianglePoints(points, obstacle_seq)) {
+                obstacle.type = OBSTACLE_TRIANGLE;
+                CvPoint point = triangleCenter(points);
+                obstacle.x = point.x;
+                obstacle.y = point.y;
+                obstacle.angle = triangleAngle(points);
+            }
+        }
 
-                if(obstacle.type != OBSTACLE_NONE) {
-                    out_obstacles[*num_obstacles] = obstacle;
-                    ++*num_obstacles;
+        if(obstacle.type != OBSTACLE_NONE) {
+            out_obstacles[*num_obstacles] = obstacle;
+            ++*num_obstacles;
 
-                    if(*num_obstacles >= max_obstacles) {
-                        return;
-                    }
-                }
+            if(*num_obstacles >= max_obstacles) {
+                return;
             }
         }
 
