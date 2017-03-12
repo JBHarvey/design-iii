@@ -1,3 +1,4 @@
+#include "opencv2/calib3d/calib3d_c.h"
 #include "point_types.h"
 
 struct Point2D PointTypes_createPoint2D(double x, double y)
@@ -15,6 +16,12 @@ struct Point3D PointTypes_createPoint3D(double x, double y, double z)
     point3D.y = y;
     point3D.z = z;
     return point3D;
+}
+
+struct Point3D PointTypes_getPoint3DFromCustomOrigin(struct Point3D origin, struct Point3D point)
+{
+    struct Point3D result;
+    result.x = point.x - origin.x;
 }
 
 struct Point3D PointTypes_transformPoint3D(struct Point3D point, CvMat *rotation_vector, CvMat *translation_vector)
@@ -47,8 +54,8 @@ struct Point3D PointTypes_transformPoint3D(struct Point3D point, CvMat *rotation
     cvmSet(homogenous_point, 3, 0, 1);
     cvMatMul(transformation_matrix, homogenous_point, transformed_point);
 
-    Point3D result = PointTypes_createPoint3D(cvmGet(transformed_point, 0, 0), cvmGet(transformed_point, 1, 0),
-                     cvmGet(transformed_point, 2, 0));
+    struct Point3D result = PointTypes_createPoint3D(cvmGet(transformed_point, 0, 0), cvmGet(transformed_point, 1, 0),
+                            cvmGet(transformed_point, 2, 0));
 
     cvReleaseMat(&rotation_matrix);
     cvReleaseMat(&transformation_matrix);
