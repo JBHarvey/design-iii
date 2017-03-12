@@ -51,11 +51,9 @@ int main(int argc, char *argv[])
                                  NULL);
 
     station_client = StationClient_new(35794, "192.222.179.126");
-
     StationClient_init(station_client);
 
     gtk_window_fullscreen(GTK_WINDOW(ui_window));
-
     gtk_widget_show_all(GTK_WIDGET(ui_window));
 
     Logger_startMessageSectionAndAppend("Hit the \"Calibrate\" button and follow the instructions.");
@@ -65,7 +63,6 @@ int main(int argc, char *argv[])
     WorldVision_setMainLoopStatusTerminated();
 
     StationClient_delete(station_client);
-
     g_thread_join(world_vision_worker_thread);
 
     return 0;

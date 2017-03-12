@@ -27,8 +27,6 @@ struct StationClient *StationClient_new(int new_port, const char *server_ip)
         perror("Error in initializing libev. Bad $LIBEV_FLAGS in the environment?");
     }
 
-    //while(initTCPClient(pointer, pointer->port) != 1);
-
     return station_client;
 }
 
@@ -95,12 +93,12 @@ gboolean StationClient_init(struct StationClient *station_client)
     return FALSE; // Even if it succeeds, return FALSE in order to remove this function from the g_idle state.
 }
 
-/*
-void RobotServer_do(struct RobotServer *robot_server, unsigned int milliseconds)
+gboolean StationClient_communicate(struct StationClient *station_client, unsigned int milliseconds)
 {
-    ev_loop(robot_server->loop, milliseconds);
+    ev_loop(station_client->loop, milliseconds);
+
 }
-*/
+
 
 static void callbackStartPacket()
 {
