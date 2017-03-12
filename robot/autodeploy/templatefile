@@ -1,0 +1,36 @@
+CC=clang
+CFLAGS+= -g -O0 `pkg-config --cflags opencv` -I/usr/include/libevdev-1.0 -fsanitize=address
+LIBS=`pkg-config --libs opencv` -lev -lm
+ODIR=obj
+DEPS=HFILES
+_OBJ=OFILES
+OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
+
+-include $(OBJ:.o=.d)
+
+$(ODIR)/%.o: %.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -MM $(CFLAGS) $*.c > $(ODIR)/$*.d
+	@cp -f $(ODIR)/$*.d $(ODIR)/$*.d.tmp
+	@sed -e 's/.*://' -e 's/\\$$//' < $(ODIR)/$*.d.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> $(ODIR)/$*.d
+	@rm -f $(ODIR)/$*.d.tmp
+
+$(ODIR)/%.o: %.h $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -MM $(CFLAGS) $*.h > $(ODIR)/$*.d
+	@cp -f $(ODIR)/$*.d $(ODIR)/$*.d.tmp
+	@sed -e 's/.*://' -e 's/\\$$//' < $(ODIR)/$*.d.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> $(ODIR)/$*.d
+	@rm -f $(ODIR)/$*.d.tmp
+
+robot-main: $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+all: robot-main 
+
+.PHONY: clean
+
+clean:
+	rm -f $(ODIR)/*.o $(ODIR)/*.d
+	rm -f robot-main

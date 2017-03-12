@@ -28,13 +28,17 @@
 *.exe
 *.out
 *.app
-ui/station-main
+*robot-main
+*station-main
 
 # Automation-related files
 *ToCompile
 *Makefile.am
 *build
 *Dockerfile
+*DEPS
+*_OBJ
+*makefile
 
 # Compilation Database
 compile_commands.json

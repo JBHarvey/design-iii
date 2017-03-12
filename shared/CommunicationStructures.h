@@ -1,6 +1,18 @@
 #ifndef COMMUNICATIONSTRUCTURES_H_
 #define COMMUNICATIONSTRUCTURES_H_
 
+enum {
+    PACKET_START,
+    PACKET_CONTINUE,
+    PACKET_WORLD,
+    TRANSLATION_COMMAND,
+    ROTATION_COMMAND,
+    MANCHESTER_DATA
+};
+
+
+void sendStartPacket();
+
 struct __attribute__((__packed__)) Communication_Coordinates {
     int x;
     int y;
@@ -40,6 +52,16 @@ struct __attribute__((__packed__)) Communication_World {
     struct Communication_Environment environment;
     int environment_has_changed;
     struct Communication_Object robot;
+};
+
+struct __attribute__((__packed__)) Communication_Rotation {
+    int theta;
+};
+
+struct __attribute__((__packed__)) Communication_Manchester {
+    int portrait_number;
+    int scale_factor;
+    char orientation[5];
 };
 
 #endif // COMMUNICATIONSTRUCTURES_H_

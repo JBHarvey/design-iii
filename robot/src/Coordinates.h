@@ -1,6 +1,7 @@
 #ifndef COORDINATES_H_
 #define COORDINATES_H_
 
+#include "Angle.h"
 #include "Object.h"
 
 enum CardinalDirection {NORTH, EAST, SOUTH, WEST, CENTER, NORTHEAST, SOUTHEAST, SOUTHWEST, NORTHWEST};
@@ -40,5 +41,11 @@ int Coordinates_isToTheNorthEastOf(struct Coordinates *a, struct Coordinates *b)
 int Coordinates_isToTheSouthEastOf(struct Coordinates *a, struct Coordinates *b);
 int Coordinates_isToTheSouthWestOf(struct Coordinates *a, struct Coordinates *b);
 int Coordinates_isToTheNorthWestOf(struct Coordinates *a, struct Coordinates *b);
+
+int Coordinates_distanceBetween(struct Coordinates *origin, struct Coordinates *destination);
+int Coordinates_distanceFromOrigin(struct Coordinates *destination);
+
+void Coordinates_rotateOfAngleAround(struct Coordinates *toRotate, struct Angle *angle, struct Coordinates *rotationOrigin);
+void Coordinates_rotateOfAngle(struct Coordinates *toRotate, struct Angle *angle);
 
 #endif // COORDINATES_H_
