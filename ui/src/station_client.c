@@ -90,6 +90,7 @@ gboolean StationClient_init(struct StationClient *station_client)
         return FALSE;
     }
 
+    printf("\nConnected !\n");
     return FALSE; // Even if it succeeds, return FALSE in order to remove this function from the g_idle state.
 }
 
@@ -108,9 +109,6 @@ static void callbackContinuePacket()
 {
 }
 
-/*
-from protocol:
-
 void sendStartPacket()
 {
     uint8_t data = PACKET_START;
@@ -123,6 +121,7 @@ void sendContinuePacket()
     addPacket(&data, sizeof(data));
 }
 
+/*
 void sendWorldToRobot(struct Communication_World communication_world)
 {
     uint8_t data[1 + sizeof(struct Communication_World)];
@@ -156,9 +155,6 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             struct Communication_World communication_world;
 
             memcpy(&communication_world, data + 1, sizeof(struct Communication_World));
-
-            //callbackWorld(communication_world);
-            printf("TEST");
 
             break;
     }
