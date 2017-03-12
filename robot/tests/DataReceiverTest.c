@@ -4,6 +4,7 @@
 
 struct Mesurements mesurements_mock;
 
+// World data
 const int RECEIVER_TEST_ROBOT_RADIUS = 1750;
 const int RECEIVER_TEST_ROBOT_X = 9000;
 const int RECEIVER_TEST_ROBOT_Y = 5000;
@@ -47,6 +48,11 @@ const int TEST_PAINTING_6_ORIENTATION = HALF_PI;
 const int TEST_PAINTING_7_X = 4060;
 const int TEST_PAINTING_7_Y = 8500;
 const int TEST_PAINTING_7_ORIENTATION = HALF_PI;
+
+// Wheels data
+const int RECEIVER_TRANSLATION_X = 40;
+const int RECEIVER_TRANSLATION_Y = -10;
+const int RECEIVER_ROTATION = 31416;
 
 void setup_DataReceiver(void)
 {

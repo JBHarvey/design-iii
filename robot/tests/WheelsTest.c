@@ -44,56 +44,59 @@ Test(Wheels, given_aPose_when_receivesData_then_theAngleAndCoordinatesCorrespond
      , .init = setup_wheels
      , .fini = teardown_wheels)
 {
-    struct Pose *pose = Pose_new(WHEELS_COMMMAND_X, WHEELS_COMMMAND_Y, WHEELS_COMMMAND_THETA);
     struct Coordinates *coordinates = Coordinates_new(WHEELS_COMMMAND_X, WHEELS_COMMMAND_Y);
     struct Angle *angle = Angle_new(WHEELS_COMMMAND_THETA);
 
-    Wheels_receiveData(wheels, pose);
+    Wheels_receiveTranslationData(wheels, coordinates);
+    Wheels_receiveRotationData(wheels, angle);
     cr_assert(Coordinates_haveTheSameValues(wheels->translation_data, coordinates));
     cr_assert(Angle_smallestAngleBetween(wheels->rotation_data, angle) == 0);
 
     Angle_delete(angle);
     Coordinates_delete(coordinates);
-    Pose_delete(pose);
 }
 
 Test(Wheels, given_aPose_when_receivesData_then_theRotationAndTranslationSensorHaveReceivedNewData
      , .init = setup_wheels
      , .fini = teardown_wheels)
 {
-    struct Pose *pose = Pose_new(WHEELS_COMMMAND_X, WHEELS_COMMMAND_Y, WHEELS_COMMMAND_THETA);
+    struct Coordinates *coordinates = Coordinates_new(WHEELS_COMMMAND_X, WHEELS_COMMMAND_Y);
+    struct Angle *angle = Angle_new(WHEELS_COMMMAND_THETA);
 
-    Wheels_receiveData(wheels, pose);
+    Wheels_receiveTranslationData(wheels, coordinates);
+    Wheels_receiveRotationData(wheels, angle);
+
     cr_assert(wheels->translation_sensor->has_received_new_data);
     cr_assert(wheels->rotation_sensor->has_received_new_data);
 
-    Pose_delete(pose);
+    Angle_delete(angle);
+    Coordinates_delete(coordinates);
 }
 
 Test(Wheels, given_aPoseWithZeroCoordinates_when_receivesData_then_onlyTheRotationSensorHasReceivedNewData
      , .init = setup_wheels
      , .fini = teardown_wheels)
 {
-    struct Pose *pose = Pose_new(0, 0, WHEELS_COMMMAND_THETA);
+    struct Coordinates *coordinates = Coordinates_zero();
 
-    Wheels_receiveData(wheels, pose);
+    Wheels_receiveTranslationData(wheels, coordinates);
+
     cr_assert(!wheels->translation_sensor->has_received_new_data);
-    cr_assert(wheels->rotation_sensor->has_received_new_data);
 
-    Pose_delete(pose);
+    Coordinates_delete(coordinates);
 }
 
 Test(Wheels, given_aPoseWithZeroAngle_when_receivesData_then_onlyTheTranslationSensorHasReceivedNewData
      , .init = setup_wheels
      , .fini = teardown_wheels)
 {
-    struct Pose *pose = Pose_new(WHEELS_COMMMAND_X, WHEELS_COMMMAND_Y, 0);
+    struct Angle *angle = Angle_new(0);
 
-    Wheels_receiveData(wheels, pose);
-    cr_assert(wheels->translation_sensor->has_received_new_data);
+    Wheels_receiveRotationData(wheels, angle);
+
     cr_assert(!wheels->rotation_sensor->has_received_new_data);
 
-    Pose_delete(pose);
+    Angle_delete(angle);
 }
 
 Test(Wheels, given_anAngle_when_preparesRotationCommand_then_theRotationCommandContainsTheAngle
@@ -228,13 +231,15 @@ Test(Wheels, given_receivedData_when_readsRotationData_then_rotationSensorHasNoM
      , .init = setup_wheels
      , .fini = teardown_wheels)
 {
-    struct Pose *pose = Pose_new(WHEELS_COMMMAND_X, WHEELS_COMMMAND_Y, WHEELS_COMMMAND_THETA);
-    Wheels_receiveData(wheels, pose);
+    struct Angle *angle = Angle_new(WHEELS_COMMMAND_THETA);
+    Wheels_receiveRotationData(wheels, angle);
 
     Wheels_readRotationData(wheels);
+
     cr_assert(!wheels->rotation_sensor->has_received_new_data);
 
-    Pose_delete(pose);
+    Angle_delete(angle);
+
 }
 
 Test(Wheels, given_noReceivedDataAndAZeroAngle_when_readsTranslationData_then_coordinatesZeroIsReturned
@@ -243,8 +248,11 @@ Test(Wheels, given_noReceivedDataAndAZeroAngle_when_readsTranslationData_then_co
 {
     struct Angle *angle_zero = Angle_new(0);
     struct Coordinates *coordinates_zero = Coordinates_zero();
+
     struct Coordinates *translation_data = Wheels_readTranslationData(wheels, angle_zero);
+
     cr_assert(Coordinates_haveTheSameValues(coordinates_zero, translation_data));
+
     Coordinates_delete(coordinates_zero);
     Angle_delete(angle_zero);
 }
@@ -254,13 +262,12 @@ Test(Wheels, given_receivedData_when_readsTranslationData_then_translationSensor
      , .fini = teardown_wheels)
 {
     struct Angle *angle_zero = Angle_new(0);
-    struct Pose *pose = Pose_new(WHEELS_COMMMAND_X, WHEELS_COMMMAND_Y, WHEELS_COMMMAND_THETA);
-    Wheels_receiveData(wheels, pose);
+    struct Coordinates *coordinates = Coordinates_new(WHEELS_COMMMAND_X, WHEELS_COMMMAND_Y);
 
     Wheels_readTranslationData(wheels, angle_zero);
     cr_assert(!wheels->translation_sensor->has_received_new_data);
 
-    Pose_delete(pose);
+    Coordinates_delete(coordinates);
     Angle_delete(angle_zero);
 }
 
@@ -285,17 +292,15 @@ Test(Wheels, given_receivedDataAndAZeroAngle_when_readsTranslationData_then_retu
      , .init = setup_wheels
      , .fini = teardown_wheels)
 {
+    struct Coordinates *coordinates = Coordinates_new(WHEELS_COMMMAND_X, WHEELS_COMMMAND_Y);
     struct Angle *angle_zero = Angle_new(0);
-    struct Pose *pose = Pose_new(WHEELS_COMMMAND_X, WHEELS_COMMMAND_Y, WHEELS_COMMMAND_THETA);
 
-    Wheels_receiveData(wheels, pose);
-    struct Coordinates *sent_coordinates = Coordinates_new(WHEELS_COMMMAND_X, WHEELS_COMMMAND_Y);
+    Wheels_receiveTranslationData(wheels, coordinates);
 
-    assertReceivedTranslationIs(angle_zero, sent_coordinates, WHEELS_COMMMAND_X, WHEELS_COMMMAND_Y);
+    assertReceivedTranslationIs(angle_zero, coordinates, WHEELS_COMMMAND_X, WHEELS_COMMMAND_Y);
 
-    Pose_delete(pose);
+    Coordinates_delete(coordinates);
     Angle_delete(angle_zero);
-    Coordinates_delete(sent_coordinates);
 }
 
 Test(Wheels,
@@ -303,17 +308,15 @@ Test(Wheels,
      , .init = setup_wheels
      , .fini = teardown_wheels)
 {
-    struct Angle *angle_zero = Angle_new(WHEELS_COMMMAND_THETA);
-    struct Pose *pose = Pose_new(WHEELS_COMMMAND_X, WHEELS_COMMMAND_Y, WHEELS_COMMMAND_THETA);
+    struct Coordinates *coordinates = Coordinates_new(WHEELS_COMMMAND_X, WHEELS_COMMMAND_Y);
+    struct Angle *angle = Angle_new(WHEELS_COMMMAND_THETA);
 
-    Wheels_receiveData(wheels, pose);
-    struct Coordinates *sent_coordinates = Coordinates_new(WHEELS_COMMMAND_X, WHEELS_COMMMAND_Y);
+    Wheels_receiveTranslationData(wheels, coordinates);
 
     int expected_x = 141;
     int expected_y = -1556;
-    assertReceivedTranslationIs(angle_zero, sent_coordinates, expected_x, expected_y);
+    assertReceivedTranslationIs(angle, coordinates, expected_x, expected_y);
 
-    Pose_delete(pose);
-    Angle_delete(angle_zero);
-    Coordinates_delete(sent_coordinates);
+    Coordinates_delete(coordinates);
+    Angle_delete(angle);
 }

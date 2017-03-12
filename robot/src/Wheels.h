@@ -3,7 +3,8 @@
 
 #include "Sensor.h"
 #include "Actuator.h"
-#include "Pose.h"
+#include "Coordinates.h"
+#include "Angle.h"
 
 struct Wheels {
     struct Object *object;
@@ -20,7 +21,8 @@ struct Wheels {
 struct Wheels *Wheels_new(void);
 void Wheels_delete(struct Wheels *wheels);
 
-void Wheels_receiveData(struct Wheels *wheels, struct Pose *pose);
+void Wheels_receiveTranslationData(struct Wheels *wheels, struct Coordinates *translation_vector);
+void Wheels_receiveRotationData(struct Wheels *wheels, struct Angle *rotation_angle);
 struct Angle *Wheels_readRotationData(struct Wheels *wheels);
 struct Coordinates *Wheels_readTranslationData(struct Wheels *wheels, struct Angle *current_angle);
 

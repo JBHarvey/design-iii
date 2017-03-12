@@ -45,23 +45,6 @@ void Wheels_delete(struct Wheels *wheels)
     }
 }
 
-void Wheels_receiveData(struct Wheels *wheels, struct Pose *pose)
-{
-    struct Coordinates *coordinates_zero = Coordinates_zero();
-
-    if(!Coordinates_haveTheSameValues(pose->coordinates, coordinates_zero)) {
-        Sensor_receivesData(wheels->translation_sensor);
-    }
-
-    if(pose->angle->theta != 0) {
-        Sensor_receivesData(wheels->rotation_sensor);
-    }
-
-    Coordinates_copyValuesFrom(wheels->translation_data, pose->coordinates);
-    wheels->rotation_data->theta = pose->angle->theta;
-    Coordinates_delete(coordinates_zero);
-}
-
 void Wheels_prepareRotationCommand(struct Wheels *wheels, struct Angle *angle)
 {
     if(angle->theta != 0) {
@@ -69,6 +52,27 @@ void Wheels_prepareRotationCommand(struct Wheels *wheels, struct Angle *angle)
     }
 
     wheels->rotation_command->theta = angle->theta;
+}
+
+void Wheels_receiveTranslationData(struct Wheels *wheels, struct Coordinates *translation_vector)
+{
+    struct Coordinates *coordinates_zero = Coordinates_zero();
+
+    if(!Coordinates_haveTheSameValues(translation_vector, coordinates_zero)) {
+        Sensor_receivesData(wheels->translation_sensor);
+    }
+
+    Coordinates_copyValuesFrom(wheels->translation_data, translation_vector);
+    Coordinates_delete(coordinates_zero);
+}
+
+void Wheels_receiveRotationData(struct Wheels *wheels, struct Angle *rotation_angle)
+{
+    if(rotation_angle->theta != 0) {
+        Sensor_receivesData(wheels->rotation_sensor);
+    }
+
+    wheels->rotation_data->theta = rotation_angle->theta;
 }
 
 void Wheels_prepareTranslationCommand(struct Wheels *wheels, struct Coordinates *translation_vector,
