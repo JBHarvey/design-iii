@@ -34,6 +34,12 @@ struct Point2D PointTypes_createPoint2D(double x, double y);
 
 struct Point3D PointTypes_createPoint3D(double x, double y, double z);
 
+struct Point3D PointTypes_setPoint3DOrigin(struct Point3D origin, struct Point3D point);
+
+double PointTypes_getNormOfPoint3D(struct Point3D point);
+
+struct Point3D PointTypes_point3DCrossProduct(struct Point3D point_a, struct Point3D point_b);
+
 struct Point3D PointTypes_transformPoint3D(struct Point3D point, CvMat *rotation_vector, CvMat *translation_vector);
 
 struct Point2DSet *PointTypes_initializePoint2DSet(int number_of_points);

@@ -1,3 +1,4 @@
+#include <math.h>
 #include "opencv2/calib3d/calib3d_c.h"
 #include "point_types.h"
 
@@ -18,10 +19,35 @@ struct Point3D PointTypes_createPoint3D(double x, double y, double z)
     return point3D;
 }
 
-struct Point3D PointTypes_getPoint3DFromCustomOrigin(struct Point3D origin, struct Point3D point)
+struct Point3D PointTypes_setPoint3DOrigin(struct Point3D origin, struct Point3D point)
 {
-    struct Point3D result;
-    result.x = point.x - origin.x;
+    return PointTypes_createPoint3D(point.x - origin.x, point.y - origin.y, point.z - origin.z);
+}
+
+double PointTypes_getNormOfPoint3D(struct Point3D point)
+{
+    return sqrt(pow(point.x, 2) + pow(point.y, 2) + pow(point.z, 2));
+}
+
+struct Point3D PointTypes_point3DCrossProduct(struct Point3D point_a, struct Point3D point_b)
+{
+    CvMat *cv_vector_a = cvCreateMat(3, 1, CV_64FC1);
+    CvMat *cv_vector_b = cvCreateMat(3, 1, CV_64FC1);
+    CvMat *cv_vector_c = cvCreateMat(3, 1, CV_64FC1);
+    cvmSet(cv_vector_a, 0, 0, point_a.x);
+    cvmSet(cv_vector_a, 1, 0, point_a.y);
+    cvmSet(cv_vector_a, 2, 0, point_a.z);
+    cvmSet(cv_vector_b, 0, 0, point_b.x);
+    cvmSet(cv_vector_b, 1, 0, point_b.y);
+    cvmSet(cv_vector_b, 2, 0, point_b.z);
+    cvCrossProduct((CvArr*) cv_vector_a, (CvArr*) cv_vector_b, (CvArr*) cv_vector_c);
+    struct Point3D result = PointTypes_createPoint3D(cvmGet(cv_vector_c, 0, 0), cvmGet(cv_vector_c, 1, 0),
+                            cvmGet(cv_vector_c, 2,
+                                   0));
+    cvReleaseMat(&cv_vector_a);
+    cvReleaseMat(&cv_vector_b);
+    cvReleaseMat(&cv_vector_c);
+    return result;
 }
 
 struct Point3D PointTypes_transformPoint3D(struct Point3D point, CvMat *rotation_vector, CvMat *translation_vector)
@@ -95,10 +121,7 @@ void PointTypes_addPointToPoint2DSet(struct Point2DSet *point_set, struct Point2
 
 struct Point2D PointTypes_getPointFromPoint2DSet(struct Point2DSet *point_set, int index)
 {
-    struct Point2D point;
-    point.x = point_set->flat_points[2 * index];
-    point.y = point_set->flat_points[2 * index + 1];
-    return point;
+    return PointTypes_createPoint2D(point_set->flat_points[2 * index], point_set->flat_points[2 * index + 1]);
 }
 
 int PointTypes_getNumberOfPointStoredInPoint2DSet(struct Point2DSet *point_set)
@@ -142,11 +165,8 @@ void PointTypes_addPointToPoint3DSet(struct Point3DSet *point_set, struct Point3
 
 struct Point3D PointTypes_getPointFromPoint3DSet(struct Point3DSet *point_set, int index)
 {
-    struct Point3D point;
-    point.x = point_set->flat_points[3 * index];
-    point.y = point_set->flat_points[3 * index + 1];
-    point.z = point_set->flat_points[3 * index + 2];
-    return point;
+    return PointTypes_createPoint3D(point_set->flat_points[3 * index], point_set->flat_points[3 * index + 1],
+                                    point_set->flat_points[3 * index + 2]);
 }
 
 int PointTypes_getNumberOfPointStoredInPoint3DSet(struct Point3DSet *point_set)

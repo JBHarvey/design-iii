@@ -230,38 +230,24 @@ static gboolean computePlaneEquation(struct Camera *input_camera)
         struct Point3D transformed_origin_point = PointTypes_transformPoint3D(
                     PointTypes_getPointFromPoint3DSet(object_point_set_defining_the_green_square, 0),
                     input_camera->camera_extrinsics->rotation_vector, input_camera->camera_extrinsics->translation_vector);
-
         struct Point3D transformed_y_axis_point = PointTypes_transformPoint3D(
                     PointTypes_getPointFromPoint3DSet(object_point_set_defining_the_green_square, 1),
                     input_camera->camera_extrinsics->rotation_vector, input_camera->camera_extrinsics->translation_vector);
-
         struct Point3D transformed_x_axis_point = PointTypes_transformPoint3D(
                     PointTypes_getPointFromPoint3DSet(object_point_set_defining_the_green_square, 3),
                     input_camera->camera_extrinsics->rotation_vector, input_camera->camera_extrinsics->translation_vector);
-        // Vector p0_p1
-        cv::Point3f p0_p1;
-        p0_p1.x = p0.x - p1.x;
-        p0_p1.y = p0.y - p1.y;
-        p0_p1.z = p0.z - p1.z;
-
-        //Vector p0_p2
-        cv::Point3f p0_p2;
-        p0_p2.x = p0.x - p2.x;
-        p0_p2.y = p0.y - p2.y;
-        p0_p2.z = p0.z - p2.z;
-
-        //Normal vector
-        cv::Point3f n = p0_p1.cross(p0_p2);
-
-        a = n.x;
-        b = n.y;
-        c = n.z;
-        d = -(a * p0.x + b * p0.y + c * p0.z);
-        float norm =  sqrt(a * a + b * b + c * c);
-        a /= norm;
-        b /= norm;
-        c /= norm;
-        d /= norm;
+        struct Point3D y_axis_vector = PointTypes_setPoint3DOrigin(transformed_origin_point,
+                                       transformed_y_axis_point);
+        struct Point3D x_axis_vector = PointTypes_setPoint3DOrigin(transformed_origin_point,
+                                       transformed_x_axis_point);
+        struct Point3D normal_vector = PointTypes_point3DCrossProduct(y_axis_vector, x_axis_vector);
+        double normal_vector_norm = PointTypes_getNormOfPoint3D(normal_vector);
+        input_camera->camera_extrinsics->a = normal_vector.x / normal_vector_norm;
+        input_camera->camera_extrinsics->b = normal_vector.y / normal_vector_norm;
+        input_camera->camera_extrinsics->c = normal_vector.z / normal_vector_norm;
+        input_camera->camera_extrinsics->d = -(normal_vector.x * transformed_origin_point.x +
+                                               normal_vector.y * transformed_origin_point.y + normal_vector.z *
+                                               transformed_origin_point.z) / normal_vector_norm;
         input_camera->camera_status = FULLY_CALIBRATED;
         return FALSE; // Even if it succeeds, return FALSE in order to remove this function from the g_idle state.
     }
