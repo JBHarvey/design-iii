@@ -86,7 +86,7 @@ Test(Coordinates, given_twoIdenticalCoordinates_when_checksCardinalDirection_the
     assert_cardinal_direction_from_coordinate_to_other_coordinate_is(CENTER);
 }
 
-Test(Coordinates, given_aCoordinateWithBiggerYValue_when_checksCardinalDirection_then_isNorth
+Test(Coordinates, given_aCoordinatesWithBiggerYValue_when_checksCardinalDirection_then_isNorth
      , .init = setup_coordinates
      , .fini = teardown_coordinates)
 {
@@ -94,7 +94,7 @@ Test(Coordinates, given_aCoordinateWithBiggerYValue_when_checksCardinalDirection
     assert_cardinal_direction_from_coordinate_to_other_coordinate_is(NORTH);
 }
 
-Test(Coordinates, given_aCoordinateWithBiggerXValue_when_checksCardinalDirection_then_isEast
+Test(Coordinates, given_aCoordinatesWithBiggerXValue_when_checksCardinalDirection_then_isEast
      , .init = setup_coordinates
      , .fini = teardown_coordinates)
 {
@@ -102,7 +102,7 @@ Test(Coordinates, given_aCoordinateWithBiggerXValue_when_checksCardinalDirection
     assert_cardinal_direction_from_coordinate_to_other_coordinate_is(EAST);
 }
 
-Test(Coordinates, given_aCoordinateWithSmallerYValue_when_checksCardinalDirection_then_isSouth
+Test(Coordinates, given_aCoordinatesWithSmallerYValue_when_checksCardinalDirection_then_isSouth
      , .init = setup_coordinates
      , .fini = teardown_coordinates)
 {
@@ -110,7 +110,7 @@ Test(Coordinates, given_aCoordinateWithSmallerYValue_when_checksCardinalDirectio
     assert_cardinal_direction_from_coordinate_to_other_coordinate_is(SOUTH);
 }
 
-Test(Coordinates, given_aCoordinateWithSmallerXValue_when_checksCardinalDirection_then_isWest
+Test(Coordinates, given_aCoordinatesWithSmallerXValue_when_checksCardinalDirection_then_isWest
      , .init = setup_coordinates
      , .fini = teardown_coordinates)
 {
@@ -118,7 +118,7 @@ Test(Coordinates, given_aCoordinateWithSmallerXValue_when_checksCardinalDirectio
     assert_cardinal_direction_from_coordinate_to_other_coordinate_is(WEST);
 }
 
-Test(Coordinates, given_aCoordinateWithBiggerXAndBiggerYValue_when_checksCardinalDirection_then_isNorthEast,
+Test(Coordinates, given_aCoordinatesWithBiggerXAndBiggerYValue_when_checksCardinalDirection_then_isNorthEast,
      .init = setup_coordinates
              , .fini = teardown_coordinates)
 {
@@ -127,7 +127,7 @@ Test(Coordinates, given_aCoordinateWithBiggerXAndBiggerYValue_when_checksCardina
     assert_cardinal_direction_from_coordinate_to_other_coordinate_is(NORTHEAST);
 }
 
-Test(Coordinates, given_aCoordinateWithBiggerXandSmallerYValue_when_checksCardinalDirection_then_isSouthEast
+Test(Coordinates, given_aCoordinatesWithBiggerXandSmallerYValue_when_checksCardinalDirection_then_isSouthEast
      , .init = setup_coordinates
      , .fini = teardown_coordinates)
 {
@@ -136,7 +136,7 @@ Test(Coordinates, given_aCoordinateWithBiggerXandSmallerYValue_when_checksCardin
     assert_cardinal_direction_from_coordinate_to_other_coordinate_is(SOUTHEAST);
 }
 
-Test(Coordinates, given_aCoordinateWithSmallerXAndSmallerYValue_when_checksCardinalDirection_then_isSouthWest
+Test(Coordinates, given_aCoordinatesWithSmallerXAndSmallerYValue_when_checksCardinalDirection_then_isSouthWest
      , .init = setup_coordinates
      , .fini = teardown_coordinates)
 {
@@ -145,7 +145,7 @@ Test(Coordinates, given_aCoordinateWithSmallerXAndSmallerYValue_when_checksCardi
     assert_cardinal_direction_from_coordinate_to_other_coordinate_is(SOUTHWEST);
 }
 
-Test(Coordinates, given_aCoordinateWithSmallerXAndBiggerYValue_when_checksCardinalDirection_then_isNorthWest
+Test(Coordinates, given_aCoordinatesWithSmallerXAndBiggerYValue_when_checksCardinalDirection_then_isNorthWest
      , .init = setup_coordinates
      , .fini = teardown_coordinates)
 {
@@ -181,7 +181,7 @@ Test(Coordinates,
 }
 
 Test(Coordinates,
-     given_aCoordinates_when_computeDistanceFromOrigin_then_returnsTheCorrectDistanceBetweenTheCoordinateAndTheOrigin
+     given_aCoordinates_when_computeDistanceFromOrigin_then_returnsTheCorrectDistanceBetweenTheCoordinatesAndTheOrigin
      , .init = setup_coordinates
      , .fini = teardown_coordinates)
 {
@@ -211,12 +211,10 @@ void assertRotationResultIs(int initial_x, int initial_y, int origin_x, int orig
               initial_x, initial_y, theta, origin_x, origin_y,
               other_coordinates->x, other_coordinates->y,
               expected_x, expected_y);
-
-
 }
 
 Test(Coordinates,
-     given_twoCoordinateAndAnAngle_when_rotatesCoordinatesOfAngle_thenTheSecondCoordinatesRotatesWithTheFirstOneAsOrigin
+     given_twoCoordinatesAndAnAngle_when_rotatesCoordinatesOfAngle_thenTheSecondCoordinatesRotatesWithTheFirstOneAsOrigin
      , .init = setup_coordinates
      , .fini = teardown_coordinates)
 {
@@ -236,7 +234,7 @@ Test(Coordinates,
 }
 
 Test(Coordinates,
-     given_twoCoordinateWhichAlreadyHaveAnAngleBetweenThem_when_rotatesCoordinatesOfAngle_thenTheSecondCoordinatesRotatesWithTheFirstOneAsOrigin
+     given_twoCoordinatesWhichAlreadyHaveAnAngleBetweenThem_when_rotatesCoordinatesOfAngle_thenTheSecondCoordinatesRotatesWithTheFirstOneAsOrigin
      , .init = setup_coordinates
      , .fini = teardown_coordinates)
 {
@@ -256,7 +254,7 @@ Test(Coordinates,
 }
 
 Test(Coordinates,
-     given_twoCoordinateAndANegativeAngle_when_rotatesCoordinatesOfAngle_thenTheSecondCoordinatesRotatesWithTheFirstOneAsOrigin
+     given_twoCoordinatesAndANegativeAngle_when_rotatesCoordinatesOfAngle_thenTheSecondCoordinatesRotatesWithTheFirstOneAsOrigin
      , .init = setup_coordinates
      , .fini = teardown_coordinates)
 {
@@ -276,7 +274,7 @@ Test(Coordinates,
 }
 
 Test(Coordinates,
-     given_ACoordinateAndAnAngle_when_rotatesCoordinatesOfAngle_thenRotatesItWithZeroAsOrigin
+     given_coordinatesAndAnAngle_when_rotatesCoordinatesOfAngle_thenRotatesItWithZeroAsOrigin
      , .init = setup_coordinates
      , .fini = teardown_coordinates)
 {

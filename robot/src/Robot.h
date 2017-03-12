@@ -2,6 +2,7 @@
 #define ROBOT_H_
 
 #include "WorldCamera.h"
+#include "Wheels.h"
 
 struct Robot {
     struct Object *object;

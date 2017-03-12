@@ -1,9 +1,8 @@
 #ifndef ROBOTSERVER_H_
 #define ROBOTSERVER_H_
 
-
 #include "network.h"
-#include "RobotReceiver.h"
+#include "DataReceiver.h"
 
 struct RobotServer {
     struct Object *object;
