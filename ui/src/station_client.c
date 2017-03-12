@@ -8,10 +8,16 @@
 #include <strings.h>
 
 #include "station_client.h"
+#include "station-main.h"
 
 /* Constants */
 
 const int MAX_IP_ADDRESS_LENGTH = 45;
+
+/* Flag definitions */
+
+extern enum ThreadStatus main_loop_status;
+extern enum ConnectionStatus robot_connection_status;
 
 static struct ev_io *watcher;
 
@@ -82,22 +88,25 @@ static _Bool initTCPClient(struct StationClient *station_client)
     return 1;
 }
 
-gboolean StationClient_init(struct StationClient *station_client)
+gpointer StationClient_init(struct StationClient *station_client)
 {
-    if(!initTCPClient(station_client)) {
+    while(!initTCPClient(station_client)) {
         printf("\nConnection to robot failed. Retry.\n");
-        g_idle_add((GSourceFunc) StationClient_init, (gpointer) station_client);
-        return FALSE;
+
+        if(main_loop_status == TERMINATED) {
+            return (gpointer) FALSE;
+        }
     }
 
+    robot_connection_status = CONNECTED;
     printf("\nConnected !\n");
-    return FALSE; // Even if it succeeds, return FALSE in order to remove this function from the g_idle state.
+    return (gpointer) TRUE;
 }
 
 gboolean StationClient_communicate(struct StationClient *station_client, unsigned int milliseconds)
 {
     ev_loop(station_client->loop, milliseconds);
-
+    return FALSE;
 }
 
 

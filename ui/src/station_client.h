@@ -12,7 +12,7 @@ struct StationClient {
 };
 
 struct StationClient *StationClient_new(int new_port, const char *server_ip);
-gboolean StationClient_init(struct StationClient *station_client);
+gpointer StationClient_init(struct StationClient *station_client);
 void StationClient_delete(struct StationClient *station_client);
 void sendStartPacket();
 void sendContinuePacket();

@@ -1,5 +1,6 @@
 #include <gtk/gtk.h>
-
+#include <pthread.h>
+#include "station-main.h"
 #include "ui_builder.h"
 #include "logger.h"
 #include "world_vision.h"
@@ -12,6 +13,8 @@ const int VIDEO_FEED_REFRESH_RATE_IN_MS = 50; // 20 FPS
 
 /* Global variables */
 
+enum ThreadStatus main_loop_status;
+enum ConnectionStatus robot_connection_status;
 gint timer_tag;
 
 void uiWindowDestroyEventCallback(GtkWidget *widget, gpointer data)
@@ -32,7 +35,8 @@ static gboolean timeHandler(GtkWidget *widget)
 
 int main(int argc, char *argv[])
 {
-    GThread* world_vision_worker_thread = NULL;
+    GThread *world_vision_worker_thread = NULL;
+    GThread *connection_handler_worker_thread = NULL;
     GtkWidget *ui_window = NULL;
     struct StationClient *station_client = NULL;
 
@@ -44,14 +48,17 @@ int main(int argc, char *argv[])
     g_object_ref(ui_window);
     timer_tag = g_timeout_add(VIDEO_FEED_REFRESH_RATE_IN_MS, (GSourceFunc) timeHandler, (gpointer) ui_window);
 
-    WorldVision_setMainLoopStatusRunning();
+    main_loop_status = RUNNING;
+    robot_connection_status = DISCONNECTED;
 
     /* Starts worker threads */
-    world_vision_worker_thread = g_thread_new("world_camera_feeder", WorldVision_prepareImageFromWorldCameraForDrawing,
+    world_vision_worker_thread = g_thread_new("world_camera_feeder",
+                                 (GThreadFunc) WorldVision_prepareImageFromWorldCameraForDrawing,
                                  NULL);
 
     station_client = StationClient_new(35794, "10.42.0.1");
-    StationClient_init(station_client);
+    connection_handler_worker_thread = g_thread_new("connection_handler", (GThreadFunc) StationClient_init,
+                                       (gpointer) station_client);
 
     gtk_window_fullscreen(GTK_WINDOW(ui_window));
     gtk_widget_show_all(GTK_WIDGET(ui_window));
@@ -60,10 +67,16 @@ int main(int argc, char *argv[])
 
     gtk_main();
 
-    WorldVision_setMainLoopStatusTerminated();
+    main_loop_status = TERMINATED;
 
-    StationClient_delete(station_client);
+    if(robot_connection_status == DISCONNECTED) {
+        pthread_cancel((pthread_t) connection_handler_worker_thread);
+    } else {
+        g_thread_join(connection_handler_worker_thread);
+    }
+
     g_thread_join(world_vision_worker_thread);
+    StationClient_delete(station_client);
 
     return 0;
 }

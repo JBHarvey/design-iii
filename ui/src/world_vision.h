@@ -28,10 +28,6 @@ struct Camera {
 
 gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data);
 
-void WorldVision_setMainLoopStatusRunning(void);
-
-void WorldVision_setMainLoopStatusTerminated(void);
-
 void WorldVision_setWorldCameraStatusCalibrated(void);
 
 #endif // __WORLD_VISION

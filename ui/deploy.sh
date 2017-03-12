@@ -18,7 +18,6 @@ ls -lAh --color=never --format=single-column build/deploy | grep "\.h" --color=n
 
 #Prepares the list of file to build
 echo "_OBJ=" > autodeploy/_OBJ
-echo "station-main.h" >> autodeploy/_OBJ
 ls -lAh --color=never --format=single-column build/deploy | grep "\.h" --color=never >> autodeploy/_OBJ
 
 #Remplaces all \n with ' '
