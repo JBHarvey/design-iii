@@ -8,8 +8,8 @@ find build/deploy/ -type f ! \( -name "*.d" -o -name "*.o" \) -delete
 cp -u --preserve=all ../shared/CommunicationStructures.h src/.
 
 #Prepares compilation files
-find src -type f -regex '.*\.\(c\|\h\)' -exec cp -u -preserve=all \{\} build/deploy \;
-cp -u -preserve=all robot-main.c build/deploy/.
+find src -type f -regex '.*\.\(c\|\h\)' -exec cp -u --preserve=all \{\} build/deploy \;
+cp -u --preserve=all robot-main.c build/deploy/.
 
 #Prepares the list of file to check for dependency
 echo "DEPS=" > autodeploy/DEPS
