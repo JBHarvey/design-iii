@@ -84,13 +84,11 @@ void RobotServer_delete(struct RobotServer *robot_server)
     }
 }
 
-/*
-void RobotServer_do(struct RobotServer *robot_server, unsigned int milliseconds)
+void RobotServer_communicate(struct RobotServer *robot_server, unsigned int milliseconds)
 {
     ev_loop(robot_server->loop, milliseconds);
 }
 
-*/
 static void callbackStartPacket()
 {
 }

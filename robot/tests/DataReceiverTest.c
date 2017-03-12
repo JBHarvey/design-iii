@@ -51,8 +51,11 @@ const int TEST_PAINTING_7_ORIENTATION = HALF_PI;
 
 // Wheels data
 const int RECEIVER_TRANSLATION_X = 40;
+const int RECEIVER_TRANSLATION_X_SPEED = 400;
 const int RECEIVER_TRANSLATION_Y = -10;
+const int RECEIVER_TRANSLATION_Y_SPEED = -100;
 const int RECEIVER_ROTATION = 31416;
+const int RECEIVER_ROTATION_SPEED = 314160;
 
 void setup_DataReceiver(void)
 {
@@ -431,19 +434,28 @@ Test(DataReceiver,
 
 Test(DataReceiver, given_aTranslationDataPacket_when_updatesWheels_then_wheelsHaveNewTranslationAndItsValueIsCorrect)
 {
-    struct Coordinates *coordinates = Coordinates_new(RECEIVER_TRANSLATION_X, RECEIVER_TRANSLATION_Y);
-    struct Communication_Coordinates translation_mock = {
-        .x = RECEIVER_TRANSLATION_X,
-        .y = RECEIVER_TRANSLATION_Y
+    struct Coordinates *translation_coordinates = Coordinates_new(RECEIVER_TRANSLATION_X, RECEIVER_TRANSLATION_Y);
+    struct Coordinates *translation_speed = Coordinates_new(RECEIVER_TRANSLATION_X_SPEED, RECEIVER_TRANSLATION_Y_SPEED);
+    struct Communication_Translation translation_mock = {
+        .movement = {
+            .x = RECEIVER_TRANSLATION_X,
+            .y = RECEIVER_TRANSLATION_Y
+        },
+        .speeds = {
+            .x = RECEIVER_TRANSLATION_X_SPEED,
+            .y = RECEIVER_TRANSLATION_Y_SPEED
+        }
     };
 
     struct Wheels *wheels = Wheels_new();
     DataReceiver_updateWheelsTranslation(wheels, translation_mock);
 
     cr_assert(wheels->translation_sensor->has_received_new_data);
-    cr_assert(Coordinates_haveTheSameValues(coordinates, wheels->translation_data));
+    cr_assert(Coordinates_haveTheSameValues(translation_coordinates, wheels->translation_data_movement));
+    cr_assert(Coordinates_haveTheSameValues(translation_speed, wheels->translation_data_speed));
 
-    Coordinates_delete(coordinates);
+    Coordinates_delete(translation_coordinates);
+    Coordinates_delete(translation_speed);
     Wheels_delete(wheels);
 }
 

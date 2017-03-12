@@ -2,12 +2,13 @@
 #define COMMUNICATIONSTRUCTURES_H_
 
 enum {
-    PACKET_START,
-    PACKET_CONTINUE,
-    PACKET_WORLD,
+    TRANSLATION_DATA,
     TRANSLATION_COMMAND,
     ROTATION_COMMAND,
-    MANCHESTER_DATA
+    MANCHESTER_DATA,
+    PACKET_START,
+    PACKET_CONTINUE,
+    PACKET_WORLD
 };
 
 
@@ -52,6 +53,11 @@ struct __attribute__((__packed__)) Communication_World {
     struct Communication_Environment environment;
     int environment_has_changed;
     struct Communication_Object robot;
+};
+
+struct __attribute__((__packed__)) Communication_Translation {
+    struct Communication_Coordinates movement;
+    struct Communication_Coordinates speeds;
 };
 
 struct __attribute__((__packed__)) Communication_Rotation {
