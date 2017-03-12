@@ -54,10 +54,6 @@ struct __attribute__((__packed__)) Communication_World {
     struct Communication_Object robot;
 };
 
-struct __attribute__((__packed__)) Communication_Translation {
-    struct Communication_Coordinates coordinates;
-};
-
 struct __attribute__((__packed__)) Communication_Rotation {
     int theta;
 };

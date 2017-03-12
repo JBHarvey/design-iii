@@ -9,6 +9,8 @@ struct Mesurements {
 };
 
 void DataReceiver_updateWorld(struct WorldCamera *world_camera, struct Communication_World world);
+void DataReceiver_updateWheelsTranslation(struct Wheels *wheels, struct Communication_Coordinates translation);
+void DataReceiver_updateWheelsRotation(struct Wheels *wheels, struct Communication_Rotation rotation);
 struct Mesurements DataReceiver_fetchInputs(struct Mesurements (*communication_callback)(void));
 // See bottom of InformationReceiver.c for why this is commented out.
 //void DataReceiver_updateMesurements(struct Robot *robot);

@@ -428,3 +428,41 @@ Test(DataReceiver,
     Pose_delete(paintingZone7);
     WorldCamera_delete(world_camera);
 }
+
+Test(DataReceiver, given_aTranslationDataPacket_when_updatesWheels_then_wheelsHaveNewTranslationAndItsValueIsCorrect)
+{
+    struct Coordinates *coordinates = Coordinates_new(RECEIVER_TRANSLATION_X, RECEIVER_TRANSLATION_Y);
+    struct Communication_Coordinates translation_mock = {
+        .x = RECEIVER_TRANSLATION_X,
+        .y = RECEIVER_TRANSLATION_Y
+    };
+
+    struct Wheels *wheels = Wheels_new();
+    DataReceiver_updateWheelsTranslation(wheels, translation_mock);
+
+    cr_assert(wheels->translation_sensor->has_received_new_data);
+    cr_assert(Coordinates_haveTheSameValues(coordinates, wheels->translation_data));
+
+    Coordinates_delete(coordinates);
+    Wheels_delete(wheels);
+}
+
+Test(DataReceiver, given_aRotationDataPacket_when_updatesWheels_then_wheelsHaveNewRotationAndItsValueIsCorrect)
+{
+    struct Angle *angle = Angle_new(RECEIVER_ROTATION);
+    struct Communication_Rotation rotation_mock = {
+        .theta = RECEIVER_ROTATION
+    };
+
+    struct Wheels *wheels = Wheels_new();
+    DataReceiver_updateWheelsRotation(wheels, rotation_mock);
+
+    cr_assert(wheels->rotation_sensor->has_received_new_data);
+    cr_assert(Angle_smallestAngleBetween(angle, wheels->rotation_data) == 0);
+
+    Angle_delete(angle);
+    Wheels_delete(wheels);
+}
+
+
+

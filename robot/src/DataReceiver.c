@@ -171,6 +171,29 @@ void DataReceiver_updateWorld(struct WorldCamera *world_camera, struct Communica
 
 }
 
+void DataReceiver_updateWheelsTranslation(struct Wheels *wheels, struct Communication_Coordinates translation)
+{
+    int x = translation.x;
+    int y = translation.y;
+    struct Coordinates *coordinates = Coordinates_new(x, y);
+
+    Sensor_receivesData(wheels->translation_sensor);
+    Wheels_receiveTranslationData(wheels, coordinates);
+
+    Coordinates_delete(coordinates);
+}
+
+void DataReceiver_updateWheelsRotation(struct Wheels *wheels, struct Communication_Rotation rotation)
+{
+    int theta = rotation.theta;
+    struct Angle *angle = Angle_new(theta);
+
+    Sensor_receivesData(wheels->rotation_sensor);
+    Wheels_receiveRotationData(wheels, angle);
+
+    Angle_delete(angle);
+}
+
 struct Mesurements DataReceiver_fetchInputs(struct Mesurements(*communication_callback)(void))
 {
     struct Mesurements mesurements = (*communication_callback)();
