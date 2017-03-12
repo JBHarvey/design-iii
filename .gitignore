@@ -42,3 +42,10 @@
 
 # Compilation Database
 compile_commands.json
+
+# UI
+ui/autodeploy/DEPS
+ui/autodeploy/_OBJ
+ui/autodeploy/makefile
+ui/src/station-resources/station.ui~
+

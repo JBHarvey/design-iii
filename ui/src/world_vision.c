@@ -1,4 +1,5 @@
 #include "world_vision.h"
+#include "station-main.h"
 #include "world_vision_calibration.h"
 #include "ui_event.h"
 #include "opencv2/videoio/videoio_c.h"
@@ -6,8 +7,8 @@
 
 /* Flags definitions */
 
-enum ThreadStatus {TERMINATED, RUNNING};
 enum CameraStatus {UNCALIBRATED, CALIBRATED};
+extern enum ThreadStatus main_loop_status;
 
 /* Constants */
 
@@ -16,7 +17,7 @@ const int WORLD_CAMERA_HEIGHT = 1200;
 const int WORLD_CAMERA_DEVICE_ID = 1;
 const int NUMBER_OF_ROW_OF_CAMERA_MATRIX = 3;
 const int NUMBER_OF_COLUMN_OF_CAMERA_MATRIX = 3;
-const char FILE_PATH_OF_DEBUG_MODE_VIDEO_CAPTURE[] = "./camera_calibration/camera_3015_1/video_feed.avi";
+const char FILE_PATH_OF_DEBUG_MODE_VIDEO_CAPTURE[] = "./build/deploy/camera_calibration/camera_3015_1/video_feed.avi";
 
 /* Type definitions */
 
@@ -28,7 +29,6 @@ struct CameraCapture {
 
 GMutex world_camera_feeder_mutex;
 
-enum ThreadStatus main_loop_status;
 enum CameraStatus world_camera_status = UNCALIBRATED;
 struct Camera *world_camera = NULL;
 GdkPixbuf *world_camera_pixbuf = NULL;
@@ -100,16 +100,13 @@ static void releaseCamera(struct Camera *input_camera, enum CameraStatus input_c
 
 static void cleanExitIfMainLoopTerminated(struct CameraCapture *world_camera_capture)
 {
-    g_mutex_lock(&world_camera_feeder_mutex);
-
     if(main_loop_status == TERMINATED) {
+        g_mutex_lock(&world_camera_feeder_mutex);
         g_object_unref(world_camera_pixbuf);
         g_mutex_unlock(&world_camera_feeder_mutex);
         releaseCameraCapture(world_camera_capture);
         releaseCamera(world_camera, world_camera_status);
         g_thread_exit((gpointer) TRUE);
-    } else {
-        g_mutex_unlock(&world_camera_feeder_mutex);
     }
 }
 
@@ -179,20 +176,6 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data)
     }
 
     return NULL;
-}
-
-void WorldVision_setMainLoopStatusRunning(void)
-{
-    g_mutex_lock(&world_camera_feeder_mutex);
-    main_loop_status = RUNNING;
-    g_mutex_unlock(&world_camera_feeder_mutex);
-}
-
-void WorldVision_setMainLoopStatusTerminated(void)
-{
-    g_mutex_lock(&world_camera_feeder_mutex);
-    main_loop_status = TERMINATED;
-    g_mutex_unlock(&world_camera_feeder_mutex);
 }
 
 void WorldVision_setWorldCameraStatusCalibrated(void)

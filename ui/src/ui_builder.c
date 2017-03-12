@@ -1,4 +1,5 @@
 #include "ui_builder.h"
+#include "resources.c"
 #include "logger.h"
 
 GtkWidget* buildUiAndReturnTopLevelWindow(const gchar* resource_path)
