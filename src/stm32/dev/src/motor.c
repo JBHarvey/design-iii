@@ -214,3 +214,112 @@ void MotorSetDirection(uint8_t noMotor, uint8_t direction) {
 	}
 }
 
+void motorRoutine() {
+
+	// Example of direction setting of 4 motors
+	//MotorSetDirection(1, CLOCK);
+	//MotorSetDirection(2, CLOCK);
+	//MotorSetDirection(3, CLOCK);
+	//MotorSetDirection(4, CLOCK);
+
+	// Example of speed setting of 4 motors
+	//MotorSetSpeed(1, 50);
+	//MotorSetSpeed(2, 50);
+	//MotorSetSpeed(3, 50);
+	//MotorSetSpeed(4, 50);
+
+	//Delayms(2000);
+
+	//MotorSetSpeed(1, 0);
+	//MotorSetSpeed(2, 0);
+	//MotorSetSpeed(3, 0);
+	//MotorSetSpeed(4, 0);
+
+	//Delayms(2000);
+
+	//move(100);
+
+	MotorSetDirection(1, COUNTER_CLOCK);
+	MotorSetDirection(2, BRAKE_G);
+	MotorSetDirection(3, CLOCK);
+	MotorSetDirection(4, BRAKE_G);
+
+	MotorSetSpeed(1, 75);
+	MotorSetSpeed(2, 0);
+	MotorSetSpeed(3, 75);
+	MotorSetSpeed(4, 0);
+
+	Delayms(2000);
+
+	MotorSetDirection(1, CLOCK);
+	MotorSetDirection(2, BRAKE_G);
+	MotorSetDirection(3, COUNTER_CLOCK);
+	MotorSetDirection(4, BRAKE_G);
+
+	MotorSetSpeed(1, 75);
+	MotorSetSpeed(2, 0);
+	MotorSetSpeed(3, 75);
+	MotorSetSpeed(4, 0);
+
+	Delayms(2000);
+
+	MotorSetDirection(1, CLOCK);
+	MotorSetDirection(2, CLOCK);
+	MotorSetDirection(3, COUNTER_CLOCK);
+	MotorSetDirection(4, COUNTER_CLOCK);
+
+	MotorSetSpeed(1, 75);
+	MotorSetSpeed(2, 75);
+	MotorSetSpeed(3, 75);
+	MotorSetSpeed(4, 75);
+
+	Delayms(1000);
+
+	MotorSetDirection(1, CLOCK);
+	MotorSetDirection(2, COUNTER_CLOCK);
+	MotorSetDirection(3, COUNTER_CLOCK);
+	MotorSetDirection(4, CLOCK);
+
+	MotorSetSpeed(1, 75);
+	MotorSetSpeed(2, 75);
+	MotorSetSpeed(3, 75);
+	MotorSetSpeed(4, 75);
+
+	Delayms(1000);
+
+	MotorSetDirection(1, COUNTER_CLOCK);
+	MotorSetDirection(2, COUNTER_CLOCK);
+	MotorSetDirection(3, CLOCK);
+	MotorSetDirection(4, CLOCK);
+
+	MotorSetSpeed(1, 75);
+	MotorSetSpeed(2, 75);
+	MotorSetSpeed(3, 75);
+	MotorSetSpeed(4, 75);
+
+	Delayms(1000);
+
+	MotorSetDirection(1, COUNTER_CLOCK);
+	MotorSetDirection(2, CLOCK);
+	MotorSetDirection(3, CLOCK);
+	MotorSetDirection(4, COUNTER_CLOCK);
+
+	MotorSetSpeed(1, 75);
+	MotorSetSpeed(2, 75);
+	MotorSetSpeed(3, 75);
+	MotorSetSpeed(4, 75);
+
+	Delayms(1000);
+
+	MotorSetDirection(1, BRAKE_G);
+	MotorSetDirection(2, BRAKE_G);
+	MotorSetDirection(3, BRAKE_G);
+	MotorSetDirection(4, BRAKE_G);
+
+	MotorSetSpeed(1, 0);
+	MotorSetSpeed(2, 0);
+	MotorSetSpeed(3, 0);
+	MotorSetSpeed(4, 0);
+
+}
+

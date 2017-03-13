@@ -48,7 +48,24 @@
 #define MSG_ERR "Etat invalide"
 
 /* PID */
-// Param�tres en vitesse
+// SPEED
+// MOTOR 1
+#define PID_SPEED1_KP 15
+#define PID_SPEED1_KI 1
+#define PID_SPEED1_KD 0
+// MOTOR 2
+#define PID_SPEED2_KP 15
+#define PID_SPEED2_KI 1
+#define PID_SPEED2_KD 0
+// MOTOR 3
+#define PID_SPEED3_KP 15
+#define PID_SPEED3_KI 1
+#define PID_SPEED3_KD 0
+// MOTOR 4
+#define PID_SPEED4_KP 15
+#define PID_SPEED4_KI 1
+#define PID_SPEED4_KD 0
+
 #define PID_SPEED_KP 15
 #define PID_SPEED_KI  1//0.6698803
 #define PID_SPEED_KD 0

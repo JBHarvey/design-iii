@@ -5,6 +5,7 @@
 #include "stm32f4xx.h"
 #include <stdio.h>
 #include "defines.h"
+#include "tm_stm32f4_delay.h"
 
 enum directions {
 	BRAKE_G, CLOCK, COUNTER_CLOCK, BRAKE_V
@@ -19,3 +20,4 @@ void initDir(uint32_t RCCx, uint16_t GPIO_Pin1, uint16_t GPIO_Pin2,
 void setDir(GPIO_TypeDef* GPIOx, uint16_t Pin1, uint16_t Pin2,
 		uint8_t direction);
 void MotorSetDirection(uint8_t noMotor, uint8_t direction);
+void motorRoutine();
