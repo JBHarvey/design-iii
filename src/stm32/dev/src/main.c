@@ -49,10 +49,23 @@ enum SpeedDirection {
 	SPEED_DIRECTION_FORWARD, SPEED_DIRECTION_BACKWARD, SPEED_DIRECTION_NONE
 };
 
+enum AmountOfCharacters {
+	ONE_CHARACTER, MANY_CHARACTERS
+};
+
+enum COMMUNICATION_STATUS {
+	READ_USB_SUCCESS, READ_USB_FAIL
+};
+
+enum COMMAND {
+	COMMAND_MOVE
+};
+
 #define INTERNAL_SYSTICK_FREQUENCY 500
 #define TIME_DELAY 1/(float) INTERNAL_SYSTICK_FREQUENCY
 #define MAX_SPEED_INDEX 2000
 #define TICKS_BUFFER_SIZE 100
+#define MAXIMUM_CHARACTERS_BUFFER_SIZE 100
 
 // buffer ticks for debug
 volatile int ticksIndex4 = 0;
@@ -159,6 +172,11 @@ void setState(int* state, int newState) {
 		TM_HD44780_Puts(0, 0, "NOT IMPLEMENTED");
 		break;
 	case MAIN_MOVE:
+		*state = MAIN_MOVE;
+		TM_HD44780_Puts(0, 0, "MOVE");
+		break;
+	case MAIN_PID:
+		*state = newState;
 		TM_HD44780_Puts(0, 0, "NOT IMPLEMENTED");
 		break;
 	default:
@@ -195,20 +213,30 @@ uint8_t readUSB() {
 		/* Turn on GREEN led */
 		TM_DISCO_LedOn (LED_GREEN);
 		TM_DISCO_LedOff (LED_RED);
-		uint8_t c;
-		/* If something arrived at VCP */
-		if (TM_USB_VCP_Getc(&c) == TM_USB_VCP_DATA_OK) {
-			/* Return data back */
-			return c;
-			// Pour le echo TM_USB_VCP_Putc(c);
-		}
-		return 0;
 
+		uint8_t readCharacter;
+
+		if (TM_USB_VCP_Getc(&readCharacter) == TM_USB_VCP_DATA_OK) {
+			// Pour le echo TM_USB_VCP_Putc(c);
+			return readCharacter;
+		}
 	} else {
 		/* USB not OK */
 		TM_DISCO_LedOff (LED_GREEN);
 		TM_DISCO_LedOn (LED_RED);
+
 		return 0;
+	}
+	return 0;
+}
+
+void processReceivedData(uint8_t *receivedData, int *mainState) {
+	switch (receivedData[0]) {
+	case COMMAND_MOVE:
+		setState(mainState, MAIN_MOVE);
+		break;
+	default:
+		break;
 	}
 }
 
@@ -233,7 +261,7 @@ int main(void) {
 	initBtn();
 
 // Initialisation des variables
-	int mainState = MAIN_MOVE;
+	int mainState = MAIN_IDLE;
 //setState(&mainState, MAIN_MOVE);
 
 	int state = IDLE;
@@ -262,7 +290,10 @@ int main(void) {
 				break;
 			}
 		}
-		uint8_t consigne = readUSB();
+		char receivedData[MAXIMUM_CHARACTERS_BUFFER_SIZE];
+		if (readUSB() == 1) {
+			setState(&mainState, MAIN_PID);
+		}
 
 		/* Main state machine */
 		switch (mainState) {
@@ -272,7 +303,9 @@ int main(void) {
 			break;
 		case MAIN_ACQUIS:
 			/* Action lors d'une acquisition */
-			state = readUSB();
+			readUSB(receivedData, ONE_CHARACTER);
+			state = *receivedData;
+
 			if (state == GENERATE_FIRST_PWM) {
 				generateFirstPWM();
 				state = BETWEEN_PWM;
@@ -441,11 +474,6 @@ int main(void) {
 			PID_init(&PID_POSITION4, PID_POSITION_KP, PID_POSITION_KI,
 					PID_POSITION_KD, PID_Direction_Direct);
 
-			/*PID_SPEED1.mySetpoint = consigneX;
-			 PID_SPEED2.mySetpoint = consigneY;
-			 PID_SPEED3.mySetpoint = consigneX;
-			 PID_SPEED4.mySetpoint = consigneY;*/
-
 			PID_POSITION1.mySetpoint = 1;
 			PID_POSITION2.mySetpoint = 1;
 			PID_POSITION3.mySetpoint = 1;
@@ -496,6 +524,13 @@ int main(void) {
 						sprintf(numberString, "%d", cmdMotor1);
 						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
 						TM_HD44780_Puts(3, 0, numberString);
+
+						/* send position to USB */
+						TM_USB_VCP_Putc(2);
+						TM_USB_VCP_Putc(8);
+						VCP_DataTx((uint8_t*) &positionOutput, sizeof(float));
+						VCP_DataTx((uint8_t*) &positionOutput, sizeof(float));
+
 					}
 				}
 
