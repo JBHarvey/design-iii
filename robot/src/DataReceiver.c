@@ -171,27 +171,35 @@ void DataReceiver_updateWorld(struct WorldCamera *world_camera, struct Communica
 
 }
 
-void DataReceiver_updateWheelsTranslation(struct Wheels *wheels, struct Communication_Coordinates translation)
+void DataReceiver_updateWheelsTranslation(struct Wheels *wheels, struct Communication_Translation translation)
 {
-    int x = translation.x;
-    int y = translation.y;
-    struct Coordinates *coordinates = Coordinates_new(x, y);
+    int x_movement = translation.movement.x;
+    int y_movement = translation.movement.y;
+    int x_speed = translation.speeds.x;
+    int y_speed = translation.speeds.y;
+
+    struct Coordinates *translation_movement = Coordinates_new(x_movement, y_movement);
+    struct Coordinates *translation_speed = Coordinates_new(x_speed, y_speed);
 
     Sensor_receivesData(wheels->translation_sensor);
-    Wheels_receiveTranslationData(wheels, coordinates);
+    Wheels_receiveTranslationData(wheels, translation_movement, translation_speed);
 
-    Coordinates_delete(coordinates);
+    Coordinates_delete(translation_movement);
+    Coordinates_delete(translation_speed);
 }
 
 void DataReceiver_updateWheelsRotation(struct Wheels *wheels, struct Communication_Rotation rotation)
 {
     int theta = rotation.theta;
-    struct Angle *angle = Angle_new(theta);
+    int gamma = rotation.gamma;
+    struct Angle *rotation_movement = Angle_new(theta);
+    struct Angle *rotation_speed = Angle_new(gamma);
 
     Sensor_receivesData(wheels->rotation_sensor);
-    Wheels_receiveRotationData(wheels, angle);
+    Wheels_receiveRotationData(wheels, rotation_movement, rotation_speed);
 
-    Angle_delete(angle);
+    Angle_delete(rotation_movement);
+    Angle_delete(rotation_speed);
 }
 
 struct Mesurements DataReceiver_fetchInputs(struct Mesurements(*communication_callback)(void))

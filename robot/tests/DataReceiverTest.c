@@ -461,18 +461,22 @@ Test(DataReceiver, given_aTranslationDataPacket_when_updatesWheels_then_wheelsHa
 
 Test(DataReceiver, given_aRotationDataPacket_when_updatesWheels_then_wheelsHaveNewRotationAndItsValueIsCorrect)
 {
-    struct Angle *angle = Angle_new(RECEIVER_ROTATION);
+    struct Angle *rotation_movement = Angle_new(RECEIVER_ROTATION);
+    struct Angle *rotation_speed = Angle_new(RECEIVER_ROTATION_SPEED);
     struct Communication_Rotation rotation_mock = {
-        .theta = RECEIVER_ROTATION
+        .theta = RECEIVER_ROTATION,
+        .gamma = RECEIVER_ROTATION_SPEED
     };
 
     struct Wheels *wheels = Wheels_new();
     DataReceiver_updateWheelsRotation(wheels, rotation_mock);
 
     cr_assert(wheels->rotation_sensor->has_received_new_data);
-    cr_assert(Angle_smallestAngleBetween(angle, wheels->rotation_data) == 0);
+    cr_assert(Angle_smallestAngleBetween(rotation_movement, wheels->rotation_data_movement) == 0);
+    cr_assert(Angle_smallestAngleBetween(rotation_speed, wheels->rotation_data_speed) == 0);
 
-    Angle_delete(angle);
+    Angle_delete(rotation_movement);
+    Angle_delete(rotation_speed);
     Wheels_delete(wheels);
 }
 
