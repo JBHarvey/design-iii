@@ -69,8 +69,13 @@ static int initTTYACM(struct ev_loop *loop, char *ttyacm_path)
         return -1;
     }
 
-    int flags = fcntl(fd, F_GETFL, 0);
-    fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+    uint8_t data[2] = {255, 0};
+
+    if(write(fd, data, sizeof(data)) != sizeof(data)) {
+        close(fd);
+        printf("error writing begin packet\n");
+        return -1;
+    }
 
     struct ev_io *watcher;
 
@@ -85,7 +90,7 @@ static int initTTYACM(struct ev_loop *loop, char *ttyacm_path)
 
 struct RobotServer *RobotServer_new(struct Robot *new_robot, int new_port, char *ttyacm_path)
 {
-    struct ev_loop *new_loop = ev_default_loop(0);
+    struct ev_loop *new_loop = ev_default_loop(EVBACKEND_EPOLL | EVFLAG_NOENV);
 
     if(!new_loop) {
         perror("Error in initializing libev. Bad $LIBEV_FLAGS in the environment?");
@@ -256,6 +261,8 @@ void TTYACMCallback(struct ev_loop *loop, struct ev_io *watcher, int revents)
     }
 
     if(EV_READ & revents) {
+        printf("read\n");
+
         while(readTTYACMPacket(watcher->fd));
 
         return;
