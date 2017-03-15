@@ -31,7 +31,10 @@ typedef struct {
 	FloatType mySetpoint; //   PID, freeing the user from having to constantly tell us
 						  //   what these values are.  with pointers we'll just know.
 
-//  unsigned long lastTime;
+	/* error */
+	FloatType error;
+
+	//  unsigned long lastTime;
 	FloatType ITerm, lastInput;
 
 	unsigned long SampleTime;

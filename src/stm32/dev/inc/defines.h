@@ -21,8 +21,8 @@
 
 #define MOTOR1_DIR_GPIO 	GPIOE
 #define MOTOR1_DIR_RCC		RCC_AHB1Periph_GPIOE
-#define MOTOR1_DIR1_PIN 	GPIO_Pin_7
-#define MOTOR1_DIR2_PIN 	GPIO_Pin_8
+#define MOTOR1_DIR1_PIN 	GPIO_Pin_8
+#define MOTOR1_DIR2_PIN 	GPIO_Pin_7
 
 // Moteur 2
 #define MOTOR2_DIR_GPIO 	GPIOE
@@ -33,8 +33,8 @@
 // Moteur 3
 #define MOTOR3_DIR_GPIO 	GPIOE
 #define MOTOR3_DIR_RCC		RCC_AHB1Periph_GPIOE
-#define MOTOR3_DIR1_PIN 	GPIO_Pin_11
-#define MOTOR3_DIR2_PIN 	GPIO_Pin_12
+#define MOTOR3_DIR1_PIN 	GPIO_Pin_12
+#define MOTOR3_DIR2_PIN 	GPIO_Pin_11
 
 // Moteur 4
 #define MOTOR4_DIR_GPIO 	GPIOE

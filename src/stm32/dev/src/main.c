@@ -230,13 +230,25 @@ uint8_t readUSB() {
 	return 0;
 }
 
-void processReceivedData(uint8_t *receivedData, int *mainState) {
-	switch (receivedData[0]) {
-	case COMMAND_MOVE:
-		setState(mainState, MAIN_MOVE);
-		break;
-	default:
-		break;
+float getXMoveFromBuffer() {
+	return 0;
+}
+
+float getYMoveFromBuffer() {
+	return 0;
+}
+
+void processCommand(uint8_t command, uint8_t dataSize, int* mainState) {
+	switch (command) {
+	float xMove;
+	float yMove;
+case COMMAND_MOVE:
+	xMove = getXMoveFromBuffer();
+	yMove = getYMoveFromBuffer();
+	setState(mainState, MAIN_PID);
+	break;
+default:
+	break;
 	}
 }
 
@@ -256,12 +268,13 @@ int main(void) {
 	TM_DISCO_LedInit();
 
 	/* Initialize USB VCP */
+
 	TM_USB_VCP_Init();
 
 	initBtn();
 
 // Initialisation des variables
-	int mainState = MAIN_IDLE;
+	int mainState = MAIN_PID;
 //setState(&mainState, MAIN_MOVE);
 
 	int state = IDLE;
@@ -290,8 +303,14 @@ int main(void) {
 				break;
 			}
 		}
-		char receivedData[MAXIMUM_CHARACTERS_BUFFER_SIZE];
-		if (readUSB() == 1) {
+
+		uint8_t command = readUSB();
+		if (command != 0) {
+
+			uint8_t sizeOfData = readUSB();
+
+			processCommand(command, sizeOfData, &mainState);
+
 			setState(&mainState, MAIN_PID);
 		}
 
@@ -303,8 +322,8 @@ int main(void) {
 			break;
 		case MAIN_ACQUIS:
 			/* Action lors d'une acquisition */
-			readUSB(receivedData, ONE_CHARACTER);
-			state = *receivedData;
+			readUSB();
+			state = command;
 
 			if (state == GENERATE_FIRST_PWM) {
 				generateFirstPWM();
@@ -474,23 +493,12 @@ int main(void) {
 			PID_init(&PID_POSITION4, PID_POSITION_KP, PID_POSITION_KI,
 					PID_POSITION_KD, PID_Direction_Direct);
 
-			PID_POSITION1.mySetpoint = 1;
-			PID_POSITION2.mySetpoint = 1;
-			PID_POSITION3.mySetpoint = 1;
-			PID_POSITION4.mySetpoint = 1;
+			PID_POSITION1.mySetpoint = 0.25;
+			PID_POSITION2.mySetpoint = 0.25;
+			PID_POSITION3.mySetpoint = 0.25;
+			PID_POSITION4.mySetpoint = 0.25;
 
 			while (1) {
-
-				if (consigneY > 0) {
-					MotorSetDirection(2, COUNTER_CLOCK);
-					MotorSetDirection(4, CLOCK);
-				} else if (consigneY < 0) {
-					MotorSetDirection(2, CLOCK);
-					MotorSetDirection(4, COUNTER_CLOCK);
-				} else {
-					MotorSetDirection(2, BRAKE_G);
-					MotorSetDirection(4, BRAKE_G);
-				}
 
 				if (PID_Compute_Position(&PID_POSITION1)) {
 					float positionOutput = PID_POSITION1.myOutput;
@@ -500,21 +508,21 @@ int main(void) {
 						int cmdMotor1 = PID_SPEED1.myOutput;
 						if (cmdMotor1 > 0) {
 							speedDirection1 = SPEED_DIRECTION_FORWARD;
-							MotorSetDirection(1, CLOCK);
-							//MotorSetDirection(3, CLOCK);
+							MotorSetDirection(1, COUNTER_CLOCK);
+							//MotorSetDirection(3, COUNTER_CLOCK);
 						} else if (cmdMotor1 < 0) {
 
 							speedDirection1 = SPEED_DIRECTION_BACKWARD;
-							MotorSetDirection(1, COUNTER_CLOCK);
-							//MotorSetDirection(3, COUNTER_CLOCK);
+							MotorSetDirection(1, CLOCK);
+							//MotorSetDirection(3, CLOCK);
 							cmdMotor1 = -cmdMotor1;
 						} else {
 							speedDirection1 = SPEED_DIRECTION_NONE;
-							MotorSetDirection(1, BRAKE_G);
-							//MotorSetDirection(3, BRAKE_G);
-
+							//MotorSetDirection(1, BRAKE_G);
 						}
 						MotorSetSpeed(1, cmdMotor1);
+						//MotorSetSpeed(3, cmdMotor1);
+
 						PID_SetMode(&PID_SPEED1, PID_Mode_Manual);
 
 						char numberString[MAX_DISPLAY_CHARACTERS];
@@ -526,11 +534,37 @@ int main(void) {
 						TM_HD44780_Puts(3, 0, numberString);
 
 						/* send position to USB */
-						TM_USB_VCP_Putc(2);
-						TM_USB_VCP_Putc(8);
-						VCP_DataTx((uint8_t*) &positionOutput, sizeof(float));
-						VCP_DataTx((uint8_t*) &positionOutput, sizeof(float));
+						/*TM_USB_VCP_Putc(2);
+						 TM_USB_VCP_Putc(8);
+						 VCP_DataTx((uint8_t*) &positionOutput, sizeof(float));
+						 VCP_DataTx((uint8_t*) &positionOutput, sizeof(float));*/
+					}
 
+					PID_SPEED3.mySetpoint = positionOutput;
+
+					if (PID_Compute_Speed(&PID_SPEED3)) {
+
+						int cmdMotor3 = PID_SPEED3.myOutput;
+
+						if (cmdMotor3 > 0) {
+							speedDirection3 = SPEED_DIRECTION_FORWARD;
+							MotorSetDirection(3, CLOCK);
+							//MotorSetDirection(1, CLOCK);
+						} else if (cmdMotor3 < 0) {
+
+							speedDirection3 = SPEED_DIRECTION_BACKWARD;
+							MotorSetDirection(3, COUNTER_CLOCK);
+							//MotorSetDirection(1, CLOCK);
+							cmdMotor3 = -cmdMotor3;
+						} else {
+							speedDirection3 = SPEED_DIRECTION_NONE;
+							MotorSetDirection(3, BRAKE_G);
+							//MotorSetDirection(1, BRAKE_G);
+
+						}
+
+						MotorSetSpeed(3, cmdMotor3);
+						PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
 					}
 				}
 
@@ -542,21 +576,22 @@ int main(void) {
 						int cmdMotor2 = PID_SPEED2.myOutput;
 						if (cmdMotor2 > 0) {
 							speedDirection2 = SPEED_DIRECTION_FORWARD;
-							MotorSetDirection(2, CLOCK);
-							//MotorSetDirection(4, CLOCK);
-						} else if (cmdMotor2 < 0) {
-
-							speedDirection2 = SPEED_DIRECTION_BACKWARD;
 							MotorSetDirection(2, COUNTER_CLOCK);
 							//MotorSetDirection(4, CLOCK);
+						} else if (cmdMotor2 < 0) {
+							speedDirection2 = SPEED_DIRECTION_BACKWARD;
+							MotorSetDirection(2, CLOCK);
+							//MotorSetDirection(4, COUNTER_CLOCK);
 							cmdMotor2 = -cmdMotor2;
 						} else {
 							speedDirection2 = SPEED_DIRECTION_NONE;
 							MotorSetDirection(2, BRAKE_G);
-							//MotorSetDirection(4, BRAKE_G);
+							MotorSetDirection(4, BRAKE_G);
 
 						}
+
 						MotorSetSpeed(2, cmdMotor2);
+						//MotorSetSpeed(4, cmdMotor2);
 						PID_SetMode(&PID_SPEED2, PID_Mode_Manual);
 
 						char numberString[MAX_DISPLAY_CHARACTERS];
@@ -567,56 +602,20 @@ int main(void) {
 						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
 						TM_HD44780_Puts(3, 0, numberString);
 					}
-				}
 
-				if (PID_Compute_Position(&PID_POSITION3)) {
-					float positionOutput = PID_POSITION3.myOutput;
-					PID_SPEED3.mySetpoint = positionOutput;
-
-					if (PID_Compute_Speed(&PID_SPEED3)) {
-						int cmdMotor3 = PID_SPEED3.myOutput;
-						if (cmdMotor3 > 0) {
-							speedDirection3 = SPEED_DIRECTION_FORWARD;
-							MotorSetDirection(3, COUNTER_CLOCK);
-							//MotorSetDirection(1, COUNTER_CLOCK);
-						} else if (cmdMotor3 < 0) {
-
-							speedDirection3 = SPEED_DIRECTION_BACKWARD;
-							MotorSetDirection(3, CLOCK);
-							//MotorSetDirection(1, CLOCK);
-							cmdMotor3 = -cmdMotor3;
-						} else {
-							speedDirection3 = SPEED_DIRECTION_NONE;
-							MotorSetDirection(3, BRAKE_G);
-							//MotorSetDirection(1, BRAKE_G);
-
-						}
-						MotorSetSpeed(3, cmdMotor3);
-						PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
-
-						char numberString[MAX_DISPLAY_CHARACTERS];
-						sprintf(numberString, "%d", numberOfSpeedEdges3);
-						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-						TM_HD44780_Puts(0, 0, numberString);
-						sprintf(numberString, "%d", cmdMotor3);
-						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-						TM_HD44780_Puts(3, 0, numberString);
-					}
-				}
-				if (PID_Compute_Position(&PID_POSITION4)) {
-					float positionOutput = PID_POSITION4.myOutput;
 					PID_SPEED4.mySetpoint = positionOutput;
 
 					if (PID_Compute_Speed(&PID_SPEED4)) {
 						int cmdMotor4 = PID_SPEED4.myOutput;
+
 						if (cmdMotor4 > 0) {
 							speedDirection4 = SPEED_DIRECTION_FORWARD;
-							MotorSetDirection(4, COUNTER_CLOCK);
+							MotorSetDirection(4, CLOCK);
 							//MotorSetDirection(2, COUNTER_CLOCK);
 						} else if (cmdMotor4 < 0) {
 
 							speedDirection4 = SPEED_DIRECTION_BACKWARD;
-							MotorSetDirection(4, CLOCK);
+							MotorSetDirection(4, COUNTER_CLOCK);
 							//MotorSetDirection(2, CLOCK);
 							cmdMotor4 = -cmdMotor4;
 						} else {
@@ -625,19 +624,81 @@ int main(void) {
 							//MotorSetDirection(2, BRAKE_G);
 
 						}
+
 						MotorSetSpeed(4, cmdMotor4);
 						PID_SetMode(&PID_SPEED4, PID_Mode_Manual);
-
-						char numberString[MAX_DISPLAY_CHARACTERS];
-						sprintf(numberString, "%d", numberOfSpeedEdges4);
-						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-						TM_HD44780_Puts(0, 0, numberString);
-						sprintf(numberString, "%d", cmdMotor4);
-						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-						TM_HD44780_Puts(3, 0, numberString);
 					}
-
 				}
+
+				/*if (PID_Compute_Position(&PID_POSITION3)) {
+				 float positionOutput = PID_POSITION3.myOutput;
+				 PID_SPEED3.mySetpoint = positionOutput;
+
+				 if (PID_Compute_Speed(&PID_SPEED3)) {
+				 int cmdMotor3 = PID_SPEED3.myOutput;
+				 if (cmdMotor3 > 0) {
+				 speedDirection3 = SPEED_DIRECTION_FORWARD;
+				 MotorSetDirection(3, COUNTER_CLOCK);
+				 //MotorSetDirection(1, COUNTER_CLOCK);
+				 } else if (cmdMotor3 < 0) {
+
+				 speedDirection3 = SPEED_DIRECTION_BACKWARD;
+				 MotorSetDirection(3, CLOCK);
+				 //MotorSetDirection(1, CLOCK);
+				 cmdMotor3 = -cmdMotor3;
+				 } else {
+				 speedDirection3 = SPEED_DIRECTION_NONE;
+				 MotorSetDirection(3, BRAKE_G);
+				 //MotorSetDirection(1, BRAKE_G);
+
+				 }
+				 MotorSetSpeed(3, cmdMotor3);
+				 PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
+
+				 char numberString[MAX_DISPLAY_CHARACTERS];
+				 sprintf(numberString, "%d", numberOfSpeedEdges3);
+				 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+				 TM_HD44780_Puts(0, 0, numberString);
+				 sprintf(numberString, "%d", cmdMotor3);
+				 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+				 TM_HD44780_Puts(3, 0, numberString);
+				 }
+				 }*/
+				/*if (PID_Compute_Position(&PID_POSITION4)) {
+				 float positionOutput = PID_POSITION4.myOutput;
+				 PID_SPEED4.mySetpoint = positionOutput;
+
+				 if (PID_Compute_Speed(&PID_SPEED4)) {
+				 int cmdMotor4 = PID_SPEED4.myOutput;
+				 if (cmdMotor4 > 0) {
+				 speedDirection4 = SPEED_DIRECTION_FORWARD;
+				 MotorSetDirection(4, COUNTER_CLOCK);
+				 //MotorSetDirection(2, COUNTER_CLOCK);
+				 } else if (cmdMotor4 < 0) {
+
+				 speedDirection4 = SPEED_DIRECTION_BACKWARD;
+				 MotorSetDirection(4, CLOCK);
+				 //MotorSetDirection(2, CLOCK);
+				 cmdMotor4 = -cmdMotor4;
+				 } else {
+				 speedDirection4 = SPEED_DIRECTION_NONE;
+				 MotorSetDirection(4, BRAKE_G);
+				 //MotorSetDirection(2, BRAKE_G);
+
+				 }
+				 MotorSetSpeed(4, cmdMotor4);
+				 PID_SetMode(&PID_SPEED4, PID_Mode_Manual);
+
+				 char numberString[MAX_DISPLAY_CHARACTERS];
+				 sprintf(numberString, "%d", numberOfSpeedEdges4);
+				 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+				 TM_HD44780_Puts(0, 0, numberString);
+				 sprintf(numberString, "%d", cmdMotor4);
+				 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+				 TM_HD44780_Puts(3, 0, numberString);
+				 }
+
+				 }*/
 			}
 			break;
 		case MAIN_MANCH:
@@ -776,10 +837,27 @@ extern void TIM2_IRQHandler() {
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
 
 		/* update Speed pids */
-		PID_SPEED1.myInput = numberOfSpeedEdges1;
-		PID_SPEED2.myInput = numberOfSpeedEdges2;
-		PID_SPEED3.myInput = numberOfSpeedEdges3;
-		PID_SPEED4.myInput = numberOfSpeedEdges4;
+		if (speedDirection1 == SPEED_DIRECTION_FORWARD) {
+			PID_SPEED1.myInput = numberOfSpeedEdges1;
+		} else if (speedDirection1 == SPEED_DIRECTION_BACKWARD) {
+			PID_SPEED1.myInput = -numberOfSpeedEdges1;
+		}
+		if (speedDirection2 == SPEED_DIRECTION_FORWARD) {
+			PID_SPEED2.myInput = numberOfSpeedEdges2;
+		} else if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
+			PID_SPEED2.myInput = -numberOfSpeedEdges2;
+		}
+		if (speedDirection3 == SPEED_DIRECTION_FORWARD) {
+			PID_SPEED3.myInput = numberOfSpeedEdges3; // slave
+		} else if (speedDirection3 == SPEED_DIRECTION_BACKWARD) {
+			PID_SPEED3.myInput = -numberOfSpeedEdges3; // slave
+
+		}
+		if (speedDirection4 == SPEED_DIRECTION_FORWARD) {
+			PID_SPEED4.myInput = numberOfSpeedEdges4; // slave
+		} else if (speedDirection4 == SPEED_DIRECTION_BACKWARD) {
+			PID_SPEED4.myInput = -numberOfSpeedEdges4; // slave
+		}
 
 		ticksBuffer4[ticksIndex4] = numberOfSpeedEdges2;
 		ticksIndex4++;
@@ -809,5 +887,44 @@ extern void TIM2_IRQHandler() {
 		numberOfSpeedEdges3 = 0;
 		numberOfSpeedEdges4 = 0;
 
+		/* reset position for each wheels */
+		if (-0.01 < PID_POSITION1.mySetpoint - PID_POSITION1.myInput
+				&& PID_POSITION1.mySetpoint - PID_POSITION1.myInput < 0.01) {
+			numberOfPositionEdges1 = 0;
+			PID_POSITION1.mySetpoint = 0;
+			PID_POSITION1.myInput = 0;
+		}
+
+		if (-0.01 < PID_POSITION2.mySetpoint - PID_POSITION2.myInput
+				&& PID_POSITION2.mySetpoint - PID_POSITION2.myInput < 0.01) {
+			numberOfPositionEdges2 = 0;
+			PID_POSITION2.mySetpoint = 0;
+			PID_POSITION2.myInput = 0;
+		}
+
+		if (-0.01 < PID_POSITION3.mySetpoint - PID_POSITION3.myInput
+				&& PID_POSITION3.mySetpoint - PID_POSITION3.myInput < 0.01) {
+			numberOfPositionEdges3 = 0;
+			PID_POSITION3.mySetpoint = 0;
+			PID_POSITION3.myInput = 0;
+		}
+
+		if (-0.01 < PID_POSITION4.mySetpoint - PID_POSITION4.myInput
+				&& PID_POSITION4.mySetpoint - PID_POSITION4.myInput < 0.01) {
+			numberOfPositionEdges4 = 0;
+			PID_POSITION4.mySetpoint = 0;
+			PID_POSITION4.myInput = 0;
+		}
+	}
+}
+
+extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
+	switch (type) {
+	case COMMAND_MOVE:
+		if (len == 8 && data[0] == 255) {
+			uint8_t dataToSend[10] = { 1, 8, 3, 4, 5, 6, 7, 8, 9, 10 };
+			TM_USB_VCP_Send(dataToSend, 10);
+		}
+		break;
 	}
 }

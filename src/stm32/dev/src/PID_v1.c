@@ -53,8 +53,8 @@ bool PID_Compute_Speed(PidType* pid) {
 	/*Compute all the working error variables*/
 	float preInput = pid->myInput;
 	FloatType input = calculateSpeed(preInput);
-	FloatType error = pid->mySetpoint - input;
-	pid->ITerm += (pid->ki * error);
+	pid->error = pid->mySetpoint - input;
+	pid->ITerm += (pid->ki * pid->error);
 	if (pid->ITerm > pid->outMax)
 		pid->ITerm = pid->outMax;
 	else if (pid->ITerm < pid->outMin)
@@ -62,7 +62,7 @@ bool PID_Compute_Speed(PidType* pid) {
 	FloatType dInput = (input - pid->lastInput);
 
 	/*Compute PID Output*/
-	FloatType output = pid->kp * error + pid->ITerm - pid->kd * dInput;
+	FloatType output = pid->kp * pid->error + pid->ITerm - pid->kd * dInput;
 
 	if (output > pid->outMax)
 		output = pid->outMax;
@@ -95,11 +95,11 @@ bool PID_Compute_Position(PidType* pid) {
 	/*Compute all the working error variables*/
 	float preInput = pid->myInput;
 	FloatType input = calculatePosition(preInput);
-	FloatType error = pid->mySetpoint - input;
-	if (error > -0.01 && error < 0.01) {
-		error = 0;
+	pid->error = pid->mySetpoint - input;
+	if (pid->error > -0.01 && pid->error < 0.01) {
+		pid->error = 0;
 	}
-	pid->ITerm += (pid->ki * error);
+	pid->ITerm += (pid->ki * pid->error);
 	if (pid->ITerm > pid->outMax)
 		pid->ITerm = pid->outMax;
 	else if (pid->ITerm < pid->outMin)
@@ -107,7 +107,7 @@ bool PID_Compute_Position(PidType* pid) {
 	FloatType dInput = (input - pid->lastInput);
 
 	/*Compute PID Output*/
-	FloatType output = pid->kp * error + pid->ITerm - pid->kd * dInput;
+	FloatType output = pid->kp * pid->error + pid->ITerm - pid->kd * dInput;
 
 	if (output > pid->outMax)
 		output = pid->outMax;
