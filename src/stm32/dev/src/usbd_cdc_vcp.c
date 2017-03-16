@@ -209,12 +209,9 @@ uint16_t VCP_DataTx(uint8_t* Buf, uint32_t Len) {
  * @param  Len: Number of data received (in bytes)
  * @retval Result of the opeartion: USBD_OK if all operations are OK else VCP_FAIL
  */
-<<<<<<< HEAD
 
 extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len);
 
-static uint8_t temp_usb_buffer[257];
-static uint32_t temp_usb_buffer_length;
 static uint8_t started;
 
 //uint16_t VCP_DataRx(uint8_t* Buf, uint32_t Len) {
@@ -232,13 +229,6 @@ uint16_t VCP_DataRx(uint8_t* data, uint32_t length) {
 		if (length >= 2 && data[1] == length - 2) {
 			handle_full_packet(data[0], data + 2, data[1]);
 		}
-=======
-uint16_t VCP_DataRx(uint8_t* Buf, uint32_t Len) {
-	uint32_t i;
-	for (i = 0; i < Len; i++) {
-		/* Add data to internal buffer */
-		TM_INT_USB_VCP_AddReceived(*(Buf + i));
->>>>>>> 6f8af702ee9f4d275f1d9cd306d22f6144a64eff
 	}
 
 	return USBD_OK;
