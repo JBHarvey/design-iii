@@ -99,11 +99,22 @@ static void callbackContinuePacket()
 
 static void callbackWorld(struct Communication_World communication_world)
 {
-
+    // TODO: Extract callback as designed to enable logging decoration.
     DataReceiver_updateWorld(robot_server->robot->world_camera, communication_world);
 }
-/*
 
+static void callbackTranslationData(struct Communication_Translation communication_translation)
+{
+    // TODO: Extract callback as designed to enable logging decoration.
+    DataReceiver_updateWheelsTranslation(robot_server->robot->wheels, communication_translation);
+}
+
+static void callbackRotationData(struct Communication_Rotation communication_rotation)
+{
+    // TODO: Extract callback as designed to enable logging decoration.
+    DataReceiver_updateWheelsRotation(robot_server->robot->wheels, communication_rotation);
+}
+/*
 void sendWorldToRobot(struct Communication_World communication_world)
 {
     uint8_t data[1 + sizeof(struct Communication_World)];
