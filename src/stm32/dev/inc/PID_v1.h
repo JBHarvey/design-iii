@@ -34,6 +34,9 @@ typedef struct {
 	/* error */
 	FloatType error;
 
+	/* Filtrage */
+	FloatType N;
+
 	//  unsigned long lastTime;
 	FloatType ITerm, lastInput;
 
@@ -46,8 +49,8 @@ typedef struct {
 
 //  constructor.  links the PID to the Input, Output, and
 //  Setpoint.  Initial tuning parameters are also set here
-void PID_init(PidType* pid, FloatType kp, FloatType ki, FloatType kd,
-		PidDirectionType controllerDirection);
+void PID_init(PidType* pid, FloatType Kp, FloatType Ki, FloatType Kd,
+		PidDirectionType ControllerDirection, FloatType N);
 
 // sets PID to either Manual (0) or Auto (non-0)
 void PID_SetMode(PidType* pid, PidModeType mode);

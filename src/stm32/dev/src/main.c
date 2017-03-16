@@ -42,14 +42,7 @@ enum State {
 };
 
 enum MainState {
-	MAIN_IDLE,
-	MAIN_MANCH,
-	MAIN_ACQUIS,
-	MAIN_ACQUIS_ALL,
-	MAIN_TEST_SPEED_PID,
-	MAIN_DEAD_ZONE,
-	MAIN_MOVE,
-	MAIN_PID
+	MAIN_IDLE, MAIN_MANCH, MAIN_ACQUIS, MAIN_MOVE, MAIN_PID
 };
 
 enum SpeedDirection {
@@ -105,60 +98,7 @@ volatile int speedMotor4 = 0;
 volatile int speedIndex = 0;
 volatile uint16_t speedBuffer[MAX_SPEED_INDEX];
 
-/***************************************************
- *  Les buffers qui suivent servent à l'acquisition pour
- * bien faire l'asservissement des roues
- ***************************************************/
-#define ACQUIS
-#define MAX_WHEEL_INDEX 1000
-#define PREMIER_ECHELON 40
-#define DEUXIEME_ECHELON 80
-#define DUREE_ECHELON_1 2000
-#define DUREE_ECHELON_2 2000
-volatile uint16_t bufferWheelIndex1 = 0;
-volatile uint16_t bufferWheelIndex2 = 0;
-volatile uint16_t bufferWheelIndex3 = 0;
-volatile uint16_t bufferWheelIndex4 = 0;
-volatile uint16_t bufferWheel1[MAX_WHEEL_INDEX];
-volatile uint16_t bufferWheel2[MAX_WHEEL_INDEX];
-volatile uint16_t bufferWheel3[MAX_WHEEL_INDEX];
-volatile uint16_t bufferWheel4[MAX_WHEEL_INDEX];
-
-/******************************************************
- * Variables pour tester le PID de vitesse
- * ****************************************************/
-#define TEST_SPEED_PID
-#ifdef TEST_SPEED_PID
-#define PID_SPEED
-#define MAX_SPEED_PID_INDEX 500
-#define CONSIGNE_SPEED 0.2
-volatile uint16_t bufferSpeedPIDIndex1 = 0;
-volatile uint16_t bufferSpeedPIDIndex2 = 0;
-volatile uint16_t bufferSpeedPIDIndex3 = 0;
-volatile uint16_t bufferSpeedPIDIndex4 = 0;
-volatile uint16_t bufferSpeedPID1[MAX_SPEED_PID_INDEX];
-volatile uint16_t bufferSpeedPID2[MAX_SPEED_PID_INDEX];
-volatile uint16_t bufferSpeedPID3[MAX_SPEED_PID_INDEX];
-volatile uint16_t bufferSpeedPID4[MAX_SPEED_PID_INDEX];
-#endif
-
-/********************************************************
- * Variables pour trouver la zone morte de chacune des roues
- ********************************************************/
-#define FIND_DEAD_ZONE
-#ifdef FIND_DEAD_ZONE
-#define DEAD_START_PWM 20
-#define DEAD_STOP_PWM 100
-#define MAX_DEAD_ZONE 100
-volatile uint8_t bufferDeadZoneIndex1 = 0;
-volatile uint8_t bufferDeadZoneIndex2 = 0;
-volatile uint8_t bufferDeadZoneIndex3 = 0;
-volatile uint8_t bufferDeadZoneIndex4 = 0;
-volatile uint16_t bufferDeadZone1[MAX_DEAD_ZONE];
-volatile uint16_t bufferDeadZone2[MAX_DEAD_ZONE];
-volatile uint16_t bufferDeadZone3[MAX_DEAD_ZONE];
-volatile uint16_t bufferDeadZone4[MAX_DEAD_ZONE];
-#endif
+volatile int mainState = MAIN_IDLE;
 
 // declaration of pids
 PidType PID_SPEED1;
@@ -279,7 +219,7 @@ uint8_t readUSB() {
 		uint8_t readCharacter;
 
 		if (TM_USB_VCP_Getc(&readCharacter) == TM_USB_VCP_DATA_OK) {
-			//TM_USB_VCP_Putc(c);
+			// Pour le echo TM_USB_VCP_Putc(c);
 			return readCharacter;
 		}
 	} else {
@@ -292,12 +232,16 @@ uint8_t readUSB() {
 	return 0;
 }
 
-float getXMoveFromBuffer() {
-	return 0;
+float getXMoveFromBuffer(uint8_t *data) {
+	float xMove = *(float *) data;
+
+	return xMove;
 }
 
-float getYMoveFromBuffer() {
-	return 0;
+float getYMoveFromBuffer(uint8_t *data) {
+	float yMove = *(float *) (data + Y_MOVE_DATA_BUFFER_INDEX);
+
+	return yMove;
 }
 
 void processCommand(uint8_t command, uint8_t dataSize, int* mainState) {
@@ -305,21 +249,12 @@ void processCommand(uint8_t command, uint8_t dataSize, int* mainState) {
 	float xMove;
 	float yMove;
 case COMMAND_MOVE:
-	xMove = getXMoveFromBuffer();
-	yMove = getYMoveFromBuffer();
-	setState(mainState, MAIN_PID);
+	//xMove = getXMoveFromBuffer();
+	//yMove = getYMoveFromBuffer();
+	//setState(mainState, MAIN_PID);
 	break;
 default:
 	break;
-	}
-}
-
-void fillDummiesBuffers() {
-	for (int i = 0; i < MAX_WHEEL_INDEX; i++) {
-		bufferWheel1[i] = i + 1;
-		bufferWheel2[i] = i + 2;
-		bufferWheel3[i] = i + 3;
-		bufferWheel4[i] = i + 4;
 	}
 }
 
@@ -344,27 +279,47 @@ int main(void) {
 
 	initBtn();
 
-//Initialize Systick timer
-	TM_DELAY_Init();
-
 // Initialisation des variables
-<<<<<<< HEAD
-	int mainState = MAIN_PID;
-=======
-	int mainState = MAIN_ACQUIS_ALL;
->>>>>>> 6f8af702ee9f4d275f1d9cd306d22f6144a64eff
+	mainState = MAIN_IDLE;
 //setState(&mainState, MAIN_MOVE);
 
 	int state = IDLE;
-	char stateInput = 0;
+
 // initializations for manchester signal
 	InitializeLEDs();
 	InitializeManchesterInput();
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 	initializeExternalInterruptLine4();
 
-	float consigneX;
-	float consigneY;
+	/* Initialization of wheel 1 PIDs */
+	PID_init(&PID_SPEED1, PID_SPEED1_KP, PID_SPEED1_KI, PID_SPEED1_KD,
+			PID_Direction_Direct, PID_SPEED1_N);
+	PID_SetOutputLimits(&PID_SPEED1, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
+	PID_init(&PID_POSITION1, PID_POSITION1_KP, PID_POSITION1_KI,
+			PID_POSITION1_KD, PID_Direction_Direct, PID_POSITION1_N);
+	PID_SetOutputLimits(&PID_POSITION1, MIN_POS_COMMAND, MAX_POS_COMMAND);
+
+	/* Initialization of wheel 2 PIDs */
+	PID_init(&PID_SPEED2, PID_SPEED2_KP, PID_SPEED2_KI, PID_SPEED2_KD,
+			PID_Direction_Direct, PID_SPEED2_N);
+	PID_SetOutputLimits(&PID_SPEED2, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
+	PID_init(&PID_POSITION2, PID_POSITION2_KP, PID_POSITION2_KI,
+			PID_POSITION2_KD, PID_Direction_Direct, PID_POSITION2_N);
+	PID_SetOutputLimits(&PID_POSITION2, MIN_POS_COMMAND, MAX_POS_COMMAND);
+
+	/* Initialization of wheel 3 PIDs */
+	PID_init(&PID_SPEED3, PID_SPEED3_KP, PID_SPEED3_KI, PID_SPEED3_KD,
+			PID_Direction_Direct, PID_SPEED3_N);
+	PID_SetOutputLimits(&PID_SPEED3, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
+	PID_init(&PID_POSITION3, PID_POSITION3_KP, PID_POSITION3_KI,
+			PID_POSITION3_KD, PID_Direction_Direct, PID_POSITION3_N);
+
+	/* Initialization of wheel 4 PIDs */
+	PID_init(&PID_SPEED4, PID_SPEED4_KP, PID_SPEED4_KI, PID_SPEED4_KD,
+			PID_Direction_Direct, PID_SPEED4_N);
+	PID_SetOutputLimits(&PID_SPEED4, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
+	PID_init(&PID_POSITION4, PID_POSITION4_KP, PID_POSITION4_KI,
+			PID_POSITION4_KD, PID_Direction_Direct, PID_POSITION4_N);
 
 	while (1) {
 
@@ -376,7 +331,7 @@ int main(void) {
 			TM_DISCO_LedOn (LED_BLUE);
 			switch (mainState) {
 			case MAIN_IDLE:
-				mainState = MAIN_PID;
+				//mainState = MAIN_PID;
 				//setState(&mainState, MAIN_MOVE);
 				break;
 			}
@@ -385,11 +340,11 @@ int main(void) {
 		uint8_t command = readUSB();
 		if (command != 0) {
 
-			uint8_t sizeOfData = readUSB();
+			/*uint8_t sizeOfData = readUSB();
 
-			processCommand(command, sizeOfData, &mainState);
+			 processCommand(command, sizeOfData, &mainState);
 
-			setState(&mainState, MAIN_PID);
+			 setState(&mainState, MAIN_PID);*/
 		}
 
 		/* Main state machine */
@@ -400,14 +355,8 @@ int main(void) {
 			break;
 		case MAIN_ACQUIS:
 			/* Action lors d'une acquisition */
-<<<<<<< HEAD
 			readUSB();
 			state = command;
-=======
-			stateInput = readUSB();
-			if (stateInput != 0)
-				state = stateInput;
->>>>>>> 6f8af702ee9f4d275f1d9cd306d22f6144a64eff
 
 			if (state == GENERATE_FIRST_PWM) {
 				generateFirstPWM();
@@ -426,197 +375,151 @@ int main(void) {
 				state = IDLE;
 			}
 			break;
-		case MAIN_ACQUIS_ALL:
-			/***** Motor 1 *****/
-			// Seulement le moteur 1 opérationnel
+		case MAIN_MOVE:
+			//Initialize Systick timer
+			TM_DELAY_Init();
+			TM_DISCO_LedOn (LED_BLUE);
+			TM_DISCO_LedOn (LED_ORANGE);
+			// Example of direction setting of 4 motors
+			//MotorSetDirection(1, CLOCK);
+			//MotorSetDirection(2, CLOCK);
+			//MotorSetDirection(3, CLOCK);
+			//MotorSetDirection(4, CLOCK);
+
+			// Example of speed setting of 4 motors
+			//MotorSetSpeed(1, 50);
+			//MotorSetSpeed(2, 50);
+			//MotorSetSpeed(3, 50);
+			//MotorSetSpeed(4, 50);
+
+			//Delayms(2000);
+
+			//MotorSetSpeed(1, 0);
+			//MotorSetSpeed(2, 0);
+			//MotorSetSpeed(3, 0);
+			//MotorSetSpeed(4, 0);
+
+			//Delayms(2000);
+
+			//move(100);
+
+			MotorSetDirection(1, COUNTER_CLOCK);
+			MotorSetDirection(2, BRAKE_G);
+			MotorSetDirection(3, CLOCK);
+			MotorSetDirection(4, BRAKE_G);
+
+			MotorSetSpeed(1, 75);
+			MotorSetSpeed(2, 0);
+			MotorSetSpeed(3, 75);
+			MotorSetSpeed(4, 0);
+
+			Delayms(2000);
+
 			MotorSetDirection(1, CLOCK);
+			MotorSetDirection(2, BRAKE_G);
+			MotorSetDirection(3, COUNTER_CLOCK);
+			MotorSetDirection(4, BRAKE_G);
+
+			MotorSetSpeed(1, 75);
+			MotorSetSpeed(2, 0);
+			MotorSetSpeed(3, 75);
+			MotorSetSpeed(4, 0);
+
+			Delayms(2000);
+
+			MotorSetDirection(1, CLOCK);
+			MotorSetDirection(2, CLOCK);
+			MotorSetDirection(3, COUNTER_CLOCK);
+			MotorSetDirection(4, COUNTER_CLOCK);
+
+			MotorSetSpeed(1, 75);
+			MotorSetSpeed(2, 75);
+			MotorSetSpeed(3, 75);
+			MotorSetSpeed(4, 75);
+
+			Delayms(1000);
+
+			MotorSetDirection(1, CLOCK);
+			MotorSetDirection(2, COUNTER_CLOCK);
+			MotorSetDirection(3, COUNTER_CLOCK);
+			MotorSetDirection(4, CLOCK);
+
+			MotorSetSpeed(1, 75);
+			MotorSetSpeed(2, 75);
+			MotorSetSpeed(3, 75);
+			MotorSetSpeed(4, 75);
+
+			Delayms(1000);
+
+			MotorSetDirection(1, COUNTER_CLOCK);
+			MotorSetDirection(2, COUNTER_CLOCK);
+			MotorSetDirection(3, CLOCK);
+			MotorSetDirection(4, CLOCK);
+
+			MotorSetSpeed(1, 75);
+			MotorSetSpeed(2, 75);
+			MotorSetSpeed(3, 75);
+			MotorSetSpeed(4, 75);
+
+			Delayms(1000);
+
+			MotorSetDirection(1, COUNTER_CLOCK);
+			MotorSetDirection(2, CLOCK);
+			MotorSetDirection(3, CLOCK);
+			MotorSetDirection(4, COUNTER_CLOCK);
+
+			MotorSetSpeed(1, 75);
+			MotorSetSpeed(2, 75);
+			MotorSetSpeed(3, 75);
+			MotorSetSpeed(4, 75);
+
+			Delayms(1000);
+
+			MotorSetDirection(1, BRAKE_G);
 			MotorSetDirection(2, BRAKE_G);
 			MotorSetDirection(3, BRAKE_G);
 			MotorSetDirection(4, BRAKE_G);
-			// Pour débuter le remplissage du buffer
-			bufferWheelIndex1 = 0;
-			// Première vitesse du moteur
-			MotorSetSpeed(1, PREMIER_ECHELON);
-			// Délai avant le prochain PWM
-			Delayms(DUREE_ECHELON_1);
-			MotorSetSpeed(1, DEUXIEME_ECHELON);
-			// Délai de la fin de l'asservissement
-			Delayms(DUREE_ECHELON_2);
-			/***** Motor 2 *****/
-			MotorSetDirection(1, BRAKE_G);
-			MotorSetDirection(2, CLOCK);
+
 			MotorSetSpeed(1, 0);
-			// Pour débuter le remplissage du buffer
-			bufferWheelIndex2 = 0;
-			MotorSetSpeed(2, PREMIER_ECHELON);
-			// Delai du 1er échelon
-			Delayms(DUREE_ECHELON_1);
-			// 2e échelon
-			MotorSetSpeed(2, DEUXIEME_ECHELON);
-			Delayms(DUREE_ECHELON_2);
-			/***** Motor 3 *****/
-			MotorSetDirection(2, BRAKE_G);
-			MotorSetDirection(3, CLOCK);
 			MotorSetSpeed(2, 0);
-			// Pour débuter le remplissage du buffer
-			bufferWheelIndex3 = 0;
-			MotorSetSpeed(3, PREMIER_ECHELON);
-			// Delai du 1er échelon
-			Delayms(DUREE_ECHELON_1);
-			// 2e échelon
-			MotorSetSpeed(3, DEUXIEME_ECHELON);
-			Delayms(DUREE_ECHELON_2);
-			/***** Motor 4 *****/
-			MotorSetDirection(3, BRAKE_G);
-			MotorSetDirection(4, CLOCK);
 			MotorSetSpeed(3, 0);
-			// Pour débuter le remplissage du buffer
-			bufferWheelIndex4 = 0;
-			MotorSetSpeed(4, PREMIER_ECHELON);
-			// Delai du 1er échelon
-			Delayms(DUREE_ECHELON_1);
-			// 2e échelon
-			MotorSetSpeed(4, DEUXIEME_ECHELON);
-			Delayms(DUREE_ECHELON_2);
-			// On stop le moteur
 			MotorSetSpeed(4, 0);
 
-			//fillDummiesBuffers();
+			mainState = MAIN_MANCH;
 
-			/****** ENVOIE DONNÉES MOTEUR 1 ******/
-			// On attends que l'ordinateur demande des données
-			char cmdAcquis = 0;
-			while (cmdAcquis == 0) {
-				cmdAcquis = readUSB();
-			}
-			VCP_DataTx((uint8_t*) bufferWheel1, MAX_WHEEL_INDEX * 2);
-			/****** ENVOIE DONNÉES MOTEUR 2 ******/
-			cmdAcquis = 0;
-			while (cmdAcquis == 0) {
-				cmdAcquis = readUSB();
-			}
-			VCP_DataTx((uint8_t*) bufferWheel2, MAX_WHEEL_INDEX * 2);
-			/****** ENVOIE DONNÉES MOTEUR 3 ******/
-			cmdAcquis = 0;
-			while (cmdAcquis == 0) {
-				cmdAcquis = readUSB();
-			}
-			VCP_DataTx((uint8_t*) bufferWheel3, MAX_WHEEL_INDEX * 2);
-			/****** ENVOIE DONNÉES MOTEUR 4 ******/
-			cmdAcquis = 0;
-			while (cmdAcquis == 0) {
-				cmdAcquis = readUSB();
-			}
-			VCP_DataTx((uint8_t*) bufferWheel4, MAX_WHEEL_INDEX * 2);
-
-			break;
-		case MAIN_TEST_SPEED_PID:
-			/* Initialization of wheel 1 PIDs */
-			PID_init(&PID_SPEED1, PID_SPEED1_KP, PID_SPEED1_KI, PID_SPEED1_KD,
-					PID_Direction_Direct);
-			PID_SetOutputLimits(&PID_SPEED1, MIN_SPEED_COMMAND,
-					MAX_SPEED_COMMAND);
-
-			break;
-		case MAIN_DEAD_ZONE:
-			// On fait tourner tous les moteurs dans la même direction
-			MotorSetDirection(1, CLOCK);
-			MotorSetDirection(2, CLOCK);
-			MotorSetDirection(3, CLOCK);
-			MotorSetDirection(4, CLOCK);
-			// On fait passer les vitesses de moteurs par toute les PWM
-			for (int i = DEAD_START_PWM; i <= DEAD_STOP_PWM; i++) {
-				MotorSetSpeed(1, i);
-				MotorSetSpeed(2, i);
-				MotorSetSpeed(3, i);
-				MotorSetSpeed(4, i);
-				// On change l'index pour que dans l'interruption
-				// ce soit le bon qui soit rempli
-				bufferDeadZoneIndex1 = i;
-				bufferDeadZoneIndex2 = i;
-				bufferDeadZoneIndex3 = i;
-				bufferDeadZoneIndex4 = i;
-				// On attends un peu pour avoir une valeue représentative
-				Delayms(100);
-			}
-			// On attends que l'ordinateur demande des données
-			char cmdDeadZone = 0;
-			while (cmdDeadZone == 0) {
-				cmdDeadZone = readUSB();
-			}
-			VCP_DataTx((uint8_t*) bufferDeadZone1, MAX_DEAD_ZONE * 2);
-			break;
-		case MAIN_MOVE:
-			motorRoutine();
 			break;
 		case MAIN_PID:
-			consigneX = 0.24;
-			consigneY = 0.24;
 
-			/* Initialization of wheel 1 PIDs */
-			PID_init(&PID_SPEED1, PID_SPEED_KP, PID_SPEED_KI, PID_SPEED_KD,
-					PID_Direction_Direct);
-			PID_SetOutputLimits(&PID_SPEED1, MIN_SPEED_COMMAND,
-					MAX_SPEED_COMMAND);
-			PID_init(&PID_POSITION1, PID_POSITION_KP, PID_POSITION_KI,
-					PID_POSITION_KD, PID_Direction_Direct);
-			PID_SetOutputLimits(&PID_POSITION1, MIN_POS_COMMAND,
-					MAX_POS_COMMAND);
-
-			/* Initialization of wheel 2 PIDs */
-			PID_init(&PID_SPEED2, PID_SPEED_KP, PID_SPEED_KI, PID_SPEED_KD,
-					PID_Direction_Direct);
-			PID_SetOutputLimits(&PID_SPEED2, MIN_SPEED_COMMAND,
-					MAX_SPEED_COMMAND);
-			PID_init(&PID_POSITION2, PID_POSITION_KP, PID_POSITION_KI,
-					PID_POSITION_KD, PID_Direction_Direct);
-
-			/* Initialization of wheel 3 PIDs */
-			PID_init(&PID_SPEED3, PID_SPEED_KP, PID_SPEED_KI, PID_SPEED_KD,
-					PID_Direction_Direct);
-			PID_SetOutputLimits(&PID_SPEED3, MIN_SPEED_COMMAND,
-					MAX_SPEED_COMMAND);
-			PID_init(&PID_POSITION3, PID_POSITION_KP, PID_POSITION_KI,
-					PID_POSITION_KD, PID_Direction_Direct);
-
-			/* Initialization of wheel 4 PIDs */
-			PID_init(&PID_SPEED4, PID_SPEED_KP, PID_SPEED_KI, PID_SPEED_KD,
-					PID_Direction_Direct);
-			PID_SetOutputLimits(&PID_SPEED4, MIN_SPEED_COMMAND,
-					MAX_SPEED_COMMAND);
-			PID_init(&PID_POSITION4, PID_POSITION_KP, PID_POSITION_KI,
-					PID_POSITION_KD, PID_Direction_Direct);
-
-			PID_POSITION1.mySetpoint = 0.25;
-			PID_POSITION2.mySetpoint = 0.25;
-			PID_POSITION3.mySetpoint = 0.25;
-			PID_POSITION4.mySetpoint = 0.25;
+			//PID_POSITION1.mySetpoint = 0.00;
+			//PID_POSITION2.mySetpoint = 0.00;
+			//PID_POSITION3.mySetpoint = 0.00;
+			//PID_POSITION4.mySetpoint = 0.00;
 
 			while (1) {
 
 				if (PID_Compute_Position(&PID_POSITION1)) {
-					float positionOutput = PID_POSITION1.myOutput;
-					PID_SPEED1.mySetpoint = positionOutput;
+					//&& PID_Compute_Position(&PID_POSITION2)
+					//&& PID_Compute_Position(&PID_POSITION3)
+					//&& PID_Compute_Position(&PID_POSITION4)) {
+					float positionOutput1 = PID_POSITION1.myOutput;
+					int cmdMotor1;
+					PID_SPEED1.mySetpoint = positionOutput1;
 
 					if (PID_Compute_Speed(&PID_SPEED1)) {
-						int cmdMotor1 = PID_SPEED1.myOutput;
+						cmdMotor1 = PID_SPEED1.myOutput;
 						if (cmdMotor1 > 0) {
 							speedDirection1 = SPEED_DIRECTION_FORWARD;
 							MotorSetDirection(1, COUNTER_CLOCK);
-							//MotorSetDirection(3, COUNTER_CLOCK);
 						} else if (cmdMotor1 < 0) {
-
 							speedDirection1 = SPEED_DIRECTION_BACKWARD;
 							MotorSetDirection(1, CLOCK);
-							//MotorSetDirection(3, CLOCK);
 							cmdMotor1 = -cmdMotor1;
 						} else {
 							speedDirection1 = SPEED_DIRECTION_NONE;
-							//MotorSetDirection(1, BRAKE_G);
+							MotorSetDirection(1, BRAKE_G);
 						}
-						MotorSetSpeed(1, cmdMotor1);
-						//MotorSetSpeed(3, cmdMotor1);
 
+						MotorSetSpeed(1, cmdMotor1);
 						PID_SetMode(&PID_SPEED1, PID_Mode_Manual);
 
 						char numberString[MAX_DISPLAY_CHARACTERS];
@@ -633,41 +536,41 @@ int main(void) {
 						 VCP_DataTx((uint8_t*) &positionOutput, sizeof(float));
 						 VCP_DataTx((uint8_t*) &positionOutput, sizeof(float));*/
 					}
-
-					PID_SPEED3.mySetpoint = positionOutput;
-
-					if (PID_Compute_Speed(&PID_SPEED3)) {
-
-						int cmdMotor3 = PID_SPEED3.myOutput;
-
-						if (cmdMotor3 > 0) {
-							speedDirection3 = SPEED_DIRECTION_FORWARD;
-							MotorSetDirection(3, CLOCK);
-							//MotorSetDirection(1, CLOCK);
-						} else if (cmdMotor3 < 0) {
-
-							speedDirection3 = SPEED_DIRECTION_BACKWARD;
-							MotorSetDirection(3, COUNTER_CLOCK);
-							//MotorSetDirection(1, CLOCK);
-							cmdMotor3 = -cmdMotor3;
-						} else {
-							speedDirection3 = SPEED_DIRECTION_NONE;
-							MotorSetDirection(3, BRAKE_G);
-							//MotorSetDirection(1, BRAKE_G);
-
-						}
-
-						MotorSetSpeed(3, cmdMotor3);
-						PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
-					}
 				}
 
+				/*PID_SPEED3.mySetpoint = positionOutput;
+
+				 if (PID_Compute_Speed(&PID_SPEED3)) {
+
+				 int cmdMotor3 = PID_SPEED3.myOutput;
+
+				 if (cmdMotor3 > 0) {
+				 speedDirection3 = SPEED_DIRECTION_FORWARD;
+				 MotorSetDirection(3, CLOCK);
+				 //MotorSetDirection(1, CLOCK);
+				 } else if (cmdMotor3 < 0) {
+
+				 speedDirection3 = SPEED_DIRECTION_BACKWARD;
+				 MotorSetDirection(3, COUNTER_CLOCK);
+				 //MotorSetDirection(1, CLOCK);
+				 cmdMotor3 = -cmdMotor3;
+				 } else {
+				 speedDirection3 = SPEED_DIRECTION_NONE;
+				 MotorSetDirection(3, BRAKE_G);
+				 }
+
+				 MotorSetSpeed(3, cmdMotor3);
+				 PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
+				 }
+				 }*/
+
 				if (PID_Compute_Position(&PID_POSITION2)) {
-					float positionOutput = PID_POSITION2.myOutput;
-					PID_SPEED2.mySetpoint = positionOutput;
+					float positionOutput2 = PID_POSITION2.myOutput;
+					PID_SPEED2.mySetpoint = positionOutput2;
+					int cmdMotor2;
 
 					if (PID_Compute_Speed(&PID_SPEED2)) {
-						int cmdMotor2 = PID_SPEED2.myOutput;
+						cmdMotor2 = PID_SPEED2.myOutput;
 						if (cmdMotor2 > 0) {
 							speedDirection2 = SPEED_DIRECTION_FORWARD;
 							MotorSetDirection(2, COUNTER_CLOCK);
@@ -675,17 +578,13 @@ int main(void) {
 						} else if (cmdMotor2 < 0) {
 							speedDirection2 = SPEED_DIRECTION_BACKWARD;
 							MotorSetDirection(2, CLOCK);
-							//MotorSetDirection(4, COUNTER_CLOCK);
 							cmdMotor2 = -cmdMotor2;
 						} else {
 							speedDirection2 = SPEED_DIRECTION_NONE;
 							MotorSetDirection(2, BRAKE_G);
-							MotorSetDirection(4, BRAKE_G);
-
 						}
 
 						MotorSetSpeed(2, cmdMotor2);
-						//MotorSetSpeed(4, cmdMotor2);
 						PID_SetMode(&PID_SPEED2, PID_Mode_Manual);
 
 						char numberString[MAX_DISPLAY_CHARACTERS];
@@ -696,82 +595,21 @@ int main(void) {
 						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
 						TM_HD44780_Puts(3, 0, numberString);
 					}
-
-					PID_SPEED4.mySetpoint = positionOutput;
-
-					if (PID_Compute_Speed(&PID_SPEED4)) {
-						int cmdMotor4 = PID_SPEED4.myOutput;
-
-						if (cmdMotor4 > 0) {
-							speedDirection4 = SPEED_DIRECTION_FORWARD;
-							MotorSetDirection(4, CLOCK);
-							//MotorSetDirection(2, COUNTER_CLOCK);
-						} else if (cmdMotor4 < 0) {
-
-							speedDirection4 = SPEED_DIRECTION_BACKWARD;
-							MotorSetDirection(4, COUNTER_CLOCK);
-							//MotorSetDirection(2, CLOCK);
-							cmdMotor4 = -cmdMotor4;
-						} else {
-							speedDirection4 = SPEED_DIRECTION_NONE;
-							MotorSetDirection(4, BRAKE_G);
-							//MotorSetDirection(2, BRAKE_G);
-
-						}
-
-						MotorSetSpeed(4, cmdMotor4);
-						PID_SetMode(&PID_SPEED4, PID_Mode_Manual);
-					}
 				}
 
-				/*if (PID_Compute_Position(&PID_POSITION3)) {
-				 float positionOutput = PID_POSITION3.myOutput;
-				 PID_SPEED3.mySetpoint = positionOutput;
-
-				 if (PID_Compute_Speed(&PID_SPEED3)) {
-				 int cmdMotor3 = PID_SPEED3.myOutput;
-				 if (cmdMotor3 > 0) {
-				 speedDirection3 = SPEED_DIRECTION_FORWARD;
-				 MotorSetDirection(3, COUNTER_CLOCK);
-				 //MotorSetDirection(1, COUNTER_CLOCK);
-				 } else if (cmdMotor3 < 0) {
-
-				 speedDirection3 = SPEED_DIRECTION_BACKWARD;
-				 MotorSetDirection(3, CLOCK);
-				 //MotorSetDirection(1, CLOCK);
-				 cmdMotor3 = -cmdMotor3;
-				 } else {
-				 speedDirection3 = SPEED_DIRECTION_NONE;
-				 MotorSetDirection(3, BRAKE_G);
-				 //MotorSetDirection(1, BRAKE_G);
-
-				 }
-				 MotorSetSpeed(3, cmdMotor3);
-				 PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
-
-				 char numberString[MAX_DISPLAY_CHARACTERS];
-				 sprintf(numberString, "%d", numberOfSpeedEdges3);
-				 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-				 TM_HD44780_Puts(0, 0, numberString);
-				 sprintf(numberString, "%d", cmdMotor3);
-				 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-				 TM_HD44780_Puts(3, 0, numberString);
-				 }
-				 }*/
-				/*if (PID_Compute_Position(&PID_POSITION4)) {
-				 float positionOutput = PID_POSITION4.myOutput;
-				 PID_SPEED4.mySetpoint = positionOutput;
+				/*PID_SPEED4.mySetpoint = positionOutput;
 
 				 if (PID_Compute_Speed(&PID_SPEED4)) {
 				 int cmdMotor4 = PID_SPEED4.myOutput;
+
 				 if (cmdMotor4 > 0) {
 				 speedDirection4 = SPEED_DIRECTION_FORWARD;
-				 MotorSetDirection(4, COUNTER_CLOCK);
+				 MotorSetDirection(4, CLOCK);
 				 //MotorSetDirection(2, COUNTER_CLOCK);
 				 } else if (cmdMotor4 < 0) {
 
 				 speedDirection4 = SPEED_DIRECTION_BACKWARD;
-				 MotorSetDirection(4, CLOCK);
+				 MotorSetDirection(4, COUNTER_CLOCK);
 				 //MotorSetDirection(2, CLOCK);
 				 cmdMotor4 = -cmdMotor4;
 				 } else {
@@ -780,19 +618,92 @@ int main(void) {
 				 //MotorSetDirection(2, BRAKE_G);
 
 				 }
+
 				 MotorSetSpeed(4, cmdMotor4);
 				 PID_SetMode(&PID_SPEED4, PID_Mode_Manual);
-
-				 char numberString[MAX_DISPLAY_CHARACTERS];
-				 sprintf(numberString, "%d", numberOfSpeedEdges4);
-				 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-				 TM_HD44780_Puts(0, 0, numberString);
-				 sprintf(numberString, "%d", cmdMotor4);
-				 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-				 TM_HD44780_Puts(3, 0, numberString);
-				 }
-
 				 }*/
+
+				if (PID_Compute_Position(&PID_POSITION3)) {
+					float positionOutput3 = PID_POSITION3.myOutput;
+					PID_SPEED3.mySetpoint = positionOutput3;
+
+					int cmdMotor3;
+
+					if (PID_Compute_Speed(&PID_SPEED3)) {
+						cmdMotor3 = PID_SPEED3.myOutput;
+						if (cmdMotor3 > 0) {
+							speedDirection3 = SPEED_DIRECTION_FORWARD;
+							MotorSetDirection(3, CLOCK);
+						} else if (cmdMotor3 < 0) {
+							speedDirection3 = SPEED_DIRECTION_BACKWARD;
+							MotorSetDirection(3, COUNTER_CLOCK);
+							cmdMotor3 = -cmdMotor3;
+						} else {
+							speedDirection3 = SPEED_DIRECTION_NONE;
+							MotorSetDirection(3, BRAKE_G);
+						}
+
+						MotorSetSpeed(3, cmdMotor3);
+						PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
+
+						char numberString[MAX_DISPLAY_CHARACTERS];
+						sprintf(numberString, "%d", numberOfSpeedEdges3);
+						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+						TM_HD44780_Puts(0, 0, numberString);
+						sprintf(numberString, "%d", cmdMotor3);
+						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+						TM_HD44780_Puts(3, 0, numberString);
+					}
+				}
+
+				if (PID_Compute_Position(&PID_POSITION4)) {
+					float positionOutput4 = PID_POSITION4.myOutput;
+					PID_SPEED4.mySetpoint = positionOutput4;
+
+					int cmdMotor4;
+
+					if (PID_Compute_Speed(&PID_SPEED4)) {
+						cmdMotor4 = PID_SPEED4.myOutput;
+						if (cmdMotor4 > 0) {
+							speedDirection4 = SPEED_DIRECTION_FORWARD;
+							MotorSetDirection(4, CLOCK);
+						} else if (cmdMotor4 < 0) {
+
+							speedDirection4 = SPEED_DIRECTION_BACKWARD;
+							MotorSetDirection(4, COUNTER_CLOCK);
+							cmdMotor4 = -cmdMotor4;
+						} else {
+							speedDirection4 = SPEED_DIRECTION_NONE;
+							MotorSetDirection(4, BRAKE_G);
+
+						}
+
+						MotorSetSpeed(4, cmdMotor4);
+						PID_SetMode(&PID_SPEED4, PID_Mode_Manual);
+
+						char numberString[MAX_DISPLAY_CHARACTERS];
+						sprintf(numberString, "%d", numberOfSpeedEdges4);
+						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+						TM_HD44780_Puts(0, 0, numberString);
+						sprintf(numberString, "%d", cmdMotor4);
+						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+						TM_HD44780_Puts(3, 0, numberString);
+
+					}
+
+					//MotorSetSpeed(1, cmdMotor1);
+					//PID_SetMode(&PID_SPEED1, PID_Mode_Manual);
+
+					//MotorSetSpeed(2, cmdMotor2);
+					//PID_SetMode(&PID_SPEED2, PID_Mode_Manual);
+
+					//MotorSetSpeed(3, cmdMotor3);
+					//PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
+
+					//MotorSetSpeed(4, cmdMotor4);
+					//PID_SetMode(&PID_SPEED4, PID_Mode_Manual);
+
+				}
 			}
 			break;
 		case MAIN_MANCH:
@@ -976,69 +887,64 @@ extern void TIM2_IRQHandler() {
 		PID_SetMode(&PID_POSITION3, PID_Mode_Automatic);
 		PID_SetMode(&PID_POSITION4, PID_Mode_Automatic);
 
-#ifdef ACQUIS
-		if (bufferWheelIndex1 < MAX_WHEEL_INDEX)
-			bufferWheel1[bufferWheelIndex1++] = numberOfSpeedEdges1;
-		if (bufferWheelIndex2 < MAX_WHEEL_INDEX)
-			bufferWheel2[bufferWheelIndex2++] = numberOfSpeedEdges2;
-		if (bufferWheelIndex3 < MAX_WHEEL_INDEX)
-			bufferWheel3[bufferWheelIndex3++] = numberOfSpeedEdges3;
-		if (bufferWheelIndex4 < MAX_WHEEL_INDEX)
-			bufferWheel4[bufferWheelIndex4++] = numberOfSpeedEdges4;
-#endif
-#ifdef FIND_DEAD_ZONE
-		// rentrer les valeurs dans la même buffer, dans le while on change l'index
-		if (bufferDeadZoneIndex1 < MAX_DEAD_ZONE)
-			bufferDeadZone1[bufferDeadZoneIndex1] = numberOfSpeedEdges1;
-		if (bufferDeadZoneIndex2 < MAX_DEAD_ZONE)
-			bufferDeadZone2[bufferDeadZoneIndex2] = numberOfSpeedEdges2;
-		if (bufferDeadZoneIndex3 < MAX_DEAD_ZONE)
-			bufferDeadZone3[bufferDeadZoneIndex3] = numberOfSpeedEdges3;
-		if (bufferDeadZoneIndex4 < MAX_DEAD_ZONE)
-			bufferDeadZone4[bufferDeadZoneIndex4] = numberOfSpeedEdges4;
-#endif
 		numberOfSpeedEdges1 = 0;
 		numberOfSpeedEdges2 = 0;
 		numberOfSpeedEdges3 = 0;
 		numberOfSpeedEdges4 = 0;
 
 		/* reset position for each wheels */
-		if (-0.01 < PID_POSITION1.mySetpoint - PID_POSITION1.myInput
-				&& PID_POSITION1.mySetpoint - PID_POSITION1.myInput < 0.01) {
-			numberOfPositionEdges1 = 0;
-			PID_POSITION1.mySetpoint = 0;
-			PID_POSITION1.myInput = 0;
-		}
+		/*if (-0.01 < PID_POSITION1.mySetpoint - PID_POSITION1.myInput
+		 && PID_POSITION1.mySetpoint - PID_POSITION1.myInput < 0.01) {
+		 numberOfPositionEdges1 = 0;
+		 PID_POSITION1.mySetpoint = 0;
+		 PID_POSITION1.myInput = 0;
+		 }
 
-		if (-0.01 < PID_POSITION2.mySetpoint - PID_POSITION2.myInput
-				&& PID_POSITION2.mySetpoint - PID_POSITION2.myInput < 0.01) {
-			numberOfPositionEdges2 = 0;
-			PID_POSITION2.mySetpoint = 0;
-			PID_POSITION2.myInput = 0;
-		}
+		 if (-0.01 < PID_POSITION2.mySetpoint - PID_POSITION2.myInput
+		 && PID_POSITION2.mySetpoint - PID_POSITION2.myInput < 0.01) {
+		 numberOfPositionEdges2 = 0;
+		 PID_POSITION2.mySetpoint = 0;
+		 PID_POSITION2.myInput = 0;
+		 }
 
-		if (-0.01 < PID_POSITION3.mySetpoint - PID_POSITION3.myInput
-				&& PID_POSITION3.mySetpoint - PID_POSITION3.myInput < 0.01) {
-			numberOfPositionEdges3 = 0;
-			PID_POSITION3.mySetpoint = 0;
-			PID_POSITION3.myInput = 0;
-		}
+		 if (-0.01 < PID_POSITION3.mySetpoint - PID_POSITION3.myInput
+		 && PID_POSITION3.mySetpoint - PID_POSITION3.myInput < 0.01) {
+		 numberOfPositionEdges3 = 0;
+		 PID_POSITION3.mySetpoint = 0;
+		 PID_POSITION3.myInput = 0;
+		 }
 
-		if (-0.01 < PID_POSITION4.mySetpoint - PID_POSITION4.myInput
-				&& PID_POSITION4.mySetpoint - PID_POSITION4.myInput < 0.01) {
-			numberOfPositionEdges4 = 0;
-			PID_POSITION4.mySetpoint = 0;
-			PID_POSITION4.myInput = 0;
-		}
+		 if (-0.01 < PID_POSITION4.mySetpoint - PID_POSITION4.myInput
+		 && PID_POSITION4.mySetpoint - PID_POSITION4.myInput < 0.01) {
+		 numberOfPositionEdges4 = 0;
+		 PID_POSITION4.mySetpoint = 0;
+		 PID_POSITION4.myInput = 0;
+		 }*/
 	}
 }
 
+/* callback when data arrives on USB */
 extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 	switch (type) {
 	case COMMAND_MOVE:
-		if (len == 8 && data[0] == 255) {
-			uint8_t dataToSend[10] = { 1, 8, 3, 4, 5, 6, 7, 8, 9, 10 };
-			TM_USB_VCP_Send(dataToSend, 10);
+		if (len == 8 && type == 0) {
+			/* send data to test send feature on Usb */
+			//uint8_t dataToSend[10] = { 1, 8, 3, 4, 5, 6, 7, 8, 9, 10 };
+			//TM_USB_VCP_Send(dataToSend, 10);
+			/* get X Y distances */
+			float xMove = getXMoveFromBuffer(data);
+			float yMove = getYMoveFromBuffer(data);
+			PID_POSITION1.mySetpoint = xMove;
+			PID_POSITION3.mySetpoint = xMove;
+			PID_POSITION2.mySetpoint = yMove;
+			PID_POSITION4.mySetpoint = yMove;
+
+			numberOfPositionEdges1 = 0;
+			numberOfPositionEdges2 = 0;
+			numberOfPositionEdges3 = 0;
+			numberOfPositionEdges4 = 0;
+
+			setState(&mainState, MAIN_PID);
 		}
 		break;
 	}

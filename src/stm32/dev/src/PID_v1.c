@@ -18,13 +18,14 @@ volatile FloatType ticksBuffer5[100];
  *    reliable defaults, so we need to have the user set them.
  ***************************************************************************/
 void PID_init(PidType* pid, FloatType Kp, FloatType Ki, FloatType Kd,
-		PidDirectionType ControllerDirection) {
+		PidDirectionType ControllerDirection, FloatType N) {
 	pid->myInput = 0;
 	pid->myOutput = 0;
 	pid->mySetpoint = 0;
 	pid->ITerm = 0;
 	pid->lastInput = 0;
 	pid->inAuto = false;
+	pid->N = N;
 
 	PID_SetOutputLimits(pid, 0, 0xffff);
 
@@ -96,7 +97,7 @@ bool PID_Compute_Position(PidType* pid) {
 	float preInput = pid->myInput;
 	FloatType input = calculatePosition(preInput);
 	pid->error = pid->mySetpoint - input;
-	if (pid->error > -0.01 && pid->error < 0.01) {
+	if (pid->error > -0.005 && pid->error < 0.005) {
 		pid->error = 0;
 	}
 	pid->ITerm += (pid->ki * pid->error);
@@ -107,7 +108,13 @@ bool PID_Compute_Position(PidType* pid) {
 	FloatType dInput = (input - pid->lastInput);
 
 	/*Compute PID Output*/
-	FloatType output = pid->kp * pid->error + pid->ITerm - pid->kd * dInput;
+	//FloatType output = pid->kp * pid->error + pid->ITerm - pid->kd * dInput;
+	FloatType output;
+	if (pid->error == 0) {
+		output = 0;
+	} else {
+		output = pid->kp * pid->error + pid->ITerm - pid->kd * dInput;
+	}
 
 	if (output > pid->outMax)
 		output = pid->outMax;
@@ -143,6 +150,7 @@ void PID_SetTunings(PidType* pid, FloatType Kp, FloatType Ki, FloatType Kd) {
 	pid->kp = Kp;
 	pid->ki = Ki * SampleTimeInSec;
 	pid->kd = Kd / SampleTimeInSec;
+	//pid->kd = Kd / (SampleTimeInSec * pid->N + 1);
 
 	if (pid->controllerDirection == PID_Direction_Reverse) {
 		pid->kp = (0 - pid->kp);
