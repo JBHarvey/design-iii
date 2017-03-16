@@ -1,15 +1,15 @@
 #include "opencv2/videoio/videoio_c.h"
 #include "opencv2/calib3d/calib3d_c.h"
 #include "world_vision.h"
+#include "station-main.h"
 #include "world_vision_calibration.h"
 #include "ui_event.h"
 #include "logger.h"
 
 /* Flags definitions */
 
-enum ThreadStatus {TERMINATED, RUNNING};
-enum CaptureMode {DISTORTED, UNDISTORTED};
 enum TooltipStatus {PRINT, PASS};
+extern enum ThreadStatus main_loop_status;
 
 /* Constants */
 
@@ -22,8 +22,7 @@ const int NUMBER_OF_ROW_OF_TRANSLATION_VECTOR = 3;
 const int NUMBER_OF_COLUMN_OF_TRANSLATION_VECTOR = 1;
 const int NUMBER_OF_ROW_OF_ROTATION_VECTOR = 3;
 const int NUMBER_OF_COLUMN_OF_ROTATION_VECTOR = 1;
-
-const char FILE_PATH_OF_DEBUG_MODE_VIDEO_CAPTURE[] = "./camera_calibration/camera_3015_1/video_feed.avi";
+const char FILE_PATH_OF_DEBUG_MODE_VIDEO_CAPTURE[] = "./build/deploy/camera_calibration/camera_3015_1/video_feed.avi";
 
 /* Type definitions */
 
@@ -35,9 +34,8 @@ struct CameraCapture {
 
 GMutex world_camera_feeder_mutex;
 
-enum ThreadStatus main_loop_status;
-enum CaptureMode world_camera_capture_mode = DISTORTED;
 enum TooltipStatus world_camera_coordinates_tooltip_status = PRINT;
+enum CameraStatus world_camera_status = UNCALIBRATED;
 struct Camera *world_camera = NULL;
 GdkPixbuf *world_camera_pixbuf = NULL;
 
@@ -94,12 +92,8 @@ static void forceHideWorldCameraCoordinatesTooltip(GtkWidget *widget)
 gboolean worldCameraMotionEventCallback(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
     forceHideWorldCameraCoordinatesTooltip(widget);
-    return TRUE;
-}
 
-struct Camera *WorldVision_getWorldCamera(void)
-{
-    return world_camera;
+    return TRUE;
 }
 
 static void initializeWorldCamera(void)
@@ -153,16 +147,13 @@ static void releaseCamera(struct Camera *input_camera)
 
 static void cleanExitIfMainLoopTerminated(struct CameraCapture *world_camera_capture)
 {
-    g_mutex_lock(&world_camera_feeder_mutex);
-
     if(main_loop_status == TERMINATED) {
+        g_mutex_lock(&world_camera_feeder_mutex);
         g_object_unref(world_camera_pixbuf);
         g_mutex_unlock(&world_camera_feeder_mutex);
         releaseCameraCapture(world_camera_capture);
         releaseCamera(world_camera);
         g_thread_exit((gpointer) TRUE);
-    } else {
-        g_mutex_unlock(&world_camera_feeder_mutex);
     }
 }
 
@@ -212,7 +203,9 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data)
         frame_BGR_corrected = cvCloneImage(frame_BGR);
         frame = cvCloneImage(frame_BGR);
 
-        if(world_camera_capture_mode == UNDISTORTED) {
+        if(world_camera->camera_status == INTRINSICALLY_CALIBRATED ||
+           world_camera->camera_status == INTRINSICALLY_AND_EXTRINSICALLY_CALIBRATED ||
+           world_camera->camera_status == FULLY_CALIBRATED) {
             undistortCameraCapture(frame_BGR, frame_BGR_corrected);
         }
 
@@ -232,26 +225,5 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data)
     }
 
     return NULL;
-}
-
-void WorldVision_setMainLoopStatusRunning(void)
-{
-    g_mutex_lock(&world_camera_feeder_mutex);
-    main_loop_status = RUNNING;
-    g_mutex_unlock(&world_camera_feeder_mutex);
-}
-
-void WorldVision_setMainLoopStatusTerminated(void)
-{
-    g_mutex_lock(&world_camera_feeder_mutex);
-    main_loop_status = TERMINATED;
-    g_mutex_unlock(&world_camera_feeder_mutex);
-}
-
-void WorldVision_setWorldCameraCaptureModeUndistorted(void)
-{
-    g_mutex_lock(&world_camera_feeder_mutex);
-    world_camera_capture_mode = UNDISTORTED;
-    g_mutex_unlock(&world_camera_feeder_mutex);
 }
 

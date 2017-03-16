@@ -15,6 +15,8 @@ void Logger_append(const char *text);
 
 void Logger_startMessageSectionAndAppend(const char *text);
 
+void Logger_startRobotConnectionHandlerSectionAndAppend(const char *text);
+
 void Logger_appendDouble(double value);
 
 void Logger_appendPoint2D(struct Point2D point);

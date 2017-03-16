@@ -28,13 +28,24 @@
 *.exe
 *.out
 *.app
-ui/station-main
+*robot-main
+*station-main
 
 # Automation-related files
 *ToCompile
 *Makefile.am
 *build
 *Dockerfile
+*DEPS
+*_OBJ
+*makefile
 
 # Compilation Database
 compile_commands.json
+
+# UI
+ui/autodeploy/DEPS
+ui/autodeploy/_OBJ
+ui/autodeploy/makefile
+ui/src/station-resources/station.ui~
+

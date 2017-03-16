@@ -1,9 +1,10 @@
 #include <criterion/criterion.h>
 #include <stdio.h>
-#include "RobotReceiver.h"
+#include "DataReceiver.h"
 
 struct Mesurements mesurements_mock;
 
+// World data
 const int RECEIVER_TEST_ROBOT_RADIUS = 1750;
 const int RECEIVER_TEST_ROBOT_X = 9000;
 const int RECEIVER_TEST_ROBOT_Y = 5000;
@@ -47,7 +48,13 @@ const int TEST_PAINTING_6_ORIENTATION = HALF_PI;
 const int TEST_PAINTING_7_X = 4060;
 const int TEST_PAINTING_7_Y = 8500;
 const int TEST_PAINTING_7_ORIENTATION = HALF_PI;
-void setup_robot_receiver(void)
+
+// Wheels data
+const int RECEIVER_TRANSLATION_X = 40;
+const int RECEIVER_TRANSLATION_Y = -10;
+const int RECEIVER_ROTATION = 31416;
+
+void setup_DataReceiver(void)
 {
     struct Mesurements mesurements = {
         .world = {
@@ -185,32 +192,32 @@ struct Mesurements test_callback(void)
     return mesurements_mock;
 }
 
-Test(RobotReceiver, given_aCallbackFunction_when_askedFetchInputs_then_itIsCalled
-     , .init = setup_robot_receiver)
+Test(DataReceiver, given_aCallbackFunction_when_askedFetchInputs_then_itIsCalled
+     , .init = setup_DataReceiver)
 {
-    struct Mesurements returned_mesure = RobotReceiver_fetchInputs(&test_callback);
+    struct Mesurements returned_mesure = DataReceiver_fetchInputs(&test_callback);
     int returned_obstacle_zero_orientation = returned_mesure.world.environment.obstacles[0].zone.pose.theta;
     cr_assert_eq(TEST_OBSTACLE_0_ORIENTATION, returned_obstacle_zero_orientation,
                  "Expected %d, Got %d", TEST_OBSTACLE_0_ORIENTATION, returned_obstacle_zero_orientation);
 }
 
-Test(RobotReceiver, given_aPacket_when_updatesWorld_then_theRobotSensorHasNewData
-     , .init = setup_robot_receiver)
+Test(DataReceiver, given_aPacket_when_updatesWorld_then_theRobotSensorHasNewData
+     , .init = setup_DataReceiver)
 {
     struct WorldCamera *world_camera = WorldCamera_new();
-    RobotReceiver_updateWorld(world_camera, mesurements_mock.world);
+    DataReceiver_updateWorld(world_camera, mesurements_mock.world);
 
     cr_assert(world_camera->robot_sensor->has_received_new_data);
     WorldCamera_delete(world_camera);
 }
 
-Test(RobotReceiver, given_aPacket_when_updatesWorld_then_theRobotInformationInWorldCameraAreUpdated
-     , .init = setup_robot_receiver)
+Test(DataReceiver, given_aPacket_when_updatesWorld_then_theRobotInformationInWorldCameraAreUpdated
+     , .init = setup_DataReceiver)
 {
     struct Pose *pose = Pose_new(RECEIVER_TEST_ROBOT_X, RECEIVER_TEST_ROBOT_Y, RECEIVER_TEST_ROBOT_THETA);
 
     struct WorldCamera *world_camera = WorldCamera_new();
-    RobotReceiver_updateWorld(world_camera, mesurements_mock.world);
+    DataReceiver_updateWorld(world_camera, mesurements_mock.world);
 
     cr_assert(Pose_haveTheSameValues(world_camera->robot_pose, pose));
     cr_assert(world_camera->robot_radius == RECEIVER_TEST_ROBOT_RADIUS);
@@ -218,33 +225,33 @@ Test(RobotReceiver, given_aPacket_when_updatesWorld_then_theRobotInformationInWo
     Pose_delete(pose);
 }
 
-Test(RobotReceiver, given_environmentChanges_when_updatesWorld_then_theMapSenorHasNewData
-     , .init = setup_robot_receiver)
+Test(DataReceiver, given_environmentChanges_when_updatesWorld_then_theMapSenorHasNewData
+     , .init = setup_DataReceiver)
 {
     struct WorldCamera *world_camera = WorldCamera_new();
-    RobotReceiver_updateWorld(world_camera, mesurements_mock.world);
+    DataReceiver_updateWorld(world_camera, mesurements_mock.world);
 
     cr_assert(world_camera->map_sensor->has_received_new_data);
     WorldCamera_delete(world_camera);
 }
 
-Test(RobotReceiver, given_noEnvironmentChanges_when_updatesWorld_then_theMapSensorHasNoNewData
-     , .init = setup_robot_receiver)
+Test(DataReceiver, given_noEnvironmentChanges_when_updatesWorld_then_theMapSensorHasNoNewData
+     , .init = setup_DataReceiver)
 {
     struct WorldCamera *world_camera = WorldCamera_new();
     mesurements_mock.world.environment_has_changed = 0;
-    RobotReceiver_updateWorld(world_camera, mesurements_mock.world);
+    DataReceiver_updateWorld(world_camera, mesurements_mock.world);
 
     cr_assert(world_camera->map_sensor->has_received_new_data == 0);
     WorldCamera_delete(world_camera);
 }
 
-Test(RobotReceiver, given_noEnvironmentChanges_when_updatesWorld_then_onlyTheWorldCameraMapIsntChanged
-     , .init = setup_robot_receiver)
+Test(DataReceiver, given_noEnvironmentChanges_when_updatesWorld_then_onlyTheWorldCameraMapIsntChanged
+     , .init = setup_DataReceiver)
 {
     struct WorldCamera *world_camera = WorldCamera_new();
     mesurements_mock.world.environment_has_changed = 0;
-    RobotReceiver_updateWorld(world_camera, mesurements_mock.world);
+    DataReceiver_updateWorld(world_camera, mesurements_mock.world);
 
     cr_assert(world_camera->map_sensor->has_received_new_data == 0);
 
@@ -288,8 +295,8 @@ Test(RobotReceiver, given_noEnvironmentChanges_when_updatesWorld_then_onlyTheWor
     WorldCamera_delete(world_camera);
 }
 
-Test(RobotReceiver, given_aPredeterminedMesurementPacket_when_updatesMesurements_then_theTableCoordinatesAreChanged
-     , .init = setup_robot_receiver)
+Test(DataReceiver, given_aPredeterminedMesurementPacket_when_updatesMesurements_then_theTableCoordinatesAreChanged
+     , .init = setup_DataReceiver)
 {
     struct Coordinates *north_eastern_table_corner = Coordinates_new(MAP_TABLE_LENGTH, MAP_TABLE_HEIGHT);
     struct Coordinates *south_eastern_table_corner = Coordinates_new(MAP_TABLE_LENGTH, 0);
@@ -297,7 +304,7 @@ Test(RobotReceiver, given_aPredeterminedMesurementPacket_when_updatesMesurements
     struct Coordinates *north_western_table_corner = Coordinates_new(0, MAP_TABLE_HEIGHT);
 
     struct WorldCamera *world_camera = WorldCamera_new();
-    RobotReceiver_updateWorld(world_camera, mesurements_mock.world);
+    DataReceiver_updateWorld(world_camera, mesurements_mock.world);
 
     struct Map *map = world_camera->map;
 
@@ -313,9 +320,9 @@ Test(RobotReceiver, given_aPredeterminedMesurementPacket_when_updatesMesurements
     WorldCamera_delete(world_camera);
 }
 
-Test(RobotReceiver,
+Test(DataReceiver,
      given_aPredeterminedMesurementPacket_when_updatesMesurements_then_theDrawingZoneCoordinatesAreChanged
-     , .init = setup_robot_receiver)
+     , .init = setup_DataReceiver)
 {
     struct Coordinates *north_eastern_drawing_corner = Coordinates_new(MAP_DRAWING_SIDE, MAP_DRAWING_SIDE);
     struct Coordinates *south_eastern_drawing_corner = Coordinates_new(MAP_DRAWING_SIDE, 0);
@@ -323,7 +330,7 @@ Test(RobotReceiver,
     struct Coordinates *north_western_drawing_corner = Coordinates_new(0, MAP_DRAWING_SIDE);
 
     struct WorldCamera *world_camera = WorldCamera_new();
-    RobotReceiver_updateWorld(world_camera, mesurements_mock.world);
+    DataReceiver_updateWorld(world_camera, mesurements_mock.world);
 
     struct Map *map = world_camera->map;
 
@@ -339,14 +346,14 @@ Test(RobotReceiver,
     WorldCamera_delete(world_camera);
 }
 
-Test(RobotReceiver,
+Test(DataReceiver,
      given_aPredeterminedMesurementPacket_when_updatesMesurements_then_theAntennaZoneCoordinatesAreChanged
-     , .init = setup_robot_receiver)
+     , .init = setup_DataReceiver)
 {
     struct Coordinates * antenna_zone_start = Coordinates_new(ANTENNA_ZONE_X + ANTENNA_ZONE_LENGTH, ANTENNA_ZONE_Y);
     struct Coordinates *antenna_zone_stop = Coordinates_new(ANTENNA_ZONE_X, ANTENNA_ZONE_Y);
     struct WorldCamera *world_camera = WorldCamera_new();
-    RobotReceiver_updateWorld(world_camera, mesurements_mock.world);
+    DataReceiver_updateWorld(world_camera, mesurements_mock.world);
 
     struct Map *map = world_camera->map;
 
@@ -358,16 +365,16 @@ Test(RobotReceiver,
     WorldCamera_delete(world_camera);
 }
 
-Test(RobotReceiver,
+Test(DataReceiver,
      given_aPredeterminedMesurementPacket_when_updatesMesurements_then_theObstaclesAreChanged
-     , .init = setup_robot_receiver)
+     , .init = setup_DataReceiver)
 {
     struct Coordinates *coordinates0 = Coordinates_new(TEST_OBSTACLE_0_X, TEST_OBSTACLE_0_Y);
     struct Coordinates *coordinates1 = Coordinates_new(TEST_OBSTACLE_1_X, TEST_OBSTACLE_1_Y);
     struct Coordinates *coordinates2 = Coordinates_new(TEST_OBSTACLE_2_X, TEST_OBSTACLE_2_Y);
 
     struct WorldCamera *world_camera = WorldCamera_new();
-    RobotReceiver_updateWorld(world_camera, mesurements_mock.world);
+    DataReceiver_updateWorld(world_camera, mesurements_mock.world);
 
     struct Map *map = world_camera->map;
 
@@ -384,9 +391,9 @@ Test(RobotReceiver,
     WorldCamera_delete(world_camera);
 }
 
-Test(RobotReceiver,
+Test(DataReceiver,
      given_aPredeterminedMesurementPacket_when_updatesMesurements_then_thePaintingZonesAreChanged
-     , .init = setup_robot_receiver)
+     , .init = setup_DataReceiver)
 {
     struct Pose *paintingZone0 = Pose_new(TEST_PAINTING_0_X, TEST_PAINTING_0_Y, TEST_PAINTING_0_ORIENTATION);
     struct Pose *paintingZone1 = Pose_new(TEST_PAINTING_1_X, TEST_PAINTING_1_Y, TEST_PAINTING_1_ORIENTATION);
@@ -398,7 +405,7 @@ Test(RobotReceiver,
     struct Pose *paintingZone7 = Pose_new(TEST_PAINTING_7_X, TEST_PAINTING_7_Y, TEST_PAINTING_7_ORIENTATION);
 
     struct WorldCamera *world_camera = WorldCamera_new();
-    RobotReceiver_updateWorld(world_camera, mesurements_mock.world);
+    DataReceiver_updateWorld(world_camera, mesurements_mock.world);
 
     struct Map *map = world_camera->map;
 
@@ -421,3 +428,41 @@ Test(RobotReceiver,
     Pose_delete(paintingZone7);
     WorldCamera_delete(world_camera);
 }
+
+Test(DataReceiver, given_aTranslationDataPacket_when_updatesWheels_then_wheelsHaveNewTranslationAndItsValueIsCorrect)
+{
+    struct Coordinates *coordinates = Coordinates_new(RECEIVER_TRANSLATION_X, RECEIVER_TRANSLATION_Y);
+    struct Communication_Coordinates translation_mock = {
+        .x = RECEIVER_TRANSLATION_X,
+        .y = RECEIVER_TRANSLATION_Y
+    };
+
+    struct Wheels *wheels = Wheels_new();
+    DataReceiver_updateWheelsTranslation(wheels, translation_mock);
+
+    cr_assert(wheels->translation_sensor->has_received_new_data);
+    cr_assert(Coordinates_haveTheSameValues(coordinates, wheels->translation_data));
+
+    Coordinates_delete(coordinates);
+    Wheels_delete(wheels);
+}
+
+Test(DataReceiver, given_aRotationDataPacket_when_updatesWheels_then_wheelsHaveNewRotationAndItsValueIsCorrect)
+{
+    struct Angle *angle = Angle_new(RECEIVER_ROTATION);
+    struct Communication_Rotation rotation_mock = {
+        .theta = RECEIVER_ROTATION
+    };
+
+    struct Wheels *wheels = Wheels_new();
+    DataReceiver_updateWheelsRotation(wheels, rotation_mock);
+
+    cr_assert(wheels->rotation_sensor->has_received_new_data);
+    cr_assert(Angle_smallestAngleBetween(angle, wheels->rotation_data) == 0);
+
+    Angle_delete(angle);
+    Wheels_delete(wheels);
+}
+
+
+

@@ -30,6 +30,14 @@ void Logger_startMessageSectionAndAppend(const char *text)
     gtk_text_buffer_insert_at_cursor(logger_text_buffer, text, -1);
 }
 
+void Logger_startRobotConnectionHandlerSectionAndAppend(const char *text)
+{
+    Logger_append("\n\n|-|-| ROBOT CONNECTION HANDLER |-|-|\n\n");
+    gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(logger_widget), gtk_text_buffer_get_mark(logger_text_buffer, "insert"),
+                                 0.0, TRUE, 0.0, 0.0);
+    gtk_text_buffer_insert_at_cursor(logger_text_buffer, text, -1);
+}
+
 void Logger_appendDouble(double value)
 {
     char text_buffer[DEFAULT_TEXT_BUFFER_MAX_LENGTH];

@@ -1,8 +1,9 @@
-#include "world_vision_calibration.h"
-#include "logger.h"
 #include <errno.h>
 #include <math.h>
 #include "opencv2/calib3d/calib3d_c.h"
+
+#include "world_vision_calibration.h"
+#include "logger.h"
 
 /* Flag definitions */
 
@@ -150,7 +151,6 @@ gboolean WorldVisionCalibration_initializeCameraMatrixAndDistortionCoefficientsF
         }
     } while(!isInitialized);
 
-    WorldVision_setWorldCameraCaptureModeUndistorted();
     output_camera->camera_status = INTRINSICALLY_CALIBRATED;
     Logger_startMessageSectionAndAppend("Camera intrinsic parameters loaded from file.");
 

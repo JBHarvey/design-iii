@@ -5,7 +5,6 @@
 #include <strings.h>
 #include <sys/ioctl.h>
 
-
 #include "network.h"
 
 #define BUFFER_SIZE 1024
