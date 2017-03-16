@@ -35,6 +35,8 @@ struct Camera {
 
 gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data);
 
+struct Camera *WorldVision_getWorldCamera(void);
+
 void WorldVision_setMainLoopStatusRunning(void);
 
 void WorldVision_setMainLoopStatusTerminated(void);

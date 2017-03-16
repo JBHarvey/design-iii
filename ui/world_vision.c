@@ -1,13 +1,15 @@
+#include "opencv2/videoio/videoio_c.h"
+#include "opencv2/calib3d/calib3d_c.h"
 #include "world_vision.h"
 #include "world_vision_calibration.h"
 #include "ui_event.h"
-#include "opencv2/videoio/videoio_c.h"
-#include "opencv2/calib3d/calib3d_c.h"
+#include "logger.h"
 
 /* Flags definitions */
 
 enum ThreadStatus {TERMINATED, RUNNING};
 enum CaptureMode {DISTORTED, UNDISTORTED};
+enum TooltipStatus {PRINT, PASS};
 
 /* Constants */
 
@@ -16,6 +18,11 @@ const int WORLD_CAMERA_HEIGHT = 1200;
 const int WORLD_CAMERA_DEVICE_ID = 1;
 const int NUMBER_OF_ROW_OF_CAMERA_MATRIX = 3;
 const int NUMBER_OF_COLUMN_OF_CAMERA_MATRIX = 3;
+const int NUMBER_OF_ROW_OF_TRANSLATION_VECTOR = 3;
+const int NUMBER_OF_COLUMN_OF_TRANSLATION_VECTOR = 1;
+const int NUMBER_OF_ROW_OF_ROTATION_VECTOR = 3;
+const int NUMBER_OF_COLUMN_OF_ROTATION_VECTOR = 1;
+
 const char FILE_PATH_OF_DEBUG_MODE_VIDEO_CAPTURE[] = "./camera_calibration/camera_3015_1/video_feed.avi";
 
 /* Type definitions */
@@ -30,6 +37,7 @@ GMutex world_camera_feeder_mutex;
 
 enum ThreadStatus main_loop_status;
 enum CaptureMode world_camera_capture_mode = DISTORTED;
+enum TooltipStatus world_camera_coordinates_tooltip_status = PRINT;
 struct Camera *world_camera = NULL;
 GdkPixbuf *world_camera_pixbuf = NULL;
 
@@ -57,12 +65,53 @@ gboolean worldCameraCalibrationClickedEventCallback(GtkWidget *widget, gpointer 
     return TRUE;
 }
 
+gboolean worldCameraQueryTooltipEventCallback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
+        GtkTooltip *tooltip,
+        gpointer data)
+{
+    if(world_camera != NULL && world_camera->camera_status == FULLY_CALIBRATED
+       && world_camera_coordinates_tooltip_status == PRINT) {
+        char text_buffer[DEFAULT_TEXT_BUFFER_MAX_LENGTH];
+        struct Point3D coordinates = WorldVisionCalibration_convertImageCoordinatesToWorldCoordinates(PointTypes_createPoint2D(
+                                         x * WORLD_CAMERA_WIDTH / (double) gtk_widget_get_allocated_width(widget),
+                                         y * WORLD_CAMERA_HEIGHT / (double) gtk_widget_get_allocated_height(widget)),
+                                     world_camera);
+        sprintf(text_buffer, "x: %f mm, y: %f mm, z: %f mm", coordinates.x, coordinates.y, coordinates.z);
+        gtk_tooltip_set_text(tooltip, text_buffer);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+static void forceHideWorldCameraCoordinatesTooltip(GtkWidget *widget)
+{
+    world_camera_coordinates_tooltip_status = PASS;
+    gtk_widget_trigger_tooltip_query(widget);
+    world_camera_coordinates_tooltip_status = PRINT;
+}
+
+gboolean worldCameraMotionEventCallback(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+    forceHideWorldCameraCoordinatesTooltip(widget);
+    return TRUE;
+}
+
+struct Camera *WorldVision_getWorldCamera(void)
+{
+    return world_camera;
+}
+
 static void initializeWorldCamera(void)
 {
     world_camera = malloc(sizeof(struct Camera));
     world_camera->camera_intrinsics = malloc(sizeof(struct CameraIntrinsics));
     world_camera->camera_extrinsics = malloc(sizeof(struct CameraExtrinsics));
     world_camera->camera_status = UNCALIBRATED;
+    world_camera->camera_extrinsics->translation_vector = cvCreateMat(NUMBER_OF_ROW_OF_TRANSLATION_VECTOR,
+            NUMBER_OF_COLUMN_OF_TRANSLATION_VECTOR, CV_64F);
+    world_camera->camera_extrinsics->rotation_vector = cvCreateMat(NUMBER_OF_ROW_OF_ROTATION_VECTOR,
+            NUMBER_OF_COLUMN_OF_ROTATION_VECTOR, CV_64F);
 }
 
 static void initializeCameraCapture(struct CameraCapture *output_camera_capture, int capture_width,

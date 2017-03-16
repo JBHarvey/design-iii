@@ -42,6 +42,9 @@ struct Point3D PointTypes_point3DCrossProduct(struct Point3D point_a, struct Poi
 
 struct Point3D PointTypes_transformPoint3D(struct Point3D point, CvMat *rotation_vector, CvMat *translation_vector);
 
+struct Point3D PointTypes_transformInversePoint3D(struct Point3D point, CvMat *rotation_vector,
+        CvMat *translation_vector);
+
 struct Point2DSet *PointTypes_initializePoint2DSet(int number_of_points);
 
 void PointTypes_releasePoint2DSet(struct Point2DSet *point_set);

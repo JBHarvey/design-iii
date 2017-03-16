@@ -63,17 +63,17 @@ struct Point3D PointTypes_transformPoint3D(struct Point3D point, CvMat *rotation
     cvmSet(transformation_matrix, 0, 2, cvmGet(rotation_matrix, 0, 2));
     cvmSet(transformation_matrix, 0, 3, cvmGet(translation_vector, 0, 0));
     cvmSet(transformation_matrix, 1, 0, cvmGet(rotation_matrix, 1, 0));
-    cvmSet(transformation_matrix, 1, 0, cvmGet(rotation_matrix, 1, 1));
-    cvmSet(transformation_matrix, 1, 0, cvmGet(rotation_matrix, 1, 2));
-    cvmSet(transformation_matrix, 1, 0, cvmGet(translation_vector, 1, 0));
+    cvmSet(transformation_matrix, 1, 1, cvmGet(rotation_matrix, 1, 1));
+    cvmSet(transformation_matrix, 1, 2, cvmGet(rotation_matrix, 1, 2));
+    cvmSet(transformation_matrix, 1, 3, cvmGet(translation_vector, 1, 0));
     cvmSet(transformation_matrix, 2, 0, cvmGet(rotation_matrix, 2, 0));
-    cvmSet(transformation_matrix, 2, 0, cvmGet(rotation_matrix, 2, 1));
-    cvmSet(transformation_matrix, 2, 0, cvmGet(rotation_matrix, 2, 2));
-    cvmSet(transformation_matrix, 2, 0, cvmGet(translation_vector, 2, 0));
+    cvmSet(transformation_matrix, 2, 1, cvmGet(rotation_matrix, 2, 1));
+    cvmSet(transformation_matrix, 2, 2, cvmGet(rotation_matrix, 2, 2));
+    cvmSet(transformation_matrix, 2, 3, cvmGet(translation_vector, 2, 0));
     cvmSet(transformation_matrix, 3, 0, 0);
-    cvmSet(transformation_matrix, 3, 0, 0);
-    cvmSet(transformation_matrix, 3, 0, 0);
-    cvmSet(transformation_matrix, 3, 0, 1);
+    cvmSet(transformation_matrix, 3, 1, 0);
+    cvmSet(transformation_matrix, 3, 2, 0);
+    cvmSet(transformation_matrix, 3, 3, 1);
     cvmSet(homogenous_point, 0, 0, point.x);
     cvmSet(homogenous_point, 1, 0, point.y);
     cvmSet(homogenous_point, 2, 0, point.z);
@@ -85,6 +85,63 @@ struct Point3D PointTypes_transformPoint3D(struct Point3D point, CvMat *rotation
 
     cvReleaseMat(&rotation_matrix);
     cvReleaseMat(&transformation_matrix);
+    cvReleaseMat(&homogenous_point);
+    cvReleaseMat(&transformed_point);
+
+    return result;
+}
+
+struct Point3D PointTypes_transformInversePoint3D(struct Point3D point, CvMat *rotation_vector,
+        CvMat *translation_vector)
+{
+    CvMat *rotation_matrix = cvCreateMat(3, 3, CV_64FC1);
+    CvMat *transposed_rotation_matrix = cvCreateMat(3, 3, CV_64FC1);
+    CvMat *opposite_transposed_rotation_matrix = cvCreateMat(3, 3, CV_64FC1);
+    CvMat *translation_partial_matrix = cvCreateMat(3, 1, CV_64FC1);
+    CvMat *inverse_transformation_matrix = cvCreateMat(4, 4, CV_64FC1);
+    CvMat *homogenous_point = cvCreateMat(4, 1, CV_64FC1);
+    CvMat *transformed_point = cvCreateMat(4, 1, CV_64FC1);
+    cvRodrigues2(rotation_vector, rotation_matrix, 0);
+    cvTranspose((CvArr*) rotation_matrix, (CvArr*) transposed_rotation_matrix);
+
+    for(int i = 0; i < 3; i++) {
+        for(int j = 0; j < 3; j++) {
+            cvmSet(opposite_transposed_rotation_matrix, i, j, -1.0 * cvmGet(transposed_rotation_matrix, i, j));
+        }
+    }
+
+    cvMatMul(opposite_transposed_rotation_matrix, translation_vector, translation_partial_matrix);
+    cvmSet(inverse_transformation_matrix, 0, 0, cvmGet(transposed_rotation_matrix, 0, 0));
+    cvmSet(inverse_transformation_matrix, 0, 1, cvmGet(transposed_rotation_matrix, 0, 1));
+    cvmSet(inverse_transformation_matrix, 0, 2, cvmGet(transposed_rotation_matrix, 0, 2));
+    cvmSet(inverse_transformation_matrix, 0, 3, cvmGet(translation_partial_matrix, 0, 0));
+    cvmSet(inverse_transformation_matrix, 1, 0, cvmGet(transposed_rotation_matrix, 1, 0));
+    cvmSet(inverse_transformation_matrix, 1, 1, cvmGet(transposed_rotation_matrix, 1, 1));
+    cvmSet(inverse_transformation_matrix, 1, 2, cvmGet(transposed_rotation_matrix, 1, 2));
+    cvmSet(inverse_transformation_matrix, 1, 3, cvmGet(translation_partial_matrix, 1, 0));
+    cvmSet(inverse_transformation_matrix, 2, 0, cvmGet(transposed_rotation_matrix, 2, 0));
+    cvmSet(inverse_transformation_matrix, 2, 1, cvmGet(transposed_rotation_matrix, 2, 1));
+    cvmSet(inverse_transformation_matrix, 2, 2, cvmGet(transposed_rotation_matrix, 2, 2));
+    cvmSet(inverse_transformation_matrix, 2, 3, cvmGet(translation_partial_matrix, 2, 0));
+    cvmSet(inverse_transformation_matrix, 3, 0, 0);
+    cvmSet(inverse_transformation_matrix, 3, 1, 0);
+    cvmSet(inverse_transformation_matrix, 3, 2, 0);
+    cvmSet(inverse_transformation_matrix, 3, 3, 1);
+    cvmSet(homogenous_point, 0, 0, point.x);
+    cvmSet(homogenous_point, 1, 0, point.y);
+    cvmSet(homogenous_point, 2, 0, point.z);
+    cvmSet(homogenous_point, 3, 0, 1);
+    cvMatMul(inverse_transformation_matrix, homogenous_point, transformed_point);
+
+    struct Point3D result = PointTypes_createPoint3D(cvmGet(transformed_point, 0, 0), cvmGet(transformed_point, 1, 0),
+                            cvmGet(transformed_point, 2, 0));
+
+
+    cvReleaseMat(&rotation_matrix);
+    cvReleaseMat(&transposed_rotation_matrix);
+    cvReleaseMat(&opposite_transposed_rotation_matrix);
+    cvReleaseMat(&translation_partial_matrix);
+    cvReleaseMat(&inverse_transformation_matrix);
     cvReleaseMat(&homogenous_point);
     cvReleaseMat(&transformed_point);
 

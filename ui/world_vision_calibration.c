@@ -1,6 +1,5 @@
 #include "world_vision_calibration.h"
 #include "logger.h"
-#include "point_types.h"
 #include <errno.h>
 #include <math.h>
 #include "opencv2/calib3d/calib3d_c.h"
@@ -12,10 +11,6 @@ enum CameraCalibrationProcessMode {NONE, GET_USER_MOUSE_CLICKS_FOR_CAMERA_POSE_C
 /* Constants */
 
 const int NUMBER_OF_CORNERS_OF_GREEN_SQUARE = 4;
-const int NUMBER_OF_ROW_OF_TRANSLATION_VECTOR = 3;
-const int NUMBER_OF_COLUMN_OF_TRANSLATION_VECTOR = 1;
-const int NUMBER_OF_ROW_OF_ROTATION_VECTOR = 3;
-const int NUMBER_OF_COLUMN_OF_ROTATION_VECTOR = 1;
 const int TWO_DIMENSIONS = 2;
 const int TRHEE_DIMENSIONS = 3;
 const int WIDTH_OF_THE_GREEN_SQUARE_IN_MM = 660;
@@ -162,14 +157,6 @@ gboolean WorldVisionCalibration_initializeCameraMatrixAndDistortionCoefficientsF
     return TRUE;
 }
 
-static void initializeCameraExtrinsics(struct Camera *input_camera)
-{
-    input_camera->camera_extrinsics->translation_vector = cvCreateMat(NUMBER_OF_ROW_OF_TRANSLATION_VECTOR,
-            NUMBER_OF_COLUMN_OF_TRANSLATION_VECTOR, CV_64F);
-    input_camera->camera_extrinsics->rotation_vector = cvCreateMat(NUMBER_OF_ROW_OF_ROTATION_VECTOR,
-            NUMBER_OF_COLUMN_OF_ROTATION_VECTOR, CV_64F);
-}
-
 static double checkReprojectionErrorOnCameraPose(struct Camera *input_camera)
 {
     double reprojection_error = 0.0;
@@ -202,7 +189,6 @@ static gboolean computeCameraPoseFromUserPoints(struct Camera *input_camera)
         g_idle_add((GSourceFunc) computeCameraPoseFromUserPoints, (gpointer) input_camera);
         return FALSE;
     } else {
-        initializeCameraExtrinsics(input_camera);
         cvFindExtrinsicCameraParams2(object_point_set_defining_the_green_square->vector_of_points,
                                      image_point_set_defining_the_green_square->vector_of_points,
                                      input_camera->camera_intrinsics->camera_matrix,
@@ -248,6 +234,8 @@ static gboolean computePlaneEquation(struct Camera *input_camera)
         input_camera->camera_extrinsics->d = -(normal_vector.x * transformed_origin_point.x +
                                                normal_vector.y * transformed_origin_point.y + normal_vector.z *
                                                transformed_origin_point.z) / normal_vector_norm;
+        Logger_startMessageSectionAndAppend("Plane equation: ");
+        Logger_appendPlaneEquation(input_camera);
         input_camera->camera_status = FULLY_CALIBRATED;
         return FALSE; // Even if it succeeds, return FALSE in order to remove this function from the g_idle state.
     }
@@ -277,3 +265,31 @@ gboolean WorldVisionCalibration_calibrate(struct Camera * input_camera)
     return TRUE;
 }
 
+static struct Point3D compute3DPointOnPlaneInCameraFrame(struct Point2D image_coordinates,
+        struct Camera *input_camera)
+{
+    double fx = cvmGet(input_camera->camera_intrinsics->camera_matrix, 0, 0);
+    double fy = cvmGet(input_camera->camera_intrinsics->camera_matrix, 1, 1);
+    double cx = cvmGet(input_camera->camera_intrinsics->camera_matrix, 0, 2);
+    double cy = cvmGet(input_camera->camera_intrinsics->camera_matrix, 1, 2);
+    struct Point2D normalized_image_coordinates = PointTypes_createPoint2D((image_coordinates.x - cx) / fx,
+            (image_coordinates.y - cy) / fy);
+    double scale_factor = -input_camera->camera_extrinsics->d / (input_camera->camera_extrinsics->a *
+                          normalized_image_coordinates.x + input_camera->camera_extrinsics->b * normalized_image_coordinates.y +
+                          input_camera->camera_extrinsics->c);
+    struct Point3D point = PointTypes_createPoint3D(scale_factor * normalized_image_coordinates.x,
+                           scale_factor * normalized_image_coordinates.y, scale_factor);
+
+    return point;
+}
+
+struct Point3D WorldVisionCalibration_convertImageCoordinatesToWorldCoordinates(struct Point2D image_coordinates,
+        struct Camera *input_camera)
+{
+    struct Point3D result_in_camera_frame = compute3DPointOnPlaneInCameraFrame(image_coordinates, input_camera);
+    struct Point3D result = PointTypes_transformInversePoint3D(result_in_camera_frame,
+                            input_camera->camera_extrinsics->rotation_vector,
+                            input_camera->camera_extrinsics->translation_vector);
+
+    return result;
+}
