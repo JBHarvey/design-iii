@@ -1,5 +1,16 @@
 #include "DataReceiver.h"
 
+struct DataReceiver_Callbacks DataReceiver_fetchCallbacks(void)
+{
+    struct DataReceiver_Callbacks callbacks = {
+        .updateWorld = &DataReceiver_updateWorld,
+        .updateWheelsTranslation = &DataReceiver_updateWheelsTranslation,
+        .updateWheelsRotation = &DataReceiver_updateWheelsRotation
+    };
+
+    return callbacks;
+}
+
 static void update_table_corners(struct Map *map, struct Communication_Environment environment)
 {
     int northEastX = environment.north_eastern_table_corner.x;

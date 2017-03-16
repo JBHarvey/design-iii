@@ -4,6 +4,19 @@
 
 struct Mesurements mesurements_mock;
 
+Test(DataReceiver, given__when_fetchDataReceiverCallbacks_then_theCorrectSturctureIsReturned)
+{
+    void (*updateWorld)(struct WorldCamera *, struct Communication_World) = &DataReceiver_updateWorld;
+    void (*updateWheelsTranslation)(struct Wheels *,
+                                    struct Communication_Translation) = &DataReceiver_updateWheelsTranslation;
+    void (*updateWheelsRotation)(struct Wheels *, struct Communication_Rotation) = &DataReceiver_updateWheelsRotation;
+
+    struct DataReceiver_Callbacks callbacks = DataReceiver_fetchCallbacks();
+    cr_assert_eq(callbacks.updateWorld, updateWorld);
+    cr_assert_eq(callbacks.updateWheelsTranslation, updateWheelsTranslation);
+    cr_assert_eq(callbacks.updateWheelsRotation, updateWheelsRotation);
+}
+
 // World data
 const int RECEIVER_TEST_ROBOT_RADIUS = 1750;
 const int RECEIVER_TEST_ROBOT_X = 9000;
