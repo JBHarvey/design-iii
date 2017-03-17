@@ -72,4 +72,17 @@ struct __attribute__((__packed__)) Communication_World {
     struct Communication_Object robot;
 };
 
+struct __attribute__((__packed__)) Command_Translate {
+    int x;
+    int y;
+};
+
+struct __attribute__((__packed__)) Command_Rotate {
+    int theta;
+};
+struct __attribute__((__packed__)) Command_LightRedLED {};
+struct __attribute__((__packed__)) Command_LightGreenLED {};
+struct __attribute__((__packed__)) Command_RisePen {};
+struct __attribute__((__packed__)) Command_LowerPen {};
+
 #endif // COMMUNICATIONSTRUCTURES_H_
