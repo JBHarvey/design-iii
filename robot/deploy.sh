@@ -45,4 +45,3 @@ make all
 #Brings back the runnable and runs it
 cd ../..
 cp build/deploy/robot-main .
-./robot-main
