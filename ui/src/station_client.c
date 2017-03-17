@@ -8,7 +8,7 @@
 #include <strings.h>
 
 #include "station_client.h"
-#include "station-main.h"
+#include "station_interface.h"
 #include "logger.h"
 
 /* Constants */

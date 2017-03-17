@@ -24,9 +24,9 @@ $(ODIR)/%.o: %.c $(DEPS)
 	@rm -f $(ODIR)/$*.d.tmp
 
 station-main: $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) 
 
-all: $(ODIR)/resources.o station-main 
+all: resources.c station-main 
 
 .PHONY: clean
 
