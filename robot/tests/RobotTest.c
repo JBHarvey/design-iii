@@ -8,10 +8,15 @@ Test(Robot, creation_destruction)
 {
     struct Robot *robot = Robot_new();
     struct Pose *zero = Pose_zero();
+    struct State *default_state = State_new(zero);
+
     cr_assert(Pose_haveTheSameValues(robot->current_state->pose, zero));
+    cr_assert(Flags_haveTheSameValues(robot->current_state->flags, default_state->flags));
+
 
     Robot_delete(robot);
     Pose_delete(zero);
+    State_delete(default_state);
 }
 
 void setup_robot(void)

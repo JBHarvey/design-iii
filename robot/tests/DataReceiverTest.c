@@ -4,6 +4,19 @@
 
 struct Mesurements mesurements_mock;
 
+Test(DataReceiver, given__when_fetchDataReceiverCallbacks_then_theCorrectSturctureIsReturned)
+{
+    void (*updateWorld)(struct WorldCamera *, struct Communication_World) = &DataReceiver_updateWorld;
+    void (*updateWheelsTranslation)(struct Wheels *,
+                                    struct Communication_Translation) = &DataReceiver_updateWheelsTranslation;
+    void (*updateWheelsRotation)(struct Wheels *, struct Communication_Rotation) = &DataReceiver_updateWheelsRotation;
+
+    struct DataReceiver_Callbacks callbacks = DataReceiver_fetchCallbacks();
+    cr_assert_eq(callbacks.updateWorld, updateWorld);
+    cr_assert_eq(callbacks.updateWheelsTranslation, updateWheelsTranslation);
+    cr_assert_eq(callbacks.updateWheelsRotation, updateWheelsRotation);
+}
+
 // World data
 const int RECEIVER_TEST_ROBOT_RADIUS = 1750;
 const int RECEIVER_TEST_ROBOT_X = 9000;
@@ -51,8 +64,11 @@ const int TEST_PAINTING_7_ORIENTATION = HALF_PI;
 
 // Wheels data
 const int RECEIVER_TRANSLATION_X = 40;
+const int RECEIVER_TRANSLATION_X_SPEED = 400;
 const int RECEIVER_TRANSLATION_Y = -10;
+const int RECEIVER_TRANSLATION_Y_SPEED = -100;
 const int RECEIVER_ROTATION = 31416;
+const int RECEIVER_ROTATION_SPEED = 314160;
 
 void setup_DataReceiver(void)
 {
@@ -431,36 +447,49 @@ Test(DataReceiver,
 
 Test(DataReceiver, given_aTranslationDataPacket_when_updatesWheels_then_wheelsHaveNewTranslationAndItsValueIsCorrect)
 {
-    struct Coordinates *coordinates = Coordinates_new(RECEIVER_TRANSLATION_X, RECEIVER_TRANSLATION_Y);
-    struct Communication_Coordinates translation_mock = {
-        .x = RECEIVER_TRANSLATION_X,
-        .y = RECEIVER_TRANSLATION_Y
+    struct Coordinates *translation_coordinates = Coordinates_new(RECEIVER_TRANSLATION_X, RECEIVER_TRANSLATION_Y);
+    struct Coordinates *translation_speed = Coordinates_new(RECEIVER_TRANSLATION_X_SPEED, RECEIVER_TRANSLATION_Y_SPEED);
+    struct Communication_Translation translation_mock = {
+        .movement = {
+            .x = RECEIVER_TRANSLATION_X,
+            .y = RECEIVER_TRANSLATION_Y
+        },
+        .speeds = {
+            .x = RECEIVER_TRANSLATION_X_SPEED,
+            .y = RECEIVER_TRANSLATION_Y_SPEED
+        }
     };
 
     struct Wheels *wheels = Wheels_new();
     DataReceiver_updateWheelsTranslation(wheels, translation_mock);
 
     cr_assert(wheels->translation_sensor->has_received_new_data);
-    cr_assert(Coordinates_haveTheSameValues(coordinates, wheels->translation_data));
+    cr_assert(Coordinates_haveTheSameValues(translation_coordinates, wheels->translation_data_movement));
+    cr_assert(Coordinates_haveTheSameValues(translation_speed, wheels->translation_data_speed));
 
-    Coordinates_delete(coordinates);
+    Coordinates_delete(translation_coordinates);
+    Coordinates_delete(translation_speed);
     Wheels_delete(wheels);
 }
 
 Test(DataReceiver, given_aRotationDataPacket_when_updatesWheels_then_wheelsHaveNewRotationAndItsValueIsCorrect)
 {
-    struct Angle *angle = Angle_new(RECEIVER_ROTATION);
+    struct Angle *rotation_movement = Angle_new(RECEIVER_ROTATION);
+    struct Angle *rotation_speed = Angle_new(RECEIVER_ROTATION_SPEED);
     struct Communication_Rotation rotation_mock = {
-        .theta = RECEIVER_ROTATION
+        .theta = RECEIVER_ROTATION,
+        .gamma = RECEIVER_ROTATION_SPEED
     };
 
     struct Wheels *wheels = Wheels_new();
     DataReceiver_updateWheelsRotation(wheels, rotation_mock);
 
     cr_assert(wheels->rotation_sensor->has_received_new_data);
-    cr_assert(Angle_smallestAngleBetween(angle, wheels->rotation_data) == 0);
+    cr_assert(Angle_smallestAngleBetween(rotation_movement, wheels->rotation_data_movement) == 0);
+    cr_assert(Angle_smallestAngleBetween(rotation_speed, wheels->rotation_data_speed) == 0);
 
-    Angle_delete(angle);
+    Angle_delete(rotation_movement);
+    Angle_delete(rotation_speed);
     Wheels_delete(wheels);
 }
 

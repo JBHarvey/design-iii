@@ -9,6 +9,7 @@ struct Robot {
     struct DefaultValues *default_values;
     struct State *current_state;
     struct WorldCamera *world_camera;
+    struct Wheels *wheels;
 };
 
 struct Robot *Robot_new();

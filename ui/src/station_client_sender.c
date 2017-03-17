@@ -59,18 +59,6 @@ const int TEST_PAINTING_7_X = 4060;
 const int TEST_PAINTING_7_Y = 8500;
 const int TEST_PAINTING_7_ORIENTATION = HALF_PI;
 
-void StationClientSender_sendStartPacket(void)
-{
-    uint8_t data = PACKET_START;
-    addPacket(&data, sizeof(data));
-}
-
-void StationClientSender_sendContinuePacket(void)
-{
-    uint8_t data = PACKET_CONTINUE;
-    addPacket(&data, sizeof(data));
-}
-
 static void cleanExitIfMainLoopTerminated(void)
 {
     if(main_loop_status == TERMINATED) {
@@ -85,7 +73,7 @@ void StationClientSender_startSendingWorldInformationsToRobot(struct StationClie
         cleanExitIfMainLoopTerminated();
 
         uint8_t data[1 + sizeof(struct Communication_World)];
-        data[0] = PACKET_WORLD;
+        data[0] = DATA_WORLD;
 
         struct Communication_World communication_world = {
             .environment = {
