@@ -3,12 +3,14 @@
 
 #include <gtk/gtk.h>
 #include "world_vision.h"
+#include "point_types.h"
 
 gboolean WorldVisionCalibration_initializeCameraMatrixAndDistortionCoefficientsFromFile(GtkWidget *widget,
-        struct CameraIntrinsics *output_camera_intrinsics);
+        struct Camera *output_camera);
 
-gboolean WorldVisionCalibration_gatherUserPointsForCameraPoseComputation(int input_index);
+gboolean WorldVisionCalibration_calibrate(struct Camera *input_camera);
 
-gboolean WorldVisionCalibration_computeCameraPoseFromUserPoints(struct Camera *input_camera);
+struct Point3D WorldVisionCalibration_convertImageCoordinatesToWorldCoordinates(struct Point2D image_coordinates,
+        struct Camera *input_camera);
 
 #endif // __WORLD_VISION_CALIBRATION

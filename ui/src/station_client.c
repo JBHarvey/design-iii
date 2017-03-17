@@ -8,7 +8,8 @@
 #include <strings.h>
 
 #include "station_client.h"
-#include "station-main.h"
+#include "station_interface.h"
+#include "logger.h"
 
 /* Constants */
 
@@ -90,8 +91,10 @@ static _Bool initTCPClient(struct StationClient *station_client)
 
 gpointer StationClient_init(struct StationClient *station_client)
 {
+    Logger_startRobotConnectionHandlerSectionAndAppend("Trying to connect to the robot...");
+
     while(!initTCPClient(station_client)) {
-        printf("\nConnection to robot failed. Retry.\n");
+        Logger_startRobotConnectionHandlerSectionAndAppend("Connection to robot failed. Retrying...");
 
         if(main_loop_status == TERMINATED) {
             return (gpointer) FALSE;
@@ -99,7 +102,7 @@ gpointer StationClient_init(struct StationClient *station_client)
     }
 
     robot_connection_status = CONNECTED;
-    printf("\nConnected !\n");
+    Logger_startRobotConnectionHandlerSectionAndAppend("Connected !");
     return (gpointer) TRUE;
 }
 
