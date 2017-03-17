@@ -156,7 +156,10 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 
 // THESE FUNCTIONS ARE NEITHER TESTED NOR WORKING YET.
 // THIS WILL COME WITH INTEGRATION TESTS
-void RobotServer_sendTranslateCommand(struct Command_Translate command_translate) {}
+void RobotServer_sendTranslateCommand(struct Command_Translate command_translate)
+{
+}
+
 void RobotServer_sendRotateCommand(struct Command_Rotate command_rotate) {}
 void RobotServer_sendLightRedLEDCommand(struct Command_LightRedLED command_light_red_led) {}
 void RobotServer_sendLightGreenLEDCommand(struct Command_LightGreenLED command_light_green_led) {}

@@ -14,6 +14,7 @@ int main(int argc, char *argv[])
     logger = Logger_new();
 
     /* Logger test */
+    /*
     struct DataReceiver_Callbacks test_callbacks = DataReceiver_fetchCallbacks();
     test_callbacks = Logger_startLoggingDataReceiverAndReturnCallbacks(logger, test_callbacks);
 
@@ -25,13 +26,15 @@ int main(int argc, char *argv[])
 
     (*(test_callbacks.updateWheelsRotation))(robot->wheels, rotation);
     (*(test_callbacks.updateWheelsTranslation))(robot->wheels, translation);
-
+    */
     //    while(1) {
     //      RobotServer_communicate(robot_server, 75);
     printf("IT LIVES\n");
     //   }
 
-    test_callbacks = Logger_stopLoggingDataReceiverAndReturnCallbacks(logger);
+    /*
+        test_callbacks = Logger_stopLoggingDataReceiverAndReturnCallbacks(logger);
+    */
 
     Logger_delete(logger);
     RobotServer_delete(robot_server);
