@@ -6,6 +6,7 @@
 #include <ev.h>
 #include <stdlib.h>
 #include <strings.h>
+#include <termios.h>
 
 #include "RobotServer.h"
 
@@ -69,6 +70,13 @@ static int initTTYACM(struct ev_loop *loop, char *ttyacm_path)
         return -1;
     }
 
+    struct termios options;
+    tcgetattr(fd, &options);
+    options.c_iflag &= ~(INLCR | IGNCR | ICRNL | IXON | IXOFF);
+    options.c_oflag &= ~(ONLCR | OCRNL);
+    options.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+    tcsetattr(fd, TCSANOW, &options);
+
     uint8_t data[2] = {255, 0};
 
     if(write(fd, data, sizeof(data)) != sizeof(data)) {
@@ -90,7 +98,7 @@ static int initTTYACM(struct ev_loop *loop, char *ttyacm_path)
 
 struct RobotServer *RobotServer_new(struct Robot *new_robot, int new_port, char *ttyacm_path)
 {
-    struct ev_loop *new_loop = ev_default_loop(EVBACKEND_EPOLL | EVFLAG_NOENV);
+    struct ev_loop *new_loop = ev_default_loop(0);
 
     if(!new_loop) {
         perror("Error in initializing libev. Bad $LIBEV_FLAGS in the environment?");
