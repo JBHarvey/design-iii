@@ -1,4 +1,5 @@
 #include "ui_builder.h"
+#include "resources.c"
 #include "logger.h"
 
 GtkWidget* buildUiAndReturnTopLevelWindow(const gchar* resource_path)
@@ -11,6 +12,7 @@ GtkWidget* buildUiAndReturnTopLevelWindow(const gchar* resource_path)
     */
     gtk_builder_connect_signals(builder, NULL);
     GObject *ui_window = gtk_builder_get_object(builder, "ui_window");
+    g_object_set(gtk_widget_get_settings(GTK_WIDGET(ui_window)), "gtk-tooltip-timeout", 0, NULL);
     Logger_initialize(GTK_WIDGET(gtk_builder_get_object(builder, "logger")));
     g_object_unref(builder);
 

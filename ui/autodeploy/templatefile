@@ -1,10 +1,10 @@
 CC=clang
-CFLAGS+= -g -O0 `pkg-config --cflags gtk+-3.0 opencv gmodule-2.0` -fsanitize=address
-LIBS=`pkg-config --libs gtk+-3.0 opencv gmodule-2.0`
+CFLAGS+= -g -O0 `pkg-config --cflags gtk+-3.0 opencv gmodule-2.0` -I/usr/include/libevdev-1.0 -fsanitize=address
+LIBS=`pkg-config --libs gtk+-3.0 opencv gmodule-2.0` -lev
 ODIR=obj
 RDIR=station-resources
-DEPS=ui_builder.h ui_event.h world_vision.h world_vision_calibration.h logger.h
-_OBJ=station-main.o resources.o ui_builder.o ui_event.o world_vision.o world_vision_calibration.o logger.o
+DEPS=HFILES
+_OBJ=OFILES
 OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
 _RES=ui.gresource.xml
 RES=$(patsubst %,$(RDIR)/%,$(_RES))
@@ -16,6 +16,7 @@ resources.c: $(RES)
 
 $(ODIR)/%.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
+	# Generate dependencies tracker files (.ḋ)
 	$(CC) -MM $(CFLAGS) $*.c > $(ODIR)/$*.d
 	@cp -f $(ODIR)/$*.d $(ODIR)/$*.d.tmp
 	@sed -e 's/.*://' -e 's/\\$$//' < $(ODIR)/$*.d.tmp | fmt -1 | \
@@ -23,7 +24,7 @@ $(ODIR)/%.o: %.c $(DEPS)
 	@rm -f $(ODIR)/$*.d.tmp
 
 station-main: $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) 
 
 all: resources.c station-main 
 
@@ -32,4 +33,6 @@ all: resources.c station-main
 clean:
 	rm -f $(ODIR)/*.o $(ODIR)/*.d
 	rm -f station-main
-	rm -f resources.c
+	rm -f ./*.c
+	rm -f ./*.h
+

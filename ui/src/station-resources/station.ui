@@ -145,7 +145,10 @@
                       <object class="GtkEventBox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="has_tooltip">True</property>
                         <signal name="button-press-event" handler="worldCameraButtonPressEventCallback" swapped="no"/>
+                        <signal name="motion-notify-event" handler="worldCameraMotionEventCallback" swapped="no"/>
+                        <signal name="query-tooltip" handler="worldCameraQueryTooltipEventCallback" swapped="no"/>
                         <child>
                           <object class="GtkDrawingArea" id="world_camera">
                             <property name="width_request">200</property>
