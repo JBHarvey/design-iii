@@ -30,6 +30,7 @@
 *.app
 *robot-main
 *station-main
+*RobotLogs.log
 
 # Automation-related files
 *ToCompile
