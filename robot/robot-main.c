@@ -12,6 +12,9 @@ int main(int argc, char *argv[])
     robot_server = RobotServer_new(robot, port);
 
     logger = Logger_new();
+
+    /* Logger test */
+    /*
     struct DataReceiver_Callbacks test_callbacks = DataReceiver_fetchCallbacks();
     test_callbacks = Logger_startLoggingDataReceiverAndReturnCallbacks(logger, test_callbacks);
 
@@ -23,6 +26,7 @@ int main(int argc, char *argv[])
 
     (*(test_callbacks.updateWheelsRotation))(robot->wheels, rotation);
     (*(test_callbacks.updateWheelsTranslation))(robot->wheels, translation);
+    */
 
     //    while(1) {
     //      RobotServer_communicate(robot_server, 75);
