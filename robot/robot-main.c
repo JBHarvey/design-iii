@@ -3,16 +3,17 @@
 
 struct RobotServer *robot_server;
 const int port = 35794;
+//const char *ttyACM = "test";
+const char *ttyACM = "/dev/ttyACM0";
 
 int main(int argc, char *argv[])
 {
     struct Robot *robot = Robot_new();
-    robot_server = RobotServer_new(robot, port);
+    robot_server = RobotServer_new(robot, port, ttyACM);
 
-    //    while(1) {
-    //      RobotServer_communicate(robot_server, 75);
-    printf("IT LIVES\n");
-    //   }
+    while(1) {
+        RobotServer_communicate(robot_server);
+    }
 
     RobotServer_delete(robot_server);
     Robot_delete(robot);
