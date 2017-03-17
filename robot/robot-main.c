@@ -5,11 +5,13 @@
 struct Logger *logger;
 struct RobotServer *robot_server;
 const int port = 35794;
+//const char *ttyACM = "test";
+const char *ttyACM = "/dev/ttyACM0";
 
 int main(int argc, char *argv[])
 {
     struct Robot *robot = Robot_new();
-    robot_server = RobotServer_new(robot, port);
+    robot_server = RobotServer_new(robot, port, ttyACM);
 
     logger = Logger_new();
 
@@ -27,10 +29,10 @@ int main(int argc, char *argv[])
     (*(test_callbacks.updateWheelsRotation))(robot->wheels, rotation);
     (*(test_callbacks.updateWheelsTranslation))(robot->wheels, translation);
     */
-    //    while(1) {
-    //      RobotServer_communicate(robot_server, 75);
-    printf("IT LIVES\n");
-    //   }
+
+    while(1) {
+        RobotServer_communicate(robot_server);
+    }
 
     /*
         test_callbacks = Logger_stopLoggingDataReceiverAndReturnCallbacks(logger);
