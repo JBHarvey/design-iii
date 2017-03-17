@@ -15,6 +15,4 @@ void Logger_updateWorld(struct WorldCamera *world_camera, struct Communication_W
 void Logger_updateWheelsTranslation(struct Wheels *wheels, struct Communication_Translation translation);
 void Logger_updateWheelsRotation(struct Wheels *wheels, struct Communication_Rotation rotation);
 
-void Logger_dummyAction(struct Robot *robot);
-
 #endif // LOGGER_H_

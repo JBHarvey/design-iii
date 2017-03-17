@@ -21,7 +21,7 @@ struct Logger *Logger_new(void)
     FILE *new_log_file = fopen("RobotLogs.log", "a+"); // a+ (create + append)
     fprintf(new_log_file, "\n\n\n%s%s------------ NEW EXECUTION ------------\n", TAB, TAB);
 
-    struct Logger *pointer = (struct Logger *) malloc(sizeof(struct Logger));
+    struct Logger *pointer = malloc(sizeof(struct Logger));
 
     pointer->object = new_object;
     pointer->original_data_receiver_callbacks = new_data_receiver_callbacks;

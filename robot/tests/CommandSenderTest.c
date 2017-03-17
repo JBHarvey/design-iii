@@ -112,7 +112,7 @@ Test(CommandSender, given_aCommandSenderCallbacks_when_changesCommandSenderTarge
 
 }
 
-Test(CommandSender, given_aTranlateCallback_when_askedToSendCommand_then_theCallbackIsCalled
+Test(CommandSender, given_aTranslateCallback_when_askedToSendCommand_then_theCallbackIsCalled
      , .init = setup_CommandSender
      , .fini = teardown_CommandSender)
 {

@@ -16,7 +16,7 @@ void RobotServer_delete(struct RobotServer *robot_server);
 
 void RobotServer_communicate(struct RobotServer *robot_server);
 
-bool writeTTYACMPacket(struct RobotServer *robot_server, uint8_t type, uint8_t *data, unsigned int length);
+_Bool writeTTYACMPacket(struct RobotServer *robot_server, uint8_t type, uint8_t *data, unsigned int length);
 
 // THESE FUNCTIONS ARE NEITHER TESTED NOR WORKING YET.
 // THIS WILL COME WITH INTEGRATION TESTS

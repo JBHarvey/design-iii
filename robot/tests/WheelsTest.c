@@ -45,7 +45,7 @@ Test(Wheels, creation_destruction
     Angle_delete(angle_zero);
 }
 
-Test(Wheels, given_anglesAndCoordinates_when_receivesData_then_theAngleAndCoordinatesCorrespondToThePoseComponents
+Test(Wheels, given_anglesAndCoordinates_when_receivesData_then_theAnglesAndCoordinatesCorrespondToThePoseComponents
      , .init = setup_wheels
      , .fini = teardown_wheels)
 {
@@ -94,7 +94,7 @@ Test(Wheels, given_coordinates_when_receivesData_then_theRotationSensorHasReceiv
     Coordinates_delete(coordinates);
 }
 
-Test(Wheels, given_receivedData_when_readsRotationData_then_angleAreModifiedToCorrespondTheReceivedOnes
+Test(Wheels, given_receivedData_when_readsRotationData_then_anglesAreModifiedToCorrespondTheReceivedOnes
      , .init = setup_wheels
      , .fini = teardown_wheels)
 {

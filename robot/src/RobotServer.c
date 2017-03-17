@@ -12,7 +12,7 @@
 
 extern struct RobotServer *robot_server;
 
-static bool initTCPServer(struct ev_loop *loop, unsigned short port)
+static _Bool initTCPServer(struct ev_loop *loop, unsigned short port)
 {
     int sd;
     struct sockaddr_in addr;
@@ -145,12 +145,8 @@ void RobotServer_delete(struct RobotServer *robot_server)
     }
 }
 
-<<< <<< < HEAD
-void RobotServer_communicate(struct RobotServer *robot_server, unsigned int milliseconds)
-== == == =
-
-    void RobotServer_communicate(struct RobotServer *robot_server)
->>>>>>> master {
+void RobotServer_communicate(struct RobotServer *robot_server)
+{
     ev_run(robot_server->loop, EVRUN_NOWAIT);
 }
 
@@ -249,9 +245,9 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
 #include <sys/ioctl.h>
 
 static uint8_t TTYACM_header[2];
-static bool TTYACM_header_stored;
+static _Bool TTYACM_header_stored;
 
-static bool readTTYACMPacket(int fd)
+static _Bool readTTYACMPacket(int fd)
 {
     int bytes_available = 0;
     ioctl(fd, FIONREAD, &bytes_available);
@@ -276,7 +272,7 @@ static bool readTTYACMPacket(int fd)
     return 0;
 }
 
-bool writeTTYACMPacket(struct RobotServer *robot_server, uint8_t type, uint8_t *data, unsigned int length)
+_Bool writeTTYACMPacket(struct RobotServer *robot_server, uint8_t type, uint8_t *data, unsigned int length)
 {
     if(length > UINT8_MAX) {
         return 0;
