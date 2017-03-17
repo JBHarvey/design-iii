@@ -2,12 +2,14 @@
 #define COMMUNICATIONSTRUCTURES_H_
 
 enum {
-    PACKET_START,
-    PACKET_CONTINUE,
-    PACKET_WORLD,
+    INVALID_PACKET,
+    TRANSLATION_DATA,
     TRANSLATION_COMMAND,
     ROTATION_COMMAND,
-    MANCHESTER_DATA
+    MANCHESTER_DATA,
+    PACKET_START,
+    PACKET_CONTINUE,
+    PACKET_WORLD
 };
 
 
@@ -16,6 +18,22 @@ void sendStartPacket();
 struct __attribute__((__packed__)) Communication_Coordinates {
     int x;
     int y;
+};
+
+struct __attribute__((__packed__)) Communication_Translation {
+    struct Communication_Coordinates movement;
+    struct Communication_Coordinates speeds;
+};
+
+struct __attribute__((__packed__)) Communication_Rotation {
+    int theta;
+    int gamma;
+};
+
+struct __attribute__((__packed__)) Communication_Manchester {
+    int portrait_number;
+    int scale_factor;
+    char orientation; // Possibilities 'N' 'E' 'S' 'W'
 };
 
 struct __attribute__((__packed__)) Communication_Pose {
@@ -54,14 +72,17 @@ struct __attribute__((__packed__)) Communication_World {
     struct Communication_Object robot;
 };
 
-struct __attribute__((__packed__)) Communication_Rotation {
-    int theta;
+struct Command_Translate {
+    int x;
+    int y;
 };
 
-struct __attribute__((__packed__)) Communication_Manchester {
-    int portrait_number;
-    int scale_factor;
-    char orientation[5];
+struct Command_Rotate {
+    int theta;
 };
+struct Command_LightRedLED {};
+struct Command_LightGreenLED {};
+struct Command_RisePen {};
+struct Command_LowerPen {};
 
 #endif // COMMUNICATIONSTRUCTURES_H_
