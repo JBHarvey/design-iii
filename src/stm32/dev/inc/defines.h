@@ -47,34 +47,57 @@
 #define MSG_MANCH "Manchester"
 #define MSG_ERR "Etat invalide"
 
-/* PID */
-// SPEED
-// MOTOR 1
-#define PID_SPEED1_KP 15
-#define PID_SPEED1_KI 1
-#define PID_SPEED1_KD 0
-// MOTOR 2
-#define PID_SPEED2_KP 15
-#define PID_SPEED2_KI 1
-#define PID_SPEED2_KD 0
-// MOTOR 3
-#define PID_SPEED3_KP 15
-#define PID_SPEED3_KI 1
-#define PID_SPEED3_KD 0
-// MOTOR 4
-#define PID_SPEED4_KP 15
-#define PID_SPEED4_KI 1
-#define PID_SPEED4_KD 0
+/* PID1 */
+// Parametres en vitesse
+#define PID_SPEED1_KP 4.87
+#define PID_SPEED1_KI 107.6
+#define PID_SPEED1_KD 0.0
+#define PID_SPEED1_N 0.0
 
-#define PID_SPEED_KP 15
-#define PID_SPEED_KI  1//0.6698803
-#define PID_SPEED_KD 0
+// Parametres en position
+#define PID_POSITION1_KP  800.33
+#define PID_POSITION1_KI 0.001
+#define PID_POSITION1_KD 100.48
+#define PID_POSITION1_N 170.0
 
-// Param�tres en position
-#define PID_POSITION_KP  400.33
-#define PID_POSITION_KI 0.001
-#define PID_POSITION_KD 100.48
-#define PID_POSITION_N 170
+/* PID2 */
+// Parametres en vitesse
+#define PID_SPEED2_KP 4.87
+#define PID_SPEED2_KI 107.6
+#define PID_SPEED2_KD 0.0
+#define PID_SPEED2_N 0.0
+
+// Parametres en position
+#define PID_POSITION2_KP  800.33
+#define PID_POSITION2_KI 0.001
+#define PID_POSITION2_KD 100.48
+#define PID_POSITION2_N 170.0
+
+/* PID3 */
+// Parametres en vitesse
+#define PID_SPEED3_KP 4.87
+#define PID_SPEED3_KI 107.6
+#define PID_SPEED3_KD 0.0
+#define PID_SPEED3_N 0.0
+
+// Parametres en position
+#define PID_POSITION3_KP  800.33
+#define PID_POSITION3_KI 0.001
+#define PID_POSITION3_KD 100.48
+#define PID_POSITION3_N 170.0
+
+/* PID4 */
+// Parametres en vitesse
+#define PID_SPEED4_KP 4.87
+#define PID_SPEED4_KI 107.6
+#define PID_SPEED4_KD 0.0
+#define PID_SPEED4_N 0.0
+
+// Parametres en position
+#define PID_POSITION4_KP  800.33
+#define PID_POSITION4_KI 0.001
+#define PID_POSITION4_KD 100.48
+#define PID_POSITION4_N 170.0
 
 #define MAX_DISPLAY_CHARACTERS 8
 #define PI 3.14159
@@ -86,6 +109,8 @@
 #define MIN_SPEED_COMMAND -60
 #define MIN_POS_COMMAND -1
 #define MAX_POS_COMMAND 1
+
+#define Y_MOVE_DATA_BUFFER_INDEX 4
 
 // Pour utiliser la librairie sans que sa plante
 #define ARM_CORTEX_M3
