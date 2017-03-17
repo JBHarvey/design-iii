@@ -9,6 +9,7 @@
 
 #include "station_client.h"
 #include "station_interface.h"
+#include "station_client_sender.h"
 #include "logger.h"
 
 /* Constants */
@@ -103,6 +104,7 @@ gpointer StationClient_init(struct StationClient *station_client)
 
     robot_connection_status = CONNECTED;
     Logger_startRobotConnectionHandlerSectionAndAppend("Connected !");
+    StationClientSender_startSendingWorldInformationsToRobot(station_client);
     return (gpointer) TRUE;
 }
 
@@ -113,35 +115,13 @@ gboolean StationClient_communicate(struct StationClient *station_client, unsigne
 }
 
 
-static void callbackStartPacket()
+static void startPacketCallback()
 {
 }
 
-static void callbackContinuePacket()
+static void continuePacketCallback()
 {
 }
-
-void sendStartPacket()
-{
-    uint8_t data = PACKET_START;
-    addPacket(&data, sizeof(data));
-}
-
-void sendContinuePacket()
-{
-    uint8_t data = PACKET_CONTINUE;
-    addPacket(&data, sizeof(data));
-}
-
-/*
-void sendWorldToRobot(struct Communication_World communication_world)
-{
-    uint8_t data[1 + sizeof(struct Communication_World)];
-    data[0] = PACKET_WORLD;
-    memcpy(data + 1, &communication_world, sizeof(struct Communication_World));
-    addPacket(data, sizeof(data));
-}
-*/
 
 void handleReceivedPacket(uint8_t *data, uint32_t length)
 {
@@ -151,11 +131,9 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 
     switch(data[0]) {
         case PACKET_START:
-            callbackStartPacket();
             break;
 
         case PACKET_CONTINUE:
-            callbackContinuePacket();
             break;
 
         case PACKET_WORLD:
