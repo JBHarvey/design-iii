@@ -28,8 +28,6 @@ int main(int argc, char *argv[])
 
     while(1) {
         RobotServer_communicate(robot_server);
-        usleep(1000000);
-        printf("ok\n");
     }
 
     RobotServer_delete(robot_server);
