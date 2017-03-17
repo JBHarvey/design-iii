@@ -11,21 +11,6 @@ int main(int argc, char *argv[])
     struct Robot *robot = Robot_new();
     robot_server = RobotServer_new(robot, port, ttyACM);
 
-    uint64_t data = -1;
-    printf("writing packet\n");
-    if(writeTTYACMPacket(robot_server, 0, &data, sizeof(data))) {
-        printf("wrote packet\n");
-    }
-    if(writeTTYACMPacket(robot_server, 0, &data, sizeof(data))) {
-        printf("wrote packet\n");
-    }
-    if(writeTTYACMPacket(robot_server, 0, &data, sizeof(data))) {
-        printf("wrote packet\n");
-    }
-    if(writeTTYACMPacket(robot_server, 0, &data, sizeof(data))) {
-        printf("wrote packet\n");
-    }
-
     while(1) {
         RobotServer_communicate(robot_server);
     }
