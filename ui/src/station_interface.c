@@ -10,6 +10,8 @@
 
 const gchar *UI_RESOURCE_PATH = "/d3/station-resources/station.ui";
 const int VIDEO_FEED_REFRESH_RATE_IN_MS = 50; // 20 FPS
+const int ROBOT_SERVER_PORT = 35794;
+const char *ROBOT_SERVER_IP = "10.42.0.1";
 
 /* Global variables */
 
@@ -28,7 +30,7 @@ static gboolean timeHandler(GtkWidget *widget)
 {
     gtk_widget_queue_draw(GTK_WIDGET(widget));
 
-    return TRUE;
+    return  TRUE;
 }
 
 /* Main thread */
@@ -63,7 +65,7 @@ void StationInterface_launch(int argc, char *argv[])
     Logger_startMessageSectionAndAppend("Hit the \"Calibrate\" button and follow the instructions.");
 
     /* Starts worker thread */
-    station_client = StationClient_new(35794, "10.42.0.1");
+    station_client = StationClient_new(ROBOT_SERVER_PORT, ROBOT_SERVER_IP);
     connection_handler_worker_thread = g_thread_new("connection_handler", (GThreadFunc) StationClient_init,
                                        (gpointer) station_client);
 
