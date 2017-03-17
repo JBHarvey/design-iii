@@ -12,9 +12,13 @@ struct StationClient {
 };
 
 struct StationClient *StationClient_new(int new_port, const char *server_ip);
+
 gpointer StationClient_init(struct StationClient *station_client);
+
 void StationClient_delete(struct StationClient *station_client);
+
 void sendStartPacket();
+
 void sendContinuePacket();
 
 #endif // STATION_CLIENT_H_
