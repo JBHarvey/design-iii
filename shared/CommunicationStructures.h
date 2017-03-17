@@ -2,14 +2,19 @@
 #define COMMUNICATIONSTRUCTURES_H_
 
 enum {
-    PACKET_START,
-    PACKET_CONTINUE,
-    PACKET_WORLD,
-    TRANSLATION_COMMAND,
-    ROTATION_COMMAND,
-    MANCHESTER_DATA
+    COMMAND_START_CYCLE,
+    COMMAND_TRANSLATION,
+    COMMAND_ROTATION,
+    DATA_WORLD,
+    DATA_MANCHESTER,
+    DATA_IMAGE,
+    DATA_PLANNED_TRAJECTORY,
+    DATA_ESTIMATED_ROBOT_POSITION,
+    ACK_IMAGE_RECEIVED,
+    ACK_PLANNED_TRAJECTORY_RECEIVED,
+    ACK_MANCHESTER_RECEIVED,
+    ACK_ESTIMATED_ROBOT_POSITION_RECEIVED
 };
-
 
 void sendStartPacket();
 
@@ -52,6 +57,10 @@ struct __attribute__((__packed__)) Communication_World {
     struct Communication_Environment environment;
     int environment_has_changed;
     struct Communication_Object robot;
+};
+
+struct __attribute__((__packed__)) Communication_Flags {
+    //TODO Put robot's state in current cycle
 };
 
 struct __attribute__((__packed__)) Communication_Rotation {

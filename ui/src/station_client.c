@@ -130,22 +130,29 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
     }
 
     switch(data[0]) {
-        case PACKET_START:
+        case DATA_MANCHESTER:
             break;
 
-        case PACKET_CONTINUE:
+        case DATA_IMAGE:
             break;
 
-        case PACKET_WORLD:
-            if(length != (sizeof(struct Communication_World) + 1)) {
-                printf("wrong struct Communication_World length\n");
-                break;
-            }
-
-            struct Communication_World communication_world;
-
-            memcpy(&communication_world, data + 1, sizeof(struct Communication_World));
-
+        case DATA_PLANNED_TRAJECTORY:
             break;
+
+        case DATA_ESTIMATED_ROBOT_POSITION:
+            break;
+            /*
+                case DATA_WORLD:
+                    if(length != (sizeof(struct Communication_World) + 1)) {
+                        printf("wrong struct Communication_World length\n");
+                        break;
+                    }
+
+                    struct Communication_World communication_world;
+
+                    memcpy(&communication_world, data + 1, sizeof(struct Communication_World));
+
+                    break;
+            */
     }
 }
