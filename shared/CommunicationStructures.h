@@ -25,6 +25,11 @@ struct __attribute__((__packed__)) Communication_Coordinates {
     int y;
 };
 
+struct __attribute__((__packed__)) Communication_Path {
+    int number_of_points;
+    struct Communication_Coordinates path[];
+};
+
 struct __attribute__((__packed__)) Communication_Translation {
     struct Communication_Coordinates movement;
     struct Communication_Coordinates speeds;
@@ -35,7 +40,11 @@ struct __attribute__((__packed__)) Communication_Rotation {
     int gamma;
 };
 
-struct __attribute__((__packed__)) Communication_Manchester {
+struct __attribute__((__packed__)) Communication_ManchesterSignal {
+    int intensity;
+};
+
+struct __attribute__((__packed__)) Communication_ManchesterCode {
     int portrait_number;
     int scale_factor;
     char orientation; // Possibilities 'N' 'E' 'S' 'W'
@@ -89,13 +98,5 @@ struct Command_Translate {
 struct Command_Rotate {
     int theta;
 };
-
-struct Command_LightRedLED {};
-
-struct Command_LightGreenLED {};
-
-struct Command_RisePen {};
-
-struct Command_LowerPen {};
 
 #endif // COMMUNICATIONSTRUCTURES_H_

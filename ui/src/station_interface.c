@@ -6,6 +6,7 @@
 #include "timer.h"
 #include "world_vision.h"
 #include "station_client.h"
+#include "station_client_sender.h"
 
 /* Constants */
 
@@ -19,6 +20,7 @@ const char *ROBOT_SERVER_IP = "10.42.0.1";
 enum ThreadStatus main_loop_status;
 enum ConnectionStatus robot_connection_status;
 gint timer_tag;
+struct StationClient *station_client = NULL;
 
 void uiWindowDestroyEventCallback(GtkWidget *widget, gpointer data)
 {
@@ -29,6 +31,7 @@ void uiWindowDestroyEventCallback(GtkWidget *widget, gpointer data)
 
 void startCycleClickedEventCallback(GtkWidget *widget, gpointer data)
 {
+    StationClientSender_sendStartCycleCommand(station_client);
     Timer_start();
 }
 
@@ -48,7 +51,6 @@ void StationInterface_launch(int argc, char *argv[])
     GThread *world_vision_worker_thread = NULL;
     GThread *connection_handler_worker_thread = NULL;
     GtkWidget *ui_window = NULL;
-    struct StationClient *station_client = NULL;
 
     gtk_init(&argc, &argv);
 
@@ -86,7 +88,6 @@ void StationInterface_launch(int argc, char *argv[])
         g_thread_join(connection_handler_worker_thread);
     }
 
-    /* Temporary */
     Timer_release();
 
     g_thread_join(world_vision_worker_thread);

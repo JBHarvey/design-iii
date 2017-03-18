@@ -3,10 +3,6 @@
 
 #include "Behavior.h"
 
-#define DEFAULT_GOAL_X 0
-#define DEFAULT_GOAL_Y 0
-#define DEFAULT_GOAL_THETA 0
-
 struct BehaviorBuilder {
     int goalX;
     int goalY;

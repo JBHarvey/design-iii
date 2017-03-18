@@ -14,5 +14,6 @@ struct DataReceiver_Callbacks Logger_stopLoggingDataReceiverAndReturnCallbacks(s
 void Logger_updateWorld(struct WorldCamera *world_camera, struct Communication_World world);
 void Logger_updateWheelsTranslation(struct Wheels *wheels, struct Communication_Translation translation);
 void Logger_updateWheelsRotation(struct Wheels *wheels, struct Communication_Rotation rotation);
+void Logger_updateFlagsStartCycle(struct Flags *flags, int new_value);
 
 #endif // LOGGER_H_

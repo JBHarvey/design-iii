@@ -5,13 +5,19 @@ struct DataReceiver_Callbacks DataReceiver_fetchCallbacks(void)
     struct DataReceiver_Callbacks callbacks = {
         .updateWorld = &DataReceiver_updateWorld,
         .updateWheelsTranslation = &DataReceiver_updateWheelsTranslation,
-        .updateWheelsRotation = &DataReceiver_updateWheelsRotation
+        .updateWheelsRotation = &DataReceiver_updateWheelsRotation,
+        .updateFlagsStartCycle = &DataReceiver_updateFlagsStartCycle
     };
 
     return callbacks;
 }
 
-static void update_table_corners(struct Map *map, struct Communication_Environment environment)
+void DataReceiver_updateFlagsStartCycle(struct Flags *flags, int new_value)
+{
+    Flags_setStartCycleSignalReceived(flags, new_value);
+}
+
+static void updateTableCorners(struct Map *map, struct Communication_Environment environment)
 {
     int northEastX = environment.north_eastern_table_corner.x;
     int northEastY = environment.north_eastern_table_corner.y;
@@ -37,7 +43,7 @@ static void update_table_corners(struct Map *map, struct Communication_Environme
     Coordinates_delete(north_western_table_corner);
 }
 
-static void update_drawing_corners(struct Map *map, struct Communication_Environment environment)
+static void updateDrawingCorners(struct Map *map, struct Communication_Environment environment)
 {
     int northEastX = environment.north_eastern_drawing_corner.x;
     int northEastY = environment.north_eastern_drawing_corner.y;
@@ -64,7 +70,7 @@ static void update_drawing_corners(struct Map *map, struct Communication_Environ
     Coordinates_delete(north_western_drawing_corner);
 }
 
-static void update_antenna_zone(struct Map *map, struct Communication_Environment environment)
+static void updateAntennaZone(struct Map *map, struct Communication_Environment environment)
 {
     int startX = environment.antenna_zone_start.x;
     int startY = environment.antenna_zone_start.y;
@@ -88,7 +94,7 @@ enum CardinalDirection orient_angle(int theta)
     return orientation;
 }
 
-static void update_obstacles(struct Map *map, struct Communication_Environment environment)
+static void updateObstacles(struct Map *map, struct Communication_Environment environment)
 {
     int x;
     int y;
@@ -125,7 +131,7 @@ static void update_obstacles(struct Map *map, struct Communication_Environment e
 
 }
 
-static void update_painting_zone(struct Map *map, struct Communication_Environment environment)
+static void updatePaintingZone(struct Map *map, struct Communication_Environment environment)
 {
     int x;
     int y;
@@ -148,7 +154,7 @@ static void update_painting_zone(struct Map *map, struct Communication_Environme
 
 }
 
-static void update_world_camera_robot(struct WorldCamera *world_camera, struct Communication_Object robot)
+static void updateWorldCameraRobot(struct WorldCamera *world_camera, struct Communication_Object robot)
 {
     Sensor_receivesData(world_camera->robot_sensor);
 
@@ -164,20 +170,19 @@ static void update_world_camera_robot(struct WorldCamera *world_camera, struct C
     Pose_delete(pose);
 }
 
-
 void DataReceiver_updateWorld(struct WorldCamera *world_camera, struct Communication_World world)
 {
     if(world.environment_has_changed) {
         Sensor_receivesData(world_camera->map_sensor);
         struct Map *map = world_camera->map;
-        update_table_corners(map, world.environment);
-        update_drawing_corners(map, world.environment);
-        update_antenna_zone(map, world.environment);
-        update_obstacles(map, world.environment);
-        update_painting_zone(map, world.environment);
+        updateTableCorners(map, world.environment);
+        updateDrawingCorners(map, world.environment);
+        updateAntennaZone(map, world.environment);
+        updateObstacles(map, world.environment);
+        updatePaintingZone(map, world.environment);
     }
 
-    update_world_camera_robot(world_camera, world.robot);
+    updateWorldCameraRobot(world_camera, world.robot);
 
 
 }

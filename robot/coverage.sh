@@ -4,6 +4,7 @@ rm -rf build/coverage
 mkdir -p build/coverage
 
 cp ../shared/CommunicationStructures.h src/.
+cp ../shared/Defines.h src/.
 cp -r src/* build/coverage/.
 cp -r tests/* build/coverage/.
 

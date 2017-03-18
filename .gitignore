@@ -31,6 +31,7 @@
 *robot-main
 *station-main
 *RobotLogs.log
+*updaterobot.sh
 
 # Automation-related files
 *ToCompile
@@ -44,9 +45,14 @@
 # Compilation Database
 compile_commands.json
 
+# Robot
+robot/src/CommunicationStructures.h
+robot/src/Defines.h
+
 # UI
 ui/autodeploy/DEPS
 ui/autodeploy/_OBJ
 ui/autodeploy/makefile
 ui/src/station-resources/station.ui~
+ui/src/CommunicationStructures.h
 
