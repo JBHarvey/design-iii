@@ -144,15 +144,20 @@ void Logger_updateWheelsRotation(struct Wheels *wheels, struct Communication_Rot
     (*(file_logger->original_data_receiver_callbacks.updateWheelsRotation))(wheels, rotation);
 }
 
-static void logFlags(int new_value, const char *flag_name)
+static const char *FLAG_UPDATE = "Rotation Update from physical wheels:";
+static void logFlags(const char *flag_name, int new_value)
 {
-    //TODO
+    fprintf(file_logger->log_file,
+            "\n%s%s \n%sName:  %s\n%sNew value:  %d\n",
+            ITEM, FLAG_UPDATE,
+            SUB, flag_name,
+            SUB, new_value);
 }
 
 static const char *FLAG_START_CYCLE = "Rotation Update from physical wheels:";
 void Logger_updateFlagsStartCycle(struct Flags *flags, int new_value)
 {
-    logFlags(new_value, FLAG_START_CYCLE);
+    logFlags(FLAG_START_CYCLE, new_value);
     (*(file_logger->original_data_receiver_callbacks.updateFlagsStartCycle))(flags, new_value);
 }
 
