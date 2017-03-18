@@ -1,8 +1,9 @@
 
 #include "CommunicationStructures.h"
+#include "Defines.h"
 #include "world_vision_calibration.h"
 
-#define MAX_OBSTACLES 20
+#define MAX_OBSTACLES (MAXIMIN_NUMBER_OF_OBSTACLE)
 
 struct Detected_Things {
     _Bool robot_detected;

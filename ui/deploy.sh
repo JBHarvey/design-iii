@@ -43,6 +43,9 @@ cp autodeploy/makefile build/deploy/makefile
 cp -r --preserve=all src/station-resources/ build/deploy/.
 cp -r --preserve=all src/camera_calibration/ build/deploy/. 
 
+#[BUILD] Copy Defines.h
+cp  ../shared/Defines.h build/deploy/
+
 #[BUILD] Build markers.cpp
 cp  ../vision/src/markers.h build/deploy/
 clang++ -c -o build/deploy/markers.o ../vision/src/markers.cpp -g -fsanitize=address -fno-omit-frame-pointer -I ../src/
