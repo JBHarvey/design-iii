@@ -82,37 +82,37 @@ void obstacle_exists(enum ObstacleType type, int x, int y, double angle, struct 
 Test(vision, findObstacles)
 {
     CvMemStorage *storage = cvCreateMemStorage(0);
-    IplImage *img = cvLoadImage("obstacles_robot.jpg", CV_LOAD_IMAGE_COLOR);
-    IplImage *img_yuv = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
-    cvCvtColor(img, img_yuv, CV_BGR2YCrCb);
+    IplImage *image = cvLoadImage("obstacles_robot.jpg", CV_LOAD_IMAGE_COLOR);
+    IplImage *image_yuv = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
+    cvCvtColor(image, image_yuv, CV_BGR2YCrCb);
 
     struct Obstacle obstacles[20];
-    int num_obstacles = findObstacles(storage, obstacles, 20, img_yuv);
+    int num_obstacles = findObstacles(storage, obstacles, 20, image_yuv);
 
     cr_assert(num_obstacles == 2);
     obstacle_exists(OBSTACLE_CIRCLE, 747, 376, 0, obstacles, num_obstacles);
     obstacle_exists(OBSTACLE_TRIANGLE, 393, 814, -1.43, obstacles, num_obstacles);
 
     cvReleaseMemStorage(&storage);
-    cvReleaseImage(&img);
-    cvReleaseImage(&img_yuv);
+    cvReleaseImage(&image);
+    cvReleaseImage(&image_yuv);
 }
 
 Test(vision, findObstacles_noObstacles)
 {
     CvMemStorage *storage = cvCreateMemStorage(0);
-    IplImage *img = cvLoadImage("random_image.jpg", CV_LOAD_IMAGE_COLOR);
-    IplImage *img_yuv = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
-    cvCvtColor(img, img_yuv, CV_BGR2YCrCb);
+    IplImage *image = cvLoadImage("random_image.jpg", CV_LOAD_IMAGE_COLOR);
+    IplImage *image_yuv = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
+    cvCvtColor(image, image_yuv, CV_BGR2YCrCb);
 
     struct Obstacle obstacles[20];
-    int num_obstacles = findObstacles(storage, obstacles, 20, img_yuv);
+    int num_obstacles = findObstacles(storage, obstacles, 20, image_yuv);
 
     cr_assert(num_obstacles == 0);
 
     cvReleaseMemStorage(&storage);
-    cvReleaseImage(&img);
-    cvReleaseImage(&img_yuv);
+    cvReleaseImage(&image);
+    cvReleaseImage(&image_yuv);
 }
 
 Test(vision, detectMarker)
