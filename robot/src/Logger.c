@@ -61,7 +61,8 @@ struct DataReceiver_Callbacks Logger_startLoggingDataReceiverAndReturnCallbacks(
     struct DataReceiver_Callbacks data_receiver_callbacks_with_logging = {
         .updateWorld = &Logger_updateWorld,
         .updateWheelsTranslation = &Logger_updateWheelsTranslation,
-        .updateWheelsRotation = &Logger_updateWheelsRotation
+        .updateWheelsRotation = &Logger_updateWheelsRotation,
+        .updateFlagsStartCycle = &Logger_updateFlagsStartCycle
     };
     return data_receiver_callbacks_with_logging;
 }
@@ -141,5 +142,17 @@ void Logger_updateWheelsRotation(struct Wheels *wheels, struct Communication_Rot
 {
     logWheelsRotationUpdate(rotation);
     (*(file_logger->original_data_receiver_callbacks.updateWheelsRotation))(wheels, rotation);
+}
+
+static void logFlags(int new_value, const char *flag_name)
+{
+    //TODO
+}
+
+static const char *FLAG_START_CYCLE = "Rotation Update from physical wheels:";
+void Logger_updateFlagsStartCycle(struct Flags *flags, int new_value)
+{
+    logFlags(new_value, FLAG_START_CYCLE);
+    (*(file_logger->original_data_receiver_callbacks.updateFlagsStartCycle))(flags, new_value);
 }
 
