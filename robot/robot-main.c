@@ -5,8 +5,8 @@
 struct Logger *logger;
 struct RobotServer *robot_server;
 const int port = 35794;
-//char *ttyACM = "/dev/null";
-char *ttyACM = "/dev/ttyACM0";
+char *ttyACM = "/dev/null";
+//char *ttyACM = "/dev/ttyACM0";
 
 int main(int argc, char *argv[])
 {
@@ -26,18 +26,18 @@ int main(int argc, char *argv[])
         .speeds = { .x = 55, .y = 42}
     };
 
+    /*
     (*(test_callbacks.updateFlagsStartCycle))(robot->current_state->flags, 1);
     (*(test_callbacks.updateFlagsStartCycle))(robot->current_state->flags, 0);
-    /*
     (*(test_callbacks.updateWheelsRotation))(robot->wheels, rotation);
     (*(test_callbacks.updateWheelsTranslation))(robot->wheels, translation);
+    */
 
     while(1) {
         RobotServer_communicate(robot_server);
     }
 
-        test_callbacks = Logger_stopLoggingDataReceiverAndReturnCallbacks(logger);
-    */
+    test_callbacks = Logger_stopLoggingDataReceiverAndReturnCallbacks(logger);
 
     Logger_delete(logger);
     RobotServer_delete(robot_server);
