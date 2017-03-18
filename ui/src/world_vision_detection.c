@@ -17,6 +17,7 @@
 #define POSITIVE_ANGLE_VALUE (HALF_PI)
 
 #define SIZE_DRAW_LINES 3
+#define RADIUS_DRAW_CIRCLE 40
 
 static int convertAngleToRobotAngle(double angle)
 {
@@ -40,22 +41,22 @@ static int convertMMToRobot(double length)
 
 static void drawMarkerLocationOnImage(IplImage *image_BGR, struct Marker marker)
 {
-    cvLine(image_BGR, cvPoint(marker.x, marker.y), cvPoint(marker.x + 40 * cos(marker.angle),
-            marker.y + 40 * sin(marker.angle)), CV_RGB(255, 0, 255), SIZE_DRAW_LINES, 8, 0);
-    cvCircle(image_BGR, cvPoint(marker.x, marker.y), 40, CV_RGB(255, 0, 255), SIZE_DRAW_LINES, 8, 0);
+    cvLine(image_BGR, cvPoint(marker.x, marker.y), cvPoint(marker.x + RADIUS_DRAW_CIRCLE * cos(marker.angle),
+            marker.y + RADIUS_DRAW_CIRCLE * sin(marker.angle)), CV_RGB(255, 0, 255), SIZE_DRAW_LINES, 8, 0);
+    cvCircle(image_BGR, cvPoint(marker.x, marker.y), RADIUS_DRAW_CIRCLE, CV_RGB(255, 0, 255), SIZE_DRAW_LINES, 8, 0);
 }
 
 static void drawObstacleOnImage(IplImage *image_BGR, struct Obstacle obstacle)
 {
     if(obstacle.type == OBSTACLE_CIRCLE) {
-        cvCircle(image_BGR, cvPoint(obstacle.x, obstacle.y), 22, CV_RGB(255, 0, 0), SIZE_DRAW_LINES, 8, 0);
-        cvCircle(image_BGR, cvPoint(obstacle.x, obstacle.y), 40, CV_RGB(255, 0, 0), SIZE_DRAW_LINES, 8, 0);
+        cvCircle(image_BGR, cvPoint(obstacle.x, obstacle.y), RADIUS_DRAW_CIRCLE / 2, CV_RGB(255, 0, 0), SIZE_DRAW_LINES, 8, 0);
+        cvCircle(image_BGR, cvPoint(obstacle.x, obstacle.y), RADIUS_DRAW_CIRCLE, CV_RGB(255, 0, 0), SIZE_DRAW_LINES, 8, 0);
     }
 
     if(obstacle.type == OBSTACLE_TRIANGLE) {
-        cvLine(image_BGR, cvPoint(obstacle.x, obstacle.y), cvPoint(obstacle.x + 40 * cos(obstacle.angle),
-                obstacle.y + 40 * sin(obstacle.angle)), CV_RGB(0, 255, 0), SIZE_DRAW_LINES, 8, 0);
-        cvCircle(image_BGR, cvPoint(obstacle.x, obstacle.y), 40, CV_RGB(0, 255, 0), SIZE_DRAW_LINES, 8, 0);
+        cvLine(image_BGR, cvPoint(obstacle.x, obstacle.y), cvPoint(obstacle.x + RADIUS_DRAW_CIRCLE * cos(obstacle.angle),
+                obstacle.y + RADIUS_DRAW_CIRCLE * sin(obstacle.angle)), CV_RGB(0, 255, 0), SIZE_DRAW_LINES, 8, 0);
+        cvCircle(image_BGR, cvPoint(obstacle.x, obstacle.y), RADIUS_DRAW_CIRCLE, CV_RGB(0, 255, 0), SIZE_DRAW_LINES, 8, 0);
     }
 }
 

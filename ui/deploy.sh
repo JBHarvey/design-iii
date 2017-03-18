@@ -9,7 +9,7 @@ find build/deploy/ -type f ! \( -name "*.d" -o -name "*.o" \) -delete
 
 #[SRC] Updates shared code
 cp -u --preserve=all ../shared/CommunicationStructures.h src
-cp  ../vision/src/{vision.c,vision.h} src/
+cp -u --preserve=all ../vision/src/{vision.c,vision.h} src/
 
 #[BUILD] Moves all compilation files to build dir
 find src -type f -regex '.*\.\(c\|\h\)' -exec cp -u --preserve=all \{\} build/deploy \;
@@ -44,10 +44,10 @@ cp -r --preserve=all src/station-resources/ build/deploy/.
 cp -r --preserve=all src/camera_calibration/ build/deploy/. 
 
 #[BUILD] Copy Defines.h
-cp  ../shared/Defines.h build/deploy/
+cp -u --preserve=all ../shared/Defines.h build/deploy/
 
 #[BUILD] Build markers.cpp
-cp  ../vision/src/markers.h build/deploy/
+cp -u --preserve=all ../vision/src/markers.h build/deploy/
 clang++ -c -o build/deploy/markers.o ../vision/src/markers.cpp -g -fsanitize=address -fno-omit-frame-pointer -I ../src/
 
 #[BUILD] Launches the build
