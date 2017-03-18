@@ -5,6 +5,7 @@
 #include "world_vision_calibration.h"
 #include "ui_event.h"
 #include "logger.h"
+#include "world_vision_detection.h"
 
 /* Flags definitions */
 
@@ -177,6 +178,7 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data)
     IplImage* frame = NULL;
     IplImage* frame_BGR = NULL;
     IplImage* frame_BGR_corrected = NULL;
+    CvMemStorage *opencv_storage = cvCreateMemStorage(0);
 
     initializeWorldCamera();
 
@@ -207,6 +209,10 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data)
            world_camera->camera_status == INTRINSICALLY_AND_EXTRINSICALLY_CALIBRATED ||
            world_camera->camera_status == FULLY_CALIBRATED) {
             undistortCameraCapture(frame_BGR, frame_BGR_corrected);
+
+            if (world_camera->camera_status == FULLY_CALIBRATED) {
+                detectDrawObstaclesRobot(opencv_storage, frame_BGR_corrected, world_camera);
+            }
         }
 
         cvCvtColor((CvArr*) frame_BGR_corrected, frame, CV_BGR2RGB);
@@ -224,6 +230,7 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data)
         cvReleaseImage(&frame);
     }
 
+    cvReleaseMemStorage(&opencv_storage);
     return NULL;
 }
 
