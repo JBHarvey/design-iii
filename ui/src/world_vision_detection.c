@@ -94,9 +94,11 @@ struct Detected_Things detectDrawObstaclesRobot(CvMemStorage *opencv_storage, Ip
         detected.obstacles[i].zone.pose.coordinates.x = convertMMToRobot(obstacles[i].x);
         detected.obstacles[i].zone.pose.coordinates.y = convertMMToRobot(obstacles[i].y);
         drawObstacleOnImage(image_BGR, obstacles[i]);
+        detected.num_obstacles++;
     }
 
     if(marker.valid) {
+        detected.robot_detected = 1;
         CvPoint robot_point = coordinateToTableCoordinate(cvPoint(marker.x, marker.y), ROBOT_HEIGHT_CM,
                               cvPoint(cvGetSize(image_BGR).width / 2, cvGetSize(image_BGR).height / 2));
 

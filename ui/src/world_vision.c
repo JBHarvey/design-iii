@@ -6,6 +6,7 @@
 #include "ui_event.h"
 #include "logger.h"
 #include "world_vision_detection.h"
+#include "station_client_sender.h"
 
 /* Flags definitions */
 
@@ -173,7 +174,7 @@ static void undistortCameraCapture(IplImage *input_frame, IplImage *output_undis
 
 /* Worker thread */
 
-gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data)
+gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient *station_client)
 {
     IplImage* frame = NULL;
     IplImage* frame_BGR = NULL;
@@ -211,7 +212,10 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data)
             undistortCameraCapture(frame_BGR, frame_BGR_corrected);
 
             if (world_camera->camera_status == FULLY_CALIBRATED) {
-                detectDrawObstaclesRobot(opencv_storage, frame_BGR_corrected, world_camera);
+                struct Detected_Things detected = detectDrawObstaclesRobot(opencv_storage, frame_BGR_corrected, world_camera);
+                if (detected.robot_detected) {
+                    StationClientSender_sendWorldInformationsToRobot(station_client, detected.obstacles, MAX_OBSTACLES, detected.robot);
+                }
             }
         }
 
@@ -226,8 +230,10 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data)
 
         g_mutex_unlock(&world_camera_feeder_mutex);
 
+        StationClientSender_sendReceiveData(station_client);
         cvReleaseImage(&frame_BGR_corrected);
         cvReleaseImage(&frame);
+        
     }
 
     cvReleaseMemStorage(&opencv_storage);

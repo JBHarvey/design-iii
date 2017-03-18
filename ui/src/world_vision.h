@@ -3,6 +3,7 @@
 
 #include <gtk/gtk.h>
 #include "opencv2/imgproc/imgproc_c.h"
+#include "station_client.h"
 
 /* Constants */
 
@@ -33,6 +34,6 @@ struct Camera {
     enum CameraStatus camera_status;
 };
 
-gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data);
+gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient *station_client);
 
 #endif // __WORLD_VISION
