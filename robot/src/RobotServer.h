@@ -12,6 +12,7 @@ struct RobotServer {
 struct RobotServer *RobotServer_new(struct Robot *new_robot, int new_port, char *ttyacm_path);
 void RobotServer_delete(struct RobotServer *robot_server);
 
+void RobotServer_updateDataReceiverCallbacks(struct DataReceiver_Callbacks data_receiver_callbacks);
 void RobotServer_communicate(struct RobotServer *robot_server);
 
 _Bool writeTTYACMPacket(uint8_t type, uint8_t *data, unsigned int length);

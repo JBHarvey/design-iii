@@ -106,6 +106,11 @@ static int initTTYACM(struct ev_loop *loop, char *ttyacm_path)
 static int physical_robot_file_descriptor;
 static struct DataReceiver_Callbacks reception_callbacks;
 
+void RobotServer_updateDataReceiverCallbacks(struct DataReceiver_Callbacks data_receiver_callbacks)
+{
+    reception_callbacks = data_receiver_callbacks;
+}
+
 struct RobotServer *RobotServer_new(struct Robot *new_robot, int new_port, char *ttyacm_path)
 {
     struct ev_loop *new_loop = ev_default_loop(0);

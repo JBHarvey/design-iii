@@ -18,6 +18,7 @@ int main(int argc, char *argv[])
     /* Logger test */
     struct DataReceiver_Callbacks test_callbacks = DataReceiver_fetchCallbacks();
     test_callbacks = Logger_startLoggingDataReceiverAndReturnCallbacks(logger, test_callbacks);
+    RobotServer_updateDataReceiverCallbacks(test_callbacks);
 
 
     struct Communication_Rotation rotation = { .theta = 855, .gamma = 5};

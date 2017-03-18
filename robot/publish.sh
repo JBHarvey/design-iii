@@ -1,3 +1,8 @@
+git commit -am "Flash Robot"
+wifi-switch design3robot
+sleep 4
+
+
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 SSHPASS="1"
 sshpass -p $SSHPASS git push --force root@10.42.0.1:/home/design3/robot/git $BRANCH
