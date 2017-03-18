@@ -1,6 +1,7 @@
 
 #include "opencv2/highgui/highgui_c.h"
 #include "vision.h"
+#include "markers.h"
 #include <stdio.h>
 #include <math.h>
 
@@ -34,6 +35,8 @@ int main(int argc, char *argv[])
         if(img != 0) {
             cvShowImage("Video-orig", img);
 
+            struct Marker marker = detectMarker(img);
+
             if(camera_matrix) {
                 IplImage *image_temp = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
                 cvUndistort2(img, image_temp, camera_matrix, distortion_coeffs, 0);
@@ -66,6 +69,12 @@ int main(int argc, char *argv[])
                 }
 
                 //cvDrawContours(im_square_image, contour, CV_RGB(255, 0, 0), CV_RGB(0, 255, 0), 0, 3, CV_AA, cvPoint(0, 0));
+            }
+
+            if(marker.valid) {
+                cvLine(im_square_image, cvPoint(marker.x, marker.y), cvPoint(marker.x + 40 * cos(marker.angle),
+                        marker.y + 40 * sin(marker.angle)), CV_RGB(255, 255, 255), 1, 8, 0);
+                cvCircle(im_square_image, cvPoint(marker.x, marker.y), 40, CV_RGB(255, 255, 255), 1, 8, 0);
             }
 
             cvShowImage("Video-lines", im_square_image);

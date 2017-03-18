@@ -331,7 +331,7 @@ static _Bool isCircle(CvSeq *in)
     return 0;
 }
 
-#define OBSTACLE_AREA_TOLERANCE 0.1
+#define OBSTACLE_AREA_TOLERANCE 0.15
 #define OBSTACLE_CIRCLE_AREA 1465.0
 
 static _Bool isCircleObstacle(CvSeq *in)
