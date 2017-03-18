@@ -8,6 +8,8 @@ extern "C" {
 
 #include "markers.h"
 
+#define MARKER_ID 123
+
 struct Marker detectMarker(CvArr *image)
 {
     cv::Mat src = cv::cvarrToMat(image);
@@ -21,11 +23,16 @@ struct Marker detectMarker(CvArr *image)
     struct Marker marker;
     marker.valid = 0;
 
-    if(ids.size()) {
-        marker.x = (((corners[0][0].x + corners[0][2].x) / 2) + ((corners[0][1].x + corners[0][3].x) / 2)) / 2;
-        marker.y = (((corners[0][0].y + corners[0][2].y) / 2) + ((corners[0][1].y + corners[0][3].y) / 2)) / 2;
-        marker.angle = atan2(corners[0][0].y - corners[0][2].y, corners[0][0].x - corners[0][2].x) + (M_PI / 4.0);
-        marker.valid = 1;
+    unsigned int i;
+
+    for(i = 0; i < ids.size(); ++i) {
+        if(ids[i] == MARKER_ID) {
+            marker.x = (((corners[i][0].x + corners[i][2].x) / 2) + ((corners[i][1].x + corners[i][3].x) / 2)) / 2;
+            marker.y = (((corners[i][0].y + corners[i][2].y) / 2) + ((corners[i][1].y + corners[i][3].y) / 2)) / 2;
+            marker.angle = atan2(corners[i][0].y - corners[i][2].y, corners[i][0].x - corners[i][2].x) + (M_PI / 4.0);
+            marker.valid = 1;
+            break;
+        }
     }
 
     return marker;
