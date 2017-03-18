@@ -574,3 +574,23 @@ unsigned int findObstacles(CvMemStorage *opencv_storage, struct Obstacle *obstac
     cvReleaseImage(&image_black_white);
     return num_obstacles;
 }
+
+#define CAMERA_FLOOR_DISTANCE_CM 197.6
+
+CvPoint coordinateToTableCoordinate(CvPoint point, double height_cm, CvPoint camera_midpoint)
+{
+    double return_point_x, return_point_y;
+    return_point_x = point.x - camera_midpoint.x;
+    return_point_y = point.y - camera_midpoint.y;
+
+    return_point_x *= (CAMERA_FLOOR_DISTANCE_CM - height_cm);
+    return_point_y *= (CAMERA_FLOOR_DISTANCE_CM - height_cm);
+
+    return_point_x /= CAMERA_FLOOR_DISTANCE_CM;
+    return_point_y /= CAMERA_FLOOR_DISTANCE_CM;
+
+    CvPoint out;
+    out.x = return_point_x + camera_midpoint.x;
+    out.y = return_point_y + camera_midpoint.y;
+    return out;
+}

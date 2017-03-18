@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <math.h>
 
+#define SIZE_DRAW_LINES 3
 
 int main(int argc, char *argv[])
 {
@@ -24,7 +25,7 @@ int main(int argc, char *argv[])
     }
 
     //cvNamedWindow("Video", 0); // create window
-    cvNamedWindow("Video-orig", 0); // create window
+    //cvNamedWindow("Video-orig", 0); // create window
     cvNamedWindow("Video-lines", 0); // create window
     //cvNamedWindow("Video-innersquare", 0); // create window
 
@@ -33,7 +34,7 @@ int main(int argc, char *argv[])
         //img = cvLoadImage(argv[1],CV_LOAD_IMAGE_COLOR);
 
         if(img != 0) {
-            cvShowImage("Video-orig", img);
+            //cvShowImage("Video-orig", img);
 
             struct Marker marker = detectMarker(img);
 
@@ -49,22 +50,25 @@ int main(int argc, char *argv[])
             int num_obstacles = findObstacles(opencv_storage, obstacles, 20, img_yuv);
             cvReleaseImage(&img_yuv);
 
-            IplImage *im_square_image = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
+            IplImage *im_square_image = img;//cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
 
             if(num_obstacles) {
                 printf("num_obstacles %i\n", num_obstacles);
                 unsigned int i;
 
                 for(i = 0; i < num_obstacles; ++i) {
+                    CvPoint obstacle_point = coordinateToTableCoordinate(cvPoint(obstacles[i].x, obstacles[i].y), 34.0 + 7.6, cvPoint(800,
+                                             600));
+
                     if(obstacles[i].type == OBSTACLE_CIRCLE) {
-                        cvCircle(im_square_image, cvPoint(obstacles[i].x, obstacles[i].y), 22, CV_RGB(255, 0, 0), 1, 8, 0);
-                        cvCircle(im_square_image, cvPoint(obstacles[i].x, obstacles[i].y), 40, CV_RGB(255, 0, 0), 1, 8, 0);
+                        cvCircle(im_square_image, obstacle_point, 22, CV_RGB(255, 0, 0), SIZE_DRAW_LINES, 8, 0);
+                        cvCircle(im_square_image, obstacle_point, 40, CV_RGB(255, 0, 0), SIZE_DRAW_LINES, 8, 0);
                     }
 
                     if(obstacles[i].type == OBSTACLE_TRIANGLE) {
-                        cvLine(im_square_image, cvPoint(obstacles[i].x, obstacles[i].y), cvPoint(obstacles[i].x + 40 * cos(obstacles[i].angle),
-                                obstacles[i].y + 40 * sin(obstacles[i].angle)), CV_RGB(0, 255, 0), 1, 8, 0);
-                        cvCircle(im_square_image, cvPoint(obstacles[i].x, obstacles[i].y), 40, CV_RGB(0, 255, 0), 1, 8, 0);
+                        cvLine(im_square_image, obstacle_point, cvPoint(obstacle_point.x + 40 * cos(obstacles[i].angle),
+                                obstacle_point.y + 40 * sin(obstacles[i].angle)), CV_RGB(0, 255, 0), SIZE_DRAW_LINES, 8, 0);
+                        cvCircle(im_square_image, obstacle_point, 40, CV_RGB(0, 255, 0), SIZE_DRAW_LINES, 8, 0);
                     }
                 }
 
@@ -73,12 +77,12 @@ int main(int argc, char *argv[])
 
             if(marker.valid) {
                 cvLine(im_square_image, cvPoint(marker.x, marker.y), cvPoint(marker.x + 40 * cos(marker.angle),
-                        marker.y + 40 * sin(marker.angle)), CV_RGB(255, 255, 255), 1, 8, 0);
-                cvCircle(im_square_image, cvPoint(marker.x, marker.y), 40, CV_RGB(255, 255, 255), 1, 8, 0);
+                        marker.y + 40 * sin(marker.angle)), CV_RGB(255, 0, 255), SIZE_DRAW_LINES, 8, 0);
+                cvCircle(im_square_image, cvPoint(marker.x, marker.y), 40, CV_RGB(255, 0, 255), SIZE_DRAW_LINES, 8, 0);
             }
 
             cvShowImage("Video-lines", im_square_image);
-            cvReleaseImage(&im_square_image);
+            //cvReleaseImage(&im_square_image);
             //cvReleaseImage(&img);
 
             if(camera_matrix) {

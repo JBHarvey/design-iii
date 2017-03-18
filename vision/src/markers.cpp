@@ -22,9 +22,9 @@ struct Marker detectMarker(CvArr *image)
     marker.valid = 0;
 
     if(ids.size()) {
-        marker.x = (corners[0][0].x + corners[0][2].x) / 2;
-        marker.y = (corners[0][0].y + corners[0][2].y) / 2;
-        marker.angle = atan2(corners[0][0].y - corners[0][2].y, corners[0][0].x - corners[0][2].x);
+        marker.x = (((corners[0][0].x + corners[0][2].x) / 2) + ((corners[0][1].x + corners[0][3].x) / 2)) / 2;
+        marker.y = (((corners[0][0].y + corners[0][2].y) / 2) + ((corners[0][1].y + corners[0][3].y) / 2)) / 2;
+        marker.angle = atan2(corners[0][0].y - corners[0][2].y, corners[0][0].x - corners[0][2].x) + (M_PI / 4.0);
         marker.valid = 1;
     }
 
