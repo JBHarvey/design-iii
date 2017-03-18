@@ -6,7 +6,7 @@
 struct Flags *Flags_new(void)
 {
     struct Object *new_object = Object_new();
-    struct Flags *pointer = (struct Flags *) malloc(sizeof(struct Flags));
+    struct Flags *pointer = malloc(sizeof(struct Flags));
 
     pointer->object = new_object;
 
