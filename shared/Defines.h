@@ -24,6 +24,10 @@
 #define MINUS_HALF_PI -157080
 #define MINUS_QUARTER_PI -78540
 
+// Manchester related
+#define TIMES_TWO 2
+#define TIMES_FOUR 4
+#define SIGNAL_FORCE_ROUNDING_FACTOR 100
 
 
 // Behavior related
