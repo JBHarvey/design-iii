@@ -20,6 +20,11 @@ struct __attribute__((__packed__)) Communication_Coordinates {
     int y;
 };
 
+struct __attribute__((__packed__)) Communication_Path {
+    int number_of_points;
+    struct Communication_Coordinates path[];
+};
+
 struct __attribute__((__packed__)) Communication_Translation {
     struct Communication_Coordinates movement;
     struct Communication_Coordinates speeds;
