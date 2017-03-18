@@ -9,6 +9,7 @@
 #include <termios.h>
 
 #include "RobotServer.h"
+#include "CommunicationStructures.h"
 
 extern struct RobotServer *robot_server;
 
@@ -101,6 +102,9 @@ static int initTTYACM(struct ev_loop *loop, char *ttyacm_path)
     return fd;
 }
 
+//This global variable allows the command sender to be output-agnostic
+static int physical_robot_file_descriptor;
+
 struct RobotServer *RobotServer_new(struct Robot *new_robot, int new_port, char *ttyacm_path)
 {
     struct ev_loop *new_loop = ev_default_loop(0);
@@ -117,15 +121,17 @@ struct RobotServer *RobotServer_new(struct Robot *new_robot, int new_port, char 
         return 0;
     }
 
+    physical_robot_file_descriptor = new_fd_ttyACM;
+
     while(!initTCPServer(new_loop, new_port));
 
     struct Object *new_object = Object_new();
-    struct RobotServer *pointer = (struct RobotServer *) malloc(sizeof(struct RobotServer));
+    struct DataReceiver_Callbacks new_data_receiver_callbacks = DataReceiver_fetchCallbacks();
+    struct RobotServer *pointer =  malloc(sizeof(struct RobotServer));
     pointer->object = new_object;
     pointer->robot = new_robot;
     pointer->loop = new_loop;
-    pointer->port = new_port;
-    pointer->fd_ttyACM = new_fd_ttyACM;
+    pointer->data_receiver_callbacks = new_data_receiver_callbacks;
 
     Object_addOneReference(new_robot->object);
 
@@ -148,14 +154,6 @@ void RobotServer_delete(struct RobotServer *robot_server)
 void RobotServer_communicate(struct RobotServer *robot_server)
 {
     ev_run(robot_server->loop, EVRUN_NOWAIT);
-}
-
-static void callbackStartPacket()
-{
-}
-
-static void callbackContinuePacket()
-{
 }
 
 static void callbackWorld(struct Communication_World communication_world)
@@ -193,6 +191,7 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
     printf("received packet %u of length %u\n", data[0], length);
 
     switch(data[0]) {
+        /*
         case PACKET_START:
             callbackStartPacket();
             break;
@@ -200,8 +199,9 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
         case PACKET_CONTINUE:
             callbackContinuePacket();
             break;
+            */
 
-        case PACKET_WORLD:
+        case DATA_WORLD:
             if(length != (sizeof(struct Communication_World) + 1)) {
                 printf("wrong struct Communication_World length\n");
                 break;
@@ -216,18 +216,6 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             break;
     }
 }
-
-// THESE FUNCTIONS ARE NEITHER TESTED NOR WORKING YET.
-// THIS WILL COME WITH INTEGRATION TESTS
-void RobotServer_sendTranslateCommand(struct Command_Translate command_translate)
-{
-}
-
-void RobotServer_sendRotateCommand(struct Command_Rotate command_rotate) {}
-void RobotServer_sendLightRedLEDCommand(struct Command_LightRedLED command_light_red_led) {}
-void RobotServer_sendLightGreenLEDCommand(struct Command_LightGreenLED command_light_green_led) {}
-void RobotServer_sendRisePenCommand(struct Command_RisePen command_rise_pen) {}
-void RobotServer_sendLowerPenCommand(struct Command_LowerPen command_lower_pen) {}
 
 static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
 {
@@ -272,7 +260,7 @@ static _Bool readTTYACMPacket(int fd)
     return 0;
 }
 
-_Bool writeTTYACMPacket(struct RobotServer *robot_server, uint8_t type, uint8_t *data, unsigned int length)
+_Bool writeTTYACMPacket(uint8_t type, uint8_t *data, unsigned int length)
 {
     if(length > UINT8_MAX) {
         return 0;
@@ -284,7 +272,7 @@ _Bool writeTTYACMPacket(struct RobotServer *robot_server, uint8_t type, uint8_t 
     packet[1] = length;
     memcpy(packet + 2, data, length);
 
-    return write(robot_server->fd_ttyACM, packet, sizeof(packet)) == sizeof(packet);
+    return write(physical_robot_file_descriptor, packet, sizeof(packet)) == sizeof(packet);
 }
 
 void TTYACMCallback(struct ev_loop *loop, struct ev_io *watcher, int revents)
@@ -302,3 +290,27 @@ void TTYACMCallback(struct ev_loop *loop, struct ev_io *watcher, int revents)
         return;
     }
 }
+
+#define COMMAND_TYPE_TRANSLATE 0
+#define DISTANCE_UNIT_IN_METERS_FACTOR 0.0001
+
+void RobotServer_sendTranslateCommand(struct Command_Translate command_translate)
+{
+    float x = command_translate.x * DISTANCE_UNIT_IN_METERS_FACTOR;
+    float y = command_translate.y * DISTANCE_UNIT_IN_METERS_FACTOR;
+
+    uint8_t data[sizeof(float) * 2];
+
+    memcpy(data, &x, sizeof(float));
+    memcpy(data + sizeof(float), &y, sizeof(float));
+
+    writeTTYACMPacket(COMMAND_TYPE_TRANSLATE, data, sizeof(data));
+}
+
+void RobotServer_sendRotateCommand(struct Command_Rotate command_rotate) {}
+void RobotServer_sendLightRedLEDCommand(
+    struct Command_LightRedLED command_light_red_led) {}
+void RobotServer_sendLightGreenLEDCommand(
+    struct Command_LightGreenLED command_light_green_led) {}
+void RobotServer_sendRisePenCommand(struct Command_RisePen command_rise_pen) {}
+void RobotServer_sendLowerPenCommand(struct Command_LowerPen command_lower_pen) {}
