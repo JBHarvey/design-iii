@@ -7,14 +7,14 @@ struct DefaultValues {
 
 struct Robot *Robot_new()
 {
-    struct DefaultValues *default_values = (struct DefaultValues *) malloc(sizeof(struct DefaultValues));
+    struct DefaultValues *default_values = malloc(sizeof(struct DefaultValues));
     default_values->pose = Pose_zero();
 
     struct Object *new_object = Object_new();
     struct State *new_state = State_new(default_values->pose);
     struct WorldCamera *new_world_camera = WorldCamera_new();
     struct Wheels *new_wheels = Wheels_new();
-    struct Robot *pointer = (struct Robot *) malloc(sizeof(struct Robot));
+    struct Robot *pointer =  malloc(sizeof(struct Robot));
 
     pointer->object = new_object;
     pointer->default_values = default_values;

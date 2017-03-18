@@ -3,18 +3,54 @@
 #include "DataReceiver.h"
 
 struct Mesurements mesurements_mock;
+struct Flags *flags = NULL;
 
-Test(DataReceiver, given__when_fetchDataReceiverCallbacks_then_theCorrectSturctureIsReturned)
+Test(DataReceiver, given_when_fetchDataReceiverCallbacks_then_theCorrectSturctureIsReturned)
 {
     void (*updateWorld)(struct WorldCamera *, struct Communication_World) = &DataReceiver_updateWorld;
     void (*updateWheelsTranslation)(struct Wheels *,
                                     struct Communication_Translation) = &DataReceiver_updateWheelsTranslation;
     void (*updateWheelsRotation)(struct Wheels *, struct Communication_Rotation) = &DataReceiver_updateWheelsRotation;
+    void (*updateFlagsStartCycle)(struct Flags *, int new_value) = &DataReceiver_updateFlagsStartCycle;
 
     struct DataReceiver_Callbacks callbacks = DataReceiver_fetchCallbacks();
     cr_assert_eq(callbacks.updateWorld, updateWorld);
     cr_assert_eq(callbacks.updateWheelsTranslation, updateWheelsTranslation);
     cr_assert_eq(callbacks.updateWheelsRotation, updateWheelsRotation);
+    cr_assert_eq(callbacks.updateFlagsStartCycle, updateFlagsStartCycle);
+}
+
+void setup_Flags(void)
+{
+    flags = Flags_new();
+}
+
+void teardown_Flags(void)
+{
+    Flags_delete(flags);
+}
+
+Test(DataReceiver, given_aCommandStartCyclePacket_when_updateFlagsStartCycleToTrue_then_itsValueIsUpdatedAccordingly,
+     .init = setup_Flags,
+     .fini = teardown_Flags)
+{
+    int new_value = TRUE;
+
+    DataReceiver_updateFlagsStartCycle(flags, new_value);
+
+    cr_assert_eq(flags->start_cycle_signal_received, TRUE);
+}
+
+Test(DataReceiver, given_aCommandStartCyclePacket_when_updateFlagsStartCycleToFalse_then_itsValueIsUpdatedAccordingly,
+     .init = setup_Flags,
+     .fini = teardown_Flags)
+
+{
+    int new_value = FALSE;
+
+    DataReceiver_updateFlagsStartCycle(flags, new_value);
+
+    cr_assert_eq(flags->start_cycle_signal_received, FALSE);
 }
 
 // World data
