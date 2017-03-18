@@ -17,12 +17,15 @@ void RobotServer_communicate(struct RobotServer *robot_server);
 _Bool writeTTYACMPacket(uint8_t type, uint8_t *data, unsigned int length);
 
 void RobotServer_sendTranslateCommand(struct Command_Translate command_translate);
+
 // THESE FUNCTIONS ARE NEITHER TESTED NOR WORKING YET.
 // THIS WILL COME WITH INTEGRATION TESTS
 void RobotServer_sendRotateCommand(struct Command_Rotate command_rotate);
-void RobotServer_sendLightRedLEDCommand(struct Command_LightRedLED command_light_red_led);
-void RobotServer_sendLightGreenLEDCommand(struct Command_LightGreenLED command_light_green_led);
-void RobotServer_sendRisePenCommand(struct Command_RisePen command_rise_pen);
-void RobotServer_sendLowerPenCommand(struct Command_LowerPen command_lower_pen);
+void RobotServer_sendLightRedLEDCommand(void);
+void RobotServer_sendLightGreenLEDCommand(void);
+void RobotServer_sendRisePenCommand(void);
+void RobotServer_sendLowerPenCommand(void);
+void RobotServer_fetchManchesterCodeCommand(void);
+void RobotServer_sendStopSendingManchesterSignalCommand(void);
 
 #endif // ROBOTSERVER_H_
