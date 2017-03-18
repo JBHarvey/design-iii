@@ -71,8 +71,6 @@ void StationInterface_launch(int argc, char *argv[])
     gtk_window_fullscreen(GTK_WINDOW(ui_window));
     gtk_widget_show_all(GTK_WIDGET(ui_window));
 
-    Logger_startMessageSectionAndAppend("Hit the \"Calibrate\" button and follow the instructions.");
-
     /* Starts worker thread */
     station_client = StationClient_new(ROBOT_SERVER_PORT, ROBOT_SERVER_IP);
     connection_handler_worker_thread = g_thread_new("connection_handler", (GThreadFunc) StationClient_init,
@@ -81,6 +79,8 @@ void StationInterface_launch(int argc, char *argv[])
     gtk_main();
 
     main_loop_status = TERMINATED;
+
+    Logger_finalize();
 
     if(robot_connection_status == DISCONNECTED) {
         pthread_cancel((pthread_t) connection_handler_worker_thread);
