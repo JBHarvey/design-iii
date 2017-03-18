@@ -107,9 +107,9 @@ gpointer StationClient_init(struct StationClient *station_client)
     return (gpointer) TRUE;
 }
 
-gboolean StationClient_communicate(struct StationClient *station_client, unsigned int milliseconds)
+gboolean StationClient_communicate(struct StationClient *station_client)
 {
-    ev_loop(station_client->loop, milliseconds);
+    ev_run(station_client->loop, EVRUN_NOWAIT);
     return FALSE;
 }
 

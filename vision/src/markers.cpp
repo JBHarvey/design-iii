@@ -16,7 +16,11 @@ struct Marker detectMarker(CvArr *image)
 
     std::vector<int> ids;
     std::vector<std::vector<cv::Point2f> > corners;
+#if (CV_MINOR_VERSION > 1)
+    cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
+#else
     cv::aruco::Dictionary dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
+#endif
     cv::aruco::detectMarkers(src, dictionary, corners, ids);
     std::vector< cv::Mat > rvecs, tvecs;
 

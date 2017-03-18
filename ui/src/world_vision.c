@@ -5,6 +5,8 @@
 #include "world_vision_calibration.h"
 #include "ui_event.h"
 #include "logger.h"
+#include "world_vision_detection.h"
+#include "station_client_sender.h"
 
 /* Flags definitions */
 
@@ -172,11 +174,12 @@ static void undistortCameraCapture(IplImage *input_frame, IplImage *output_undis
 
 /* Worker thread */
 
-gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data)
+gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient *station_client)
 {
     IplImage* frame = NULL;
     IplImage* frame_BGR = NULL;
     IplImage* frame_BGR_corrected = NULL;
+    CvMemStorage *opencv_storage = cvCreateMemStorage(0);
 
     initializeWorldCamera();
 
@@ -207,6 +210,13 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data)
            world_camera->camera_status == INTRINSICALLY_AND_EXTRINSICALLY_CALIBRATED ||
            world_camera->camera_status == FULLY_CALIBRATED) {
             undistortCameraCapture(frame_BGR, frame_BGR_corrected);
+
+            if (world_camera->camera_status == FULLY_CALIBRATED) {
+                struct Detected_Things detected = detectDrawObstaclesRobot(opencv_storage, frame_BGR_corrected, world_camera);
+                if (detected.robot_detected) {
+                    StationClientSender_sendWorldInformationsToRobot(station_client, detected.obstacles, MAX_OBSTACLES, detected.robot);
+                }
+            }
         }
 
         cvCvtColor((CvArr*) frame_BGR_corrected, frame, CV_BGR2RGB);
@@ -220,10 +230,13 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data)
 
         g_mutex_unlock(&world_camera_feeder_mutex);
 
+        StationClientSender_sendReceiveData(station_client);
         cvReleaseImage(&frame_BGR_corrected);
         cvReleaseImage(&frame);
+        
     }
 
+    cvReleaseMemStorage(&opencv_storage);
     return NULL;
 }
 
