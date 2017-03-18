@@ -17,8 +17,6 @@ gpointer StationClient_init(struct StationClient *station_client);
 
 void StationClient_delete(struct StationClient *station_client);
 
-void sendStartPacket();
-
-void sendContinuePacket();
+gboolean StationClient_communicate(struct StationClient *station_client, unsigned int milliseconds);
 
 #endif // STATION_CLIENT_H_
