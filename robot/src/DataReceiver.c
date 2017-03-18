@@ -5,7 +5,8 @@ struct DataReceiver_Callbacks DataReceiver_fetchCallbacks(void)
     struct DataReceiver_Callbacks callbacks = {
         .updateWorld = &DataReceiver_updateWorld,
         .updateWheelsTranslation = &DataReceiver_updateWheelsTranslation,
-        .updateWheelsRotation = &DataReceiver_updateWheelsRotation
+        .updateWheelsRotation = &DataReceiver_updateWheelsRotation,
+        .updateFlagsStartCycle = &DataReceiver_updateFlagsStartCycle
     };
 
     return callbacks;

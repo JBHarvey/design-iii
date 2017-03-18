@@ -12,6 +12,7 @@ struct DataReceiver_Callbacks {
     void (*updateWorld)(struct WorldCamera *, struct Communication_World);
     void (*updateWheelsTranslation)(struct Wheels *, struct Communication_Translation);
     void (*updateWheelsRotation)(struct Wheels *, struct Communication_Rotation);
+    void (*updateFlagsStartCycle)(struct Flags *, int new_value);
 };
 
 struct DataReceiver_Callbacks DataReceiver_fetchCallbacks(void);

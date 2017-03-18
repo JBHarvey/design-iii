@@ -11,11 +11,13 @@ Test(DataReceiver, given_when_fetchDataReceiverCallbacks_then_theCorrectSturctur
     void (*updateWheelsTranslation)(struct Wheels *,
                                     struct Communication_Translation) = &DataReceiver_updateWheelsTranslation;
     void (*updateWheelsRotation)(struct Wheels *, struct Communication_Rotation) = &DataReceiver_updateWheelsRotation;
+    void (*updateFlagsStartCycle)(struct Flags *, int new_value) = &DataReceiver_updateFlagsStartCycle;
 
     struct DataReceiver_Callbacks callbacks = DataReceiver_fetchCallbacks();
     cr_assert_eq(callbacks.updateWorld, updateWorld);
     cr_assert_eq(callbacks.updateWheelsTranslation, updateWheelsTranslation);
     cr_assert_eq(callbacks.updateWheelsRotation, updateWheelsRotation);
+    cr_assert_eq(callbacks.updateFlagsStartCycle, updateFlagsStartCycle);
 }
 
 void setup_Flags(void)
