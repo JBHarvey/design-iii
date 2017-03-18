@@ -193,27 +193,6 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
     printf("received packet %u of length %u\n", data[0], length);
 
     switch(data[0]) {
-        case PACKET_START:
-            callbackStartPacket();
-            break;
-
-        case PACKET_CONTINUE:
-            callbackContinuePacket();
-            break;
-
-        case PACKET_WORLD:
-            if(length != (sizeof(struct Communication_World) + 1)) {
-                printf("wrong struct Communication_World length\n");
-                break;
-            }
-
-            struct Communication_World communication_world;
-
-            memcpy(&communication_world, data + 1, sizeof(struct Communication_World));
-
-            callbackWorld(communication_world);
-
-            break;
     }
 }
 
