@@ -14,11 +14,11 @@ int main(int argc, char *argv[])
 
     CvMat *camera_matrix = 0;
     CvMat *distortion_coeffs = 0;
-    CvMemStorage *storage = cvCreateMemStorage(0);
+    CvMemStorage *opencv_storage = cvCreateMemStorage(0);
 
-    if (argc > 1) {
-        camera_matrix = (CvMat *)cvLoad(argv[1], storage, "Camera_Matrix", 0);
-        distortion_coeffs = (CvMat *)cvLoad(argv[1], storage, "Distortion_Coefficients", 0);
+    if(argc > 1) {
+        camera_matrix = (CvMat *)cvLoad(argv[1], opencv_storage, "Camera_Matrix", 0);
+        distortion_coeffs = (CvMat *)cvLoad(argv[1], opencv_storage, "Distortion_Coefficients", 0);
     }
 
     //cvNamedWindow("Video", 0); // create window
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 
             IplImage *img_yuv = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
             cvCvtColor(img, img_yuv, CV_BGR2YCrCb);
-            CvSeq *contour = find_first_figure(storage, img_yuv);
+            CvSeq *contour = findFirstFigure(opencv_storage, img_yuv);
             cvReleaseImage(&img_yuv);
 
             IplImage *im_square_image = cvCreateImage(cvSize(1000, 1000), IPL_DEPTH_8U, 3);
@@ -54,8 +54,9 @@ int main(int argc, char *argv[])
             cvReleaseImage(&im_square_image);
             //cvReleaseImage(&img);
 
-            if(camera_matrix)
+            if(camera_matrix) {
                 cvReleaseImage(&img);
+            }
         }
 
         c = cvWaitKey(10); // wait 10 ms or for key stroke
@@ -67,7 +68,7 @@ int main(int argc, char *argv[])
 
     /* clean up */
     cvReleaseCapture(&cv_cap);
-    cvReleaseMemStorage(&storage);
+    cvReleaseMemStorage(&opencv_storage);
     cvDestroyWindow("Video-orig");
     cvDestroyWindow("Video-lines");
 }
