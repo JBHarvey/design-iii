@@ -26,12 +26,31 @@ Test(vision, isDualSquare)
     cvReleaseMemStorage(&storage);
 }
 
+Test(vision, isDualSquare_notDualSquare)
+{
+    CvMemStorage *storage = cvCreateMemStorage(0);
+    CvSeq *contours_dual_square = (CvSeq *)cvLoad("figure.xml", storage, 0, 0);
+
+    cr_assert(!isDualSquare(contours_dual_square));
+    cvReleaseMemStorage(&storage);
+}
+
+
 Test(vision, isFigure)
 {
     CvMemStorage *storage = cvCreateMemStorage(0);
     CvSeq *figure = (CvSeq *)cvLoad("figure.xml", storage, 0, 0);
 
     cr_assert(isFigure(figure));
+    cvReleaseMemStorage(&storage);
+}
+
+Test(vision, isFigure_noFigure)
+{
+    CvMemStorage *storage = cvCreateMemStorage(0);
+    CvSeq *figure = (CvSeq *)cvLoad("dual_square.xml", storage, 0, 0);
+
+    cr_assert(!isFigure(figure));
     cvReleaseMemStorage(&storage);
 }
 
@@ -79,6 +98,23 @@ Test(vision, findObstacles)
     cvReleaseImage(&img_yuv);
 }
 
+Test(vision, findObstacles_noObstacles)
+{
+    CvMemStorage *storage = cvCreateMemStorage(0);
+    IplImage *img = cvLoadImage("random_image.jpg", CV_LOAD_IMAGE_COLOR);
+    IplImage *img_yuv = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
+    cvCvtColor(img, img_yuv, CV_BGR2YCrCb);
+
+    struct Obstacle obstacles[20];
+    int num_obstacles = findObstacles(storage, obstacles, 20, img_yuv);
+
+    cr_assert(num_obstacles == 0);
+
+    cvReleaseMemStorage(&storage);
+    cvReleaseImage(&img);
+    cvReleaseImage(&img_yuv);
+}
+
 Test(vision, detectMarker)
 {
     IplImage *image = cvLoadImage("obstacles_robot.jpg", CV_LOAD_IMAGE_COLOR);
@@ -89,6 +125,16 @@ Test(vision, detectMarker)
     cr_assert(in_range(marker.x, 1106, 0.02));
     cr_assert(in_range(marker.y, 660, 0.02));
     cr_assert(in_range(marker.angle, 1.46, 0.02));
+    cvReleaseImage(&image);
+}
+
+Test(vision, detectMarker_noMarker)
+{
+    IplImage *image = cvLoadImage("random_image.jpg", CV_LOAD_IMAGE_COLOR);
+
+    struct Marker marker = detectMarker(image);
+
+    cr_assert(!marker.valid);
     cvReleaseImage(&image);
 }
 
