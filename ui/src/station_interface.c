@@ -3,6 +3,7 @@
 #include "station_interface.h"
 #include "ui_builder.h"
 #include "logger.h"
+#include "timer.h"
 #include "world_vision.h"
 #include "station_client.h"
 
@@ -26,9 +27,15 @@ void uiWindowDestroyEventCallback(GtkWidget *widget, gpointer data)
     gtk_main_quit();
 }
 
+void startCycleClickedEventCallback(GtkWidget *widget, gpointer data)
+{
+    Timer_start();
+}
+
 static gboolean timeHandler(GtkWidget *widget)
 {
     gtk_widget_queue_draw(GTK_WIDGET(widget));
+    Timer_redraw();
 
     return  TRUE;
 }
@@ -78,6 +85,9 @@ void StationInterface_launch(int argc, char *argv[])
     } else {
         g_thread_join(connection_handler_worker_thread);
     }
+
+    /* Temporary */
+    Timer_release();
 
     g_thread_join(world_vision_worker_thread);
     StationClient_delete(station_client);
