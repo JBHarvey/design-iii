@@ -34,7 +34,7 @@ void Logger_initialize(GtkWidget *widget)
     strcpy(logger_char_text_buffer, "\n");
     gtk_text_buffer_set_text(logger_text_buffer, logger_char_text_buffer, -1);
     log_file = fopen("station_log.txt", "a+");
-    fprintf(log_file, "\n\t\t------------ NEW EXECUTION ------------\n");
+    fprintf(log_file, "\n\n\t\t------------ NEW EXECUTION ------------\n");
 }
 
 void Logger_finalize(void)
