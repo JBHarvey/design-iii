@@ -169,20 +169,19 @@ static void updateWorldCameraRobot(struct WorldCamera *world_camera, struct Comm
     Pose_delete(pose);
 }
 
-
 void DataReceiver_updateWorld(struct WorldCamera *world_camera, struct Communication_World world)
 {
     if(world.environment_has_changed) {
         Sensor_receivesData(world_camera->map_sensor);
         struct Map *map = world_camera->map;
-        update_table_corners(map, world.environment);
-        update_drawing_corners(map, world.environment);
-        update_antenna_zone(map, world.environment);
-        update_obstacles(map, world.environment);
-        update_painting_zone(map, world.environment);
+        updateTableCorners(map, world.environment);
+        updateDrawingCorners(map, world.environment);
+        updateAntennaZone(map, world.environment);
+        updateObstacles(map, world.environment);
+        updatePaintingZone(map, world.environment);
     }
 
-    update_world_camera_robot(world_camera, world.robot);
+    updateWorldCameraRobot(world_camera, world.robot);
 
 
 }
