@@ -9,6 +9,7 @@
 
 #include "station_client.h"
 #include "station_interface.h"
+#include "station_client_sender.h"
 #include "logger.h"
 
 /* Constants */
@@ -103,6 +104,7 @@ gpointer StationClient_init(struct StationClient *station_client)
 
     robot_connection_status = CONNECTED;
     Logger_startRobotConnectionHandlerSectionAndAppend("Connected !");
+    StationClientSender_startSendingWorldInformationsToRobot(station_client);
     return (gpointer) TRUE;
 }
 
@@ -113,35 +115,13 @@ gboolean StationClient_communicate(struct StationClient *station_client, unsigne
 }
 
 
-static void callbackStartPacket()
+static void startPacketCallback()
 {
 }
 
-static void callbackContinuePacket()
+static void continuePacketCallback()
 {
 }
-
-void sendStartPacket()
-{
-    uint8_t data = PACKET_START;
-    addPacket(&data, sizeof(data));
-}
-
-void sendContinuePacket()
-{
-    uint8_t data = PACKET_CONTINUE;
-    addPacket(&data, sizeof(data));
-}
-
-/*
-void sendWorldToRobot(struct Communication_World communication_world)
-{
-    uint8_t data[1 + sizeof(struct Communication_World)];
-    data[0] = PACKET_WORLD;
-    memcpy(data + 1, &communication_world, sizeof(struct Communication_World));
-    addPacket(data, sizeof(data));
-}
-*/
 
 void handleReceivedPacket(uint8_t *data, uint32_t length)
 {
@@ -150,24 +130,29 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
     }
 
     switch(data[0]) {
-        case PACKET_START:
-            callbackStartPacket();
+        case DATA_MANCHESTER:
             break;
 
-        case PACKET_CONTINUE:
-            callbackContinuePacket();
+        case DATA_IMAGE:
             break;
 
-        case PACKET_WORLD:
-            if(length != (sizeof(struct Communication_World) + 1)) {
-                printf("wrong struct Communication_World length\n");
-                break;
-            }
-
-            struct Communication_World communication_world;
-
-            memcpy(&communication_world, data + 1, sizeof(struct Communication_World));
-
+        case DATA_PLANNED_TRAJECTORY:
             break;
+
+        case DATA_ESTIMATED_ROBOT_POSITION:
+            break;
+            /*
+                case DATA_WORLD:
+                    if(length != (sizeof(struct Communication_World) + 1)) {
+                        printf("wrong struct Communication_World length\n");
+                        break;
+                    }
+
+                    struct Communication_World communication_world;
+
+                    memcpy(&communication_world, data + 1, sizeof(struct Communication_World));
+
+                    break;
+            */
     }
 }

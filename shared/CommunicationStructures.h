@@ -3,15 +3,20 @@
 
 enum {
     INVALID_PACKET,
-    TRANSLATION_DATA,
-    TRANSLATION_COMMAND,
-    ROTATION_COMMAND,
-    MANCHESTER_DATA,
-    PACKET_START,
-    PACKET_CONTINUE,
-    PACKET_WORLD
+    COMMAND_START_CYCLE,
+    COMMAND_TRANSLATION,
+    COMMAND_ROTATION,
+    DATA_TRANSLATION,
+    DATA_WORLD,
+    DATA_MANCHESTER,
+    DATA_IMAGE,
+    DATA_PLANNED_TRAJECTORY,
+    DATA_ESTIMATED_ROBOT_POSITION,
+    ACK_IMAGE_RECEIVED,
+    ACK_PLANNED_TRAJECTORY_RECEIVED,
+    ACK_MANCHESTER_RECEIVED,
+    ACK_ESTIMATED_ROBOT_POSITION_RECEIVED
 };
-
 
 void sendStartPacket();
 
@@ -72,6 +77,10 @@ struct __attribute__((__packed__)) Communication_World {
     struct Communication_Object robot;
 };
 
+struct __attribute__((__packed__)) Communication_Flags {
+    //TODO Put robot's state in current cycle
+};
+
 struct Command_Translate {
     int x;
     int y;
@@ -80,9 +89,13 @@ struct Command_Translate {
 struct Command_Rotate {
     int theta;
 };
+
 struct Command_LightRedLED {};
+
 struct Command_LightGreenLED {};
+
 struct Command_RisePen {};
+
 struct Command_LowerPen {};
 
 #endif // COMMUNICATIONSTRUCTURES_H_
