@@ -205,7 +205,7 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 
             memcpy(&communication_world, data + 1, sizeof(struct Communication_World));
 
-            reception_callbacks.updateWorld(robot_server->world_camera, communication_world);
+            reception_callbacks.updateWorld(robot_server->robot->world_camera, communication_world);
 
             break;
     }
