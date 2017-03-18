@@ -1,6 +1,9 @@
 #ifndef OBJECT_H_
 #define OBJECT_H_
 
+// This include is all of the robot's constants
+#include "Defines.h"
+
 /**
  * This module is to be added as
  *    THE VERY FIRST element of

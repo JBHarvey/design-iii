@@ -1,5 +1,6 @@
 #include <criterion/criterion.h>
 #include <stdio.h>
+#include <math.h>
 #include "point_types.h"
 
 Test(Point2D, creation)

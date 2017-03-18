@@ -2,10 +2,6 @@
 #define FLAGS_H_
 #include "Object.h"
 
-#define TRUE 1
-#define FALSE 0
-#define IRRELEVANT -1
-
 struct Flags {
     struct Object *object;
     int start_cycle_signal_received;

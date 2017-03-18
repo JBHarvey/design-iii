@@ -59,6 +59,14 @@ const int TEST_PAINTING_7_X = 4060;
 const int TEST_PAINTING_7_Y = 8500;
 const int TEST_PAINTING_7_ORIENTATION = HALF_PI;
 
+void StationClientSender_sendStartCycleCommand(struct StationClient *station_client)
+{
+    uint8_t data[1];
+    data[0] = COMMAND_START_CYCLE;
+    addPacket(data, sizeof(data));
+    StationClient_communicate(station_client, 1);
+}
+
 static void cleanExitIfMainLoopTerminated(void)
 {
     if(main_loop_status == TERMINATED) {
