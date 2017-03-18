@@ -173,16 +173,11 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 
     printf("received packet %u of length %u\n", data[0], length);
 
+    struct Flags *flags = robot_server->robot->current_state->flags;
+    struct WorldCamera *world_camera = robot_server->robot->world_camera;
+
     switch(data[0]) {
         /*
-        case PACKET_START:
-            callbackStartPacket();
-            break;
-
-        case PACKET_CONTINUE:
-            callbackContinuePacket();
-            break;
-
         case DATA_TRANSLATION:
             //TODO: add processing
             reception_callbacks.updateWheelsTranslation(robot_server->robot->wheels, communication_translation);
@@ -195,6 +190,10 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 
             */
 
+        case COMMAND_START_CYCLE:
+            reception_callbacks.updateFlagsStartCycle(flags, 1);
+            break;
+
         case DATA_WORLD:
             if(length != (sizeof(struct Communication_World) + 1)) {
                 printf("wrong struct Communication_World length\n");
@@ -205,7 +204,7 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 
             memcpy(&communication_world, data + 1, sizeof(struct Communication_World));
 
-            reception_callbacks.updateWorld(robot_server->robot->world_camera, communication_world);
+            reception_callbacks.updateWorld(world_camera, communication_world);
 
             break;
     }
