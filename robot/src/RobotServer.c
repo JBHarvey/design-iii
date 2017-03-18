@@ -104,6 +104,7 @@ static int initTTYACM(struct ev_loop *loop, char *ttyacm_path)
 
 //This global variable allows the command sender to be output-agnostic
 static int physical_robot_file_descriptor;
+static struct DataReceiver_Callbacks reception_callbacks;
 
 struct RobotServer *RobotServer_new(struct Robot *new_robot, int new_port, char *ttyacm_path)
 {
@@ -131,7 +132,7 @@ struct RobotServer *RobotServer_new(struct Robot *new_robot, int new_port, char 
     pointer->object = new_object;
     pointer->robot = new_robot;
     pointer->loop = new_loop;
-    pointer->data_receiver_callbacks = new_data_receiver_callbacks;
+    reception_callbacks = new_data_receiver_callbacks;
 
     Object_addOneReference(new_robot->object);
 
@@ -154,24 +155,6 @@ void RobotServer_delete(struct RobotServer *robot_server)
 void RobotServer_communicate(struct RobotServer *robot_server)
 {
     ev_run(robot_server->loop, EVRUN_NOWAIT);
-}
-
-static void callbackWorld(struct Communication_World communication_world)
-{
-    // TODO: Extract callback as designed to enable logging decoration.
-    DataReceiver_updateWorld(robot_server->robot->world_camera, communication_world);
-}
-
-static void callbackTranslationData(struct Communication_Translation communication_translation)
-{
-    // TODO: Extract callback as designed to enable logging decoration.
-    DataReceiver_updateWheelsTranslation(robot_server->robot->wheels, communication_translation);
-}
-
-static void callbackRotationData(struct Communication_Rotation communication_rotation)
-{
-    // TODO: Extract callback as designed to enable logging decoration.
-    DataReceiver_updateWheelsRotation(robot_server->robot->wheels, communication_rotation);
 }
 /*
 void sendWorldToRobot(struct Communication_World communication_world)
@@ -199,6 +182,17 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
         case PACKET_CONTINUE:
             callbackContinuePacket();
             break;
+
+        case DATA_TRANSLATION:
+            //TODO: add processing
+            reception_callbacks.updateWheelsTranslation(robot_server->robot->wheels, communication_translation);
+            break;
+
+        case DATA_ROTATION:
+            //TODO: add processing
+            reception_callbacks.updateWheelsTranslation(robot_server->robot->wheels, communication_rotation);
+            break;
+
             */
 
         case DATA_WORLD:
@@ -211,7 +205,7 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 
             memcpy(&communication_world, data + 1, sizeof(struct Communication_World));
 
-            callbackWorld(communication_world);
+            reception_callbacks.updateWorld(robot_server->robot->world_camera, communication_world);
 
             break;
     }
