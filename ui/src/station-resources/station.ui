@@ -91,6 +91,22 @@
                 <property name="baseline_position">top</property>
                 <property name="layout_style">start</property>
                 <child>
+                  <object class="GtkLabel" id="timer">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">00:00:000</property>
+                    <attributes>
+                      <attribute name="font-desc" value="DejaVu Sans Mono Bold 15"/>
+                      <attribute name="foreground" value="#efef29292929"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
                   <object class="GtkButton" id="world_camera_calibration">
                     <property name="label" translatable="yes">Calibrate</property>
                     <property name="visible">True</property>
@@ -101,7 +117,21 @@
                   <packing>
                     <property name="expand">True</property>
                     <property name="fill">True</property>
-                    <property name="position">0</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="start_cycle">
+                    <property name="label" translatable="yes">Start cycle</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <signal name="clicked" handler="startCycleClickedEventCallback" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
               </object>
