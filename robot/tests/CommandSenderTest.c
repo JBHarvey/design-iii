@@ -189,7 +189,7 @@ Test(CommandSender, given_aLowerPenCallback_when_askedToSendCommand_then_theCall
     cr_assert_eq(lower_pen_validator, EXPECTED_VALIDATOR_VALUE);
 }
 
-Test(CommandSender, given_afetchManchesterCodeCallback_when_askedToSendCommand_then_theCallbackIsCalled
+Test(CommandSender, given_aFetchManchesterCodeCallback_when_askedToSendCommand_then_theCallbackIsCalled
      , .init = setup_CommandSender
      , .fini = teardown_CommandSender)
 {
