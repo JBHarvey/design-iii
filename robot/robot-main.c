@@ -5,8 +5,8 @@
 struct Logger *logger;
 struct RobotServer *robot_server;
 const int port = 35794;
-//const char *ttyACM = "test";
-char *ttyACM = "/dev/ttyACM0";
+char *ttyACM = "/dev/null";
+//char *ttyACM = "/dev/ttyACM0";
 
 int main(int argc, char *argv[])
 {
@@ -16,9 +16,9 @@ int main(int argc, char *argv[])
     logger = Logger_new();
 
     /* Logger test */
-    /*
     struct DataReceiver_Callbacks test_callbacks = DataReceiver_fetchCallbacks();
     test_callbacks = Logger_startLoggingDataReceiverAndReturnCallbacks(logger, test_callbacks);
+
 
     struct Communication_Rotation rotation = { .theta = 855, .gamma = 5};
     struct Communication_Translation translation = {
@@ -26,6 +26,9 @@ int main(int argc, char *argv[])
         .speeds = { .x = 55, .y = 42}
     };
 
+    (*(test_callbacks.updateFlagsStartCycle))(robot->current_state->flags, 1);
+    (*(test_callbacks.updateFlagsStartCycle))(robot->current_state->flags, 0);
+    /*
     (*(test_callbacks.updateWheelsRotation))(robot->wheels, rotation);
     (*(test_callbacks.updateWheelsTranslation))(robot->wheels, translation);
 
