@@ -43,7 +43,6 @@ static void sendDataSocket(int fd)
         unsigned int length = first->length - first->sent;
 
         int ret = send(fd, buf, length, MSG_NOSIGNAL);
-        printf("sent %i\n", ret);
 
         if(ret <= 0) {
             break;
@@ -61,7 +60,6 @@ static void sendDataSocket(int fd)
 void addPacket(uint8_t *data, uint32_t length)
 {
     struct Packet *new_packet = malloc(sizeof(struct Packet) + sizeof(uint32_t) + length);
-    printf("add %i\n", length);
     new_packet->next = 0;
     new_packet->length = length + sizeof(uint32_t);
     new_packet->sent = 0;

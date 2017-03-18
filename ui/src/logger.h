@@ -11,6 +11,8 @@ const int DEFAULT_TEXT_BUFFER_MAX_LENGTH;
 
 void Logger_initialize(GtkWidget *widget);
 
+void Logger_finalize(void);
+
 void Logger_append(const char *text);
 
 void Logger_startMessageSectionAndAppend(const char *text);

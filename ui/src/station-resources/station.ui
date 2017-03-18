@@ -223,6 +223,7 @@
                         <property name="buffer">logger_text_buffer</property>
                         <property name="accepts_tab">False</property>
                         <property name="monospace">True</property>
+                        <signal name="map-event" handler="loggerMappedEventCallback" swapped="no"/>
                       </object>
                     </child>
                   </object>
