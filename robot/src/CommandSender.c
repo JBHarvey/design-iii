@@ -8,7 +8,9 @@ static struct CommandSender_Callbacks getCallbacksTargetingRobot(void)
         .sendLightRedLEDCommand = &RobotServer_sendLightRedLEDCommand,
         .sendLightGreenLEDCommand = &RobotServer_sendLightGreenLEDCommand,
         .sendRisePenCommand = &RobotServer_sendRisePenCommand,
-        .sendLowerPenCommand = &RobotServer_sendLowerPenCommand
+        .sendLowerPenCommand = &RobotServer_sendLowerPenCommand,
+        .sendFetchManchesterCodeCommand = &RobotServer_fetchManchesterCodeCommand,
+        .sendStopSendingManchesterSignalCommand = &RobotServer_sendStopSendingManchesterSignalCommand
     };
     return commands;
 }
@@ -53,24 +55,31 @@ void CommandSender_sendRotateCommand(struct CommandSender *command_sender, struc
     (*(command_sender->command_callbacks.sendRotateCommand))(rotate_command);
 }
 
-void CommandSender_sendLightRedLEDCommand(struct CommandSender *command_sender,
-        struct Command_LightRedLED light_red_led_command)
+void CommandSender_sendLightRedLEDCommand(struct CommandSender *command_sender)
 {
-    (*(command_sender->command_callbacks.sendLightRedLEDCommand))(light_red_led_command);
+    (*(command_sender->command_callbacks.sendLightRedLEDCommand))();
 }
 
-void CommandSender_sendLightGreenLEDCommand(struct CommandSender *command_sender,
-        struct Command_LightGreenLED light_green_led_command)
+void CommandSender_sendLightGreenLEDCommand(struct CommandSender *command_sender)
 {
-    (*(command_sender->command_callbacks.sendLightGreenLEDCommand))(light_green_led_command);
+    (*(command_sender->command_callbacks.sendLightGreenLEDCommand))();
 }
 
-void CommandSender_sendRisePenCommand(struct CommandSender *command_sender, struct Command_RisePen rise_pen_command)
+void CommandSender_sendRisePenCommand(struct CommandSender *command_sender)
 {
-    (*(command_sender->command_callbacks.sendRisePenCommand))(rise_pen_command);
+    (*(command_sender->command_callbacks.sendRisePenCommand))();
 }
 
-void CommandSender_sendLowerPenCommand(struct CommandSender *command_sender, struct Command_LowerPen lower_pen_command)
+void CommandSender_sendLowerPenCommand(struct CommandSender *command_sender)
 {
-    (*(command_sender->command_callbacks.sendLowerPenCommand))(lower_pen_command);
+    (*(command_sender->command_callbacks.sendLowerPenCommand))();
+}
+
+void CommandSender_sendFetchManchesterCode(struct CommandSender *command_sender)
+{
+    (*(command_sender->command_callbacks.sendFetchManchesterCodeCommand))();
+}
+void CommandSender_sendStopSendingManchesterSignal(struct CommandSender *command_sender)
+{
+    (*(command_sender->command_callbacks.sendStopSendingManchesterSignalCommand))();
 }

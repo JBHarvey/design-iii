@@ -6,10 +6,12 @@
 struct CommandSender_Callbacks {
     void (*sendTranslateCommand)(struct Command_Translate);
     void (*sendRotateCommand)(struct Command_Rotate);
-    void (*sendLightRedLEDCommand)(struct Command_LightRedLED);
-    void (*sendLightGreenLEDCommand)(struct Command_LightGreenLED);
-    void (*sendRisePenCommand)(struct Command_RisePen);
-    void (*sendLowerPenCommand)(struct Command_LowerPen);
+    void (*sendLightRedLEDCommand)(void);
+    void (*sendLightGreenLEDCommand)(void);
+    void (*sendRisePenCommand)(void);
+    void (*sendLowerPenCommand)(void);
+    void (*sendFetchManchesterCodeCommand)(void);
+    void (*sendStopSendingManchesterSignalCommand)(void);
 };
 
 struct CommandSender {
@@ -24,8 +26,10 @@ void CommandSender_changeTarget(struct CommandSender *command_sender, struct Com
 
 void CommandSender_sendTranslateCommand(struct CommandSender *command_sender, struct Command_Translate translate_command);
 void CommandSender_sendRotateCommand(struct CommandSender *command_sender, struct Command_Rotate rotate_command);
-void CommandSender_sendLightRedLEDCommand(struct CommandSender *command_sender, struct Command_LightRedLED light_red_led_command);
-void CommandSender_sendLightGreenLEDCommand(struct CommandSender *command_sender, struct Command_LightGreenLED light_green_led_command);
-void CommandSender_sendRisePenCommand(struct CommandSender *command_sender, struct Command_RisePen rise_pen_command);
-void CommandSender_sendLowerPenCommand(struct CommandSender *command_sender, struct Command_LowerPen lower_pen_command);
+void CommandSender_sendLightRedLEDCommand(struct CommandSender *command_sender);
+void CommandSender_sendLightGreenLEDCommand(struct CommandSender *command_sender);
+void CommandSender_sendRisePenCommand(struct CommandSender *command_sender);
+void CommandSender_sendLowerPenCommand(struct CommandSender *command_sender);
+void CommandSender_sendFetchManchesterCode(struct CommandSender *command_sender);
+void CommandSender_sendStopSendingManchesterSignal(struct CommandSender *command_sender);
 #endif // COMMANDSENDER_H_

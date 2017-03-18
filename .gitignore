@@ -47,6 +47,7 @@ compile_commands.json
 
 # Robot
 robot/src/CommunicationStructures.h
+robot/src/Defines.h
 
 # UI
 ui/autodeploy/DEPS

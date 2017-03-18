@@ -9,6 +9,8 @@ int light_red_led_validator;
 int light_green_led_validator;
 int rise_pen_validator;
 int lower_pen_validator;
+int manchester_code_validator;
+int manchester_signal_validator;
 
 const int EXPECTED_VALIDATOR_VALUE = 1;
 
@@ -23,6 +25,8 @@ void setup_CommandSender(void)
     light_green_led_validator = 0;
     rise_pen_validator = 0;
     lower_pen_validator = 0;
+    manchester_code_validator = 0;
+    manchester_signal_validator = 0;
 }
 
 void teardown_CommandSender(void)
@@ -30,19 +34,6 @@ void teardown_CommandSender(void)
     CommandSender_delete(command_sender);
 }
 
-/*
- *
-Move :
-uint_8 *data;
-data[0] Commande (move --> 0)
-data[1] taille des data envoyés (move --> 8)
-data[2..5] float x     Unit = 1 m
-data[6..9] float y     Unit = 1 m
-struct __attributes__((__packed__)) {
-    float x;
-    float y;
-}
-*/
 Test(CommandSender, construction_destruction)
 {
     struct CommandSender *command_sender = CommandSender_new();
@@ -53,6 +44,9 @@ Test(CommandSender, construction_destruction)
     cr_assert_eq(command_sender->command_callbacks.sendLightGreenLEDCommand, &RobotServer_sendLightGreenLEDCommand);
     cr_assert_eq(command_sender->command_callbacks.sendRisePenCommand, &RobotServer_sendRisePenCommand);
     cr_assert_eq(command_sender->command_callbacks.sendLowerPenCommand, &RobotServer_sendLowerPenCommand);
+    cr_assert_eq(command_sender->command_callbacks.sendFetchManchesterCodeCommand, &RobotServer_fetchManchesterCodeCommand);
+    cr_assert_eq(command_sender->command_callbacks.sendStopSendingManchesterSignalCommand,
+                 &RobotServer_sendStopSendingManchesterSignalCommand);
 
     CommandSender_delete(command_sender);
 }
@@ -65,21 +59,29 @@ void CommandSenderTest_sendRotateCommand(struct Command_Rotate command_rotate)
 {
     ++rotate_validator;
 }
-void CommandSenderTest_sendLightRedLEDCommand(struct Command_LightRedLED command_light_red_led)
+void CommandSenderTest_sendLightRedLEDCommand(void)
 {
     ++light_red_led_validator;
 }
-void CommandSenderTest_sendLightGreenLEDCommand(struct Command_LightGreenLED command_light_green_led)
+void CommandSenderTest_sendLightGreenLEDCommand(void)
 {
     ++light_green_led_validator;
 }
-void CommandSenderTest_sendRisePenCommand(struct Command_RisePen command_rise_pen)
+void CommandSenderTest_sendRisePenCommand(void)
 {
     ++rise_pen_validator;
 }
-void CommandSenderTest_sendLowerPenCommand(struct Command_LowerPen command_lower_pen)
+void CommandSenderTest_sendLowerPenCommand(void)
 {
     ++lower_pen_validator;
+}
+void CommandSenderTest_fetchManchesterCode(void)
+{
+    ++manchester_code_validator;
+}
+void CommandSenderTest_stopSendingManchesterSignal(void)
+{
+    ++manchester_signal_validator;
 }
 
 struct CommandSender_Callbacks generateCommandSenderTestTarget(void)
@@ -90,7 +92,9 @@ struct CommandSender_Callbacks generateCommandSenderTestTarget(void)
         .sendLightRedLEDCommand = &CommandSenderTest_sendLightRedLEDCommand,
         .sendLightGreenLEDCommand = &CommandSenderTest_sendLightGreenLEDCommand,
         .sendRisePenCommand = &CommandSenderTest_sendRisePenCommand,
-        .sendLowerPenCommand = &CommandSenderTest_sendLowerPenCommand
+        .sendLowerPenCommand = &CommandSenderTest_sendLowerPenCommand,
+        .sendFetchManchesterCodeCommand = &CommandSenderTest_fetchManchesterCode,
+        .sendStopSendingManchesterSignalCommand = &CommandSenderTest_stopSendingManchesterSignal
     };
     return test_callbacks;
 }
@@ -109,6 +113,10 @@ Test(CommandSender, given_aCommandSenderCallbacks_when_changesCommandSenderTarge
     cr_assert_eq(command_sender->command_callbacks.sendLightGreenLEDCommand, test_callbacks.sendLightGreenLEDCommand);
     cr_assert_eq(command_sender->command_callbacks.sendRisePenCommand, test_callbacks.sendRisePenCommand);
     cr_assert_eq(command_sender->command_callbacks.sendLowerPenCommand, test_callbacks.sendLowerPenCommand);
+    cr_assert_eq(command_sender->command_callbacks.sendFetchManchesterCodeCommand,
+                 test_callbacks.sendFetchManchesterCodeCommand);
+    cr_assert_eq(command_sender->command_callbacks.sendStopSendingManchesterSignalCommand,
+                 test_callbacks.sendStopSendingManchesterSignalCommand);
 
 }
 
@@ -143,9 +151,8 @@ Test(CommandSender, given_aLightRedLEDCallback_when_askedToSendCommand_then_theC
 {
     struct CommandSender_Callbacks test_callbacks = generateCommandSenderTestTarget();
     CommandSender_changeTarget(command_sender, test_callbacks);
-    struct Command_LightRedLED light_red_led_command = {};
 
-    CommandSender_sendLightRedLEDCommand(command_sender, light_red_led_command);
+    CommandSender_sendLightRedLEDCommand(command_sender);
     cr_assert_eq(light_red_led_validator, EXPECTED_VALIDATOR_VALUE);
 }
 
@@ -155,9 +162,8 @@ Test(CommandSender, given_aLightGreenLEDCallback_when_askedToSendCommand_then_th
 {
     struct CommandSender_Callbacks test_callbacks = generateCommandSenderTestTarget();
     CommandSender_changeTarget(command_sender, test_callbacks);
-    struct Command_LightGreenLED light_green_led_command = {};
 
-    CommandSender_sendLightGreenLEDCommand(command_sender, light_green_led_command);
+    CommandSender_sendLightGreenLEDCommand(command_sender);
     cr_assert_eq(light_green_led_validator, EXPECTED_VALIDATOR_VALUE);
 }
 
@@ -167,11 +173,9 @@ Test(CommandSender, given_aRisePenCallback_when_askedToSendCommand_then_theCallb
 {
     struct CommandSender_Callbacks test_callbacks = generateCommandSenderTestTarget();
     CommandSender_changeTarget(command_sender, test_callbacks);
-    struct Command_RisePen rise_pen_command = {};
 
-    CommandSender_sendRisePenCommand(command_sender, rise_pen_command);
+    CommandSender_sendRisePenCommand(command_sender);
     cr_assert_eq(rise_pen_validator, EXPECTED_VALIDATOR_VALUE);
-
 }
 
 Test(CommandSender, given_aLowerPenCallback_when_askedToSendCommand_then_theCallbackIsCalled
@@ -180,9 +184,29 @@ Test(CommandSender, given_aLowerPenCallback_when_askedToSendCommand_then_theCall
 {
     struct CommandSender_Callbacks test_callbacks = generateCommandSenderTestTarget();
     CommandSender_changeTarget(command_sender, test_callbacks);
-    struct Command_LowerPen lower_pen_command = {};
 
-    CommandSender_sendLowerPenCommand(command_sender, lower_pen_command);
+    CommandSender_sendLowerPenCommand(command_sender);
     cr_assert_eq(lower_pen_validator, EXPECTED_VALIDATOR_VALUE);
+}
 
+Test(CommandSender, given_afetchManchesterCodeCallback_when_askedToSendCommand_then_theCallbackIsCalled
+     , .init = setup_CommandSender
+     , .fini = teardown_CommandSender)
+{
+    struct CommandSender_Callbacks test_callbacks = generateCommandSenderTestTarget();
+    CommandSender_changeTarget(command_sender, test_callbacks);
+
+    CommandSender_sendFetchManchesterCode(command_sender);
+    cr_assert_eq(manchester_code_validator, EXPECTED_VALIDATOR_VALUE);
+}
+
+Test(CommandSender, given_aStopSendingManchesterSignalCallback_when_askedToSendCommand_then_theCallbackIsCalled
+     , .init = setup_CommandSender
+     , .fini = teardown_CommandSender)
+{
+    struct CommandSender_Callbacks test_callbacks = generateCommandSenderTestTarget();
+    CommandSender_changeTarget(command_sender, test_callbacks);
+
+    CommandSender_sendStopSendingManchesterSignal(command_sender);
+    cr_assert_eq(manchester_signal_validator, EXPECTED_VALIDATOR_VALUE);
 }
