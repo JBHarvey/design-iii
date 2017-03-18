@@ -95,7 +95,6 @@ gpointer StationClient_init(struct StationClient *station_client)
     Logger_startRobotConnectionHandlerSectionAndAppend("Trying to connect to the robot...");
 
     while(!initTCPClient(station_client)) {
-        Logger_startRobotConnectionHandlerSectionAndAppend("Connection to robot failed. Retrying...");
 
         if(main_loop_status == TERMINATED) {
             return (gpointer) FALSE;
