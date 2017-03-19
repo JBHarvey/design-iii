@@ -6,6 +6,7 @@
 #include <ev.h>
 #include <stdlib.h>
 #include <strings.h>
+#include <string.h>
 #include <termios.h>
 
 #include "RobotServer.h"
