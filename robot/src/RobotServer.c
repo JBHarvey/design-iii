@@ -350,8 +350,13 @@ void RobotServer_sendTranslateCommand(struct Command_Translate command_translate
 
 void RobotServer_sendRotateCommand(struct Command_Rotate command_rotate)
 {
-    // use angle base unit
-    // angle -> float sur 4 uint8_t
+    float theta = command_rotate.theta * ANGLE_BASE_UNIT;
+
+    uint8_t data[sizeof(float)];
+
+    memcpy(data, &theta, sizeof(float));
+
+    writeTTYACMPacket(COMMAND_TYPE_ROTATE, data, sizeof(data));
 }
 
 #define ACTION_ONLY_COMMAND_LENGTH 0

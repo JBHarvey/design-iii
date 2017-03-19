@@ -37,9 +37,16 @@ int main(int argc, char *argv[])
     test_callbacks = Logger_startLoggingDataReceiverAndReturnCallbacks(logger, test_callbacks);
     RobotServer_updateDataReceiverCallbacks(test_callbacks);
 
+    // MANCHESTER ASK + LOG RETURN TEST
     RobotServer_fetchManchesterCodeCommand();
-    struct Command_Rotate rotate = { .theta = HALF_PI};
 
+    // ROTATE TEST
+    struct Command_Rotate rotate = { .theta = HALF_PI};
+    RobotServer_sendRotateCommand(rotate);
+    waitASecondAndAHalf();
+
+    /*
+     // STAR TEST
     RobotServer_sendLowerPenCommand();
     waitASecondAndAHalf();
 
@@ -55,6 +62,8 @@ int main(int argc, char *argv[])
     sendTranslate(660, 460);
 
     RobotServer_sendRisePenCommand();
+    */
+
 
     /*
     struct Communication_Rotation rotation = { .theta = 855, .gamma = 5};
