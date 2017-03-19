@@ -97,7 +97,7 @@ bool PID_Compute_Position(PidType* pid) {
 	float preInput = pid->myInput;
 	FloatType input = calculatePosition(preInput);
 	pid->error = pid->mySetpoint - input;
-	if (pid->error > -0.005 && pid->error < 0.005) {
+	if (pid->error > -0.016 && pid->error < 0.016) {
 		pid->error = 0;
 	}
 	pid->ITerm += (pid->ki * pid->error);
@@ -116,10 +116,11 @@ bool PID_Compute_Position(PidType* pid) {
 		output = pid->kp * pid->error + pid->ITerm - pid->kd * dInput;
 	}
 
-	if (output > pid->outMax)
+	if (output > pid->outMax) {
 		output = pid->outMax;
-	else if (output < pid->outMin)
+	} else if (output < pid->outMin) {
 		output = pid->outMin;
+	}
 	pid->myOutput = output;
 
 	/*Remember some variables for next time*/

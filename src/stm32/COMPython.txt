@@ -1,0 +1,14 @@
+import serial
+import struct
+
+
+value = 0.10
+
+ba = bytearray(struct.pack("f", value))
+
+ser = serial.Serial('/dev/ttyACM0', 9600, serial.EIGHTBITS, serial.PARITY_NONE, serial.STOPBITS_ONE)
+values = bytearray([0, 8, 0, 0, 0, 0, ba[0], ba[1], ba[2], ba[3]])
+
+ser.write(values)
+
+ser.close()
