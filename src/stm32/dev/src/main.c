@@ -29,6 +29,7 @@
 #include "timers.h"
 #include "pushButtons.h"
 #include "leds.h"
+#include "prehenseur.h"
 
 #define TAILLE 500
 
@@ -42,7 +43,7 @@ enum State {
 };
 
 enum MainState {
-	MAIN_IDLE, MAIN_MANCH, MAIN_ACQUIS, MAIN_MOVE, MAIN_PID
+	MAIN_IDLE, MAIN_MANCH, MAIN_ACQUIS, MAIN_MOVE, MAIN_PID, MAIN_PREHENSEUR
 };
 
 enum SpeedDirection {
@@ -733,6 +734,13 @@ int main(void) {
 					&manchesterFigureVerification,
 					manchesterOrientationVerification,
 					&manchesterFactorVerification);
+			break;
+		case MAIN_PREHENSEUR:
+			initPrehensor();
+			moveUpPrehensor();
+			Delayms(1000);
+			moveDownPrehensor();
+			Delayms(1000);
 			break;
 		default:
 			setState(&mainState, MAIN_IDLE);
