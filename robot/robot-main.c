@@ -9,15 +9,6 @@ const int port = 35794;
 //char *ttyACM = "/dev/null";
 char *ttyACM = "/dev/ttyACM0";
 
-static void testSendRobotPoseAsWheelcommands(struct WorldCamera *world_camera, struct Communication_World world)
-{
-    struct Command_Translate command = {
-        .x = world.robot.zone.pose.coordinates.x,
-        .y = world.robot.zone.pose.coordinates.y
-    };
-    RobotServer_sendTranslateCommand(command);
-}
-
 int main(int argc, char *argv[])
 {
     robot = Robot_new();
@@ -27,17 +18,28 @@ int main(int argc, char *argv[])
 
     struct DataReceiver_Callbacks test_callbacks = DataReceiver_fetchCallbacks();
     test_callbacks = Logger_startLoggingDataReceiverAndReturnCallbacks(logger, test_callbacks);
-    test_callbacks.updateWorld = &testSendRobotPoseAsWheelcommands;
     RobotServer_updateDataReceiverCallbacks(test_callbacks);
 
 
+    struct Command_Translate command = { .x = 200 .y = 200 };
+    RobotServer_sendTranslateCommand(command);
+    struct Command_Translate command = { .x = -200 .y = -200 };
+    RobotServer_sendTranslateCommand(command);
+    struct Command_Translate command = { .x = 200 .y = 200 };
+    RobotServer_sendTranslateCommand(command);
+    struct Command_Translate command = { .x = 200 .y = -200 };
+    RobotServer_sendTranslateCommand(command);
+    struct Command_Translate command = { .x = -200 .y = -200 };
+    RobotServer_sendTranslateCommand(command);
+    struct Command_Translate command = { .x = -200 .y = 200 };
+    RobotServer_sendTranslateCommand(command);
+
+    /*
     struct Communication_Rotation rotation = { .theta = 855, .gamma = 5};
     struct Communication_Translation translation = {
         .movement = { .x = 1531, .y = 13513},
         .speeds = { .x = 55, .y = 42}
     };
-
-    /*
     (*(test_callbacks.updateFlagsStartCycle))(robot->current_state->flags, 1);
     (*(test_callbacks.updateFlagsStartCycle))(robot->current_state->flags, 0);
     (*(test_callbacks.updateWheelsRotation))(robot->wheels, rotation);
