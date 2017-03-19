@@ -97,7 +97,8 @@ bool PID_Compute_Position(PidType* pid) {
 	float preInput = pid->myInput;
 	FloatType input = calculatePosition(preInput);
 	pid->error = pid->mySetpoint - input;
-	if (pid->error > -0.016 && pid->error < 0.016) {
+	if (pid->error > -PID_POSITION_TOLERANCE
+			&& pid->error < PID_POSITION_TOLERANCE) {
 		pid->error = 0;
 	}
 	pid->ITerm += (pid->ki * pid->error);

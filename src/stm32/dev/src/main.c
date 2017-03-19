@@ -59,9 +59,15 @@ enum COMMUNICATION_STATUS {
 };
 
 enum COMMAND {
-	COMMAND_MOVE
+	COMMAND_MOVE, COMMAND_PENCIL_UP
 };
 
+#define COMMAND_MOVE 0
+#define COMMAND_PENCIL_UP 4
+#define COMMAND_PENCIL_DOWN 5
+#define COMMAND_DECODE_MANCHESTER 6
+#define COMMAND_STOP_DECODE_MANCHESTER 7
+#define COMMAND_DECODED_MANCHESTER 106
 #define INTERNAL_SYSTICK_FREQUENCY 500
 #define TIME_DELAY 1/(float) INTERNAL_SYSTICK_FREQUENCY
 #define MAX_SPEED_INDEX 2000
@@ -353,6 +359,8 @@ int main(void) {
 			PID_POSITION4_KD, PID_Direction_Direct, PID_POSITION4_N);
 	PID_SetOutputLimits(&PID_POSITION4, MIN_POS_COMMAND, MAX_POS_COMMAND);
 
+	initPrehensor();
+
 	while (1) {
 
 		// Vite fait debounce pour le bouton bleu
@@ -546,7 +554,7 @@ int main(void) {
 							cmdMotor1 = -cmdMotor1;
 						} else {
 							speedDirection1 = SPEED_DIRECTION_NONE;
-							MotorSetDirection(1, BRAKE_G);
+							MotorSetDirection(1, BRAKE_V);
 						}
 
 						MotorSetSpeed(1, cmdMotor1);
@@ -609,7 +617,7 @@ int main(void) {
 							cmdMotor2 = -cmdMotor2;
 						} else {
 							speedDirection2 = SPEED_DIRECTION_NONE;
-							MotorSetDirection(2, BRAKE_G);
+							MotorSetDirection(2, BRAKE_V);
 						}
 
 						MotorSetSpeed(2, cmdMotor2);
@@ -666,7 +674,7 @@ int main(void) {
 							cmdMotor3 = -cmdMotor3;
 						} else {
 							speedDirection3 = SPEED_DIRECTION_NONE;
-							MotorSetDirection(3, BRAKE_G);
+							MotorSetDirection(3, BRAKE_V);
 						}
 
 						MotorSetSpeed(3, cmdMotor3);
@@ -697,7 +705,7 @@ int main(void) {
 							cmdMotor4 = -cmdMotor4;
 						} else {
 							speedDirection4 = SPEED_DIRECTION_NONE;
-							MotorSetDirection(4, BRAKE_G);
+							MotorSetDirection(4, BRAKE_V);
 
 						}
 
@@ -734,6 +742,22 @@ int main(void) {
 					&manchesterFigureVerification,
 					manchesterOrientationVerification,
 					&manchesterFactorVerification);
+
+			if (manchesterFactorVerification != 0) {
+				uint8_t dataToSend[9];
+				dataToSend[0] = COMMAND_DECODED_MANCHESTER;
+				dataToSend[1] = 7;
+				dataToSend[2] = manchesterFigureVerification;
+				dataToSend[3] = manchesterOrientationVerification[0];
+				dataToSend[4] = manchesterOrientationVerification[1];
+				dataToSend[5] = manchesterOrientationVerification[2];
+				dataToSend[6] = manchesterOrientationVerification[3];
+				dataToSend[7] = manchesterOrientationVerification[4];
+				dataToSend[8] = manchesterFactorVerification;
+				TM_USB_VCP_Send(dataToSend, dataToSend[1] + 2);
+			}
+
+			setState(&mainState, MAIN_IDLE);
 			break;
 		case MAIN_PREHENSEUR:
 			initPrehensor();
@@ -1108,6 +1132,7 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 			/* get X Y distances */
 			float xMove = getXMoveFromBuffer(data);
 			float yMove = getYMoveFromBuffer(data);
+
 			PID_POSITION1.mySetpoint = xMove;
 			PID_POSITION3.mySetpoint = xMove;
 			PID_POSITION2.mySetpoint = yMove;
@@ -1158,6 +1183,19 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 
 			setState(&mainState, MAIN_PID);
 		}
+		break;
+	case COMMAND_PENCIL_UP:
+		moveUpPrehensor();
+		break;
+
+	case COMMAND_PENCIL_DOWN:
+		moveDownPrehensor();
+		break;
+	case COMMAND_DECODE_MANCHESTER:
+		setState(&mainState, MAIN_MANCH);
+		break;
+	case COMMAND_STOP_DECODE_MANCHESTER:
+		setState(&mainState, MAIN_IDLE);
 		break;
 	}
 }
