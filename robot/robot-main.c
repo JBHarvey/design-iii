@@ -42,7 +42,6 @@ int main(int argc, char *argv[])
     RobotServer_sendLowerPenCommand();
     waitASecondAndAHalf();
 
-    RobotServer_sendRisePenCommand();
     sendTranslate(660, -460);
     sendTranslate(-240, 770);
     sendTranslate(660, 500);
@@ -53,6 +52,8 @@ int main(int argc, char *argv[])
     sendTranslate(660, -500);
     sendTranslate(-240, -770);
     sendTranslate(660, 460);
+
+    RobotServer_sendRisePenCommand();
 
     /*
     struct Communication_Rotation rotation = { .theta = 855, .gamma = 5};

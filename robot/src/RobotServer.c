@@ -226,6 +226,12 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 #define MANCHESTER_CODE_DECODED 106
 #define PHYSICAL_ACK_STOP_SENDING_SIGNAL 107
 
+struct __attribute__((__packed__)) ReceptionManchester {
+    uint8_t portrait_number;
+    uint8_t scale_factor;
+    char orientation;
+};
+
 static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
 {
     // TODO : ADD:
@@ -236,14 +242,22 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
 
         case MANCHESTER_CODE_DECODED:
 
-            if(length != (sizeof(struct Communication_ManchesterCode) + 1)) {
-                printf("wrong struct Communication length\n");
+            if(length != (sizeof(struct ReceptionManchester) + 1)) {
+                printf("wrong struct ReceptionManchester length\n");
                 break;
             }
 
-            struct Communication_ManchesterCode communication_manchester_code;
+            struct ReceptionManchester reception_manchester;
 
-            memcpy(&communication_manchester_code, data + 1, sizeof(struct Communication_ManchesterCode));
+            memcpy(&reception_manchester, data + 1, sizeof(struct ReceptionManchester));
+
+            struct Communication_ManchesterCode communication_manchester_code = {
+                .painting_number = reception_manchester.scale_factor,
+                .scale_factor = reception_manchester.scale_factor,
+                .orientation = reception_manchester.orientation
+            };
+
+            reception_callbacks.updateManchesterCode(robot_server->robot->manchester_code, communication_manchester_code);
 
             break;
     };
