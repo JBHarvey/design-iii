@@ -37,10 +37,14 @@ int main(int argc, char *argv[])
     test_callbacks = Logger_startLoggingDataReceiverAndReturnCallbacks(logger, test_callbacks);
     RobotServer_updateDataReceiverCallbacks(test_callbacks);
 
+    RobotServer_fetchManchesterCodeCommand();
 
     RobotServer_sendLowerPenCommand();
     waitASecondAndAHalf();
 
+    sendTranslate(1000, 1500);
+    sendTranslate(1000, -1500);
+    sendTranslate(2000, 0);
     /*
     sendTranslate(500, 675);
     sendTranslate(-500, 675);

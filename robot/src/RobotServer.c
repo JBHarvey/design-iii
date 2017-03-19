@@ -333,20 +333,24 @@ void RobotServer_sendRotateCommand(struct Command_Rotate command_rotate)
     // angle -> float sur 4 uint8_t
 }
 
+#define ACTION_ONLY_COMMAND_LENGTH 0
+
 void RobotServer_sendRisePenCommand(void)
 {
-    writeTTYACMPacket(COMMAND_TYPE_RISE_PEN, 0, 0);
+    writeTTYACMPacket(COMMAND_TYPE_RISE_PEN, 0, ACTION_ONLY_COMMAND_LENGTH);
 }
 
 void RobotServer_sendLowerPenCommand(void)
 {
-    writeTTYACMPacket(COMMAND_TYPE_LOWER_PEN, 0, 0);
+    writeTTYACMPacket(COMMAND_TYPE_LOWER_PEN, 0, ACTION_ONLY_COMMAND_LENGTH);
 }
 
-#define ACTION_ONLY_COMMAND_LENGHT 0
+void RobotServer_fetchManchesterCodeCommand(void)
+{
+    writeTTYACMPacket(COMMAND_TYPE_FETCH_MANCHESTER, 0, ACTION_ONLY_COMMAND_LENGTH);
+}
 // all of these have the command type + the ACTION_ONLY_COMMAND_LENGHT
 void RobotServer_sendLightRedLEDCommand(void) {}
 void RobotServer_sendLightGreenLEDCommand(void) {}
-void RobotServer_fetchManchesterCodeCommand(void) {}
 void RobotServer_sendStopSendingManchesterSignalCommand(void) {}
 
