@@ -21,18 +21,18 @@ int main(int argc, char *argv[])
     RobotServer_updateDataReceiverCallbacks(test_callbacks);
 
 
-    struct Command_Translate command = { .x = 200 .y = 200 };
+    struct Command_Translate command = { .x = 200, .y = 200 };
     RobotServer_sendTranslateCommand(command);
-    struct Command_Translate command = { .x = -200 .y = -200 };
-    RobotServer_sendTranslateCommand(command);
-    struct Command_Translate command = { .x = 200 .y = 200 };
-    RobotServer_sendTranslateCommand(command);
-    struct Command_Translate command = { .x = 200 .y = -200 };
-    RobotServer_sendTranslateCommand(command);
-    struct Command_Translate command = { .x = -200 .y = -200 };
-    RobotServer_sendTranslateCommand(command);
-    struct Command_Translate command = { .x = -200 .y = 200 };
-    RobotServer_sendTranslateCommand(command);
+    struct Command_Translate command1 = { .x = -200, .y = -200 };
+    RobotServer_sendTranslateCommand(command1);
+    struct Command_Translate command2 = { .x = 200, .y = 200 };
+    RobotServer_sendTranslateCommand(command2);
+    struct Command_Translate command3 = { .x = 200, .y = -200 };
+    RobotServer_sendTranslateCommand(command3);
+    struct Command_Translate command4 = { .x = -200, .y = -200 };
+    RobotServer_sendTranslateCommand(command4);
+    struct Command_Translate command5 = { .x = -200, .y = 200 };
+    RobotServer_sendTranslateCommand(command5);
 
     /*
     struct Communication_Rotation rotation = { .theta = 855, .gamma = 5};
