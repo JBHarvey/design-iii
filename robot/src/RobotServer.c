@@ -171,15 +171,6 @@ void sendWorldToRobot(struct Communication_World communication_world)
     addPacket(data, sizeof(data));
 }
 */
-
-#define PHYSICAL_FEEDBACK_TRANSLATION 100
-#define PHYSICAL_FEEDBACK_ROTATION 101
-#define PHYSICAL_ACK_RED_LED 102
-#define PHYSICAL_ACK_GREEN_LED 103
-#define PHYSICAL_ACK_RISE_PEN 104
-#define PHYSICAL_ACK_LOWER_PEN 105
-#define MANCHESTER_CODE_DECODED 106
-#define PHYSICAL_ACK_STOP_SENDING_SIGNAL 107
 void handleReceivedPacket(uint8_t *data, uint32_t length)
 {
     if(length == 0) {
@@ -225,6 +216,16 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
     }
 }
 
+
+#define PHYSICAL_FEEDBACK_TRANSLATION 100
+#define PHYSICAL_FEEDBACK_ROTATION 101
+#define PHYSICAL_ACK_RED_LED 102
+#define PHYSICAL_ACK_GREEN_LED 103
+#define PHYSICAL_ACK_RISE_PEN 104
+#define PHYSICAL_ACK_LOWER_PEN 105
+#define MANCHESTER_CODE_DECODED 106
+#define PHYSICAL_ACK_STOP_SENDING_SIGNAL 107
+
 static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
 {
     printf("packet %hhu of length %hhu: ", type, length);
@@ -236,10 +237,18 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
     }
 
     printf("\n");
+
     // TODO : ADD:
     // Wheels Translation
     // Wheels Rotation
-    // Manchester Code
+    switch(data[0]) {
+        case MANCHESTER_CODE_DECODED:
+            struct Communication_ManchesterCode communication_manchester_code;
+
+            memcpy(&communication_manchester_code, data + 1, sizeof(uint8_t));
+            memcpy(&communication_manchester_code + sizeof(int), data + 1 + sizeof(uint8_t), sizeof(uint8_t));
+            memcpy(&communication_manchester_code + (sizeof(int) * 2), data + 1 + (sizeof(uint8_t) * 2), sizeof(char));
+    };
 }
 
 #include <sys/ioctl.h>

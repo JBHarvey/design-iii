@@ -42,24 +42,18 @@ int main(int argc, char *argv[])
     RobotServer_sendLowerPenCommand();
     waitASecondAndAHalf();
 
-    sendTranslate(1000, 1500);
-    sendTranslate(1000, -1500);
-    sendTranslate(-2000, 0);
-
     RobotServer_sendRisePenCommand();
-    /*
-    sendTranslate(500, 675);
-    sendTranslate(-500, 675);
-    sendTranslate( 800, -200);
-    sendTranslate( 480, 580);
-    sendTranslate( 0, -820);
-    sendTranslate( 820, -235);
-    sendTranslate( -820, -275);
-    sendTranslate( 0, -800);
-    sendTranslate( -480,600);
-    sendTranslate( -800, -200);
+    sendTranslate(660, -460);
+    sendTranslate(-240, 770);
+    sendTranslate(660, 500);
+    sendTranslate(-830, 0);
+    sendTranslate(-250, 760);
+    sendTranslate(-250, -760);
+    sendTranslate(-830, 0);
+    sendTranslate(660, -500);
+    sendTranslate(-240, -770);
+    sendTranslate(660, 460);
 
-    */
     /*
     struct Communication_Rotation rotation = { .theta = 855, .gamma = 5};
     struct Communication_Translation translation = {
