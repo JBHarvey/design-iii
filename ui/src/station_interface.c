@@ -24,6 +24,8 @@ struct StationClient *station_client = NULL;
 
 void uiWindowDestroyEventCallback(GtkWidget *widget, gpointer data)
 {
+    Logger_finalize();
+    Timer_release();
     g_source_remove(timer_tag);
     g_object_unref(widget);
     gtk_main_quit();
@@ -80,15 +82,11 @@ void StationInterface_launch(int argc, char *argv[])
 
     main_loop_status = TERMINATED;
 
-    Logger_finalize();
-
     if(robot_connection_status == DISCONNECTED) {
         pthread_cancel((pthread_t) connection_handler_worker_thread);
     } else {
         g_thread_join(connection_handler_worker_thread);
     }
-
-    Timer_release();
 
     g_thread_join(world_vision_worker_thread);
     StationClient_delete(station_client);
