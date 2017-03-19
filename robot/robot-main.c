@@ -21,8 +21,9 @@ int main(int argc, char *argv[])
     RobotServer_updateDataReceiverCallbacks(test_callbacks);
 
 
-    struct Command_Translate command = { .x = 1500, .y = 1500 };
+    struct Command_Translate command = { .x = 1800, .y = 0 };
     RobotServer_sendTranslateCommand(command);
+    /*
     usleep(1000000);
     struct Command_Translate command1 = { .x = -1500, .y = -1500 };
     RobotServer_sendTranslateCommand(command1);
@@ -39,7 +40,7 @@ int main(int argc, char *argv[])
     struct Command_Translate command5 = { .x = -1500, .y = 1500 };
     RobotServer_sendTranslateCommand(command5);
     usleep(1000000);
-
+    */
     /*
     struct Communication_Rotation rotation = { .theta = 855, .gamma = 5};
     struct Communication_Translation translation = {
