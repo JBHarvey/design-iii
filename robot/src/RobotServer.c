@@ -228,26 +228,24 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 
 static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
 {
-    printf("packet %hhu of length %hhu: ", type, length);
-
-    unsigned int i;
-
-    for(i = 0; i < length; ++i) {
-        printf("%02X", data[i]);
-    }
-
-    printf("\n");
-
     // TODO : ADD:
     // Wheels Translation
     // Wheels Rotation
+
     switch(data[0]) {
+
         case MANCHESTER_CODE_DECODED:
+
+            if(length != (sizeof(struct Communication_ManchesterCode) + 1)) {
+                printf("wrong struct Communication length\n");
+                break;
+            }
+
             struct Communication_ManchesterCode communication_manchester_code;
 
-            memcpy(&communication_manchester_code, data + 1, sizeof(uint8_t));
-            memcpy(&communication_manchester_code + sizeof(int), data + 1 + sizeof(uint8_t), sizeof(uint8_t));
-            memcpy(&communication_manchester_code + (sizeof(int) * 2), data + 1 + (sizeof(uint8_t) * 2), sizeof(char));
+            memcpy(&communication_manchester_code, data + 1, sizeof(struct Communication_ManchesterCode));
+
+            break;
     };
 }
 
