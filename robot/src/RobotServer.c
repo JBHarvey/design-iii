@@ -226,6 +226,10 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
     }
 
     printf("\n");
+    // TODO : ADD:
+    // Wheels Translation
+    // Wheels Rotation
+    // Manchester Code
 }
 
 #include <sys/ioctl.h>
