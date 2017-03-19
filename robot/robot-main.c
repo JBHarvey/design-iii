@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
     RobotServer_updateDataReceiverCallbacks(test_callbacks);
 
     RobotServer_fetchManchesterCodeCommand();
+    struct Command_Rotate rotate = { .theta = HALF_PI};
 
     RobotServer_sendLowerPenCommand();
     waitASecondAndAHalf();
