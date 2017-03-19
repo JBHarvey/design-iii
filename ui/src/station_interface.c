@@ -14,6 +14,7 @@ const gchar *UI_RESOURCE_PATH = "/d3/station-resources/station.ui";
 const int VIDEO_FEED_REFRESH_RATE_IN_MS = 50; // 20 FPS
 const int ROBOT_SERVER_PORT = 35794;
 const char *ROBOT_SERVER_IP = "10.42.0.1";
+//const char *ROBOT_SERVER_IP = "127.0.0.1";
 
 /* Global variables */
 
@@ -51,7 +52,6 @@ void StationInterface_launch(int argc, char *argv[])
 {
 
     GThread *world_vision_worker_thread = NULL;
-    GThread *connection_handler_worker_thread = NULL;
     GtkWidget *ui_window = NULL;
 
     gtk_init(&argc, &argv);
@@ -63,30 +63,22 @@ void StationInterface_launch(int argc, char *argv[])
     timer_tag = g_timeout_add(VIDEO_FEED_REFRESH_RATE_IN_MS, (GSourceFunc) timeHandler, (gpointer) ui_window);
 
     main_loop_status = RUNNING;
-    robot_connection_status = DISCONNECTED;
+
+    /* Starts worker thread */
+    station_client = StationClient_new(ROBOT_SERVER_PORT, ROBOT_SERVER_IP);
+    StationClient_init(station_client);
 
     /* Starts worker thread */
     world_vision_worker_thread = g_thread_new("world_camera_feeder",
                                  (GThreadFunc) WorldVision_prepareImageFromWorldCameraForDrawing,
-                                 NULL);
+                                 station_client);
 
     gtk_window_fullscreen(GTK_WINDOW(ui_window));
     gtk_widget_show_all(GTK_WIDGET(ui_window));
 
-    /* Starts worker thread */
-    station_client = StationClient_new(ROBOT_SERVER_PORT, ROBOT_SERVER_IP);
-    connection_handler_worker_thread = g_thread_new("connection_handler", (GThreadFunc) StationClient_init,
-                                       (gpointer) station_client);
-
     gtk_main();
 
     main_loop_status = TERMINATED;
-
-    if(robot_connection_status == DISCONNECTED) {
-        pthread_cancel((pthread_t) connection_handler_worker_thread);
-    } else {
-        g_thread_join(connection_handler_worker_thread);
-    }
 
     g_thread_join(world_vision_worker_thread);
     StationClient_delete(station_client);

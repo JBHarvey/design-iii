@@ -59,161 +59,179 @@ const int TEST_PAINTING_7_X = 4060;
 const int TEST_PAINTING_7_Y = 8500;
 const int TEST_PAINTING_7_ORIENTATION = HALF_PI;
 
+static GMutex network_mutex;
+static _Bool connected;
+
 void StationClientSender_sendStartCycleCommand(struct StationClient *station_client)
 {
     uint8_t data[1];
     data[0] = COMMAND_START_CYCLE;
-    addPacket(data, sizeof(data));
-    StationClient_communicate(station_client, 1);
-}
 
-static void cleanExitIfMainLoopTerminated(void)
-{
-    if(main_loop_status == TERMINATED) {
-        g_thread_exit((gpointer) TRUE);
+    g_mutex_lock(&network_mutex);
+
+    if (connected) {
+        addPacket(data, sizeof(data));
     }
+
+    g_mutex_unlock(&network_mutex);
 }
 
 void StationClientSender_startSendingWorldInformationsToRobot(struct StationClient *station_client)
 {
-    while(1) {
+    g_mutex_lock(&network_mutex);
+    connected = 1;
+    g_mutex_unlock(&network_mutex);
+}
 
-        cleanExitIfMainLoopTerminated();
+void StationClientSender_sendReceiveData(struct StationClient *station_client)
+{
+    g_mutex_lock(&network_mutex);
+    StationClient_communicate(station_client);
+    g_mutex_unlock(&network_mutex);
+}
 
-        uint8_t data[1 + sizeof(struct Communication_World)];
-        data[0] = DATA_WORLD;
+void StationClientSender_sendWorldInformationsToRobot(struct StationClient *station_client, struct Communication_Object *obstacles, unsigned num_obstacles, struct Communication_Object robot)
+{
+    uint8_t data[1 + sizeof(struct Communication_World)];
+    data[0] = DATA_WORLD;
 
-        struct Communication_World communication_world = {
-            .environment = {
-                .north_eastern_table_corner = {.x = MAP_TABLE_LENGTH, .y = MAP_TABLE_HEIGHT},
-                .north_western_table_corner = {.x = 0, .y = MAP_TABLE_HEIGHT},
-                .south_eastern_table_corner = {.x = MAP_TABLE_LENGTH, .y = 0},
-                .south_western_table_corner = {.x = 0, .y = 0},
-                .north_eastern_drawing_corner = {.x = MAP_DRAWING_SIDE, .y = MAP_DRAWING_SIDE},
-                .north_western_drawing_corner = {.x = 0, .y = MAP_DRAWING_SIDE},
-                .south_eastern_drawing_corner = {.x = MAP_DRAWING_SIDE, .y = 0},
-                .south_western_drawing_corner = {.x = 0, .y = 0},
-                .antenna_zone_start = {.x = ANTENNA_ZONE_X + ANTENNA_ZONE_LENGTH, .y = ANTENNA_ZONE_Y},
-                .antenna_zone_stop = {.x = ANTENNA_ZONE_X, .y = ANTENNA_ZONE_Y},
-                .obstacles = {
-                    {
-                        // Obstacle 0
-                        .zone = {
-                            .pose = {
-                                .coordinates = { .x = TEST_OBSTACLE_0_X, .y = TEST_OBSTACLE_0_Y },
-                                .theta = TEST_OBSTACLE_0_ORIENTATION
-                            },
-                            .index = 0
-                        },
-                        .radius = THEORICAL_OBSTACLE_RADIUS
-                    },
-                    {
-                        // Obstacle 1
-                        .zone = {
-                            .pose = {
-                                .coordinates = { .x = TEST_OBSTACLE_1_X, .y = TEST_OBSTACLE_1_Y },
-                                .theta = TEST_OBSTACLE_1_ORIENTATION
-                            },
-                            .index = 1
-                        },
-                        .radius = THEORICAL_OBSTACLE_RADIUS
-                    },
-                    {
-                        // Obstacle 2
-                        .zone = {
-                            .pose = {
-                                .coordinates = { .x = TEST_OBSTACLE_2_X, .y = TEST_OBSTACLE_2_Y },
-                                .theta = TEST_OBSTACLE_2_ORIENTATION
-                            },
-                            .index = 2
-                        },
-                        .radius = THEORICAL_OBSTACLE_RADIUS
-                    },
-                },
-                .painting_zone = {
-                    {
-                        // Painting zone 0
+    struct Communication_World communication_world = {
+        .environment = {
+            .north_eastern_table_corner = {.x = MAP_TABLE_LENGTH, .y = MAP_TABLE_HEIGHT},
+            .north_western_table_corner = {.x = 0, .y = MAP_TABLE_HEIGHT},
+            .south_eastern_table_corner = {.x = MAP_TABLE_LENGTH, .y = 0},
+            .south_western_table_corner = {.x = 0, .y = 0},
+            .north_eastern_drawing_corner = {.x = MAP_DRAWING_SIDE, .y = MAP_DRAWING_SIDE},
+            .north_western_drawing_corner = {.x = 0, .y = MAP_DRAWING_SIDE},
+            .south_eastern_drawing_corner = {.x = MAP_DRAWING_SIDE, .y = 0},
+            .south_western_drawing_corner = {.x = 0, .y = 0},
+            .antenna_zone_start = {.x = ANTENNA_ZONE_X + ANTENNA_ZONE_LENGTH, .y = ANTENNA_ZONE_Y},
+            .antenna_zone_stop = {.x = ANTENNA_ZONE_X, .y = ANTENNA_ZONE_Y},
+            .obstacles = {
+                {
+                    // Obstacle 0
+                    .zone = {
                         .pose = {
-                            .coordinates = {.x = TEST_PAINTING_0_X, .y = TEST_PAINTING_0_Y },
-                            .theta = TEST_PAINTING_0_ORIENTATION
+                            .coordinates = { .x = TEST_OBSTACLE_0_X, .y = TEST_OBSTACLE_0_Y },
+                            .theta = TEST_OBSTACLE_0_ORIENTATION
                         },
                         .index = 0
                     },
-                    {
-                        // Painting zone 1
+                    .radius = THEORICAL_OBSTACLE_RADIUS
+                },
+                {
+                    // Obstacle 1
+                    .zone = {
                         .pose = {
-                            .coordinates = {.x = TEST_PAINTING_1_X, .y = TEST_PAINTING_1_Y },
-                            .theta = TEST_PAINTING_1_ORIENTATION
+                            .coordinates = { .x = TEST_OBSTACLE_1_X, .y = TEST_OBSTACLE_1_Y },
+                            .theta = TEST_OBSTACLE_1_ORIENTATION
                         },
                         .index = 1
                     },
-                    {
-                        // Painting zone 2
+                    .radius = THEORICAL_OBSTACLE_RADIUS
+                },
+                {
+                    // Obstacle 2
+                    .zone = {
                         .pose = {
-                            .coordinates = {.x = TEST_PAINTING_2_X, .y = TEST_PAINTING_2_Y },
-                            .theta = TEST_PAINTING_2_ORIENTATION
+                            .coordinates = { .x = TEST_OBSTACLE_2_X, .y = TEST_OBSTACLE_2_Y },
+                            .theta = TEST_OBSTACLE_2_ORIENTATION
                         },
                         .index = 2
                     },
-                    {
-                        // Painting zone 3
-                        .pose = {
-                            .coordinates = {.x = TEST_PAINTING_3_X, .y = TEST_PAINTING_3_Y },
-                            .theta = TEST_PAINTING_3_ORIENTATION
-                        },
-                        .index = 3
-                    },
-                    {
-                        // Painting zone 4
-                        .pose = {
-                            .coordinates = {.x = TEST_PAINTING_4_X, .y = TEST_PAINTING_4_Y },
-                            .theta = TEST_PAINTING_4_ORIENTATION
-                        },
-                        .index = 0
-                    },
-                    {
-                        // Painting zone 5
-                        .pose = {
-                            .coordinates = {.x = TEST_PAINTING_5_X, .y = TEST_PAINTING_5_Y },
-                            .theta = TEST_PAINTING_5_ORIENTATION
-                        },
-                        .index = 5
-                    },
-                    {
-                        // Painting zone 6
-                        .pose = {
-                            .coordinates = {.x = TEST_PAINTING_6_X, .y = TEST_PAINTING_6_Y },
-                            .theta = TEST_PAINTING_6_ORIENTATION
-                        },
-                        .index = 6
-                    },
-                    {
-                        // Painting zone 7
-                        .pose = {
-                            .coordinates = {.x = TEST_PAINTING_7_X, .y = TEST_PAINTING_7_Y },
-                            .theta = TEST_PAINTING_7_ORIENTATION
-                        },
-                        .index = 7
-                    }
-                }
+                    .radius = THEORICAL_OBSTACLE_RADIUS
+                },
             },
-            .environment_has_changed = 1,
-            .robot = {
-                .zone = {
+            .painting_zone = {
+                {
+                    // Painting zone 0
                     .pose = {
-                        .coordinates = { .x = RECEIVER_TEST_ROBOT_X, .y = RECEIVER_TEST_ROBOT_Y },
-                        .theta = RECEIVER_TEST_ROBOT_THETA
+                        .coordinates = {.x = TEST_PAINTING_0_X, .y = TEST_PAINTING_0_Y },
+                        .theta = TEST_PAINTING_0_ORIENTATION
                     },
                     .index = 0
                 },
-                .radius = RECEIVER_TEST_ROBOT_RADIUS
+                {
+                    // Painting zone 1
+                    .pose = {
+                        .coordinates = {.x = TEST_PAINTING_1_X, .y = TEST_PAINTING_1_Y },
+                        .theta = TEST_PAINTING_1_ORIENTATION
+                    },
+                    .index = 1
+                },
+                {
+                    // Painting zone 2
+                    .pose = {
+                        .coordinates = {.x = TEST_PAINTING_2_X, .y = TEST_PAINTING_2_Y },
+                        .theta = TEST_PAINTING_2_ORIENTATION
+                    },
+                    .index = 2
+                },
+                {
+                    // Painting zone 3
+                    .pose = {
+                        .coordinates = {.x = TEST_PAINTING_3_X, .y = TEST_PAINTING_3_Y },
+                        .theta = TEST_PAINTING_3_ORIENTATION
+                    },
+                    .index = 3
+                },
+                {
+                    // Painting zone 4
+                    .pose = {
+                        .coordinates = {.x = TEST_PAINTING_4_X, .y = TEST_PAINTING_4_Y },
+                        .theta = TEST_PAINTING_4_ORIENTATION
+                    },
+                    .index = 0
+                },
+                {
+                    // Painting zone 5
+                    .pose = {
+                        .coordinates = {.x = TEST_PAINTING_5_X, .y = TEST_PAINTING_5_Y },
+                        .theta = TEST_PAINTING_5_ORIENTATION
+                    },
+                    .index = 5
+                },
+                {
+                    // Painting zone 6
+                    .pose = {
+                        .coordinates = {.x = TEST_PAINTING_6_X, .y = TEST_PAINTING_6_Y },
+                        .theta = TEST_PAINTING_6_ORIENTATION
+                    },
+                    .index = 6
+                },
+                {
+                    // Painting zone 7
+                    .pose = {
+                        .coordinates = {.x = TEST_PAINTING_7_X, .y = TEST_PAINTING_7_Y },
+                        .theta = TEST_PAINTING_7_ORIENTATION
+                    },
+                    .index = 7
+                }
             }
-        };
+        },
+        .environment_has_changed = 1,
+        .robot = {
+            .zone = {
+                .pose = {
+                    .coordinates = { .x = RECEIVER_TEST_ROBOT_X, .y = RECEIVER_TEST_ROBOT_Y },
+                    .theta = RECEIVER_TEST_ROBOT_THETA
+                },
+                .index = 0
+            },
+            .radius = RECEIVER_TEST_ROBOT_RADIUS
+        }
+    };
 
-        memcpy(data + 1, &communication_world, sizeof(struct Communication_World));
+    communication_world.robot = robot;
+    memcpy(communication_world.environment.obstacles, obstacles, num_obstacles * sizeof(struct Communication_Object));
+    memcpy(data + 1, &communication_world, sizeof(struct Communication_World));
+
+    g_mutex_lock(&network_mutex);
+
+    if (connected) {
         addPacket(data, sizeof(data));
-
-        StationClient_communicate(station_client, 1);
     }
+
+    g_mutex_unlock(&network_mutex);
 }
 
