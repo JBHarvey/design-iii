@@ -171,6 +171,15 @@ void sendWorldToRobot(struct Communication_World communication_world)
     addPacket(data, sizeof(data));
 }
 */
+
+#define PHYSICAL_FEEDBACK_TRANSLATION 100
+#define PHYSICAL_FEEDBACK_ROTATION 101
+#define PHYSICAL_ACK_RED_LED 102
+#define PHYSICAL_ACK_GREEN_LED 103
+#define PHYSICAL_ACK_RISE_PEN 104
+#define PHYSICAL_ACK_LOWER_PEN 105
+#define MANCHESTER_CODE_DECODED 106
+#define PHYSICAL_ACK_STOP_SENDING_SIGNAL 107
 void handleReceivedPacket(uint8_t *data, uint32_t length)
 {
     if(length == 0) {
@@ -295,6 +304,14 @@ void TTYACMCallback(struct ev_loop *loop, struct ev_io *watcher, int revents)
 }
 
 #define COMMAND_TYPE_TRANSLATE 0
+#define COMMAND_TYPE_ROTATE 1
+#define COMMAND_TYPE_RED_LED 2
+#define COMMAND_TYPE_GREEN_LED 3
+#define COMMAND_TYPE_RISE_PEN 4
+#define COMMAND_TYPE_LOWER_PEN 5
+#define COMMAND_TYPE_FETCH_MANCHESTER 6
+#define COMMAND_TYPE_STOP_SIGNAL 7
+
 #define DISTANCE_UNIT_IN_METERS_FACTOR 0.0001
 
 void RobotServer_sendTranslateCommand(struct Command_Translate command_translate)
@@ -310,7 +327,14 @@ void RobotServer_sendTranslateCommand(struct Command_Translate command_translate
     writeTTYACMPacket(COMMAND_TYPE_TRANSLATE, data, sizeof(data));
 }
 
-void RobotServer_sendRotateCommand(struct Command_Rotate command_rotate) {}
+void RobotServer_sendRotateCommand(struct Command_Rotate command_rotate)
+{
+    // use angle base unit
+    // angle -> float sur 4 uint8_t
+}
+
+#define ACTION_ONLY_COMMAND_LENGHT 0
+// all of these have the command type + the ACTION_ONLY_COMMAND_LENGHT
 void RobotServer_sendLightRedLEDCommand(void) {}
 void RobotServer_sendLightGreenLEDCommand(void) {}
 void RobotServer_sendRisePenCommand(void) {}
