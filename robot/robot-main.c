@@ -19,6 +19,13 @@ static void waitASecondAndAHalf()
     usleep(1500000);
 }
 
+static void sendTranslate(int x, int y)
+{
+    struct Command_Translate command = { .x = x, .y = y };
+    RobotServer_sendTranslateCommand(command);
+    waitASecondAndAHalf();
+}
+
 int main(int argc, char *argv[])
 {
     robot = Robot_new();
@@ -34,29 +41,19 @@ int main(int argc, char *argv[])
     RobotServer_sendLowerPenCommand();
     waitASecondAndAHalf();
 
-    //First Triangle
-    struct Command_Translate command = { .x = 1000, .y = 0 };
-    RobotServer_sendTranslateCommand(command);
-    waitASecondAndAHalf();
-    struct Command_Translate command1 = { .x = 0, .y = -1500 };
-    RobotServer_sendTranslateCommand(command1);
-    waitASecondAndAHalf();
-    struct Command_Translate command2 = { .x = -1000, .y = 1500 };
-    RobotServer_sendTranslateCommand(command2);
-    waitASecondAndAHalf();
-
-    struct Command_Translate command3 = { .x = -1000, .y = 0 };
-    RobotServer_sendTranslateCommand(command3);
-    waitASecondAndAHalf();
-    struct Command_Translate command4 = { .x = 0, .y =  1500 };
-    RobotServer_sendTranslateCommand(command4);
-    waitASecondAndAHalf();
-    struct Command_Translate command5 = { .x =  1000, .y = -1500 };
-    RobotServer_sendTranslateCommand(command5);
-    waitASecondAndAHalf();
+    /*
+    sendTranslate(500, 675);
+    sendTranslate(-500, 675);
+    sendTranslate( 800, -200);
+    sendTranslate( 480, 580);
+    sendTranslate( 0, -820);
+    sendTranslate( 820, -235);
+    sendTranslate( -820, -275);
+    sendTranslate( 0, -800);
+    sendTranslate( -480,600);
+    sendTranslate( -800, -200);
 
     RobotServer_sendRisePenCommand();
-    /*
     */
     /*
     struct Communication_Rotation rotation = { .theta = 855, .gamma = 5};
