@@ -26,8 +26,8 @@ int main(int argc, char *argv[])
     logger = Logger_new();
 
     struct DataReceiver_Callbacks test_callbacks = DataReceiver_fetchCallbacks();
-    test_callbacks.updateWorld = &testSendRobotPoseAsWheelcommands;
     test_callbacks = Logger_startLoggingDataReceiverAndReturnCallbacks(logger, test_callbacks);
+    test_callbacks.updateWorld = &testSendRobotPoseAsWheelcommands;
     RobotServer_updateDataReceiverCallbacks(test_callbacks);
 
 
