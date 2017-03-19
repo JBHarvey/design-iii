@@ -9,6 +9,16 @@ const int port = 35794;
 //char *ttyACM = "/dev/null";
 char *ttyACM = "/dev/ttyACM0";
 
+static void waitASecond()
+{
+    usleep(1000000);
+}
+
+static void waitASecondAndAHalf()
+{
+    usleep(1500000);
+}
+
 int main(int argc, char *argv[])
 {
     robot = Robot_new();
@@ -21,25 +31,31 @@ int main(int argc, char *argv[])
     RobotServer_updateDataReceiverCallbacks(test_callbacks);
 
 
+    RobotServer_sendLowerPenCommand();
+    waitASecondAndAHalf();
+
     struct Command_Translate command = { .x = 1800, .y = 0 };
     RobotServer_sendTranslateCommand(command);
+    waitASecondAndAHalf();
+    waitASecondAndAHalf();
+
+    RobotServer_sendRisePenCommand();
     /*
-    usleep(1000000);
     struct Command_Translate command1 = { .x = -1500, .y = -1500 };
     RobotServer_sendTranslateCommand(command1);
-    usleep(1000000);
+    waitASecondAndAHalf();
     struct Command_Translate command2 = { .x = 1500, .y = 1500 };
     RobotServer_sendTranslateCommand(command2);
-    usleep(1000000);
+    waitASecondAndAHalf();
     struct Command_Translate command3 = { .x = 1500, .y = -1500 };
     RobotServer_sendTranslateCommand(command3);
-    usleep(1000000);
+    waitASecondAndAHalf();
     struct Command_Translate command4 = { .x = -1500, .y = -1500 };
     RobotServer_sendTranslateCommand(command4);
-    usleep(1000000);
+    waitASecondAndAHalf();
     struct Command_Translate command5 = { .x = -1500, .y = 1500 };
     RobotServer_sendTranslateCommand(command5);
-    usleep(1000000);
+    waitASecondAndAHalf();
     */
     /*
     struct Communication_Rotation rotation = { .theta = 855, .gamma = 5};
