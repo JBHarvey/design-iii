@@ -6,15 +6,11 @@ struct DataReceiver_Callbacks DataReceiver_fetchCallbacks(void)
         .updateWorld = &DataReceiver_updateWorld,
         .updateWheelsTranslation = &DataReceiver_updateWheelsTranslation,
         .updateWheelsRotation = &DataReceiver_updateWheelsRotation,
+        .updateManchesterCode = &DataReceiver_updateManchesterCode,
         .updateFlagsStartCycle = &DataReceiver_updateFlagsStartCycle
     };
 
     return callbacks;
-}
-
-void DataReceiver_updateFlagsStartCycle(struct Flags *flags, int new_value)
-{
-    Flags_setStartCycleSignalReceived(flags, new_value);
 }
 
 static void updateTableCorners(struct Map *map, struct Communication_Environment environment)
@@ -217,6 +213,40 @@ void DataReceiver_updateWheelsRotation(struct Wheels *wheels, struct Communicati
     Angle_delete(rotation_movement);
     Angle_delete(rotation_speed);
 }
+
+void DataReceiver_updateManchesterCode(struct ManchesterCode *manchester_code,
+                                       struct Communication_ManchesterCode new_manchester_code)
+{
+    int new_painting_number = new_manchester_code.painting_number;
+    int new_scaling_factor = new_manchester_code.scale_factor;
+    enum CardinalDirection new_orientation;
+
+    switch(new_manchester_code.orientation) {
+        case 'N':
+            new_orientation = NORTH;
+            break;
+
+        case 'E':
+            new_orientation = EAST;
+            break;
+
+        case 'S':
+            new_orientation = SOUTH;
+            break;
+
+        case 'W':
+            new_orientation = WEST;
+            break;
+    };
+
+    ManchesterCode_updateCodeValues(manchester_code, new_painting_number, new_scaling_factor, new_orientation);
+}
+
+void DataReceiver_updateFlagsStartCycle(struct Flags *flags, int new_value)
+{
+    Flags_setStartCycleSignalReceived(flags, new_value);
+}
+
 
 struct Mesurements DataReceiver_fetchInputs(struct Mesurements(*communication_callback)(void))
 {

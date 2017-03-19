@@ -11,12 +11,15 @@ Test(DataReceiver, given_when_fetchDataReceiverCallbacks_then_theCorrectSturctur
     void (*updateWheelsTranslation)(struct Wheels *,
                                     struct Communication_Translation) = &DataReceiver_updateWheelsTranslation;
     void (*updateWheelsRotation)(struct Wheels *, struct Communication_Rotation) = &DataReceiver_updateWheelsRotation;
+    void (*updateManchesterCode)(struct ManchesterCode *,
+                                 struct Communication_ManchesterCode) = &DataReceiver_updateManchesterCode;
     void (*updateFlagsStartCycle)(struct Flags *, int new_value) = &DataReceiver_updateFlagsStartCycle;
 
     struct DataReceiver_Callbacks callbacks = DataReceiver_fetchCallbacks();
     cr_assert_eq(callbacks.updateWorld, updateWorld);
     cr_assert_eq(callbacks.updateWheelsTranslation, updateWheelsTranslation);
     cr_assert_eq(callbacks.updateWheelsRotation, updateWheelsRotation);
+    cr_assert_eq(callbacks.updateManchesterCode, updateManchesterCode);
     cr_assert_eq(callbacks.updateFlagsStartCycle, updateFlagsStartCycle);
 }
 
@@ -529,5 +532,113 @@ Test(DataReceiver, given_aRotationDataPacket_when_updatesWheels_then_wheelsHaveN
     Wheels_delete(wheels);
 }
 
+const int RECEIVER_PAINTING_NUMBER = 5;
+const int RECEIVER_SCALE_FACTOR = TIMES_FOUR;
+const char RECEIVER_MANCHESTER_NORTH = 'N';
+const char RECEIVER_MANCHESTER_EAST = 'E';
+const char RECEIVER_MANCHESTER_SOUTH = 'S';
+const char RECEIVER_MANCHESTER_WEST = 'W';
 
+Test(DataReceiver, given_aManchesterCodePacket_when_updatesManchesterCode_then_thePaintingNumberIsUpdatedCorrectly)
+{
+    struct ManchesterCode *manchester_code = ManchesterCode_new();
+    struct Communication_ManchesterCode manchester_code_mock = {
+        .painting_number = RECEIVER_PAINTING_NUMBER,
+        .scale_factor = RECEIVER_SCALE_FACTOR,
+        .orientation = RECEIVER_MANCHESTER_NORTH
+    };
 
+    DataReceiver_updateManchesterCode(manchester_code, manchester_code_mock);
+
+    cr_assert_eq(manchester_code->painting_number, RECEIVER_PAINTING_NUMBER);
+
+    ManchesterCode_delete(manchester_code);
+}
+
+Test(DataReceiver, given_aManchesterCodePacket_when_updatesManchesterCode_then_theScaleFactorIsUpdatedCorrectly)
+{
+    struct ManchesterCode *manchester_code = ManchesterCode_new();
+    struct Communication_ManchesterCode manchester_code_mock = {
+        .painting_number = RECEIVER_PAINTING_NUMBER,
+        .scale_factor = RECEIVER_SCALE_FACTOR,
+        .orientation = RECEIVER_MANCHESTER_NORTH
+    };
+
+    DataReceiver_updateManchesterCode(manchester_code, manchester_code_mock);
+
+    cr_assert_eq(manchester_code->scale_factor, RECEIVER_SCALE_FACTOR);
+
+    ManchesterCode_delete(manchester_code);
+}
+
+Test(DataReceiver,
+     given_aManchesterCodePacketWithNorthOrientation_when_updatesManchesterCode_then_theOrientationIsUpdatedCorrectly)
+{
+    struct ManchesterCode *manchester_code = ManchesterCode_new();
+    struct Communication_ManchesterCode manchester_code_mock = {
+        .painting_number = RECEIVER_PAINTING_NUMBER,
+        .scale_factor = RECEIVER_SCALE_FACTOR,
+        .orientation = RECEIVER_MANCHESTER_NORTH
+    };
+
+    DataReceiver_updateManchesterCode(manchester_code, manchester_code_mock);
+
+    enum CardinalDirection expected_orientation = NORTH;
+    cr_assert_eq(manchester_code->orientation, expected_orientation);
+
+    ManchesterCode_delete(manchester_code);
+}
+
+Test(DataReceiver,
+     given_aManchesterCodePacketWithEastOrientation_when_updatesManchesterCode_then_theOrientationIsUpdatedCorrectly)
+{
+    struct ManchesterCode *manchester_code = ManchesterCode_new();
+    struct Communication_ManchesterCode manchester_code_mock = {
+        .painting_number = RECEIVER_PAINTING_NUMBER,
+        .scale_factor = RECEIVER_SCALE_FACTOR,
+        .orientation = RECEIVER_MANCHESTER_EAST
+    };
+
+    DataReceiver_updateManchesterCode(manchester_code, manchester_code_mock);
+
+    enum CardinalDirection expected_orientation = EAST;
+    cr_assert_eq(manchester_code->orientation, expected_orientation);
+
+    ManchesterCode_delete(manchester_code);
+}
+
+Test(DataReceiver,
+     given_aManchesterCodePacketWithSouthOrientation_when_updatesManchesterCode_then_theOrientationIsUpdatedCorrectly)
+{
+    struct ManchesterCode *manchester_code = ManchesterCode_new();
+    struct Communication_ManchesterCode manchester_code_mock = {
+        .painting_number = RECEIVER_PAINTING_NUMBER,
+        .scale_factor = RECEIVER_SCALE_FACTOR,
+        .orientation = RECEIVER_MANCHESTER_SOUTH
+    };
+
+    DataReceiver_updateManchesterCode(manchester_code, manchester_code_mock);
+
+    enum CardinalDirection expected_orientation = SOUTH;
+    cr_assert_eq(manchester_code->orientation, expected_orientation);
+
+    ManchesterCode_delete(manchester_code);
+}
+
+Test(DataReceiver,
+     given_aManchesterCodePacketWithWestOrientation_when_updatesManchesterCode_then_theOrientationIsUpdatedCorrectly)
+{
+    struct ManchesterCode *manchester_code = ManchesterCode_new();
+    struct Communication_ManchesterCode manchester_code_mock = {
+        .painting_number = RECEIVER_PAINTING_NUMBER,
+        .scale_factor = RECEIVER_SCALE_FACTOR,
+        .orientation = RECEIVER_MANCHESTER_WEST
+    };
+
+    DataReceiver_updateManchesterCode(manchester_code, manchester_code_mock);
+
+    enum CardinalDirection expected_orientation = WEST;
+    cr_assert_eq(manchester_code->orientation, expected_orientation);
+
+    ManchesterCode_delete(manchester_code);
+}
