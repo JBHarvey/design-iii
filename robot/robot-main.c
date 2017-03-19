@@ -2,22 +2,31 @@
 
 #include "Logger.h"
 
+static struct Robot *robot;
 struct Logger *logger;
 struct RobotServer *robot_server;
 const int port = 35794;
-char *ttyACM = "/dev/null";
-//char *ttyACM = "/dev/ttyACM0";
+//char *ttyACM = "/dev/null";
+char *ttyACM = "/dev/ttyACM0";
+
+static void testSendRobotPoseAsWheelcommands(struct WorldCamera *world_camera, struct Communication_World world)
+{
+    struct Command_Translate command = {
+        .x = world.robot.zone.pose.coordinates.x,
+        .y = world.robot.zone.pose.coordinates.y
+    };
+    RobotServer_sendTranslateCommand(command);
+}
 
 int main(int argc, char *argv[])
 {
-    struct Robot *robot = Robot_new();
+    robot = Robot_new();
     robot_server = RobotServer_new(robot, port, ttyACM);
 
     logger = Logger_new();
 
-    /* Logger test */
     struct DataReceiver_Callbacks test_callbacks = DataReceiver_fetchCallbacks();
-    test_callbacks = Logger_startLoggingDataReceiverAndReturnCallbacks(logger, test_callbacks);
+    test_callbacks.updateWorld = &testSendRobotPoseAsWheelcommands;
     RobotServer_updateDataReceiverCallbacks(test_callbacks);
 
 
