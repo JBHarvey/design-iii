@@ -8,8 +8,6 @@ void StationClientSender_sendStartCycleCommand(struct StationClient *station_cli
 
 void StationClientSender_sendWorldInformationsToRobot(struct StationClient *station_client, struct Communication_Object *obstacles, unsigned num_obstacles, struct Communication_Object robot);
 
-void StationClientSender_startSendingWorldInformationsToRobot(struct StationClient *station_client);
-
 void StationClientSender_sendReceiveData(struct StationClient *station_client);
 
 #endif // STATION_CLIENT_SENDER_H_

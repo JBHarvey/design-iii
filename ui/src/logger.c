@@ -8,34 +8,30 @@ const int DEFAULT_TEXT_BUFFER_MAX_LENGTH = 100;
 /* Global variables */
 
 GtkWidget *logger_widget = NULL;
-GtkTextBuffer *logger_text_buffer = NULL;
 FILE *log_file = NULL;
 
 void Logger_initialize(GtkWidget *widget)
 {
     logger_widget = widget;
-    logger_text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(logger_widget));
     log_file = fopen("station_log.txt", "a+");
     fprintf(log_file, "\n\n\t\t------------ NEW EXECUTION ------------\n");
 }
 
-void Logger_finalize(void)
-{
-    GtkTextIter *start, *end;
-    gtk_text_buffer_get_start_iter(gtk_text_view_get_buffer(GTK_TEXT_VIEW(logger_widget)), start);
-    gtk_text_buffer_get_end_iter(logger_text_buffer, end);
-    char *buffer = (char *) gtk_text_buffer_get_text(logger_text_buffer, start, end, FALSE);
-    fprintf(log_file, "%s", buffer);
-    fclose(log_file);
-}
-
 static gboolean append(char *text)
 {
+    GtkTextBuffer *logger_text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(logger_widget));
     gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(logger_widget), gtk_text_buffer_get_mark(logger_text_buffer, "insert"), 0.0,
                                  TRUE, 0.0, 0.0);
     gtk_text_buffer_insert_at_cursor(logger_text_buffer, text, -1);
+    fprintf(log_file, "%s", text);
 
     return FALSE;
+}
+
+void Logger_finalize(void)
+{
+    fprintf(log_file, "\n\n\n");
+    fclose(log_file);
 }
 
 void Logger_append(const char *text)
@@ -45,9 +41,11 @@ void Logger_append(const char *text)
 
 static gboolean _dynamicAppend(char *text)
 {
+    GtkTextBuffer *logger_text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(logger_widget));
     gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(logger_widget), gtk_text_buffer_get_mark(logger_text_buffer, "insert"), 0.0,
                                  TRUE, 0.0, 0.0);
     gtk_text_buffer_insert_at_cursor(logger_text_buffer, text, -1);
+    fprintf(log_file, "%s", text);
     free(text);
 
     return FALSE;

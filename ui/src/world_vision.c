@@ -15,8 +15,6 @@ extern enum ThreadStatus main_loop_status;
 
 /* Constants */
 
-const int WORLD_CAMERA_WIDTH = 1600;
-const int WORLD_CAMERA_HEIGHT = 1200;
 const int WORLD_CAMERA_DEVICE_ID = 1;
 const int NUMBER_OF_ROW_OF_CAMERA_MATRIX = 3;
 const int NUMBER_OF_COLUMN_OF_CAMERA_MATRIX = 3;
@@ -211,9 +209,10 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient 
            world_camera->camera_status == FULLY_CALIBRATED) {
             undistortCameraCapture(frame_BGR, frame_BGR_corrected);
 
-            if (world_camera->camera_status == FULLY_CALIBRATED) {
+            if(world_camera->camera_status == FULLY_CALIBRATED) {
                 struct Detected_Things detected = detectDrawObstaclesRobot(opencv_storage, frame_BGR_corrected, world_camera);
-                if (detected.robot_detected) {
+
+                if(detected.robot_detected) {
                     StationClientSender_sendWorldInformationsToRobot(station_client, detected.obstacles, MAX_OBSTACLES, detected.robot);
                 }
             }
@@ -233,7 +232,7 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient 
         StationClientSender_sendReceiveData(station_client);
         cvReleaseImage(&frame_BGR_corrected);
         cvReleaseImage(&frame);
-        
+
     }
 
     cvReleaseMemStorage(&opencv_storage);

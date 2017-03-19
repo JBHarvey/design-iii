@@ -15,6 +15,7 @@
 /* Constants */
 
 const int MAX_IP_ADDRESS_LENGTH = 45;
+const int FIVE_SECONDS_IN_MICROSECONDS = 5000000;
 
 /* Flag definitions */
 
@@ -96,7 +97,7 @@ gpointer StationClient_init(struct StationClient *station_client)
 
     while(!initTCPClient(station_client)) {
         Logger_startRobotConnectionHandlerSectionAndAppend("Connection to robot failed, trying again");
-        usleep(100000);
+        usleep(FIVE_SECONDS_IN_MICROSECONDS);
 
         if(main_loop_status == TERMINATED) {
             return (gpointer) FALSE;
@@ -105,7 +106,6 @@ gpointer StationClient_init(struct StationClient *station_client)
 
     robot_connection_status = CONNECTED;
     Logger_startRobotConnectionHandlerSectionAndAppend("Connected !");
-    StationClientSender_startSendingWorldInformationsToRobot(station_client);
     return (gpointer) TRUE;
 }
 
@@ -142,18 +142,5 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 
         case DATA_ESTIMATED_ROBOT_POSITION:
             break;
-            /*
-                case DATA_WORLD:
-                    if(length != (sizeof(struct Communication_World) + 1)) {
-                        printf("wrong struct Communication_World length\n");
-                        break;
-                    }
-
-                    struct Communication_World communication_world;
-
-                    memcpy(&communication_world, data + 1, sizeof(struct Communication_World));
-
-                    break;
-            */
     }
 }

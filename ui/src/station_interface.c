@@ -35,6 +35,7 @@ void uiWindowDestroyEventCallback(GtkWidget *widget, gpointer data)
 void startCycleClickedEventCallback(GtkWidget *widget, gpointer data)
 {
     StationClientSender_sendStartCycleCommand(station_client);
+    Logger_startMessageSectionAndAppend("Cycle started!");
     Timer_start();
 }
 
@@ -64,7 +65,6 @@ void StationInterface_launch(int argc, char *argv[])
 
     main_loop_status = RUNNING;
 
-    /* Starts worker thread */
     station_client = StationClient_new(ROBOT_SERVER_PORT, ROBOT_SERVER_IP);
     StationClient_init(station_client);
 

@@ -5,10 +5,8 @@
 #include "opencv2/imgproc/imgproc_c.h"
 #include "station_client.h"
 
-/* Constants */
-
-const int WORLD_CAMERA_WIDTH;
-const int WORLD_CAMERA_HEIGHT;
+#define WORLD_CAMERA_WIDTH 1600
+#define WORLD_CAMERA_HEIGHT 1200
 
 /* Type definitions */
 
