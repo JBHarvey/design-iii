@@ -53,55 +53,57 @@
 #define MSG_MANCH "Manchester"
 #define MSG_ERR "Etat invalide"
 
+/* PID positiob tolerance */
+#define PID_POSITION_TOLERANCE 0.0005
 /* PID1 */
 // Parametres en vitesse
-#define PID_SPEED1_KP 4.87
-#define PID_SPEED1_KI 107.6
+#define PID_SPEED1_KP 55//4.87
+#define PID_SPEED1_KI 0.001 //107.6
 #define PID_SPEED1_KD 0.0
 #define PID_SPEED1_N 0.0
 
 // Parametres en position
-#define PID_POSITION1_KP  800.33
-#define PID_POSITION1_KI 0.001
+#define PID_POSITION1_KP 1100.33
+#define PID_POSITION1_KI 0.000001
 #define PID_POSITION1_KD 100.48
 #define PID_POSITION1_N 170.0
 
 /* PID2 */
 // Parametres en vitesse
-#define PID_SPEED2_KP 4.87
-#define PID_SPEED2_KI 107.6
+#define PID_SPEED2_KP 55//4.87
+#define PID_SPEED2_KI 0.001 //107.6
 #define PID_SPEED2_KD 0.0
 #define PID_SPEED2_N 0.0
 
 // Parametres en position
-#define PID_POSITION2_KP  800.33
-#define PID_POSITION2_KI 0.001
+#define PID_POSITION2_KP 1050.33
+#define PID_POSITION2_KI 0.00001
 #define PID_POSITION2_KD 100.48
 #define PID_POSITION2_N 170.0
 
 /* PID3 */
 // Parametres en vitesse
-#define PID_SPEED3_KP 4.87
-#define PID_SPEED3_KI 107.6
+#define PID_SPEED3_KP 55//4.87
+#define PID_SPEED3_KI 0.001 //107.6
 #define PID_SPEED3_KD 0.0
 #define PID_SPEED3_N 0.0
 
 // Parametres en position
-#define PID_POSITION3_KP  800.33
-#define PID_POSITION3_KI 0.001
+#define PID_POSITION3_KP 1050.33
+#define PID_POSITION3_KI 0.00001
 #define PID_POSITION3_KD 100.48
 #define PID_POSITION3_N 170.0
 
 /* PID4 */
 // Parametres en vitesse
-#define PID_SPEED4_KP 4.87
-#define PID_SPEED4_KI 107.6
+#define PID_SPEED4_KP 55//4.87
+#define PID_SPEED4_KI 0.001 //107.6
 #define PID_SPEED4_KD 0.0
 #define PID_SPEED4_N 0.0
 
 // Parametres en position
-#define PID_POSITION4_KP  800.33
-#define PID_POSITION4_KI 0.001
+#define PID_POSITION4_KP 1050.33
+#define PID_POSITION4_KI 0.00001
 #define PID_POSITION4_KD 100.48
 #define PID_POSITION4_N 170.0
 
@@ -110,9 +112,9 @@
 #define SPEED_CALC_PERIOD 10000
 #define SPEED_CALC_TIME_DELAY 0.01
 #define DOUBLE_CHANNEL_TICKS 6400
-#define METERS_PER_TICK 0.00003387
-#define MAX_SPEED_COMMAND 60
-#define MIN_SPEED_COMMAND -60
+#define METERS_PER_TICK 0.00003387029
+#define MAX_SPEED_COMMAND 70
+#define MIN_SPEED_COMMAND -70
 #define MIN_POS_COMMAND -1
 #define MAX_POS_COMMAND 1
 
@@ -121,5 +123,18 @@
 // Pour utiliser la librairie sans que sa plante
 #define ARM_CORTEX_M3
 #define __FPU_PRESENT 1
+
+#define COMMAND_ROTATE 1
+#define COMMAND_PENCIL_UP 4
+#define COMMAND_PENCIL_DOWN 5
+#define COMMAND_DECODE_MANCHESTER 6
+#define COMMAND_STOP_DECODE_MANCHESTER 7
+#define COMMAND_DECODED_MANCHESTER 106
+#define INTERNAL_SYSTICK_FREQUENCY 500
+#define TIME_DELAY 1/(float) INTERNAL_SYSTICK_FREQUENCY
+#define MAX_SPEED_INDEX 2000
+#define TICKS_BUFFER_SIZE 100
+#define MAXIMUM_CHARACTERS_BUFFER_SIZE 100
+#define WHEEL_RADIUS 0.12
 
 #endif

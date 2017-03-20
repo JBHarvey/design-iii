@@ -25,6 +25,7 @@
 #include "tunning.h"
 #include "utils.h"
 #include "com.h"
+#include "prehenseur.h"
 
 #define TAILLE 500
 
@@ -60,6 +61,35 @@ volatile int speedIndex = 0;
 volatile uint16_t speedBuffer[MAX_SPEED_INDEX];
 
 volatile int mainState = MAIN_IDLE;
+
+volatile int incWheel1Canal1EncoderCounter = 0;
+volatile int incWheel1Canal2EncoderCounter = 0;
+volatile int decWheel1Canal1EncoderCounter = 0;
+volatile int decWheel1Canal2EncoderCounter = 0;
+
+volatile int incWheel2Canal1EncoderCounter = 0;
+volatile int incWheel2Canal2EncoderCounter = 0;
+volatile int decWheel2Canal1EncoderCounter = 0;
+volatile int decWheel2Canal2EncoderCounter = 0;
+
+volatile int incWheel3Canal1EncoderCounter = 0;
+volatile int incWheel3Canal2EncoderCounter = 0;
+volatile int decWheel3Canal1EncoderCounter = 0;
+volatile int decWheel3Canal2EncoderCounter = 0;
+
+volatile int incWheel4Canal1EncoderCounter = 0;
+volatile int incWheel4Canal2EncoderCounter = 0;
+volatile int decWheel4Canal1EncoderCounter = 0;
+volatile int decWheel4Canal2EncoderCounter = 0;
+
+volatile int wheel1Channel1UP = 0;
+volatile int wheel1Channel2UP = 0;
+volatile int wheel2Channel1UP = 0;
+volatile int wheel2Channel2UP = 0;
+volatile int wheel3Channel1UP = 0;
+volatile int wheel3Channel2UP = 0;
+volatile int wheel4Channel1UP = 0;
+volatile int wheel4Channel2UP = 0;
 
 // declaration of pids
 PidType PID_SPEED1;
@@ -115,14 +145,21 @@ void systickInit(uint16_t frequency) {
 
 float getXMoveFromBuffer(uint8_t *data) {
 	float xMove = *(float *) data;
-
 	return xMove;
 }
 
 float getYMoveFromBuffer(uint8_t *data) {
 	float yMove = *(float *) (data + Y_MOVE_DATA_BUFFER_INDEX);
-
 	return yMove;
+}
+
+float getRadianMoveFromBuffer(uint8_t *data) {
+	float radian = *(float *) data;
+	return radian;
+}
+
+float getMoveFromRadian(float radian) {
+	return radian * WHEEL_RADIUS;
 }
 
 void processCommand(uint8_t command, uint8_t dataSize, int* mainState) {
@@ -130,9 +167,9 @@ void processCommand(uint8_t command, uint8_t dataSize, int* mainState) {
 	float xMove;
 	float yMove;
 case COMMAND_MOVE:
-	//xMove = getXMoveFromBuffer();
-	//yMove = getYMoveFromBuffer();
-	//setState(mainState, MAIN_PID);
+//xMove = getXMoveFromBuffer();
+//yMove = getYMoveFromBuffer();
+//setState(mainState, MAIN_PID);
 	break;
 default:
 	break;
@@ -191,6 +228,7 @@ int main(void) {
 	PID_SetOutputLimits(&PID_SPEED3, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
 	PID_init(&PID_POSITION3, PID_POSITION3_KP, PID_POSITION3_KI,
 			PID_POSITION3_KD, PID_Direction_Direct, PID_POSITION3_N);
+	PID_SetOutputLimits(&PID_POSITION3, MIN_POS_COMMAND, MAX_POS_COMMAND);
 
 	/* Initialization of wheel 4 PIDs */
 	PID_init(&PID_SPEED4, PID_SPEED4_KP, PID_SPEED4_KI, PID_SPEED4_KD,
@@ -198,6 +236,9 @@ int main(void) {
 	PID_SetOutputLimits(&PID_SPEED4, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
 	PID_init(&PID_POSITION4, PID_POSITION4_KP, PID_POSITION4_KI,
 			PID_POSITION4_KD, PID_Direction_Direct, PID_POSITION4_N);
+	PID_SetOutputLimits(&PID_POSITION4, MIN_POS_COMMAND, MAX_POS_COMMAND);
+
+	initPrehensor();
 
 	/* Test routine LEDs */
 	startLEDsRoutine();
@@ -239,15 +280,13 @@ int main(void) {
 					if (PID_Compute_Speed(&PID_SPEED1)) {
 						cmdMotor1 = PID_SPEED1.myOutput;
 						if (cmdMotor1 > 0) {
-							speedDirection1 = SPEED_DIRECTION_FORWARD;
 							MotorSetDirection(1, COUNTER_CLOCK);
 						} else if (cmdMotor1 < 0) {
-							speedDirection1 = SPEED_DIRECTION_BACKWARD;
 							MotorSetDirection(1, CLOCK);
 							cmdMotor1 = -cmdMotor1;
 						} else {
 							speedDirection1 = SPEED_DIRECTION_NONE;
-							MotorSetDirection(1, BRAKE_G);
+							MotorSetDirection(1, BRAKE_V);
 						}
 
 						MotorSetSpeed(1, cmdMotor1);
@@ -303,16 +342,14 @@ int main(void) {
 					if (PID_Compute_Speed(&PID_SPEED2)) {
 						cmdMotor2 = PID_SPEED2.myOutput;
 						if (cmdMotor2 > 0) {
-							speedDirection2 = SPEED_DIRECTION_FORWARD;
 							MotorSetDirection(2, COUNTER_CLOCK);
 							//MotorSetDirection(4, CLOCK);
 						} else if (cmdMotor2 < 0) {
-							speedDirection2 = SPEED_DIRECTION_BACKWARD;
 							MotorSetDirection(2, CLOCK);
 							cmdMotor2 = -cmdMotor2;
 						} else {
 							speedDirection2 = SPEED_DIRECTION_NONE;
-							MotorSetDirection(2, BRAKE_G);
+							MotorSetDirection(2, BRAKE_V);
 						}
 
 						MotorSetSpeed(2, cmdMotor2);
@@ -363,15 +400,13 @@ int main(void) {
 					if (PID_Compute_Speed(&PID_SPEED3)) {
 						cmdMotor3 = PID_SPEED3.myOutput;
 						if (cmdMotor3 > 0) {
-							speedDirection3 = SPEED_DIRECTION_FORWARD;
 							MotorSetDirection(3, CLOCK);
 						} else if (cmdMotor3 < 0) {
-							speedDirection3 = SPEED_DIRECTION_BACKWARD;
 							MotorSetDirection(3, COUNTER_CLOCK);
 							cmdMotor3 = -cmdMotor3;
 						} else {
 							speedDirection3 = SPEED_DIRECTION_NONE;
-							MotorSetDirection(3, BRAKE_G);
+							MotorSetDirection(3, BRAKE_V);
 						}
 
 						MotorSetSpeed(3, cmdMotor3);
@@ -396,16 +431,13 @@ int main(void) {
 					if (PID_Compute_Speed(&PID_SPEED4)) {
 						cmdMotor4 = PID_SPEED4.myOutput;
 						if (cmdMotor4 > 0) {
-							speedDirection4 = SPEED_DIRECTION_FORWARD;
 							MotorSetDirection(4, CLOCK);
 						} else if (cmdMotor4 < 0) {
-
-							speedDirection4 = SPEED_DIRECTION_BACKWARD;
 							MotorSetDirection(4, COUNTER_CLOCK);
 							cmdMotor4 = -cmdMotor4;
 						} else {
 							speedDirection4 = SPEED_DIRECTION_NONE;
-							MotorSetDirection(4, BRAKE_G);
+							MotorSetDirection(4, BRAKE_V);
 
 						}
 
@@ -442,6 +474,23 @@ int main(void) {
 					&manchesterFigureVerification,
 					manchesterOrientationVerification,
 					&manchesterFactorVerification);
+
+			uint8_t dataToSend[5];
+			dataToSend[0] = COMMAND_DECODED_MANCHESTER;
+			dataToSend[1] = 3;
+			dataToSend[2] = 1;
+			dataToSend[3] = 4;
+			dataToSend[4] = 'N';
+
+			TM_USB_VCP_Send(dataToSend, 5);
+			Delayms(10);
+			break;
+		case MAIN_PREHENSEUR:
+			initPrehensor();
+			moveUpPrehensor();
+			Delayms(1000);
+			moveDownPrehensor();
+			Delayms(1000);
 			break;
 		default:
 			setState(&mainState, MAIN_IDLE);
@@ -463,14 +512,35 @@ extern void EXTI4_IRQHandler(void) {
 
 extern void EXTI9_5_IRQHandler(void) {
 	/* Make sure that interrupt flag is set */
+// wheel 1 channel 1
 	if (EXTI_GetITStatus(EXTI_Line5) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges1++;
-		if (speedDirection1 == SPEED_DIRECTION_FORWARD) {
+
+		wheel1Channel1UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_5);
+		wheel1Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_6);
+
+		// check wheel 1 channel 2
+		if (wheel1Channel1UP == wheel1Channel2UP) {
+
 			numberOfPositionEdges1++;
-		} else if (speedDirection1 == SPEED_DIRECTION_BACKWARD) {
+			incWheel1Canal1EncoderCounter++;
+			speedDirection1 = SPEED_DIRECTION_FORWARD;
+
+		} else {
 			numberOfPositionEdges1--;
+			decWheel1Canal1EncoderCounter++;
+			speedDirection1 = SPEED_DIRECTION_BACKWARD;
 		}
+
+		/*if (speedDirection1 == SPEED_DIRECTION_FORWARD) {
+		 numberOfPositionEdges1++;
+		 incWheel1Canal1EncoderCounter++;
+		 } else if (speedDirection1 == SPEED_DIRECTION_BACKWARD) {
+		 numberOfPositionEdges1--;
+		 decWheel1Canal1EncoderCounter++;
+		 }*/
+
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line5);
 	}
@@ -478,11 +548,29 @@ extern void EXTI9_5_IRQHandler(void) {
 	if (EXTI_GetITStatus(EXTI_Line6) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges1++;
-		if (speedDirection1 == SPEED_DIRECTION_FORWARD) {
+
+		wheel1Channel1UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_5);
+		wheel1Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_6);
+
+		// check wheel 1
+		if (wheel1Channel1UP != wheel1Channel2UP) {
 			numberOfPositionEdges1++;
-		} else if (speedDirection1 == SPEED_DIRECTION_BACKWARD) {
+			incWheel1Canal2EncoderCounter++;
+			speedDirection1 = SPEED_DIRECTION_FORWARD;
+		} else {
 			numberOfPositionEdges1--;
+			decWheel1Canal2EncoderCounter++;
+			speedDirection1 = SPEED_DIRECTION_BACKWARD;
 		}
+
+		/*if (speedDirection1 == SPEED_DIRECTION_FORWARD) {
+		 numberOfPositionEdges1++;
+		 incWheel1Canal2EncoderCounter++;
+		 } else if (speedDirection1 == SPEED_DIRECTION_BACKWARD) {
+		 numberOfPositionEdges1--;
+		 decWheel1Canal2EncoderCounter++;
+		 }*/
+
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line6);
 	}
@@ -490,12 +578,31 @@ extern void EXTI9_5_IRQHandler(void) {
 	if (EXTI_GetITStatus(EXTI_Line8) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges2++;
-		if (speedDirection2 == SPEED_DIRECTION_FORWARD) {
-			numberOfPositionEdges2++;
-		} else if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
-			numberOfPositionEdges2--;
 
+		wheel2Channel1UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_8);
+		wheel2Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_9);
+
+		// check wheel 2
+		if (wheel2Channel1UP == wheel2Channel2UP) {
+
+			numberOfPositionEdges2++;
+			incWheel2Canal1EncoderCounter++;
+			speedDirection2 = SPEED_DIRECTION_FORWARD;
+
+		} else {
+			numberOfPositionEdges2--;
+			decWheel2Canal1EncoderCounter++;
+			speedDirection2 = SPEED_DIRECTION_BACKWARD;
 		}
+
+		/*if (speedDirection2 == SPEED_DIRECTION_FORWARD) {
+		 numberOfPositionEdges2++;
+		 incWheel2Canal1EncoderCounter++;
+		 } else if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
+		 numberOfPositionEdges2--;
+		 decWheel2Canal1EncoderCounter++;
+
+		 }*/
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line8);
 	}
@@ -503,9 +610,30 @@ extern void EXTI9_5_IRQHandler(void) {
 	if (EXTI_GetITStatus(EXTI_Line9) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges2++;
-		if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
+
+		wheel2Channel1UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_8);
+		wheel2Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_9);
+
+		// check wheel 2
+		if (wheel2Channel1UP != wheel2Channel2UP) {
+			numberOfPositionEdges2++;
+			incWheel2Canal2EncoderCounter++;
+			speedDirection2 = SPEED_DIRECTION_FORWARD;
+
+		} else {
 			numberOfPositionEdges2--;
+			decWheel2Canal2EncoderCounter++;
+			speedDirection2 = SPEED_DIRECTION_BACKWARD;
 		}
+
+		/*if (speedDirection2 == SPEED_DIRECTION_FORWARD) {
+		 numberOfPositionEdges2++;
+		 incWheel2Canal2EncoderCounter++;
+		 } else if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
+		 numberOfPositionEdges2--;
+		 decWheel2Canal2EncoderCounter++;
+		 }*/
+
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line9);
 	}
@@ -517,12 +645,28 @@ extern void EXTI15_10_IRQHandler(void) {
 		/* increase ticks */
 		numberOfSpeedEdges3++;
 
-		if (speedDirection3 == SPEED_DIRECTION_FORWARD) {
-			numberOfPositionEdges3++;
-		} else if (speedDirection3 == SPEED_DIRECTION_BACKWARD) {
-			numberOfPositionEdges3--;
+		wheel3Channel1UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_10);
+		wheel3Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_11);
 
+		// check wheel 3
+		if (wheel3Channel1UP != wheel3Channel2UP) {
+			numberOfPositionEdges3++;
+			incWheel3Canal1EncoderCounter++;
+			speedDirection3 = SPEED_DIRECTION_FORWARD;
+		} else {
+			numberOfPositionEdges3--;
+			decWheel3Canal1EncoderCounter++;
+			speedDirection3 = SPEED_DIRECTION_BACKWARD;
 		}
+
+		/*if (speedDirection3 == SPEED_DIRECTION_FORWARD) {
+		 numberOfPositionEdges3++;
+		 incWheel3Canal1EncoderCounter++;
+		 } else if (speedDirection3 == SPEED_DIRECTION_BACKWARD) {
+		 numberOfPositionEdges3--;
+		 decWheel3Canal1EncoderCounter++;
+
+		 }*/
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line10);
 	}
@@ -531,13 +675,29 @@ extern void EXTI15_10_IRQHandler(void) {
 		/* increase ticks */
 		numberOfSpeedEdges3++;
 
-		if (speedDirection3 == SPEED_DIRECTION_FORWARD) {
+		wheel3Channel1UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_10);
+		wheel3Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_11);
+
+		// check wheel 3
+		if (wheel3Channel1UP == wheel3Channel2UP) {
 			numberOfPositionEdges3++;
+			incWheel3Canal2EncoderCounter++;
+			speedDirection3 = SPEED_DIRECTION_FORWARD;
+		} else {
+			numberOfPositionEdges3--;
+			decWheel3Canal2EncoderCounter++;
+			speedDirection3 = SPEED_DIRECTION_BACKWARD;
 		}
 
-		else if (speedDirection3 == SPEED_DIRECTION_BACKWARD) {
-			numberOfPositionEdges3--;
-		}
+		/*if (speedDirection3 == SPEED_DIRECTION_FORWARD) {
+		 numberOfPositionEdges3++;
+		 incWheel3Canal2EncoderCounter++;
+		 }
+
+		 else if (speedDirection3 == SPEED_DIRECTION_BACKWARD) {
+		 numberOfPositionEdges3--;
+		 decWheel3Canal2EncoderCounter++;
+		 }*/
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line11);
 	}
@@ -545,11 +705,28 @@ extern void EXTI15_10_IRQHandler(void) {
 	if (EXTI_GetITStatus(EXTI_Line12) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges4++;
-		if (speedDirection4 == SPEED_DIRECTION_FORWARD) {
+
+		wheel4Channel1UP = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_12);
+		wheel4Channel2UP = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_13);
+
+		// check wheel 4
+		if (wheel4Channel1UP != wheel4Channel2UP) {
 			numberOfPositionEdges4++;
-		} else if (speedDirection4 == SPEED_DIRECTION_BACKWARD) {
+			incWheel4Canal1EncoderCounter++;
+			speedDirection4 = SPEED_DIRECTION_FORWARD;
+		} else {
 			numberOfPositionEdges4--;
+			decWheel4Canal1EncoderCounter++;
+			speedDirection4 = SPEED_DIRECTION_BACKWARD;
 		}
+
+		/*if (speedDirection4 == SPEED_DIRECTION_FORWARD) {
+		 numberOfPositionEdges4++;
+		 incWheel4Canal1EncoderCounter++;
+		 } else if (speedDirection4 == SPEED_DIRECTION_BACKWARD) {
+		 numberOfPositionEdges4--;
+		 decWheel4Canal1EncoderCounter++;
+		 }*/
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line12);
 	}
@@ -557,12 +734,28 @@ extern void EXTI15_10_IRQHandler(void) {
 	if (EXTI_GetITStatus(EXTI_Line13) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges4++;
-		if (speedDirection4 == SPEED_DIRECTION_FORWARD) {
-			numberOfPositionEdges4++;
-		} else if (speedDirection4 == SPEED_DIRECTION_BACKWARD) {
 
+		wheel4Channel1UP = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_12);
+		wheel4Channel2UP = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_13);
+
+		// check wheel 4
+		if (wheel4Channel1UP == wheel4Channel2UP) {
+			numberOfPositionEdges4++;
+			incWheel4Canal2EncoderCounter++;
+			speedDirection4 = SPEED_DIRECTION_FORWARD;
+		} else {
 			numberOfPositionEdges4--;
+			decWheel4Canal2EncoderCounter++;
+			speedDirection4 = SPEED_DIRECTION_BACKWARD;
 		}
+
+		/*if (speedDirection4 == SPEED_DIRECTION_FORWARD) {
+		 numberOfPositionEdges4++;
+		 incWheel4Canal2EncoderCounter++;
+		 } else if (speedDirection4 == SPEED_DIRECTION_BACKWARD) {
+		 numberOfPositionEdges4--;
+		 decWheel4Canal2EncoderCounter++;
+		 }*/
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line13);
 	}
@@ -714,18 +907,67 @@ extern void TIM2_IRQHandler() {
 		 }*/
 	}
 }
+/*
+ void setPIDCoeficient(float xMove, float yMove) {
+ float xMoveAbsolute;
+ float yMoveAbsolute;
+
+ if (xMove >= 0) {
+ xMoveAbsolute = xMove;
+ } else {
+ xMoveAbsolute = -xMove;
+ }
+
+ if (yMove >= 0) {
+ yMoveAbsolute = yMove;
+ } else {
+ yMoveAbsolute = -yMove;
+ }
+
+ float max;
+ float min;
+ uint8_t xAxisMax;
+
+ if (xMoveAbsolute >= yMoveAbsolute) {
+ xAxisMax = 1;
+ max = xMoveAbsolute;
+ min = yMoveAbsolute;
+ } else {
+ xAxisMax = 0;
+ max = yMoveAbsolute;
+ min = xMoveAbsolute;
+ }
+
+
+ float coef = 1 - ((max - min) / max);
+
+ if (xAxisMax == 1) {
+ PID_POSITION1.coef = coef;
+ PID_POSITION3.coef = coef;
+ PID_POSITION2.coef = 1;
+ PID_POSITION4.coef = 1;
+ } else {
+ PID_POSITION1.coef = 1;
+ PID_POSITION3.coef = 1;
+ PID_POSITION2.coef = coef;
+ PID_POSITION4.coef = coef;
+ }
+ }*/
 
 /* callback when data arrives on USB */
 extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 	switch (type) {
 	case COMMAND_MOVE:
-		if (len == 8 && type == 0) {
+		if (len == 8 && type == COMMAND_MOVE) {
 			/* send data to test send feature on Usb */
 			uint8_t dataToSend[10] = { 1, 8, 3, 4, 5, 6, 7, 8, 9, 10 };
 			TM_USB_VCP_Send(dataToSend, 10);
 			/* get X Y distances */
 			float xMove = getXMoveFromBuffer(data);
 			float yMove = getYMoveFromBuffer(data);
+
+			/*setPIDCoeficient(xMove, yMove);*/
+
 			PID_POSITION1.mySetpoint = xMove;
 			PID_POSITION3.mySetpoint = xMove;
 			PID_POSITION2.mySetpoint = yMove;
@@ -736,11 +978,123 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 			numberOfPositionEdges3 = 0;
 			numberOfPositionEdges4 = 0;
 
+			PID_POSITION1.ITerm = 0;
+			PID_SPEED1.ITerm = 0;
+			PID_POSITION2.ITerm = 0;
+			PID_SPEED2.ITerm = 0;
+			PID_POSITION3.ITerm = 0;
+			PID_SPEED3.ITerm = 0;
+			PID_POSITION4.ITerm = 0;
+			PID_SPEED4.ITerm = 0;
+
+			PID_POSITION1.lastInput = 0;
+			PID_SPEED1.lastInput = 0;
+			PID_POSITION2.lastInput = 0;
+			PID_SPEED2.lastInput = 0;
+			PID_POSITION3.lastInput = 0;
+			PID_SPEED3.lastInput = 0;
+			PID_POSITION4.lastInput = 0;
+			PID_SPEED4.lastInput = 0;
+
+			incWheel1Canal1EncoderCounter = 0;
+			incWheel1Canal2EncoderCounter = 0;
+			decWheel1Canal1EncoderCounter = 0;
+			decWheel1Canal2EncoderCounter = 0;
+
+			incWheel2Canal1EncoderCounter = 0;
+			incWheel2Canal2EncoderCounter = 0;
+			decWheel2Canal1EncoderCounter = 0;
+			decWheel2Canal2EncoderCounter = 0;
+
+			incWheel3Canal1EncoderCounter = 0;
+			incWheel3Canal2EncoderCounter = 0;
+			decWheel3Canal1EncoderCounter = 0;
+			decWheel3Canal2EncoderCounter = 0;
+
+			incWheel4Canal1EncoderCounter = 0;
+			incWheel4Canal2EncoderCounter = 0;
+			decWheel4Canal1EncoderCounter = 0;
+			decWheel4Canal2EncoderCounter = 0;
+
+			setState(&mainState, MAIN_PID);
+		}
+		break;
+	case COMMAND_ROTATE:
+		if (len == 4 && type == COMMAND_ROTATE) {
+			/* send data to test send feature on Usb */
+			//uint8_t dataToSend[10] = { 1, 8, 3, 4, 5, 6, 7, 8, 9, 10 };
+			//TM_USB_VCP_Send(dataToSend, 10);
+			/* get X Y distances */
+			float radianToRotate = getRadianMoveFromBuffer(data);
+			float move = getMoveFromRadian(radianToRotate);
+
+			/*setPIDCoeficient(xMove, yMove);*/
+
+			PID_POSITION1.mySetpoint = -move;
+			PID_POSITION3.mySetpoint = move;
+			PID_POSITION2.mySetpoint = -move;
+			PID_POSITION4.mySetpoint = move;
+
+			numberOfPositionEdges1 = 0;
+			numberOfPositionEdges2 = 0;
+			numberOfPositionEdges3 = 0;
+			numberOfPositionEdges4 = 0;
+
+			PID_POSITION1.ITerm = 0;
+			PID_SPEED1.ITerm = 0;
+			PID_POSITION2.ITerm = 0;
+			PID_SPEED2.ITerm = 0;
+			PID_POSITION3.ITerm = 0;
+			PID_SPEED3.ITerm = 0;
+			PID_POSITION4.ITerm = 0;
+			PID_SPEED4.ITerm = 0;
+
+			PID_POSITION1.lastInput = 0;
+			PID_SPEED1.lastInput = 0;
+			PID_POSITION2.lastInput = 0;
+			PID_SPEED2.lastInput = 0;
+			PID_POSITION3.lastInput = 0;
+			PID_SPEED3.lastInput = 0;
+			PID_POSITION4.lastInput = 0;
+			PID_SPEED4.lastInput = 0;
+
+			incWheel1Canal1EncoderCounter = 0;
+			incWheel1Canal2EncoderCounter = 0;
+			decWheel1Canal1EncoderCounter = 0;
+			decWheel1Canal2EncoderCounter = 0;
+
+			incWheel2Canal1EncoderCounter = 0;
+			incWheel2Canal2EncoderCounter = 0;
+			decWheel2Canal1EncoderCounter = 0;
+			decWheel2Canal2EncoderCounter = 0;
+
+			incWheel3Canal1EncoderCounter = 0;
+			incWheel3Canal2EncoderCounter = 0;
+			decWheel3Canal1EncoderCounter = 0;
+			decWheel3Canal2EncoderCounter = 0;
+
+			incWheel4Canal1EncoderCounter = 0;
+			incWheel4Canal2EncoderCounter = 0;
+			decWheel4Canal1EncoderCounter = 0;
+			decWheel4Canal2EncoderCounter = 0;
+
 			setState(&mainState, MAIN_PID);
 		}
 		break;
 	case COMMAND_IDEN_WHEELS:
 		bFlagSendData = 1;
+		break;
+	case COMMAND_PENCIL_UP:
+		moveUpPrehensor();
+		break;
+	case COMMAND_PENCIL_DOWN:
+		moveDownPrehensor();
+		break;
+	case COMMAND_DECODE_MANCHESTER:
+		setState(&mainState, MAIN_MANCH);
+		break;
+	case COMMAND_STOP_DECODE_MANCHESTER:
+		setState(&mainState, MAIN_IDLE);
 		break;
 	}
 }

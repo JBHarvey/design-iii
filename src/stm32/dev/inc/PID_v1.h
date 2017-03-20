@@ -37,6 +37,9 @@ typedef struct {
 	/* Filtrage */
 	FloatType N;
 
+	/* coefficient de ralentissement pour diagonale*/
+	FloatType coef;
+
 	//  unsigned long lastTime;
 	FloatType ITerm, lastInput;
 

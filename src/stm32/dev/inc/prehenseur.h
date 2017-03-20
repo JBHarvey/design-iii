@@ -11,8 +11,8 @@
 #define PREHENSOR_PERIOD 60000
 #define PREHENSOR_PRESCALER 28
 
-#define PREHENSOR_UP_PWM 8
-#define PREHENSOR_DOWN_PWM 5
+#define PREHENSOR_UP_PWM 9
+#define PREHENSOR_DOWN_PWM 6
 
 void initPrehensor();
 void initPrehensorTIM(void);

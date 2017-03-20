@@ -4,7 +4,7 @@
 #include "stm32f4xx.h"
 
 enum COMMAND {
-	COMMAND_MOVE, COMMAND_IDEN_WHEELS
+	COMMAND_MOVE = 0, COMMAND_IDEN_WHEELS = 66
 };
 
 extern uint8_t bFlagSendData;

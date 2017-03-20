@@ -20,7 +20,8 @@ enum MainState {
 	MAIN_TEST_SPEED_PID,
 	MAIN_DEAD_ZONE,
 	MAIN_MOVE,
-	MAIN_PID
+	MAIN_PID,
+	MAIN_PREHENSEUR
 };
 
 enum SpeedDirection {
