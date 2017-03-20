@@ -64,6 +64,8 @@ int main(int argc, char *argv[])
     sendRotate(MINUS_HALF_PI);
     sendTranslate(300, 0);
     sendRotate(MINUS_HALF_PI);
+    sendTranslate(1000, 0);
+    sendRotate(MINUS_HALF_PI);
     sendTranslate(500, 500);
     sendTranslate(500, -500);
 
