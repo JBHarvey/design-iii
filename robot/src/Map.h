@@ -16,7 +16,7 @@ struct Map {
     struct Coordinates *south_western_drawing_corner;
     struct Coordinates *antenna_zone_start;
     struct Coordinates *antenna_zone_stop;
-    struct Obstacle *obstacles[3];
+    struct Obstacle *obstacles[MAXIMUM_OBSTACLE_NUMBER];
     struct Pose *painting_zones[8];
 };
 
@@ -32,4 +32,6 @@ void Map_updateDrawingCorners(struct Map *map, struct Coordinates *north_eastern
 void Map_updateAntennaZone(struct Map *map, struct Coordinates *start, struct Coordinates *stop);
 void Map_updateObstacle(struct Map *map, struct Coordinates *new_coordinates, enum CardinalDirection new_orientation, int index);
 void Map_updatePaintingZone(struct Map *map, struct Pose *new_pose, int index);
+
+struct Map *Map_fetchNavigableMap(struct Map *original_map, int robot_radius);
 #endif // MAP_H_

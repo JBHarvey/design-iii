@@ -187,3 +187,48 @@ Test(Map, given_newPaintingZones_when_updatesMap_then_theCorrespondingZonesHaveC
     Pose_delete(paintingZone6);
     Pose_delete(paintingZone7);
 }
+
+const int TEST_ROBOT_RADIUS = 2100;
+Test(Map, given_aMapAndARobotRadius_when_askedToFetchNavigableMap_then_theTableCornersAreBroughtTowardsTheCenterOfTheMapByTheRobotRadiusInXAndY
+     , .init = setup_map
+     , .fini = teardown_map)
+{
+    struct Map *navigable_map = Map_fetchNavigableMap(map, TEST_ROBOT_RADIUS);
+
+    int expected_south_western_table_corner_x = map->south_western_table_corner->x + TEST_ROBOT_RADIUS;
+    int expected_south_western_table_corner_y = map->south_western_table_corner->y + TEST_ROBOT_RADIUS;
+    int expected_south_eastern_table_corner_x = map->south_eastern_table_corner->x - TEST_ROBOT_RADIUS;
+    int expected_south_eastern_table_corner_y = map->south_eastern_table_corner->y + TEST_ROBOT_RADIUS;
+    int expected_north_western_table_corner_x = map->north_western_table_corner->x + TEST_ROBOT_RADIUS;
+    int expected_north_western_table_corner_y = map->north_western_table_corner->y - TEST_ROBOT_RADIUS;
+    int expected_north_eastern_table_corner_x = map->north_eastern_table_corner->x - TEST_ROBOT_RADIUS;
+    int expected_north_eastern_table_corner_y = map->north_eastern_table_corner->y - TEST_ROBOT_RADIUS;
+
+    cr_assert_eq(navigable_map->south_western_table_corner->x, expected_south_western_table_corner_x);
+    cr_assert_eq(navigable_map->south_western_table_corner->y, expected_south_western_table_corner_y);
+    cr_assert_eq(navigable_map->south_eastern_table_corner->x, expected_south_eastern_table_corner_x);
+    cr_assert_eq(navigable_map->south_eastern_table_corner->y, expected_south_eastern_table_corner_y);
+    cr_assert_eq(navigable_map->north_western_table_corner->x, expected_north_western_table_corner_x);
+    cr_assert_eq(navigable_map->north_western_table_corner->y, expected_north_western_table_corner_y);
+    cr_assert_eq(navigable_map->north_eastern_table_corner->x, expected_north_eastern_table_corner_x);
+    cr_assert_eq(navigable_map->north_eastern_table_corner->y, expected_north_eastern_table_corner_y);
+
+    Map_delete(navigable_map);
+}
+
+Test(Map, given_aMapAndARobotRadius_when_askedToFetchNavigableMap_then_theRobotRadiusIsAddedToTheObstaclesRadius
+     , .init = setup_map
+     , .fini = teardown_map)
+{
+    struct Map *navigable_map = Map_fetchNavigableMap(map, TEST_ROBOT_RADIUS);
+
+    int expected_radius_0 = map->obstacles[0]->radius + TEST_ROBOT_RADIUS;
+    int expected_radius_1 = map->obstacles[1]->radius + TEST_ROBOT_RADIUS;
+    int expected_radius_2 = map->obstacles[2]->radius + TEST_ROBOT_RADIUS;
+
+    cr_assert_eq(navigable_map->obstacles[0]->radius, expected_radius_0);
+    cr_assert_eq(navigable_map->obstacles[1]->radius, expected_radius_1);
+    cr_assert_eq(navigable_map->obstacles[2]->radius, expected_radius_2);
+
+    Map_delete(navigable_map);
+}

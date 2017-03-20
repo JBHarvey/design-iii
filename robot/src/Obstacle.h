@@ -1,5 +1,6 @@
 #ifndef OBSTACLE_H_
 #define OBSTACLE_H_
+
 #include "Coordinates.h"
 
 #define THEORICAL_OBSTACLE_RADIUS 625  /* Unit: 0.1 mm */

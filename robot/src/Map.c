@@ -125,7 +125,30 @@ void Map_updateObstacle(struct Map *map, struct Coordinates *new_coordinates, en
     Obstacle_changeCoordinates(map->obstacles[index], new_coordinates);
     Obstacle_changeOrientation(map->obstacles[index], new_orientation);
 }
+
 void Map_updatePaintingZone(struct Map *map, struct Pose *new_pose, int index)
 {
     Pose_copyValuesFrom(map->painting_zones[index], new_pose);
+}
+
+struct Map *Map_fetchNavigableMap(struct Map *original_map, int robot_radius)
+{
+    struct Map *new_map = Map_new();
+
+    new_map->south_western_table_corner->x = original_map->south_western_table_corner->x + robot_radius;
+    new_map->south_western_table_corner->y = original_map->south_western_table_corner->y + robot_radius;
+    new_map->south_eastern_table_corner->x = original_map->south_eastern_table_corner->x - robot_radius;
+    new_map->south_eastern_table_corner->y = original_map->south_eastern_table_corner->y + robot_radius;
+    new_map->north_western_table_corner->x = original_map->north_western_table_corner->x + robot_radius;
+    new_map->north_western_table_corner->y = original_map->north_western_table_corner->y - robot_radius;
+    new_map->north_eastern_table_corner->x = original_map->north_eastern_table_corner->x - robot_radius;
+    new_map->north_eastern_table_corner->y = original_map->north_eastern_table_corner->y - robot_radius;
+
+    int i;
+
+    for(i = 0; i < MAXIMUM_OBSTACLE_NUMBER; ++i) {
+        new_map->obstacles[i]->radius = original_map->obstacles[i]->radius + robot_radius;
+    }
+
+    return new_map;
 }
