@@ -60,7 +60,7 @@ const int TEST_PAINTING_7_Y = 8500;
 const int TEST_PAINTING_7_ORIENTATION = HALF_PI;
 
 static GMutex network_mutex;
-static _Bool connected;
+extern enum ConnectionStatus robot_connection_status;
 
 void StationClientSender_sendStartCycleCommand(struct StationClient *station_client)
 {
@@ -69,17 +69,10 @@ void StationClientSender_sendStartCycleCommand(struct StationClient *station_cli
 
     g_mutex_lock(&network_mutex);
 
-    if (connected) {
+    if(robot_connection_status) {
         addPacket(data, sizeof(data));
     }
 
-    g_mutex_unlock(&network_mutex);
-}
-
-void StationClientSender_startSendingWorldInformationsToRobot(struct StationClient *station_client)
-{
-    g_mutex_lock(&network_mutex);
-    connected = 1;
     g_mutex_unlock(&network_mutex);
 }
 
@@ -90,7 +83,8 @@ void StationClientSender_sendReceiveData(struct StationClient *station_client)
     g_mutex_unlock(&network_mutex);
 }
 
-void StationClientSender_sendWorldInformationsToRobot(struct StationClient *station_client, struct Communication_Object *obstacles, unsigned num_obstacles, struct Communication_Object robot)
+void StationClientSender_sendWorldInformationsToRobot(struct StationClient *station_client,
+        struct Communication_Object *obstacles, unsigned num_obstacles, struct Communication_Object robot)
 {
     uint8_t data[1 + sizeof(struct Communication_World)];
     data[0] = DATA_WORLD;
@@ -228,7 +222,7 @@ void StationClientSender_sendWorldInformationsToRobot(struct StationClient *stat
 
     g_mutex_lock(&network_mutex);
 
-    if (connected) {
+    if(robot_connection_status) {
         addPacket(data, sizeof(data));
     }
 

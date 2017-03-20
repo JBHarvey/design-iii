@@ -25,6 +25,8 @@ struct StationClient *station_client = NULL;
 
 void uiWindowDestroyEventCallback(GtkWidget *widget, gpointer data)
 {
+    Logger_finalize();
+    Timer_release();
     g_source_remove(timer_tag);
     g_object_unref(widget);
     gtk_main_quit();
@@ -33,6 +35,7 @@ void uiWindowDestroyEventCallback(GtkWidget *widget, gpointer data)
 void startCycleClickedEventCallback(GtkWidget *widget, gpointer data)
 {
     StationClientSender_sendStartCycleCommand(station_client);
+    Logger_startMessageSectionAndAppend("Cycle started!");
     Timer_start();
 }
 
@@ -50,7 +53,6 @@ void StationInterface_launch(int argc, char *argv[])
 {
 
     GThread *world_vision_worker_thread = NULL;
-    GThread *connection_handler_worker_thread = NULL;
     GtkWidget *ui_window = NULL;
 
     gtk_init(&argc, &argv);
@@ -63,7 +65,6 @@ void StationInterface_launch(int argc, char *argv[])
 
     main_loop_status = RUNNING;
 
-    /* Starts worker thread */
     station_client = StationClient_new(ROBOT_SERVER_PORT, ROBOT_SERVER_IP);
     StationClient_init(station_client);
 
@@ -78,10 +79,6 @@ void StationInterface_launch(int argc, char *argv[])
     gtk_main();
 
     main_loop_status = TERMINATED;
-
-    Logger_finalize();
-
-    Timer_release();
 
     g_thread_join(world_vision_worker_thread);
     StationClient_delete(station_client);
