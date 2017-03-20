@@ -114,7 +114,8 @@ bool PID_Compute_Position(PidType* pid) {
 	if (pid->error == 0) {
 		output = 0;
 	} else {
-		output = pid->kp * pid->error + pid->ITerm - pid->kd * dInput;
+		output = (pid->kp * pid->error + pid->ITerm - pid->kd * dInput);
+		//* pid->coef;
 	}
 
 	if (output > pid->outMax) {

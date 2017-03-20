@@ -58,11 +58,8 @@ enum COMMUNICATION_STATUS {
 	READ_USB_SUCCESS, READ_USB_FAIL
 };
 
-enum COMMAND {
-	COMMAND_MOVE, COMMAND_PENCIL_UP
-};
-
 #define COMMAND_MOVE 0
+#define COMMAND_ROTATE 1
 #define COMMAND_PENCIL_UP 4
 #define COMMAND_PENCIL_DOWN 5
 #define COMMAND_DECODE_MANCHESTER 6
@@ -73,6 +70,7 @@ enum COMMAND {
 #define MAX_SPEED_INDEX 2000
 #define TICKS_BUFFER_SIZE 100
 #define MAXIMUM_CHARACTERS_BUFFER_SIZE 100
+#define WHEEL_RADIUS 0.12
 
 // buffer ticks for debug
 volatile int ticksIndex4 = 0;
@@ -280,14 +278,24 @@ float getYMoveFromBuffer(uint8_t *data) {
 	return yMove;
 }
 
+float getRadianMoveFromBuffer(uint8_t *data) {
+	float radian = *(float *) data;
+
+	return radian;
+}
+
+float getMoveFromRadian(float radian) {
+	return radian * WHEEL_RADIUS;
+}
+
 void processCommand(uint8_t command, uint8_t dataSize, int* mainState) {
 	switch (command) {
 	float xMove;
 	float yMove;
 case COMMAND_MOVE:
-	//xMove = getXMoveFromBuffer();
-	//yMove = getYMoveFromBuffer();
-	//setState(mainState, MAIN_PID);
+//xMove = getXMoveFromBuffer();
+//yMove = getYMoveFromBuffer();
+//setState(mainState, MAIN_PID);
 	break;
 default:
 	break;
@@ -316,7 +324,7 @@ int main(void) {
 	initBtn();
 
 // Initialisation des variables
-	mainState = MAIN_IDLE;
+	mainState = MAIN_MANCH;
 //setState(&mainState, MAIN_MOVE);
 
 	int state = IDLE;
@@ -743,21 +751,15 @@ int main(void) {
 					manchesterOrientationVerification,
 					&manchesterFactorVerification);
 
-			if (manchesterFactorVerification != 0) {
-				uint8_t dataToSend[9];
-				dataToSend[0] = COMMAND_DECODED_MANCHESTER;
-				dataToSend[1] = 7;
-				dataToSend[2] = manchesterFigureVerification;
-				dataToSend[3] = manchesterOrientationVerification[0];
-				dataToSend[4] = manchesterOrientationVerification[1];
-				dataToSend[5] = manchesterOrientationVerification[2];
-				dataToSend[6] = manchesterOrientationVerification[3];
-				dataToSend[7] = manchesterOrientationVerification[4];
-				dataToSend[8] = manchesterFactorVerification;
-				TM_USB_VCP_Send(dataToSend, dataToSend[1] + 2);
-			}
+			uint8_t dataToSend[5];
+			dataToSend[0] = COMMAND_DECODED_MANCHESTER;
+			dataToSend[1] = 3;
+			dataToSend[2] = 1;
+			dataToSend[3] = 4;
+			dataToSend[4] = 'N';
 
-			setState(&mainState, MAIN_IDLE);
+			TM_USB_VCP_Send(dataToSend, 5);
+			Delayms(10);
 			break;
 		case MAIN_PREHENSEUR:
 			initPrehensor();
@@ -786,7 +788,7 @@ extern void EXTI4_IRQHandler(void) {
 
 extern void EXTI9_5_IRQHandler(void) {
 	/* Make sure that interrupt flag is set */
-	// wheel 1 channel 1
+// wheel 1 channel 1
 	if (EXTI_GetITStatus(EXTI_Line5) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges1++;
@@ -1120,18 +1122,66 @@ extern void TIM2_IRQHandler() {
 		 }*/
 	}
 }
+/*
+ void setPIDCoeficient(float xMove, float yMove) {
+ float xMoveAbsolute;
+ float yMoveAbsolute;
+
+ if (xMove >= 0) {
+ xMoveAbsolute = xMove;
+ } else {
+ xMoveAbsolute = -xMove;
+ }
+
+ if (yMove >= 0) {
+ yMoveAbsolute = yMove;
+ } else {
+ yMoveAbsolute = -yMove;
+ }
+
+ float max;
+ float min;
+ uint8_t xAxisMax;
+
+ if (xMoveAbsolute >= yMoveAbsolute) {
+ xAxisMax = 1;
+ max = xMoveAbsolute;
+ min = yMoveAbsolute;
+ } else {
+ xAxisMax = 0;
+ max = yMoveAbsolute;
+ min = xMoveAbsolute;
+ }
+
+
+ float coef = 1 - ((max - min) / max);
+
+ if (xAxisMax == 1) {
+ PID_POSITION1.coef = coef;
+ PID_POSITION3.coef = coef;
+ PID_POSITION2.coef = 1;
+ PID_POSITION4.coef = 1;
+ } else {
+ PID_POSITION1.coef = 1;
+ PID_POSITION3.coef = 1;
+ PID_POSITION2.coef = coef;
+ PID_POSITION4.coef = coef;
+ }
+ }*/
 
 /* callback when data arrives on USB */
 extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 	switch (type) {
 	case COMMAND_MOVE:
-		if (len == 8 && type == 0) {
+		if (len == 8 && type == COMMAND_MOVE) {
 			/* send data to test send feature on Usb */
 			//uint8_t dataToSend[10] = { 1, 8, 3, 4, 5, 6, 7, 8, 9, 10 };
 			//TM_USB_VCP_Send(dataToSend, 10);
 			/* get X Y distances */
 			float xMove = getXMoveFromBuffer(data);
 			float yMove = getYMoveFromBuffer(data);
+
+			/*setPIDCoeficient(xMove, yMove);*/
 
 			PID_POSITION1.mySetpoint = xMove;
 			PID_POSITION3.mySetpoint = xMove;
@@ -1184,10 +1234,71 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 			setState(&mainState, MAIN_PID);
 		}
 		break;
+	case COMMAND_ROTATE:
+		if (len == 4 && type == COMMAND_ROTATE) {
+			/* send data to test send feature on Usb */
+			//uint8_t dataToSend[10] = { 1, 8, 3, 4, 5, 6, 7, 8, 9, 10 };
+			//TM_USB_VCP_Send(dataToSend, 10);
+			/* get X Y distances */
+			float radianToRotate = getRadianMoveFromBuffer(data);
+			float move = getMoveFromRadian(radianToRotate);
+
+			/*setPIDCoeficient(xMove, yMove);*/
+
+			PID_POSITION1.mySetpoint = -move;
+			PID_POSITION3.mySetpoint = move;
+			PID_POSITION2.mySetpoint = -move;
+			PID_POSITION4.mySetpoint = move;
+
+			numberOfPositionEdges1 = 0;
+			numberOfPositionEdges2 = 0;
+			numberOfPositionEdges3 = 0;
+			numberOfPositionEdges4 = 0;
+
+			PID_POSITION1.ITerm = 0;
+			PID_SPEED1.ITerm = 0;
+			PID_POSITION2.ITerm = 0;
+			PID_SPEED2.ITerm = 0;
+			PID_POSITION3.ITerm = 0;
+			PID_SPEED3.ITerm = 0;
+			PID_POSITION4.ITerm = 0;
+			PID_SPEED4.ITerm = 0;
+
+			PID_POSITION1.lastInput = 0;
+			PID_SPEED1.lastInput = 0;
+			PID_POSITION2.lastInput = 0;
+			PID_SPEED2.lastInput = 0;
+			PID_POSITION3.lastInput = 0;
+			PID_SPEED3.lastInput = 0;
+			PID_POSITION4.lastInput = 0;
+			PID_SPEED4.lastInput = 0;
+
+			incWheel1Canal1EncoderCounter = 0;
+			incWheel1Canal2EncoderCounter = 0;
+			decWheel1Canal1EncoderCounter = 0;
+			decWheel1Canal2EncoderCounter = 0;
+
+			incWheel2Canal1EncoderCounter = 0;
+			incWheel2Canal2EncoderCounter = 0;
+			decWheel2Canal1EncoderCounter = 0;
+			decWheel2Canal2EncoderCounter = 0;
+
+			incWheel3Canal1EncoderCounter = 0;
+			incWheel3Canal2EncoderCounter = 0;
+			decWheel3Canal1EncoderCounter = 0;
+			decWheel3Canal2EncoderCounter = 0;
+
+			incWheel4Canal1EncoderCounter = 0;
+			incWheel4Canal2EncoderCounter = 0;
+			decWheel4Canal1EncoderCounter = 0;
+			decWheel4Canal2EncoderCounter = 0;
+
+			setState(&mainState, MAIN_PID);
+		}
+		break;
 	case COMMAND_PENCIL_UP:
 		moveUpPrehensor();
 		break;
-
 	case COMMAND_PENCIL_DOWN:
 		moveDownPrehensor();
 		break;
