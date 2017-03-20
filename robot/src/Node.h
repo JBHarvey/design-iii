@@ -9,7 +9,7 @@ struct Node {
     struct Object *object;
     struct Coordinates *coordinates;
     struct Node *neighbours[MAX_NUMBER_OF_NEIGHBOURS];
-    int distance_to_neighbours[MAX_NUMBER_OF_NEIGHBOURS];
+    float distance_to_neighbours[MAX_NUMBER_OF_NEIGHBOURS];
     int actual_number_of_neighbours;
 };
 

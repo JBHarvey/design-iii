@@ -55,8 +55,12 @@ void Node_attemptToConnectAsNeighbours(struct Node *a, struct Node *b)
     int can_become_neighbours = canBecomeNeighbours(a, b);
 
     if(can_become_neighbours) {
-        a->neighbours[0] = b;
-        b->neighbours[0] = a;
+        a->neighbours[a->actual_number_of_neighbours] = b;
+        b->neighbours[b->actual_number_of_neighbours] = a;
+
+        float distance = Coordinates_distanceBetween(a->coordinates, b->coordinates);
+        a->distance_to_neighbours[a->actual_number_of_neighbours] = distance;
+        b->distance_to_neighbours[b->actual_number_of_neighbours] = distance;
         ++a->actual_number_of_neighbours;
         ++b->actual_number_of_neighbours;
     }

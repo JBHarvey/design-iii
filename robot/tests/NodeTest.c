@@ -38,16 +38,16 @@ void setup_Node(void)
     node_d = Node_new();
     node_e = Node_new();
     node_f = Node_new();
-    node_b->coordinates->x = 1;
-    node_b->coordinates->y = 1;
-    node_c->coordinates->x = 2;
-    node_c->coordinates->y = 2;
-    node_d->coordinates->x = 3;
-    node_d->coordinates->y = 3;
-    node_e->coordinates->x = 4;
-    node_e->coordinates->y = 4;
-    node_f->coordinates->x = 5;
-    node_f->coordinates->y = 5;
+    node_b->coordinates->x = 3;
+    node_b->coordinates->y = 4;
+    node_c->coordinates->x = 6;
+    node_c->coordinates->y = 8;
+    node_d->coordinates->x = 9;
+    node_d->coordinates->y = 12;
+    node_e->coordinates->x = 12;
+    node_e->coordinates->y = 16;
+    node_f->coordinates->x = 15;
+    node_f->coordinates->y = 20;
 }
 
 void teardown_Node(void)
@@ -118,4 +118,23 @@ Test(Node, given_twoNodesWithZeroDistanceBetweenThem_when_attempsToAConnectNeigh
     cr_assert_eq(node_a->actual_number_of_neighbours, 0);
 
     Node_delete(node_with_the_same_coordinates_as_a);
+}
+
+Test(Node, given_aNodeWithNeighbours_when__then_itHasTheCorrectDistanceToItsNeighbours
+     , .init = setup_Node
+     , .fini = teardown_Node)
+{
+    Node_attemptToConnectAsNeighbours(node_a, node_b);
+    Node_attemptToConnectAsNeighbours(node_a, node_c);
+    Node_attemptToConnectAsNeighbours(node_a, node_d);
+    Node_attemptToConnectAsNeighbours(node_a, node_e);
+
+    cr_assert_eq((int)(node_a->distance_to_neighbours[0]), 5);
+    cr_assert_eq((int)(node_b->distance_to_neighbours[0]), 5);
+    cr_assert_eq((int)(node_a->distance_to_neighbours[1]), 10);
+    cr_assert_eq((int)(node_c->distance_to_neighbours[0]), 10);
+    cr_assert_eq((int)(node_a->distance_to_neighbours[2]), 15);
+    cr_assert_eq((int)(node_d->distance_to_neighbours[0]), 15);
+    cr_assert_eq((int)(node_a->distance_to_neighbours[3]), 20);
+    cr_assert_eq((int)(node_e->distance_to_neighbours[0]), 20);
 }
