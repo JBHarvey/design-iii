@@ -6,6 +6,7 @@
 #include <ev.h>
 #include <stdlib.h>
 #include <strings.h>
+#include <string.h>
 #include <termios.h>
 
 #include "RobotServer.h"
@@ -105,6 +106,11 @@ static int initTTYACM(struct ev_loop *loop, char *ttyacm_path)
 //This global variable allows the command sender to be output-agnostic
 static int physical_robot_file_descriptor;
 static struct DataReceiver_Callbacks reception_callbacks;
+
+void RobotServer_updateDataReceiverCallbacks(struct DataReceiver_Callbacks data_receiver_callbacks)
+{
+    reception_callbacks = data_receiver_callbacks;
+}
 
 struct RobotServer *RobotServer_new(struct Robot *new_robot, int new_port, char *ttyacm_path)
 {
@@ -210,17 +216,51 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
     }
 }
 
+
+#define PHYSICAL_FEEDBACK_TRANSLATION 100
+#define PHYSICAL_FEEDBACK_ROTATION 101
+#define PHYSICAL_ACK_RED_LED 102
+#define PHYSICAL_ACK_GREEN_LED 103
+#define PHYSICAL_ACK_RISE_PEN 104
+#define PHYSICAL_ACK_LOWER_PEN 105
+#define MANCHESTER_CODE_DECODED 106
+#define PHYSICAL_ACK_STOP_SENDING_SIGNAL 107
+
+struct __attribute__((__packed__)) ReceptionManchester {
+    uint8_t portrait_number;
+    uint8_t scale_factor;
+    char orientation;
+};
+
 static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
 {
-    printf("packet %hhu of length %hhu: ", type, length);
+    // TODO : ADD:
+    // Wheels Translation
+    // Wheels Rotation
 
-    unsigned int i;
+    switch(data[0]) {
 
-    for(i = 0; i < length; ++i) {
-        printf("%02X", data[i]);
-    }
+        case MANCHESTER_CODE_DECODED:
 
-    printf("\n");
+            if(length != (sizeof(struct ReceptionManchester) + 1)) {
+                printf("wrong struct ReceptionManchester length\n");
+                break;
+            }
+
+            struct ReceptionManchester reception_manchester;
+
+            memcpy(&reception_manchester, data + 1, sizeof(struct ReceptionManchester));
+
+            struct Communication_ManchesterCode communication_manchester_code = {
+                .painting_number = (int) reception_manchester.scale_factor,
+                .scale_factor = (int) reception_manchester.scale_factor,
+                .orientation = (int) reception_manchester.orientation
+            };
+
+            reception_callbacks.updateManchesterCode(robot_server->robot->manchester_code, communication_manchester_code);
+
+            break;
+    };
 }
 
 #include <sys/ioctl.h>
@@ -285,6 +325,14 @@ void TTYACMCallback(struct ev_loop *loop, struct ev_io *watcher, int revents)
 }
 
 #define COMMAND_TYPE_TRANSLATE 0
+#define COMMAND_TYPE_ROTATE 1
+#define COMMAND_TYPE_RED_LED 2
+#define COMMAND_TYPE_GREEN_LED 3
+#define COMMAND_TYPE_RISE_PEN 4
+#define COMMAND_TYPE_LOWER_PEN 5
+#define COMMAND_TYPE_FETCH_MANCHESTER 6
+#define COMMAND_TYPE_STOP_SIGNAL 7
+
 #define DISTANCE_UNIT_IN_METERS_FACTOR 0.0001
 
 void RobotServer_sendTranslateCommand(struct Command_Translate command_translate)
@@ -300,11 +348,35 @@ void RobotServer_sendTranslateCommand(struct Command_Translate command_translate
     writeTTYACMPacket(COMMAND_TYPE_TRANSLATE, data, sizeof(data));
 }
 
-void RobotServer_sendRotateCommand(struct Command_Rotate command_rotate) {}
+void RobotServer_sendRotateCommand(struct Command_Rotate command_rotate)
+{
+    float theta = command_rotate.theta * ANGLE_BASE_UNIT;
+
+    uint8_t data[sizeof(float)];
+
+    memcpy(data, &theta, sizeof(float));
+
+    writeTTYACMPacket(COMMAND_TYPE_ROTATE, data, sizeof(data));
+}
+
+#define ACTION_ONLY_COMMAND_LENGTH 0
+
+void RobotServer_sendRisePenCommand(void)
+{
+    writeTTYACMPacket(COMMAND_TYPE_RISE_PEN, 0, ACTION_ONLY_COMMAND_LENGTH);
+}
+
+void RobotServer_sendLowerPenCommand(void)
+{
+    writeTTYACMPacket(COMMAND_TYPE_LOWER_PEN, 0, ACTION_ONLY_COMMAND_LENGTH);
+}
+
+void RobotServer_fetchManchesterCodeCommand(void)
+{
+    writeTTYACMPacket(COMMAND_TYPE_FETCH_MANCHESTER, 0, ACTION_ONLY_COMMAND_LENGTH);
+}
+// all of these have the command type + the ACTION_ONLY_COMMAND_LENGHT
 void RobotServer_sendLightRedLEDCommand(void) {}
 void RobotServer_sendLightGreenLEDCommand(void) {}
-void RobotServer_sendRisePenCommand(void) {}
-void RobotServer_sendLowerPenCommand(void) {}
-void RobotServer_fetchManchesterCodeCommand(void) {}
 void RobotServer_sendStopSendingManchesterSignalCommand(void) {}
 

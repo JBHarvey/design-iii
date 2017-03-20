@@ -3,6 +3,7 @@
 
 #include "WorldCamera.h"
 #include "Wheels.h"
+#include "ManchesterCode.h"
 
 struct Robot {
     struct Object *object;
@@ -10,6 +11,7 @@ struct Robot {
     struct State *current_state;
     struct WorldCamera *world_camera;
     struct Wheels *wheels;
+    struct ManchesterCode *manchester_code;
 };
 
 struct Robot *Robot_new();

@@ -62,6 +62,7 @@ struct DataReceiver_Callbacks Logger_startLoggingDataReceiverAndReturnCallbacks(
         .updateWorld = &Logger_updateWorld,
         .updateWheelsTranslation = &Logger_updateWheelsTranslation,
         .updateWheelsRotation = &Logger_updateWheelsRotation,
+        .updateManchesterCode = &Logger_updateManchesterCode,
         .updateFlagsStartCycle = &Logger_updateFlagsStartCycle
     };
     return data_receiver_callbacks_with_logging;
@@ -142,6 +143,28 @@ void Logger_updateWheelsRotation(struct Wheels *wheels, struct Communication_Rot
 {
     logWheelsRotationUpdate(rotation);
     (*(file_logger->original_data_receiver_callbacks.updateWheelsRotation))(wheels, rotation);
+}
+
+static const char *MANCHESTER_CODE_UPDATE = "ManchesterCode Update";
+static void logManchesterCode(struct Communication_ManchesterCode manchester_code)
+{
+    int new_painting_number = manchester_code.painting_number;
+    int new_scaling_factor = manchester_code.scale_factor;
+    char new_orientation = manchester_code.orientation;
+
+    fprintf(file_logger->log_file,
+            "\n%s%s \n%sPainting Number: %d\n%sScale Factor:    %d\n%sOrientation:     %c\n",
+            ITEM, MANCHESTER_CODE_UPDATE,
+            SUB, new_painting_number,
+            SUB, new_scaling_factor,
+            SUB, new_orientation);
+}
+
+void Logger_updateManchesterCode(struct ManchesterCode *manchester_code,
+                                 struct Communication_ManchesterCode code_informations)
+{
+    logManchesterCode(code_informations);
+    (*(file_logger->original_data_receiver_callbacks.updateManchesterCode))(manchester_code, code_informations);
 }
 
 static const char *FLAG_UPDATE = "New Flag Value:";

@@ -9,11 +9,16 @@ Test(Robot, creation_destruction)
     struct Robot *robot = Robot_new();
     struct Pose *zero = Pose_zero();
     struct State *default_state = State_new(zero);
+    struct ManchesterCode *manchester_code = ManchesterCode_new();
 
     cr_assert(Pose_haveTheSameValues(robot->current_state->pose, zero));
     cr_assert(Flags_haveTheSameValues(robot->current_state->flags, default_state->flags));
+    cr_assert_eq(robot->manchester_code->painting_number, manchester_code->painting_number);
+    cr_assert_eq(robot->manchester_code->scale_factor, manchester_code->scale_factor);
+    cr_assert_eq(robot->manchester_code->orientation, manchester_code->orientation);
 
 
+    ManchesterCode_delete(manchester_code);
     Robot_delete(robot);
     Pose_delete(zero);
     State_delete(default_state);

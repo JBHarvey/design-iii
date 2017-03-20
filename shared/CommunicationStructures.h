@@ -8,7 +8,7 @@ enum {
     COMMAND_ROTATION,
     DATA_TRANSLATION,
     DATA_WORLD,
-    DATA_MANCHESTER,
+    DATA_MANCHESTER_CODE,
     DATA_IMAGE,
     DATA_PLANNED_TRAJECTORY,
     DATA_ESTIMATED_ROBOT_POSITION,
@@ -44,8 +44,8 @@ struct __attribute__((__packed__)) Communication_ManchesterSignal {
     int intensity;
 };
 
-struct __attribute__((__packed__)) Communication_ManchesterCode {
-    int portrait_number;
+struct Communication_ManchesterCode {
+    int painting_number;
     int scale_factor;
     char orientation; // Possibilities 'N' 'E' 'S' 'W'
 };
