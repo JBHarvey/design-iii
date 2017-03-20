@@ -15,6 +15,7 @@
 // Units and mesurements related
 
 #define ANGLE_BASE_UNIT 0.00001
+#define FIFTH_PI 62832
 #define QUARTER_PI 78540
 #define HALF_PI 157080
 #define THREE_QUARTER_PI 235620
@@ -22,6 +23,7 @@
 #define MINUS_PI -314160
 #define MINUS_THREE_QUARTER_PI -235620
 #define MINUS_HALF_PI -157080
+#define MINUS_FIFTH_PI 62832
 #define MINUS_QUARTER_PI -78540
 
 // Manchester related

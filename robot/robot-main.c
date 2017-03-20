@@ -26,6 +26,13 @@ static void sendTranslate(int x, int y)
     waitASecondAndAHalf();
 }
 
+static void sendRotate(int theta)
+{
+    struct Command_Rotate rotate = { .theta = theta};
+    RobotServer_sendRotateCommand(rotate);
+    waitASecondAndAHalf();
+}
+
 int main(int argc, char *argv[])
 {
     robot = Robot_new();
@@ -40,10 +47,27 @@ int main(int argc, char *argv[])
     // MANCHESTER ASK + LOG RETURN TEST
     RobotServer_fetchManchesterCodeCommand();
 
+    RobotServer_sendLowerPenCommand();
     // ROTATE TEST
-    struct Command_Rotate rotate = { .theta = HALF_PI};
-    RobotServer_sendRotateCommand(rotate);
     waitASecondAndAHalf();
+    sendTranslate(1000, 0);
+    sendRotate(MINUS_HALF_PI);
+    sendTranslate(1000, 0);
+    sendRotate(MINUS_HALF_PI);
+    sendTranslate(300, 0);
+    sendRotate(MINUS_HALF_PI);
+    sendTranslate(300, 0);
+    sendRotate(HALF_PI);
+    sendTranslate(400, 0);
+    sendRotate(HALF_PI);
+    sendTranslate(300, 0);
+    sendRotate(MINUS_HALF_PI);
+    sendTranslate(300, 0);
+    sendRotate(MINUS_HALF_PI);
+    sendTranslate(500, 500);
+    sendTranslate(500, -500);
+
+    RobotServer_sendRisePenCommand();
 
     /*
      // STAR TEST
