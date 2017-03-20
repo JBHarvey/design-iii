@@ -64,6 +64,8 @@ void PID_SetMode(PidType* pid, PidModeType mode);
 // SetSampleTime respectively
 bool PID_Compute_Speed(PidType* pid);
 
+bool PID_Compute_Position(PidType* pid);
+
 // clamps the output to a specific range. 0-255 by default, but
 // it's likely the user will want to change this depending on
 // the application

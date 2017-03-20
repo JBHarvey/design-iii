@@ -1,3 +1,6 @@
+#ifndef MOTOR_H_
+#define MOTOR_H_
+
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4_discovery.h"
 #include "stm32f4xx_gpio.h"
@@ -21,3 +24,5 @@ void setDir(GPIO_TypeDef* GPIOx, uint16_t Pin1, uint16_t Pin2,
 		uint8_t direction);
 void MotorSetDirection(uint8_t noMotor, uint8_t direction);
 void motorRoutine();
+
+#endif

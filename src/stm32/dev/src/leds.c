@@ -57,3 +57,17 @@ void turnOnGreenLED() {
 void turnOffLEDs() {
 	GPIO_ResetBits(GPIOC, GPIO_Pin_5 | GPIO_Pin_4);
 }
+
+/* Routine de test pour les LEDs */
+void startLEDsRoutine() {
+	Delayms(1000);
+	turnOnRedLED();
+	Delayms(1000);
+	turnOffLEDs();
+	Delayms(1000);
+	turnOnGreenLED();
+	Delayms(1000);
+	turnOnRedLED();
+	Delayms(1000);
+	turnOffLEDs();
+}
