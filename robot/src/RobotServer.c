@@ -252,9 +252,9 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
             memcpy(&reception_manchester, data + 1, sizeof(struct ReceptionManchester));
 
             struct Communication_ManchesterCode communication_manchester_code = {
-                .painting_number = reception_manchester.scale_factor,
-                .scale_factor = reception_manchester.scale_factor,
-                .orientation = reception_manchester.orientation
+                .painting_number = (int) reception_manchester.scale_factor,
+                .scale_factor = (int) reception_manchester.scale_factor,
+                .orientation = (int) reception_manchester.orientation
             };
 
             reception_callbacks.updateManchesterCode(robot_server->robot->manchester_code, communication_manchester_code);

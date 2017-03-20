@@ -47,7 +47,6 @@ int main(int argc, char *argv[])
     // MANCHESTER ASK + LOG RETURN TEST
     RobotServer_fetchManchesterCodeCommand();
 
-    /*
     // HOUSE TEST
     RobotServer_sendLowerPenCommand();
     waitASecondAndAHalf();
@@ -71,8 +70,10 @@ int main(int argc, char *argv[])
     sendTranslate(500, -500);
 
     RobotServer_sendRisePenCommand();
+    /*
     */
     // STAR TEST
+    /*
     RobotServer_sendLowerPenCommand();
     waitASecondAndAHalf();
 
@@ -88,7 +89,6 @@ int main(int argc, char *argv[])
     sendTranslate(660, 460);
 
     RobotServer_sendRisePenCommand();
-    /*
     */
 
 
