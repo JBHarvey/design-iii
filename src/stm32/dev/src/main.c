@@ -324,7 +324,7 @@ int main(void) {
 	initBtn();
 
 // Initialisation des variables
-	mainState = MAIN_MANCH;
+	mainState = MAIN_IDLE;
 //setState(&mainState, MAIN_MOVE);
 
 	int state = IDLE;
@@ -1173,7 +1173,7 @@ extern void TIM2_IRQHandler() {
 extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 	switch (type) {
 	case COMMAND_MOVE:
-		if (len == 8 && type == COMMAND_MOVE) {
+		if (len == 8 && type == 0) {
 			/* send data to test send feature on Usb */
 			//uint8_t dataToSend[10] = { 1, 8, 3, 4, 5, 6, 7, 8, 9, 10 };
 			//TM_USB_VCP_Send(dataToSend, 10);
