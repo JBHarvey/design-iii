@@ -7,6 +7,12 @@
  * PWM : Pin qui g�n�re le PWM
  * */
 
+#define INTERNAL_SYSTICK_FREQUENCY 500
+#define TIME_DELAY 1/(float) INTERNAL_SYSTICK_FREQUENCY
+#define MAX_SPEED_INDEX 2000
+#define TICKS_BUFFER_SIZE 100
+#define MAXIMUM_CHARACTERS_BUFFER_SIZE 100
+
 // Configuration PWM pour tous les moteurs
 // Fr�quence = (84 000 000 / (PWM_PRESCALER + 1)) / PWM_PERIOD
 #define PWM_PRESCALER 3 // 0 = 1

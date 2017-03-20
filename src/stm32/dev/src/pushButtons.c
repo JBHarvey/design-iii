@@ -25,3 +25,15 @@ void initBtn() {
 	GPIO_Init(GPIOA, &GPIO_InitDef);
 }
 
+/* Return the value of the push button blue with a debounce */
+uint8_t getPushBtnStatus() {
+	// Vite fait debounce pour le bouton bleu
+	if (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_0)) {
+		int i;
+		for (i = 0; i < 9000000; i++)
+			;
+		return 1;
+	}
+	return 0;
+}
+

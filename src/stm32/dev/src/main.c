@@ -1,71 +1,32 @@
-/**
- *    USB VCP for STM32F4xx example.
- *
- *    @author     Tilen Majerle
- *    @email        tilen@majerle.eu
- *    @website    http://stm32f4-discovery.com
- *    @ide        Keil uVision
- *
- * Add line below to use this example with F429 Discovery board (in defines.h file)
- *
- * #define USE_USB_OTG_HS
- */
-#include <motor.h>
-#include <PID_v1.h>
-#include "tm_stm32f4_usb_vcp.h"
-#include "tm_stm32f4_disco.h"
-#include "defines.h"
+// Libraries STM
 #include "stm32f4xx.h"
 #include "stm32f4_discovery.h"
 #include "stm32f4xx_exti.h"
 #include "stm32f4xx_syscfg.h"
-#include "misc.h"
+// Libraries TM
+#include "tm_stm32f4_usb_vcp.h"
+#include "tm_stm32f4_disco.h"
 #include "tm_stm32f4_gpio.h"
 #include "tm_stm32f4_hd44780.h"
 #include "tm_stm32f4_delay.h"
+#include "defines.h"
+#include "misc.h"
+// Libraries DESIGN III
+#include <com.h>
+#include <motor.h>
+#include <PID_v1.h>
 #include "manchester.h"
 #include "encoder.h"
 #include "externalInterrupts.h"
 #include "timers.h"
 #include "pushButtons.h"
 #include "leds.h"
+#include "adc.h"
+#include "tunning.h"
+#include "utils.h"
+#include "com.h"
 
 #define TAILLE 500
-
-enum State {
-	IDLE,
-	GENERATE_FIRST_PWM,
-	BETWEEN_PWM,
-	ACQUIRE,
-	SEND_DATA,
-	WAIT_FOR_SECOND_PWM
-};
-
-enum MainState {
-	MAIN_IDLE, MAIN_MANCH, MAIN_ACQUIS, MAIN_MOVE, MAIN_PID
-};
-
-enum SpeedDirection {
-	SPEED_DIRECTION_FORWARD, SPEED_DIRECTION_BACKWARD, SPEED_DIRECTION_NONE
-};
-
-enum AmountOfCharacters {
-	ONE_CHARACTER, MANY_CHARACTERS
-};
-
-enum COMMUNICATION_STATUS {
-	READ_USB_SUCCESS, READ_USB_FAIL
-};
-
-enum COMMAND {
-	COMMAND_MOVE
-};
-
-#define INTERNAL_SYSTICK_FREQUENCY 500
-#define TIME_DELAY 1/(float) INTERNAL_SYSTICK_FREQUENCY
-#define MAX_SPEED_INDEX 2000
-#define TICKS_BUFFER_SIZE 100
-#define MAXIMUM_CHARACTERS_BUFFER_SIZE 100
 
 // buffer ticks for debug
 volatile int ticksIndex4 = 0;
@@ -143,51 +104,6 @@ extern void TIM5_IRQHandler() {
 	}
 }
 
-void cleanNumberString(char *numberString, int size) {
-	int arrayPosition = size - 1;
-	while (numberString[arrayPosition] != 0) {
-		numberString[arrayPosition] = ' ';
-		arrayPosition--;
-	}
-
-	while (numberString[arrayPosition] == 0) {
-		numberString[arrayPosition] = ' ';
-		arrayPosition--;
-	}
-	numberString[size - 1] = 0;
-}
-
-/* Change the state of the main
- * IN : the new state
- */
-void setState(int* state, int newState) {
-	switch (newState) {
-	case MAIN_IDLE:
-		*state = newState;
-		TM_HD44780_Puts(0, 0, MSG_IDLE);
-		break;
-	case MAIN_MANCH:
-		*state = newState;
-		TM_HD44780_Puts(0, 0, MSG_MANCH);
-		break;
-	case MAIN_ACQUIS:
-		TM_HD44780_Puts(0, 0, "NOT IMPLEMENTED");
-		break;
-	case MAIN_MOVE:
-		*state = MAIN_MOVE;
-		TM_HD44780_Puts(0, 0, "MOVE");
-		break;
-	case MAIN_PID:
-		*state = newState;
-		TM_HD44780_Puts(0, 0, "NOT IMPLEMENTED");
-		break;
-	default:
-		// Invalid state
-		TM_HD44780_Puts(0, 0, MSG_ERR);
-		break;
-	}
-}
-
 /* frequency is in hertz*/
 void systickInit(uint16_t frequency) {
 	NVIC_SetPriority(SysTick_IRQn, 0);
@@ -195,41 +111,6 @@ void systickInit(uint16_t frequency) {
 	RCC_GetClocksFreq(&RCC_Clocks);
 	(void) SysTick_Config(RCC_Clocks.HCLK_Frequency / frequency);
 
-}
-
-void generateFirstPWM() {
-	MotorSetSpeed(1, 40);
-}
-
-void generateSecondPWM() {
-	MotorSetSpeed(1, 90);
-}
-
-void startFillingBuffer() {
-	systickInit(INTERNAL_SYSTICK_FREQUENCY);
-}
-
-uint8_t readUSB() {
-	/* USB configured OK, drivers OK */
-	if (TM_USB_VCP_GetStatus() == TM_USB_VCP_CONNECTED) {
-		/* Turn on GREEN led */
-		TM_DISCO_LedOn (LED_GREEN);
-		TM_DISCO_LedOff (LED_RED);
-
-		uint8_t readCharacter;
-
-		if (TM_USB_VCP_Getc(&readCharacter) == TM_USB_VCP_DATA_OK) {
-			// Pour le echo TM_USB_VCP_Putc(c);
-			return readCharacter;
-		}
-	} else {
-		/* USB not OK */
-		TM_DISCO_LedOff (LED_GREEN);
-		TM_DISCO_LedOn (LED_RED);
-
-		return 0;
-	}
-	return 0;
 }
 
 float getXMoveFromBuffer(uint8_t *data) {
@@ -258,38 +139,35 @@ default:
 	}
 }
 
-int main(void) {
-	/* System Init */
+void initAll(void) {
+	// Initialization of STM system
 	SystemInit();
-
-// Motors initialization
+	// Motors initialization
 	initMotors();
-
-// Encoder initialization
+	// Encoder initialization
 	initEncoders();
-// LCD initialization
+	// LCD initialization
 	TM_HD44780_Init(16, 2);
-
-	/* Initialize LED's. Make sure to check settings for your board in tm_stm32f4_disco.h file */
+	// Intern LEDs initialization
 	TM_DISCO_LedInit();
-
-	/* Initialize USB VCP */
-
+	// COM port initialization
 	TM_USB_VCP_Init();
-
+	// Push button initialization
 	initBtn();
-
-// Initialisation des variables
-	mainState = MAIN_IDLE;
-//setState(&mainState, MAIN_MOVE);
-
-	int state = IDLE;
-
-// initializations for manchester signal
+	// Extern LEDs initialization
 	InitializeLEDs();
+	// ADC antenne initialization
+	initAdcAntenne();
+	// Manchester initialization
 	InitializeManchesterInput();
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 	initializeExternalInterruptLine4();
+}
+
+int main(void) {
+	initAll();
+	// Initialisation des variables
+	mainState = MAIN_ACQUIS_ALL;
 
 	/* Initialization of wheel 1 PIDs */
 	PID_init(&PID_SPEED1, PID_SPEED1_KP, PID_SPEED1_KI, PID_SPEED1_KD,
@@ -321,179 +199,32 @@ int main(void) {
 	PID_init(&PID_POSITION4, PID_POSITION4_KP, PID_POSITION4_KI,
 			PID_POSITION4_KD, PID_Direction_Direct, PID_POSITION4_N);
 
+	/* Test routine LEDs */
+	startLEDsRoutine();
 	while (1) {
-
-		// Vite fait debounce pour le bouton bleu
-		if (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_0)) {
-			int i;
-			for (i = 0; i < 9000000; i++)
-				;
-			TM_DISCO_LedOn (LED_BLUE);
-			switch (mainState) {
-			case MAIN_IDLE:
-				//mainState = MAIN_PID;
-				//setState(&mainState, MAIN_MOVE);
-				break;
-			}
-		}
-
-		uint8_t command = readUSB();
-		if (command != 0) {
-
-			/*uint8_t sizeOfData = readUSB();
-
-			 processCommand(command, sizeOfData, &mainState);
-
-			 setState(&mainState, MAIN_PID);*/
-		}
-
 		/* Main state machine */
 		switch (mainState) {
 		case MAIN_IDLE:
-			//if (consigne != 0)
-			//setState(&mainState, consigne);
-			break;
-		case MAIN_ACQUIS:
-			/* Action lors d'une acquisition */
-			readUSB();
-			state = command;
-
-			if (state == GENERATE_FIRST_PWM) {
-				generateFirstPWM();
-				state = BETWEEN_PWM;
-			} else if (state == ACQUIRE) {
-				startFillingBuffer();
-				state = WAIT_FOR_SECOND_PWM;
-			} else if (state == SEND_DATA) {
-				for (int i = 0; i < TAILLE; i++) {
-					TM_USB_VCP_Putc(speedBuffer[i] & 0x00ff);
-					TM_USB_VCP_Putc((speedBuffer[i] & 0xff00) >> 8);
-				}
-				state = IDLE;
-			} else if (state == WAIT_FOR_SECOND_PWM && speedIndex > 200) {
-				generateSecondPWM();
-				state = IDLE;
-			}
 			break;
 		case MAIN_MOVE:
-			//Initialize Systick timer
-			TM_DELAY_Init();
-			TM_DISCO_LedOn (LED_BLUE);
-			TM_DISCO_LedOn (LED_ORANGE);
-			// Example of direction setting of 4 motors
-			//MotorSetDirection(1, CLOCK);
-			//MotorSetDirection(2, CLOCK);
-			//MotorSetDirection(3, CLOCK);
-			//MotorSetDirection(4, CLOCK);
-
-			// Example of speed setting of 4 motors
-			//MotorSetSpeed(1, 50);
-			//MotorSetSpeed(2, 50);
-			//MotorSetSpeed(3, 50);
-			//MotorSetSpeed(4, 50);
-
-			//Delayms(2000);
-
-			//MotorSetSpeed(1, 0);
-			//MotorSetSpeed(2, 0);
-			//MotorSetSpeed(3, 0);
-			//MotorSetSpeed(4, 0);
-
-			//Delayms(2000);
-
-			//move(100);
-
-			MotorSetDirection(1, COUNTER_CLOCK);
-			MotorSetDirection(2, BRAKE_G);
-			MotorSetDirection(3, CLOCK);
-			MotorSetDirection(4, BRAKE_G);
-
-			MotorSetSpeed(1, 75);
-			MotorSetSpeed(2, 0);
-			MotorSetSpeed(3, 75);
-			MotorSetSpeed(4, 0);
-
-			Delayms(2000);
-
-			MotorSetDirection(1, CLOCK);
-			MotorSetDirection(2, BRAKE_G);
-			MotorSetDirection(3, COUNTER_CLOCK);
-			MotorSetDirection(4, BRAKE_G);
-
-			MotorSetSpeed(1, 75);
-			MotorSetSpeed(2, 0);
-			MotorSetSpeed(3, 75);
-			MotorSetSpeed(4, 0);
-
-			Delayms(2000);
-
-			MotorSetDirection(1, CLOCK);
-			MotorSetDirection(2, CLOCK);
-			MotorSetDirection(3, COUNTER_CLOCK);
-			MotorSetDirection(4, COUNTER_CLOCK);
-
-			MotorSetSpeed(1, 75);
-			MotorSetSpeed(2, 75);
-			MotorSetSpeed(3, 75);
-			MotorSetSpeed(4, 75);
-
-			Delayms(1000);
-
-			MotorSetDirection(1, CLOCK);
-			MotorSetDirection(2, COUNTER_CLOCK);
-			MotorSetDirection(3, COUNTER_CLOCK);
-			MotorSetDirection(4, CLOCK);
-
-			MotorSetSpeed(1, 75);
-			MotorSetSpeed(2, 75);
-			MotorSetSpeed(3, 75);
-			MotorSetSpeed(4, 75);
-
-			Delayms(1000);
-
-			MotorSetDirection(1, COUNTER_CLOCK);
-			MotorSetDirection(2, COUNTER_CLOCK);
-			MotorSetDirection(3, CLOCK);
-			MotorSetDirection(4, CLOCK);
-
-			MotorSetSpeed(1, 75);
-			MotorSetSpeed(2, 75);
-			MotorSetSpeed(3, 75);
-			MotorSetSpeed(4, 75);
-
-			Delayms(1000);
-
-			MotorSetDirection(1, COUNTER_CLOCK);
-			MotorSetDirection(2, CLOCK);
-			MotorSetDirection(3, CLOCK);
-			MotorSetDirection(4, COUNTER_CLOCK);
-
-			MotorSetSpeed(1, 75);
-			MotorSetSpeed(2, 75);
-			MotorSetSpeed(3, 75);
-			MotorSetSpeed(4, 75);
-
-			Delayms(1000);
-
-			MotorSetDirection(1, BRAKE_G);
-			MotorSetDirection(2, BRAKE_G);
-			MotorSetDirection(3, BRAKE_G);
-			MotorSetDirection(4, BRAKE_G);
-
-			MotorSetSpeed(1, 0);
-			MotorSetSpeed(2, 0);
-			MotorSetSpeed(3, 0);
-			MotorSetSpeed(4, 0);
-
-			mainState = MAIN_MANCH;
-
+			motorRoutine();
+			break;
+		case MAIN_ACQUIS_ALL:
+#ifdef ENABLE_ACQUIS
+			tunningIdentificationWheels();
+#endif
+			break;
+		case MAIN_TEST_SPEED_PID:
+#ifdef ENABLE_SPEED_PI
+			tunningSpeedPI();
+#endif
 			break;
 		case MAIN_PID:
 
-			//PID_POSITION1.mySetpoint = 0.00;
-			//PID_POSITION2.mySetpoint = 0.00;
-			//PID_POSITION3.mySetpoint = 0.00;
-			//PID_POSITION4.mySetpoint = 0.00;
+//PID_POSITION1.mySetpoint = 0.00;
+//PID_POSITION2.mySetpoint = 0.00;
+//PID_POSITION3.mySetpoint = 0.00;
+//PID_POSITION4.mySetpoint = 0.00;
 
 			while (1) {
 
@@ -887,6 +618,67 @@ extern void TIM2_IRQHandler() {
 		PID_SetMode(&PID_POSITION3, PID_Mode_Automatic);
 		PID_SetMode(&PID_POSITION4, PID_Mode_Automatic);
 
+#ifdef ENABLE_ACQUIS
+		if (bufferWheelIndex1 < MAX_WHEEL_INDEX) {
+			bufferWheel1[bufferWheelIndex1++] = numberOfSpeedEdges1;
+		}
+		if (bufferWheelIndex2 < MAX_WHEEL_INDEX) {
+			bufferWheel2[bufferWheelIndex2++] = numberOfSpeedEdges2;
+		}
+		if (bufferWheelIndex3 < MAX_WHEEL_INDEX) {
+			bufferWheel3[bufferWheelIndex3++] = numberOfSpeedEdges3;
+		}
+		if (bufferWheelIndex4 < MAX_WHEEL_INDEX) {
+			bufferWheel4[bufferWheelIndex4++] = numberOfSpeedEdges4;
+		}
+#endif
+#ifdef ENABLE_DEAD_ZONE
+		// rentrer les valeurs dans la même buffer, dans le while on change l'index
+		if (bufferDeadZoneIndex1 < MAX_DEAD_ZONE) {
+			bufferDeadZone1[bufferDeadZoneIndex1] = numberOfSpeedEdges1;
+		}
+		if (bufferDeadZoneIndex2 < MAX_DEAD_ZONE) {
+			bufferDeadZone2[bufferDeadZoneIndex2] = numberOfSpeedEdges2;
+		}
+		if (bufferDeadZoneIndex3 < MAX_DEAD_ZONE) {
+			bufferDeadZone3[bufferDeadZoneIndex3] = numberOfSpeedEdges3;
+		}
+		if (bufferDeadZoneIndex4 < MAX_DEAD_ZONE) {
+			bufferDeadZone4[bufferDeadZoneIndex4] = numberOfSpeedEdges4;
+		}
+#endif
+#ifdef ENABLE_SPEED_PI
+		/* update position pids */
+		tunningPI1.myInput = numberOfSpeedEdges1;
+		tunningPI2.myInput = numberOfSpeedEdges2;
+		tunningPI3.myInput = numberOfSpeedEdges3;
+		tunningPI4.myInput = numberOfSpeedEdges4;
+
+		/* activate speed pids */
+		PID_SetMode(&tunningPI1, PID_Mode_Automatic);
+		PID_SetMode(&tunningPI2, PID_Mode_Automatic);
+		PID_SetMode(&tunningPI3, PID_Mode_Automatic);
+		PID_SetMode(&tunningPI4, PID_Mode_Automatic);
+
+		if (bufferSpeedPIDIndex1 < MAX_SPEED_PID_INDEX) {
+			bufferSpeedPID1[bufferSpeedPIDIndex1] = numberOfSpeedEdges1;
+		}
+		if (bufferSpeedPIDIndex2 < MAX_SPEED_PID_INDEX) {
+			bufferSpeedPID2[bufferSpeedPIDIndex2] = numberOfSpeedEdges2;
+		}
+		if (bufferSpeedPIDIndex3 < MAX_SPEED_PID_INDEX) {
+			bufferSpeedPID3[bufferSpeedPIDIndex3] = numberOfSpeedEdges3;
+		}
+		if (bufferSpeedPIDIndex4 < MAX_SPEED_PID_INDEX) {
+			bufferSpeedPID4[bufferSpeedPIDIndex4] = numberOfSpeedEdges4;
+		}
+		else
+		{
+			bFlagTunningSpeedDone = 1;
+		}
+
+#endif
+
 		numberOfSpeedEdges1 = 0;
 		numberOfSpeedEdges2 = 0;
 		numberOfSpeedEdges3 = 0;
@@ -929,8 +721,8 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 	case COMMAND_MOVE:
 		if (len == 8 && type == 0) {
 			/* send data to test send feature on Usb */
-			//uint8_t dataToSend[10] = { 1, 8, 3, 4, 5, 6, 7, 8, 9, 10 };
-			//TM_USB_VCP_Send(dataToSend, 10);
+			uint8_t dataToSend[10] = { 1, 8, 3, 4, 5, 6, 7, 8, 9, 10 };
+			TM_USB_VCP_Send(dataToSend, 10);
 			/* get X Y distances */
 			float xMove = getXMoveFromBuffer(data);
 			float yMove = getYMoveFromBuffer(data);
@@ -946,6 +738,9 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 
 			setState(&mainState, MAIN_PID);
 		}
+		break;
+	case COMMAND_IDEN_WHEELS:
+		bFlagSendData = 1;
 		break;
 	}
 }

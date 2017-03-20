@@ -12,4 +12,6 @@
 
 void initBtn();
 
+uint8_t getPushBtnStatus();
+
 #endif /* PUSHBUTTONS_H_ */
