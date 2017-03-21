@@ -30,6 +30,12 @@ void setState(int* state, int newState) {
 	case MAIN_ACQUIS:
 		TM_HD44780_Puts(0, 0, "NOT IMPLEMENTED");
 		break;
+	case MAIN_ACQUIS_ALL:
+		*state = MAIN_ACQUIS_ALL;
+		break;
+	case MAIN_TEST_SPEED_PID:
+		*state = MAIN_TEST_SPEED_PID;
+		break;
 	case MAIN_MOVE:
 		*state = MAIN_MOVE;
 		TM_HD44780_Puts(0, 0, "MOVE");

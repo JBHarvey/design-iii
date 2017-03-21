@@ -204,7 +204,7 @@ void initAll(void) {
 int main(void) {
 	initAll();
 	// Initialisation des variables
-	mainState = MAIN_ACQUIS_ALL;
+	//mainState = MAIN_ACQUIS_ALL;
 
 	/* Initialization of wheel 1 PIDs */
 	PID_init(&PID_SPEED1, PID_SPEED1_KP, PID_SPEED1_KI, PID_SPEED1_KD,
@@ -475,14 +475,13 @@ int main(void) {
 					manchesterOrientationVerification,
 					&manchesterFactorVerification);
 
-			uint8_t dataToSend[5];
+			uint8_t dataToSend[4];
 			dataToSend[0] = COMMAND_DECODED_MANCHESTER;
-			dataToSend[1] = 3;
-			dataToSend[2] = 1;
-			dataToSend[3] = 4;
-			dataToSend[4] = 'N';
+			dataToSend[1] = 1;
+			dataToSend[2] = 4;
+			dataToSend[3] = 'N';
 
-			TM_USB_VCP_Send(dataToSend, 5);
+			TM_USB_VCP_Send(dataToSend, 4);
 			Delayms(10);
 			break;
 		case MAIN_PREHENSEUR:
@@ -841,35 +840,36 @@ extern void TIM2_IRQHandler() {
 		}
 #endif
 #ifdef ENABLE_SPEED_PI
-		/* update position pids */
-		tunningPI1.myInput = numberOfSpeedEdges1;
-		tunningPI2.myInput = numberOfSpeedEdges2;
-		tunningPI3.myInput = numberOfSpeedEdges3;
-		tunningPI4.myInput = numberOfSpeedEdges4;
+		if(bFlagStartTunningSpeed == 1) {
+			/* update position pids */
+			tunningPI1.myInput = numberOfSpeedEdges1;
+			tunningPI2.myInput = numberOfSpeedEdges2;
+			tunningPI3.myInput = numberOfSpeedEdges3;
+			tunningPI4.myInput = numberOfSpeedEdges4;
 
-		/* activate speed pids */
-		PID_SetMode(&tunningPI1, PID_Mode_Automatic);
-		PID_SetMode(&tunningPI2, PID_Mode_Automatic);
-		PID_SetMode(&tunningPI3, PID_Mode_Automatic);
-		PID_SetMode(&tunningPI4, PID_Mode_Automatic);
+			/* activate speed pids */
+			PID_SetMode(&tunningPI1, PID_Mode_Automatic);
+			PID_SetMode(&tunningPI2, PID_Mode_Automatic);
+			PID_SetMode(&tunningPI3, PID_Mode_Automatic);
+			PID_SetMode(&tunningPI4, PID_Mode_Automatic);
 
-		if (bufferSpeedPIDIndex1 < MAX_SPEED_PID_INDEX) {
-			bufferSpeedPID1[bufferSpeedPIDIndex1] = numberOfSpeedEdges1;
+			if (bufferSpeedPIDIndex1 < MAX_SPEED_PID_INDEX) {
+				bufferSpeedPID1[bufferSpeedPIDIndex1++] = numberOfSpeedEdges1;
+			}
+			if (bufferSpeedPIDIndex2 < MAX_SPEED_PID_INDEX) {
+				bufferSpeedPID2[bufferSpeedPIDIndex2++] = numberOfSpeedEdges2;
+			}
+			if (bufferSpeedPIDIndex3 < MAX_SPEED_PID_INDEX) {
+				bufferSpeedPID3[bufferSpeedPIDIndex3++] = numberOfSpeedEdges3;
+			}
+			if (bufferSpeedPIDIndex4 < MAX_SPEED_PID_INDEX) {
+				bufferSpeedPID4[bufferSpeedPIDIndex4++] = numberOfSpeedEdges4;
+			}
+			else
+			{
+				bFlagTunningSpeedDone = 1;
+			}
 		}
-		if (bufferSpeedPIDIndex2 < MAX_SPEED_PID_INDEX) {
-			bufferSpeedPID2[bufferSpeedPIDIndex2] = numberOfSpeedEdges2;
-		}
-		if (bufferSpeedPIDIndex3 < MAX_SPEED_PID_INDEX) {
-			bufferSpeedPID3[bufferSpeedPIDIndex3] = numberOfSpeedEdges3;
-		}
-		if (bufferSpeedPIDIndex4 < MAX_SPEED_PID_INDEX) {
-			bufferSpeedPID4[bufferSpeedPIDIndex4] = numberOfSpeedEdges4;
-		}
-		else
-		{
-			bFlagTunningSpeedDone = 1;
-		}
-
 #endif
 
 		numberOfSpeedEdges1 = 0;
@@ -1081,9 +1081,23 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 			setState(&mainState, MAIN_PID);
 		}
 		break;
+	case COMMAND_START_IDEN_WHEELS:
+		setState(&mainState, MAIN_ACQUIS_ALL);
+		break;
 	case COMMAND_IDEN_WHEELS:
 		bFlagSendData = 1;
 		break;
+#ifdef ENABLE_SPEED_PI
+		case COMMAND_START_TEST_PID_SPEED:
+		if(len == 32) {
+			getPIFromBuffer(data);
+			setState(&mainState, MAIN_TEST_SPEED_PID);
+		}
+		break;
+		case COMMAND_SEND_PID_SPEED:
+		bFlagSendDataSpeed = 1;
+		break;
+#endif
 	case COMMAND_PENCIL_UP:
 		moveUpPrehensor();
 		break;
