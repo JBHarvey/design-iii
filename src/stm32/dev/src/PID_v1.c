@@ -10,6 +10,19 @@
 
 void PID_Initialize(PidType* pid);
 
+/*************************************
+ * Design 3 PIDS
+ *************************************/
+PidType PID_SPEED1;
+PidType PID_SPEED2;
+PidType PID_SPEED3;
+PidType PID_SPEED4;
+
+PidType PID_POSITION1;
+PidType PID_POSITION2;
+PidType PID_POSITION3;
+PidType PID_POSITION4;
+
 volatile int ticksIndex5 = 0;
 volatile FloatType ticksBuffer5[100];
 
@@ -285,5 +298,176 @@ FloatType calculateSpeed(FloatType speedEdges) {
 FloatType calculatePosition(FloatType positionEdges) {
 	FloatType positionResult = (positionEdges * METERS_PER_TICK);
 	return positionResult;
+}
+
+/*******************************************************
+ * Design 3 Functions
+ *******************************************************/
+void initAllPIDS() {
+	PID_init(&PID_SPEED1, PID_SPEED1_KP, PID_SPEED1_KI, PID_SPEED1_KD,
+			PID_Direction_Direct, PID_SPEED1_N);
+	PID_SetOutputLimits(&PID_SPEED1, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
+	PID_init(&PID_POSITION1, PID_POSITION1_KP, PID_POSITION1_KI,
+			PID_POSITION1_KD, PID_Direction_Direct, PID_POSITION1_N);
+	PID_SetOutputLimits(&PID_POSITION1, MIN_POS_COMMAND, MAX_POS_COMMAND);
+
+	/* Initialization of wheel 2 PIDs */
+	PID_init(&PID_SPEED2, PID_SPEED2_KP, PID_SPEED2_KI, PID_SPEED2_KD,
+			PID_Direction_Direct, PID_SPEED2_N);
+	PID_SetOutputLimits(&PID_SPEED2, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
+	PID_init(&PID_POSITION2, PID_POSITION2_KP, PID_POSITION2_KI,
+			PID_POSITION2_KD, PID_Direction_Direct, PID_POSITION2_N);
+	PID_SetOutputLimits(&PID_POSITION2, MIN_POS_COMMAND, MAX_POS_COMMAND);
+
+	/* Initialization of wheel 3 PIDs */
+	PID_init(&PID_SPEED3, PID_SPEED3_KP, PID_SPEED3_KI, PID_SPEED3_KD,
+			PID_Direction_Direct, PID_SPEED3_N);
+	PID_SetOutputLimits(&PID_SPEED3, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
+	PID_init(&PID_POSITION3, PID_POSITION3_KP, PID_POSITION3_KI,
+			PID_POSITION3_KD, PID_Direction_Direct, PID_POSITION3_N);
+	PID_SetOutputLimits(&PID_POSITION3, MIN_POS_COMMAND, MAX_POS_COMMAND);
+
+	/* Initialization of wheel 4 PIDs */
+	PID_init(&PID_SPEED4, PID_SPEED4_KP, PID_SPEED4_KI, PID_SPEED4_KD,
+			PID_Direction_Direct, PID_SPEED4_N);
+	PID_SetOutputLimits(&PID_SPEED4, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
+	PID_init(&PID_POSITION4, PID_POSITION4_KP, PID_POSITION4_KI,
+			PID_POSITION4_KD, PID_Direction_Direct, PID_POSITION4_N);
+	PID_SetOutputLimits(&PID_POSITION4, MIN_POS_COMMAND, MAX_POS_COMMAND);
+}
+
+void computeAllPIDS() {
+	if (PID_Compute_Position(&PID_POSITION1)) {
+		float positionOutput1 = PID_POSITION1.myOutput;
+		int cmdMotor1;
+		PID_SPEED1.mySetpoint = positionOutput1;
+
+		if (PID_Compute_Speed(&PID_SPEED1)) {
+			cmdMotor1 = PID_SPEED1.myOutput;
+			if (cmdMotor1 > 0) {
+				MotorSetDirection(1, COUNTER_CLOCK);
+			} else if (cmdMotor1 < 0) {
+				MotorSetDirection(1, CLOCK);
+				cmdMotor1 = -cmdMotor1;
+			} else {
+				speedDirection1 = SPEED_DIRECTION_NONE;
+				MotorSetDirection(1, BRAKE_V);
+			}
+
+			MotorSetSpeed(1, cmdMotor1);
+			PID_SetMode(&PID_SPEED1, PID_Mode_Manual);
+			PID_SetMode(&PID_POSITION1, PID_Mode_Manual);
+
+			/*char numberString[MAX_DISPLAY_CHARACTERS];
+			 sprintf(numberString, "%d", numberOfSpeedEdges1);
+			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+			 TM_HD44780_Puts(0, 0, numberString);
+			 sprintf(numberString, "%d", cmdMotor1);
+			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+			 TM_HD44780_Puts(3, 0, numberString);*/
+
+			/* send position to USB */
+			/*TM_USB_VCP_Putc(2);
+			 TM_USB_VCP_Putc(8);
+			 VCP_DataTx((uint8_t*) &positionOutput, sizeof(float));
+			 VCP_DataTx((uint8_t*) &positionOutput, sizeof(float));*/
+		}
+	}
+
+	if (PID_Compute_Position(&PID_POSITION2)) {
+		float positionOutput2 = PID_POSITION2.myOutput;
+		PID_SPEED2.mySetpoint = positionOutput2;
+		int cmdMotor2;
+
+		if (PID_Compute_Speed(&PID_SPEED2)) {
+			cmdMotor2 = PID_SPEED2.myOutput;
+			if (cmdMotor2 > 0) {
+				MotorSetDirection(2, COUNTER_CLOCK);
+			} else if (cmdMotor2 < 0) {
+				MotorSetDirection(2, CLOCK);
+				cmdMotor2 = -cmdMotor2;
+			} else {
+				speedDirection2 = SPEED_DIRECTION_NONE;
+				MotorSetDirection(2, BRAKE_V);
+			}
+
+			MotorSetSpeed(2, cmdMotor2);
+			PID_SetMode(&PID_SPEED2, PID_Mode_Manual);
+			PID_SetMode(&PID_POSITION2, PID_Mode_Manual);
+
+			/*char numberString[MAX_DISPLAY_CHARACTERS];
+			 sprintf(numberString, "%d", numberOfSpeedEdges2);
+			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+			 TM_HD44780_Puts(0, 0, numberString);
+			 sprintf(numberString, "%d", cmdMotor2);
+			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+			 TM_HD44780_Puts(3, 0, numberString);*/
+		}
+	}
+
+	if (PID_Compute_Position(&PID_POSITION3)) {
+		float positionOutput3 = PID_POSITION3.myOutput;
+		PID_SPEED3.mySetpoint = positionOutput3;
+
+		int cmdMotor3;
+
+		if (PID_Compute_Speed(&PID_SPEED3)) {
+			cmdMotor3 = PID_SPEED3.myOutput;
+			if (cmdMotor3 > 0) {
+				MotorSetDirection(3, CLOCK);
+			} else if (cmdMotor3 < 0) {
+				MotorSetDirection(3, COUNTER_CLOCK);
+				cmdMotor3 = -cmdMotor3;
+			} else {
+				speedDirection3 = SPEED_DIRECTION_NONE;
+				MotorSetDirection(3, BRAKE_V);
+			}
+
+			MotorSetSpeed(3, cmdMotor3);
+			PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
+			PID_SetMode(&PID_POSITION3, PID_Mode_Manual);
+
+			/*char numberString[MAX_DISPLAY_CHARACTERS];
+			 sprintf(numberString, "%d", numberOfSpeedEdges3);
+			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+			 TM_HD44780_Puts(0, 0, numberString);
+			 sprintf(numberString, "%d", cmdMotor3);
+			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+			 TM_HD44780_Puts(3, 0, numberString);*/
+		}
+	}
+
+	if (PID_Compute_Position(&PID_POSITION4)) {
+		float positionOutput4 = PID_POSITION4.myOutput;
+		PID_SPEED4.mySetpoint = positionOutput4;
+
+		int cmdMotor4;
+
+		if (PID_Compute_Speed(&PID_SPEED4)) {
+			cmdMotor4 = PID_SPEED4.myOutput;
+			if (cmdMotor4 > 0) {
+				MotorSetDirection(4, CLOCK);
+			} else if (cmdMotor4 < 0) {
+				MotorSetDirection(4, COUNTER_CLOCK);
+				cmdMotor4 = -cmdMotor4;
+			} else {
+				speedDirection4 = SPEED_DIRECTION_NONE;
+				MotorSetDirection(4, BRAKE_V);
+
+			}
+
+			MotorSetSpeed(4, cmdMotor4);
+			PID_SetMode(&PID_SPEED4, PID_Mode_Manual);
+			PID_SetMode(&PID_POSITION4, PID_Mode_Manual);
+
+			/*char numberString[MAX_DISPLAY_CHARACTERS];
+			 sprintf(numberString, "%d", numberOfSpeedEdges4);
+			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+			 TM_HD44780_Puts(0, 0, numberString);
+			 sprintf(numberString, "%d", cmdMotor4);
+			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
+			 TM_HD44780_Puts(3, 0, numberString);*/
+		}
+	}
 }
 

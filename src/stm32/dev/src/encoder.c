@@ -1,5 +1,64 @@
 #include "encoder.h"
 
+/**************************************************************
+ * Variables pour mesurer le nombre de ticks position des roues
+ * ************************************************************/
+volatile int numberOfPositionEdges1 = 0;
+volatile int numberOfPositionEdges2 = 0;
+volatile int numberOfPositionEdges3 = 0;
+volatile int numberOfPositionEdges4 = 0;
+
+/**************************************************************
+ * Variables pour mesurer le nombre de ticks vitesse des roues
+ * ************************************************************/
+volatile int numberOfSpeedEdges1 = 0;
+volatile int numberOfSpeedEdges2 = 0;
+volatile int numberOfSpeedEdges3 = 0;
+volatile int numberOfSpeedEdges4 = 0;
+
+/**************************************************************
+ * variables pour déterminer la direction des roues
+ * ************************************************************/
+volatile int speedDirection1 = SPEED_DIRECTION_NONE;
+volatile int speedDirection2 = SPEED_DIRECTION_NONE;
+volatile int speedDirection3 = SPEED_DIRECTION_NONE;
+volatile int speedDirection4 = SPEED_DIRECTION_NONE;
+
+/**************************************************************
+ * variables temporaires pour debugger les encodeurs
+ * ************************************************************/
+volatile int incWheel1Canal1EncoderCounter = 0;
+volatile int incWheel1Canal2EncoderCounter = 0;
+volatile int decWheel1Canal1EncoderCounter = 0;
+volatile int decWheel1Canal2EncoderCounter = 0;
+
+volatile int incWheel2Canal1EncoderCounter = 0;
+volatile int incWheel2Canal2EncoderCounter = 0;
+volatile int decWheel2Canal1EncoderCounter = 0;
+volatile int decWheel2Canal2EncoderCounter = 0;
+
+volatile int incWheel3Canal1EncoderCounter = 0;
+volatile int incWheel3Canal2EncoderCounter = 0;
+volatile int decWheel3Canal1EncoderCounter = 0;
+volatile int decWheel3Canal2EncoderCounter = 0;
+
+volatile int incWheel4Canal1EncoderCounter = 0;
+volatile int incWheel4Canal2EncoderCounter = 0;
+volatile int decWheel4Canal1EncoderCounter = 0;
+volatile int decWheel4Canal2EncoderCounter = 0;
+
+/**************************************************************
+ * variables pour calculer la direction (déphasage) des roues
+ * ************************************************************/
+volatile int wheel1Channel1UP = 0;
+volatile int wheel1Channel2UP = 0;
+volatile int wheel2Channel1UP = 0;
+volatile int wheel2Channel2UP = 0;
+volatile int wheel3Channel1UP = 0;
+volatile int wheel3Channel2UP = 0;
+volatile int wheel4Channel1UP = 0;
+volatile int wheel4Channel2UP = 0;
+
 void intializePinsD() {
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
 	/* Set pins as input */
@@ -316,4 +375,41 @@ void initEncoders(void) {
 	intializeExternalInterrupts();
 	InitializeTimer2();
 	EnableTimer2Interrupt();
+}
+
+void resetPositionEncoderVariables() {
+
+	/* reset encoder position variables */
+	numberOfPositionEdges1 = 0;
+	numberOfPositionEdges2 = 0;
+	numberOfPositionEdges3 = 0;
+	numberOfPositionEdges4 = 0;
+
+	incWheel1Canal1EncoderCounter = 0;
+	incWheel1Canal2EncoderCounter = 0;
+	decWheel1Canal1EncoderCounter = 0;
+	decWheel1Canal2EncoderCounter = 0;
+
+	incWheel2Canal1EncoderCounter = 0;
+	incWheel2Canal2EncoderCounter = 0;
+	decWheel2Canal1EncoderCounter = 0;
+	decWheel2Canal2EncoderCounter = 0;
+
+	incWheel3Canal1EncoderCounter = 0;
+	incWheel3Canal2EncoderCounter = 0;
+	decWheel3Canal1EncoderCounter = 0;
+	decWheel3Canal2EncoderCounter = 0;
+
+	incWheel4Canal1EncoderCounter = 0;
+	incWheel4Canal2EncoderCounter = 0;
+	decWheel4Canal1EncoderCounter = 0;
+	decWheel4Canal2EncoderCounter = 0;
+
+}
+
+void resetEncoderSpeedVariables() {
+	numberOfSpeedEdges1 = 0;
+	numberOfSpeedEdges2 = 0;
+	numberOfSpeedEdges3 = 0;
+	numberOfSpeedEdges4 = 0;
 }

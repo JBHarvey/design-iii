@@ -11,6 +11,7 @@
 #include "tm_stm32f4_delay.h"
 #include "defines.h"
 #include "misc.h"
+
 // Libraries DESIGN III
 #include <com.h>
 #include <motor.h>
@@ -26,6 +27,7 @@
 #include "utils.h"
 #include "com.h"
 #include "prehenseur.h"
+#include "motion.h" // here
 
 #define TAILLE 500
 
@@ -33,74 +35,21 @@
 volatile int ticksIndex4 = 0;
 volatile int ticksBuffer4[TICKS_BUFFER_SIZE];
 
-// Variables avec le nombre de Ticks pour la vitesse
-volatile int numberOfSpeedEdges1 = 0;
-volatile int numberOfSpeedEdges2 = 0;
-volatile int numberOfSpeedEdges3 = 0;
-volatile int numberOfSpeedEdges4 = 0;
-
-// Variables avec le nombre de Ticks pour la position
-volatile int numberOfPositionEdges1 = 0;
-volatile int numberOfPositionEdges2 = 0;
-volatile int numberOfPositionEdges3 = 0;
-volatile int numberOfPositionEdges4 = 0;
-
-// speed direction variables
-volatile int speedDirection1 = SPEED_DIRECTION_NONE;
-volatile int speedDirection2 = SPEED_DIRECTION_NONE;
-volatile int speedDirection3 = SPEED_DIRECTION_NONE;
-volatile int speedDirection4 = SPEED_DIRECTION_NONE;
-
-// Initialization of speed motor variables
-volatile int speedMotor1 = 0;
-volatile int speedMotor2 = 0;
-volatile int speedMotor3 = 0;
-volatile int speedMotor4 = 0;
-
 volatile int speedIndex = 0;
 volatile uint16_t speedBuffer[MAX_SPEED_INDEX];
 
 volatile int mainState = MAIN_IDLE;
 
-volatile int incWheel1Canal1EncoderCounter = 0;
-volatile int incWheel1Canal2EncoderCounter = 0;
-volatile int decWheel1Canal1EncoderCounter = 0;
-volatile int decWheel1Canal2EncoderCounter = 0;
-
-volatile int incWheel2Canal1EncoderCounter = 0;
-volatile int incWheel2Canal2EncoderCounter = 0;
-volatile int decWheel2Canal1EncoderCounter = 0;
-volatile int decWheel2Canal2EncoderCounter = 0;
-
-volatile int incWheel3Canal1EncoderCounter = 0;
-volatile int incWheel3Canal2EncoderCounter = 0;
-volatile int decWheel3Canal1EncoderCounter = 0;
-volatile int decWheel3Canal2EncoderCounter = 0;
-
-volatile int incWheel4Canal1EncoderCounter = 0;
-volatile int incWheel4Canal2EncoderCounter = 0;
-volatile int decWheel4Canal1EncoderCounter = 0;
-volatile int decWheel4Canal2EncoderCounter = 0;
-
-volatile int wheel1Channel1UP = 0;
-volatile int wheel1Channel2UP = 0;
-volatile int wheel2Channel1UP = 0;
-volatile int wheel2Channel2UP = 0;
-volatile int wheel3Channel1UP = 0;
-volatile int wheel3Channel2UP = 0;
-volatile int wheel4Channel1UP = 0;
-volatile int wheel4Channel2UP = 0;
-
 // declaration of pids
-PidType PID_SPEED1;
-PidType PID_SPEED2;
-PidType PID_SPEED3;
-PidType PID_SPEED4;
+/*PidType PID_SPEED1;
+ PidType PID_SPEED2;
+ PidType PID_SPEED3;
+ PidType PID_SPEED4;
 
-PidType PID_POSITION1;
-PidType PID_POSITION2;
-PidType PID_POSITION3;
-PidType PID_POSITION4;
+ PidType PID_POSITION1;
+ PidType PID_POSITION2;
+ PidType PID_POSITION3;
+ PidType PID_POSITION4;*/
 
 // Buffer contenant tous les bits du manchester
 volatile uint8_t manchesterBuffer[MANCHESTER_BUFFER_LENGTH];
@@ -143,39 +92,6 @@ void systickInit(uint16_t frequency) {
 
 }
 
-float getXMoveFromBuffer(uint8_t *data) {
-	float xMove = *(float *) data;
-	return xMove;
-}
-
-float getYMoveFromBuffer(uint8_t *data) {
-	float yMove = *(float *) (data + Y_MOVE_DATA_BUFFER_INDEX);
-	return yMove;
-}
-
-float getRadianMoveFromBuffer(uint8_t *data) {
-	float radian = *(float *) data;
-	return radian;
-}
-
-float getMoveFromRadian(float radian) {
-	return radian * WHEEL_RADIUS;
-}
-
-void processCommand(uint8_t command, uint8_t dataSize, int* mainState) {
-	switch (command) {
-	float xMove;
-	float yMove;
-case COMMAND_MOVE:
-//xMove = getXMoveFromBuffer();
-//yMove = getYMoveFromBuffer();
-//setState(mainState, MAIN_PID);
-	break;
-default:
-	break;
-	}
-}
-
 void initAll(void) {
 	// Initialization of STM system
 	SystemInit();
@@ -191,7 +107,6 @@ void initAll(void) {
 	TM_USB_VCP_Init();
 	// Push button initialization
 	initBtn();
-<<<<<<< HEAD
 
 // Initialisation des variables
 	mainState = MAIN_IDLE;
@@ -199,11 +114,9 @@ void initAll(void) {
 
 	int state = IDLE;
 
-// initializations for manchester signal
-=======
-	// Extern LEDs initialization
->>>>>>> 48d81b6d618077dabf443e4ab57fa10269e51b99
+// Extern LEDs initialization
 	InitializeLEDs();
+// initializations for manchester signal
 	// ADC antenne initialization
 	initAdcAntenne();
 	// Manchester initialization
@@ -217,42 +130,14 @@ int main(void) {
 	// Initialisation des variables
 	mainState = MAIN_ACQUIS_ALL;
 
-	/* Initialization of wheel 1 PIDs */
-	PID_init(&PID_SPEED1, PID_SPEED1_KP, PID_SPEED1_KI, PID_SPEED1_KD,
-			PID_Direction_Direct, PID_SPEED1_N);
-	PID_SetOutputLimits(&PID_SPEED1, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
-	PID_init(&PID_POSITION1, PID_POSITION1_KP, PID_POSITION1_KI,
-			PID_POSITION1_KD, PID_Direction_Direct, PID_POSITION1_N);
-	PID_SetOutputLimits(&PID_POSITION1, MIN_POS_COMMAND, MAX_POS_COMMAND);
-
-	/* Initialization of wheel 2 PIDs */
-	PID_init(&PID_SPEED2, PID_SPEED2_KP, PID_SPEED2_KI, PID_SPEED2_KD,
-			PID_Direction_Direct, PID_SPEED2_N);
-	PID_SetOutputLimits(&PID_SPEED2, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
-	PID_init(&PID_POSITION2, PID_POSITION2_KP, PID_POSITION2_KI,
-			PID_POSITION2_KD, PID_Direction_Direct, PID_POSITION2_N);
-	PID_SetOutputLimits(&PID_POSITION2, MIN_POS_COMMAND, MAX_POS_COMMAND);
-
-	/* Initialization of wheel 3 PIDs */
-	PID_init(&PID_SPEED3, PID_SPEED3_KP, PID_SPEED3_KI, PID_SPEED3_KD,
-			PID_Direction_Direct, PID_SPEED3_N);
-	PID_SetOutputLimits(&PID_SPEED3, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
-	PID_init(&PID_POSITION3, PID_POSITION3_KP, PID_POSITION3_KI,
-			PID_POSITION3_KD, PID_Direction_Direct, PID_POSITION3_N);
-	PID_SetOutputLimits(&PID_POSITION3, MIN_POS_COMMAND, MAX_POS_COMMAND);
-
-	/* Initialization of wheel 4 PIDs */
-	PID_init(&PID_SPEED4, PID_SPEED4_KP, PID_SPEED4_KI, PID_SPEED4_KD,
-			PID_Direction_Direct, PID_SPEED4_N);
-	PID_SetOutputLimits(&PID_SPEED4, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
-	PID_init(&PID_POSITION4, PID_POSITION4_KP, PID_POSITION4_KI,
-			PID_POSITION4_KD, PID_Direction_Direct, PID_POSITION4_N);
-	PID_SetOutputLimits(&PID_POSITION4, MIN_POS_COMMAND, MAX_POS_COMMAND);
+	/* Initialization of PIDs */
+	initAllPIDS();
 
 	initPrehensor();
 
 	/* Test routine LEDs */
 	startLEDsRoutine();
+
 	while (1) {
 		/* Main state machine */
 		switch (mainState) {
@@ -272,213 +157,8 @@ int main(void) {
 #endif
 			break;
 		case MAIN_PID:
+			computeAllPIDS();
 
-//PID_POSITION1.mySetpoint = 0.00;
-//PID_POSITION2.mySetpoint = 0.00;
-//PID_POSITION3.mySetpoint = 0.00;
-//PID_POSITION4.mySetpoint = 0.00;
-
-			while (1) {
-
-				if (PID_Compute_Position(&PID_POSITION1)) {
-					//&& PID_Compute_Position(&PID_POSITION2)
-					//&& PID_Compute_Position(&PID_POSITION3)
-					//&& PID_Compute_Position(&PID_POSITION4)) {
-					float positionOutput1 = PID_POSITION1.myOutput;
-					int cmdMotor1;
-					PID_SPEED1.mySetpoint = positionOutput1;
-
-					if (PID_Compute_Speed(&PID_SPEED1)) {
-						cmdMotor1 = PID_SPEED1.myOutput;
-						if (cmdMotor1 > 0) {
-							MotorSetDirection(1, COUNTER_CLOCK);
-						} else if (cmdMotor1 < 0) {
-							MotorSetDirection(1, CLOCK);
-							cmdMotor1 = -cmdMotor1;
-						} else {
-							speedDirection1 = SPEED_DIRECTION_NONE;
-							MotorSetDirection(1, BRAKE_V);
-						}
-
-						MotorSetSpeed(1, cmdMotor1);
-						PID_SetMode(&PID_SPEED1, PID_Mode_Manual);
-
-						char numberString[MAX_DISPLAY_CHARACTERS];
-						sprintf(numberString, "%d", numberOfSpeedEdges1);
-						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-						TM_HD44780_Puts(0, 0, numberString);
-						sprintf(numberString, "%d", cmdMotor1);
-						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-						TM_HD44780_Puts(3, 0, numberString);
-
-						/* send position to USB */
-						/*TM_USB_VCP_Putc(2);
-						 TM_USB_VCP_Putc(8);
-						 VCP_DataTx((uint8_t*) &positionOutput, sizeof(float));
-						 VCP_DataTx((uint8_t*) &positionOutput, sizeof(float));*/
-					}
-				}
-
-				/*PID_SPEED3.mySetpoint = positionOutput;
-
-				 if (PID_Compute_Speed(&PID_SPEED3)) {
-
-				 int cmdMotor3 = PID_SPEED3.myOutput;
-
-				 if (cmdMotor3 > 0) {
-				 speedDirection3 = SPEED_DIRECTION_FORWARD;
-				 MotorSetDirection(3, CLOCK);
-				 //MotorSetDirection(1, CLOCK);
-				 } else if (cmdMotor3 < 0) {
-
-				 speedDirection3 = SPEED_DIRECTION_BACKWARD;
-				 MotorSetDirection(3, COUNTER_CLOCK);
-				 //MotorSetDirection(1, CLOCK);
-				 cmdMotor3 = -cmdMotor3;
-				 } else {
-				 speedDirection3 = SPEED_DIRECTION_NONE;
-				 MotorSetDirection(3, BRAKE_G);
-				 }
-
-				 MotorSetSpeed(3, cmdMotor3);
-				 PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
-				 }
-				 }*/
-
-				if (PID_Compute_Position(&PID_POSITION2)) {
-					float positionOutput2 = PID_POSITION2.myOutput;
-					PID_SPEED2.mySetpoint = positionOutput2;
-					int cmdMotor2;
-
-					if (PID_Compute_Speed(&PID_SPEED2)) {
-						cmdMotor2 = PID_SPEED2.myOutput;
-						if (cmdMotor2 > 0) {
-							MotorSetDirection(2, COUNTER_CLOCK);
-							//MotorSetDirection(4, CLOCK);
-						} else if (cmdMotor2 < 0) {
-							MotorSetDirection(2, CLOCK);
-							cmdMotor2 = -cmdMotor2;
-						} else {
-							speedDirection2 = SPEED_DIRECTION_NONE;
-							MotorSetDirection(2, BRAKE_V);
-						}
-
-						MotorSetSpeed(2, cmdMotor2);
-						PID_SetMode(&PID_SPEED2, PID_Mode_Manual);
-
-						char numberString[MAX_DISPLAY_CHARACTERS];
-						sprintf(numberString, "%d", numberOfSpeedEdges2);
-						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-						TM_HD44780_Puts(0, 0, numberString);
-						sprintf(numberString, "%d", cmdMotor2);
-						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-						TM_HD44780_Puts(3, 0, numberString);
-					}
-				}
-
-				/*PID_SPEED4.mySetpoint = positionOutput;
-
-				 if (PID_Compute_Speed(&PID_SPEED4)) {
-				 int cmdMotor4 = PID_SPEED4.myOutput;
-
-				 if (cmdMotor4 > 0) {
-				 speedDirection4 = SPEED_DIRECTION_FORWARD;
-				 MotorSetDirection(4, CLOCK);
-				 //MotorSetDirection(2, COUNTER_CLOCK);
-				 } else if (cmdMotor4 < 0) {
-
-				 speedDirection4 = SPEED_DIRECTION_BACKWARD;
-				 MotorSetDirection(4, COUNTER_CLOCK);
-				 //MotorSetDirection(2, CLOCK);
-				 cmdMotor4 = -cmdMotor4;
-				 } else {
-				 speedDirection4 = SPEED_DIRECTION_NONE;
-				 MotorSetDirection(4, BRAKE_G);
-				 //MotorSetDirection(2, BRAKE_G);
-
-				 }
-
-				 MotorSetSpeed(4, cmdMotor4);
-				 PID_SetMode(&PID_SPEED4, PID_Mode_Manual);
-				 }*/
-
-				if (PID_Compute_Position(&PID_POSITION3)) {
-					float positionOutput3 = PID_POSITION3.myOutput;
-					PID_SPEED3.mySetpoint = positionOutput3;
-
-					int cmdMotor3;
-
-					if (PID_Compute_Speed(&PID_SPEED3)) {
-						cmdMotor3 = PID_SPEED3.myOutput;
-						if (cmdMotor3 > 0) {
-							MotorSetDirection(3, CLOCK);
-						} else if (cmdMotor3 < 0) {
-							MotorSetDirection(3, COUNTER_CLOCK);
-							cmdMotor3 = -cmdMotor3;
-						} else {
-							speedDirection3 = SPEED_DIRECTION_NONE;
-							MotorSetDirection(3, BRAKE_V);
-						}
-
-						MotorSetSpeed(3, cmdMotor3);
-						PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
-
-						char numberString[MAX_DISPLAY_CHARACTERS];
-						sprintf(numberString, "%d", numberOfSpeedEdges3);
-						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-						TM_HD44780_Puts(0, 0, numberString);
-						sprintf(numberString, "%d", cmdMotor3);
-						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-						TM_HD44780_Puts(3, 0, numberString);
-					}
-				}
-
-				if (PID_Compute_Position(&PID_POSITION4)) {
-					float positionOutput4 = PID_POSITION4.myOutput;
-					PID_SPEED4.mySetpoint = positionOutput4;
-
-					int cmdMotor4;
-
-					if (PID_Compute_Speed(&PID_SPEED4)) {
-						cmdMotor4 = PID_SPEED4.myOutput;
-						if (cmdMotor4 > 0) {
-							MotorSetDirection(4, CLOCK);
-						} else if (cmdMotor4 < 0) {
-							MotorSetDirection(4, COUNTER_CLOCK);
-							cmdMotor4 = -cmdMotor4;
-						} else {
-							speedDirection4 = SPEED_DIRECTION_NONE;
-							MotorSetDirection(4, BRAKE_V);
-
-						}
-
-						MotorSetSpeed(4, cmdMotor4);
-						PID_SetMode(&PID_SPEED4, PID_Mode_Manual);
-
-						char numberString[MAX_DISPLAY_CHARACTERS];
-						sprintf(numberString, "%d", numberOfSpeedEdges4);
-						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-						TM_HD44780_Puts(0, 0, numberString);
-						sprintf(numberString, "%d", cmdMotor4);
-						cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-						TM_HD44780_Puts(3, 0, numberString);
-
-					}
-
-					//MotorSetSpeed(1, cmdMotor1);
-					//PID_SetMode(&PID_SPEED1, PID_Mode_Manual);
-
-					//MotorSetSpeed(2, cmdMotor2);
-					//PID_SetMode(&PID_SPEED2, PID_Mode_Manual);
-
-					//MotorSetSpeed(3, cmdMotor3);
-					//PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
-
-					//MotorSetSpeed(4, cmdMotor4);
-					//PID_SetMode(&PID_SPEED4, PID_Mode_Manual);
-
-				}
-			}
 			break;
 		case MAIN_MANCH:
 			tryToDecodeManchesterCode(&manchesterState, manchesterBuffer,
@@ -493,7 +173,8 @@ int main(void) {
 			dataToSend[3] = 4;
 			dataToSend[4] = 'N';
 
-			TM_USB_VCP_Send(dataToSend, 5);
+			VCP_DataTx(dataToSend, 5);
+			//TM_USB_VCP_Send(dataToSend, 5);
 			Delayms(10);
 			break;
 		case MAIN_PREHENSEUR:
@@ -523,6 +204,7 @@ extern void EXTI4_IRQHandler(void) {
 
 extern void EXTI9_5_IRQHandler(void) {
 	/* Make sure that interrupt flag is set */
+
 // wheel 1 channel 1
 	if (EXTI_GetITStatus(EXTI_Line5) != RESET) {
 		/* increase ticks */
@@ -531,7 +213,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		wheel1Channel1UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_5);
 		wheel1Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_6);
 
-		// check wheel 1 channel 2
+		// check wheel 1
 		if (wheel1Channel1UP == wheel1Channel2UP) {
 
 			numberOfPositionEdges1++;
@@ -543,14 +225,6 @@ extern void EXTI9_5_IRQHandler(void) {
 			decWheel1Canal1EncoderCounter++;
 			speedDirection1 = SPEED_DIRECTION_BACKWARD;
 		}
-
-		/*if (speedDirection1 == SPEED_DIRECTION_FORWARD) {
-		 numberOfPositionEdges1++;
-		 incWheel1Canal1EncoderCounter++;
-		 } else if (speedDirection1 == SPEED_DIRECTION_BACKWARD) {
-		 numberOfPositionEdges1--;
-		 decWheel1Canal1EncoderCounter++;
-		 }*/
 
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line5);
@@ -573,14 +247,6 @@ extern void EXTI9_5_IRQHandler(void) {
 			decWheel1Canal2EncoderCounter++;
 			speedDirection1 = SPEED_DIRECTION_BACKWARD;
 		}
-
-		/*if (speedDirection1 == SPEED_DIRECTION_FORWARD) {
-		 numberOfPositionEdges1++;
-		 incWheel1Canal2EncoderCounter++;
-		 } else if (speedDirection1 == SPEED_DIRECTION_BACKWARD) {
-		 numberOfPositionEdges1--;
-		 decWheel1Canal2EncoderCounter++;
-		 }*/
 
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line6);
@@ -606,14 +272,6 @@ extern void EXTI9_5_IRQHandler(void) {
 			speedDirection2 = SPEED_DIRECTION_BACKWARD;
 		}
 
-		/*if (speedDirection2 == SPEED_DIRECTION_FORWARD) {
-		 numberOfPositionEdges2++;
-		 incWheel2Canal1EncoderCounter++;
-		 } else if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
-		 numberOfPositionEdges2--;
-		 decWheel2Canal1EncoderCounter++;
-
-		 }*/
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line8);
 	}
@@ -636,14 +294,6 @@ extern void EXTI9_5_IRQHandler(void) {
 			decWheel2Canal2EncoderCounter++;
 			speedDirection2 = SPEED_DIRECTION_BACKWARD;
 		}
-
-		/*if (speedDirection2 == SPEED_DIRECTION_FORWARD) {
-		 numberOfPositionEdges2++;
-		 incWheel2Canal2EncoderCounter++;
-		 } else if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
-		 numberOfPositionEdges2--;
-		 decWheel2Canal2EncoderCounter++;
-		 }*/
 
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line9);
@@ -670,14 +320,6 @@ extern void EXTI15_10_IRQHandler(void) {
 			speedDirection3 = SPEED_DIRECTION_BACKWARD;
 		}
 
-		/*if (speedDirection3 == SPEED_DIRECTION_FORWARD) {
-		 numberOfPositionEdges3++;
-		 incWheel3Canal1EncoderCounter++;
-		 } else if (speedDirection3 == SPEED_DIRECTION_BACKWARD) {
-		 numberOfPositionEdges3--;
-		 decWheel3Canal1EncoderCounter++;
-
-		 }*/
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line10);
 	}
@@ -700,15 +342,6 @@ extern void EXTI15_10_IRQHandler(void) {
 			speedDirection3 = SPEED_DIRECTION_BACKWARD;
 		}
 
-		/*if (speedDirection3 == SPEED_DIRECTION_FORWARD) {
-		 numberOfPositionEdges3++;
-		 incWheel3Canal2EncoderCounter++;
-		 }
-
-		 else if (speedDirection3 == SPEED_DIRECTION_BACKWARD) {
-		 numberOfPositionEdges3--;
-		 decWheel3Canal2EncoderCounter++;
-		 }*/
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line11);
 	}
@@ -731,13 +364,6 @@ extern void EXTI15_10_IRQHandler(void) {
 			speedDirection4 = SPEED_DIRECTION_BACKWARD;
 		}
 
-		/*if (speedDirection4 == SPEED_DIRECTION_FORWARD) {
-		 numberOfPositionEdges4++;
-		 incWheel4Canal1EncoderCounter++;
-		 } else if (speedDirection4 == SPEED_DIRECTION_BACKWARD) {
-		 numberOfPositionEdges4--;
-		 decWheel4Canal1EncoderCounter++;
-		 }*/
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line12);
 	}
@@ -760,13 +386,6 @@ extern void EXTI15_10_IRQHandler(void) {
 			speedDirection4 = SPEED_DIRECTION_BACKWARD;
 		}
 
-		/*if (speedDirection4 == SPEED_DIRECTION_FORWARD) {
-		 numberOfPositionEdges4++;
-		 incWheel4Canal2EncoderCounter++;
-		 } else if (speedDirection4 == SPEED_DIRECTION_BACKWARD) {
-		 numberOfPositionEdges4--;
-		 decWheel4Canal2EncoderCounter++;
-		 }*/
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line13);
 	}
@@ -776,7 +395,7 @@ extern void TIM2_IRQHandler() {
 	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
 
-		/* update Speed pids */
+		/* update Speed pids inputs */
 		if (speedDirection1 == SPEED_DIRECTION_FORWARD) {
 			PID_SPEED1.myInput = numberOfSpeedEdges1;
 		} else if (speedDirection1 == SPEED_DIRECTION_BACKWARD) {
@@ -883,39 +502,7 @@ extern void TIM2_IRQHandler() {
 
 #endif
 
-		numberOfSpeedEdges1 = 0;
-		numberOfSpeedEdges2 = 0;
-		numberOfSpeedEdges3 = 0;
-		numberOfSpeedEdges4 = 0;
-
-		/* reset position for each wheels */
-		/*if (-0.01 < PID_POSITION1.mySetpoint - PID_POSITION1.myInput
-		 && PID_POSITION1.mySetpoint - PID_POSITION1.myInput < 0.01) {
-		 numberOfPositionEdges1 = 0;
-		 PID_POSITION1.mySetpoint = 0;
-		 PID_POSITION1.myInput = 0;
-		 }
-
-		 if (-0.01 < PID_POSITION2.mySetpoint - PID_POSITION2.myInput
-		 && PID_POSITION2.mySetpoint - PID_POSITION2.myInput < 0.01) {
-		 numberOfPositionEdges2 = 0;
-		 PID_POSITION2.mySetpoint = 0;
-		 PID_POSITION2.myInput = 0;
-		 }
-
-		 if (-0.01 < PID_POSITION3.mySetpoint - PID_POSITION3.myInput
-		 && PID_POSITION3.mySetpoint - PID_POSITION3.myInput < 0.01) {
-		 numberOfPositionEdges3 = 0;
-		 PID_POSITION3.mySetpoint = 0;
-		 PID_POSITION3.myInput = 0;
-		 }
-
-		 if (-0.01 < PID_POSITION4.mySetpoint - PID_POSITION4.myInput
-		 && PID_POSITION4.mySetpoint - PID_POSITION4.myInput < 0.01) {
-		 numberOfPositionEdges4 = 0;
-		 PID_POSITION4.mySetpoint = 0;
-		 PID_POSITION4.myInput = 0;
-		 }*/
+		resetEncoderSpeedVariables();
 	}
 }
 /*
@@ -970,124 +557,23 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 	switch (type) {
 	case COMMAND_MOVE:
 		if (len == 8 && type == 0) {
-			/* send data to test send feature on Usb */
-			uint8_t dataToSend[10] = { 1, 8, 3, 4, 5, 6, 7, 8, 9, 10 };
-			TM_USB_VCP_Send(dataToSend, 10);
-			/* get X Y distances */
-			float xMove = getXMoveFromBuffer(data);
-			float yMove = getYMoveFromBuffer(data);
+			setMoveSettings(&PID_POSITION1, &PID_POSITION2, &PID_POSITION3,
+					&PID_POSITION4, &PID_SPEED1, &PID_SPEED2, &PID_SPEED3,
+					&PID_SPEED4, data);
 
-			/*setPIDCoeficient(xMove, yMove);*/
-
-			PID_POSITION1.mySetpoint = xMove;
-			PID_POSITION3.mySetpoint = xMove;
-			PID_POSITION2.mySetpoint = yMove;
-			PID_POSITION4.mySetpoint = yMove;
-
-			numberOfPositionEdges1 = 0;
-			numberOfPositionEdges2 = 0;
-			numberOfPositionEdges3 = 0;
-			numberOfPositionEdges4 = 0;
-
-			PID_POSITION1.ITerm = 0;
-			PID_SPEED1.ITerm = 0;
-			PID_POSITION2.ITerm = 0;
-			PID_SPEED2.ITerm = 0;
-			PID_POSITION3.ITerm = 0;
-			PID_SPEED3.ITerm = 0;
-			PID_POSITION4.ITerm = 0;
-			PID_SPEED4.ITerm = 0;
-
-			PID_POSITION1.lastInput = 0;
-			PID_SPEED1.lastInput = 0;
-			PID_POSITION2.lastInput = 0;
-			PID_SPEED2.lastInput = 0;
-			PID_POSITION3.lastInput = 0;
-			PID_SPEED3.lastInput = 0;
-			PID_POSITION4.lastInput = 0;
-			PID_SPEED4.lastInput = 0;
-
-			incWheel1Canal1EncoderCounter = 0;
-			incWheel1Canal2EncoderCounter = 0;
-			decWheel1Canal1EncoderCounter = 0;
-			decWheel1Canal2EncoderCounter = 0;
-
-			incWheel2Canal1EncoderCounter = 0;
-			incWheel2Canal2EncoderCounter = 0;
-			decWheel2Canal1EncoderCounter = 0;
-			decWheel2Canal2EncoderCounter = 0;
-
-			incWheel3Canal1EncoderCounter = 0;
-			incWheel3Canal2EncoderCounter = 0;
-			decWheel3Canal1EncoderCounter = 0;
-			decWheel3Canal2EncoderCounter = 0;
-
-			incWheel4Canal1EncoderCounter = 0;
-			incWheel4Canal2EncoderCounter = 0;
-			decWheel4Canal1EncoderCounter = 0;
-			decWheel4Canal2EncoderCounter = 0;
+			resetPositionEncoderVariables();
 
 			setState(&mainState, MAIN_PID);
 		}
 		break;
 	case COMMAND_ROTATE:
 		if (len == 4 && type == COMMAND_ROTATE) {
-			/* send data to test send feature on Usb */
-			//uint8_t dataToSend[10] = { 1, 8, 3, 4, 5, 6, 7, 8, 9, 10 };
-			//TM_USB_VCP_Send(dataToSend, 10);
-			/* get X Y distances */
-			float radianToRotate = getRadianMoveFromBuffer(data);
-			float move = getMoveFromRadian(radianToRotate);
 
-			/*setPIDCoeficient(xMove, yMove);*/
+			setRotateSettings(&PID_POSITION1, &PID_POSITION2, &PID_POSITION3,
+					&PID_POSITION4, &PID_SPEED1, &PID_SPEED2, &PID_SPEED3,
+					&PID_SPEED4, data);
 
-			PID_POSITION1.mySetpoint = -move;
-			PID_POSITION3.mySetpoint = move;
-			PID_POSITION2.mySetpoint = -move;
-			PID_POSITION4.mySetpoint = move;
-
-			numberOfPositionEdges1 = 0;
-			numberOfPositionEdges2 = 0;
-			numberOfPositionEdges3 = 0;
-			numberOfPositionEdges4 = 0;
-
-			PID_POSITION1.ITerm = 0;
-			PID_SPEED1.ITerm = 0;
-			PID_POSITION2.ITerm = 0;
-			PID_SPEED2.ITerm = 0;
-			PID_POSITION3.ITerm = 0;
-			PID_SPEED3.ITerm = 0;
-			PID_POSITION4.ITerm = 0;
-			PID_SPEED4.ITerm = 0;
-
-			PID_POSITION1.lastInput = 0;
-			PID_SPEED1.lastInput = 0;
-			PID_POSITION2.lastInput = 0;
-			PID_SPEED2.lastInput = 0;
-			PID_POSITION3.lastInput = 0;
-			PID_SPEED3.lastInput = 0;
-			PID_POSITION4.lastInput = 0;
-			PID_SPEED4.lastInput = 0;
-
-			incWheel1Canal1EncoderCounter = 0;
-			incWheel1Canal2EncoderCounter = 0;
-			decWheel1Canal1EncoderCounter = 0;
-			decWheel1Canal2EncoderCounter = 0;
-
-			incWheel2Canal1EncoderCounter = 0;
-			incWheel2Canal2EncoderCounter = 0;
-			decWheel2Canal1EncoderCounter = 0;
-			decWheel2Canal2EncoderCounter = 0;
-
-			incWheel3Canal1EncoderCounter = 0;
-			incWheel3Canal2EncoderCounter = 0;
-			decWheel3Canal1EncoderCounter = 0;
-			decWheel3Canal2EncoderCounter = 0;
-
-			incWheel4Canal1EncoderCounter = 0;
-			incWheel4Canal2EncoderCounter = 0;
-			decWheel4Canal1EncoderCounter = 0;
-			decWheel4Canal2EncoderCounter = 0;
+			resetPositionEncoderVariables();
 
 			setState(&mainState, MAIN_PID);
 		}

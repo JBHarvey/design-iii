@@ -4,7 +4,9 @@
 typedef float FloatType;
 //typedef double floatType;
 #include <stdbool.h>
-#include "defines.h"
+#include "utils.h"
+#include "motor.h"
+#include "encoder.h"
 
 //Constants used in some of the functions below
 typedef enum {
@@ -47,6 +49,19 @@ typedef struct {
 	FloatType outMin, outMax;
 	bool inAuto;
 } PidType;
+
+/*************************************
+ * Design 3 PIDS
+ *************************************/
+extern PidType PID_SPEED1;
+extern PidType PID_SPEED2;
+extern PidType PID_SPEED3;
+extern PidType PID_SPEED4;
+
+extern PidType PID_POSITION1;
+extern PidType PID_POSITION2;
+extern PidType PID_POSITION3;
+extern PidType PID_POSITION4;
 
 //commonly used functions **************************************************************************
 
@@ -104,5 +119,12 @@ FloatType calculateSpeed(FloatType speedEdges);
 FloatType calculatePosition(FloatType positionEdges);
 
 //void PID_Initialize(PidType* pid);
+
+/*******************************************************
+ * Design 3 Functions
+ *******************************************************/
+void initAllPIDS();
+void computeAllPIDS();
+
 #endif
 
