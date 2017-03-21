@@ -131,6 +131,7 @@ void Map_updatePaintingZone(struct Map *map, struct Pose *new_pose, int index)
     Pose_copyValuesFrom(map->painting_zones[index], new_pose);
 }
 
+/*
 static int isObstacleInvalid(struct Obstacle *obstacle)
 {
     struct Coordinates *minus_ones = Coordinates_new(-1, -1);
@@ -179,7 +180,6 @@ static int isObstacleValid(struct Obstacle *obstacle)
 {
     return !isObstacleInvalid(obstacle);
 }
-/*
 struct Obstacle *Map_retrieveFirstObstacle(struct Map *map)
 {
     struct Obstacle *first_one = NULL;
