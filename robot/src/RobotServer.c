@@ -232,6 +232,10 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
     // Wheels Translation
     // Wheels Rotation
 
+    FILE *bob = fopen("bob.log", "a+");
+    fprintf(bob, "Received packet with command number: %d", data[0]);
+    fclose(bob);
+
     switch(data[0]) {
 
         case MANCHESTER_CODE_DECODED:
