@@ -236,12 +236,12 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
 
         case MANCHESTER_CODE_DECODED:
 
-            FILE *test = fopen("MANCHESTER.log", "a+");
 
             if(length != (sizeof(struct Communication_ManchesterCode) + 1)) {
                 printf("wrong struct ReceptionManchester length\n");
+                FILE *test = fopen("MANCHESTER.log", "a+");
                 fprintf(test, "FAIL!\n\n Length receive : %d, expected: %d",
-                        length, sizeof(struct Communication_ManchesterCode));
+                        length, (int) sizeof(struct Communication_ManchesterCode));
                 fclose(test);
                 break;
             }
@@ -250,6 +250,7 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
 
             memcpy(&communication_manchester_code, data + 1, sizeof(struct Communication_ManchesterCode));
 
+            FILE *test = fopen("MANCHESTER.log", "a+");
 
             fprintf(test, "RECEPTION!\n\n");
 
