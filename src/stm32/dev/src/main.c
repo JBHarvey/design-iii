@@ -155,13 +155,22 @@ int main(void) {
 					manchesterOrientationVerification,
 					&manchesterFactorVerification);
 
-			uint8_t dataToSend[4];
-			dataToSend[0] = COMMAND_DECODED_MANCHESTER;
-			dataToSend[1] = 1;
-			dataToSend[2] = 4;
-			dataToSend[3] = 'N';
+			int figure = 1;
+			int factor = 4;
 
-			VCP_DataTx(dataToSend, 5);
+			uint8_t dataToSend[10];
+			dataToSend[0] = COMMAND_DECODED_MANCHESTER;
+			dataToSend[1] = (uint8_t) figure >> 0;
+			dataToSend[2] = (uint8_t) figure >> 8;
+			dataToSend[3] = (uint8_t) figure >> 16;
+			dataToSend[4] = (uint8_t) figure >> 24;
+			dataToSend[5] = (uint8_t) factor >> 0;
+			dataToSend[6] = (uint8_t) factor >> 8;
+			dataToSend[7] = (uint8_t) factor >> 16;
+			dataToSend[8] = (uint8_t) factor >> 24;
+			dataToSend[9] = 'N';
+
+			VCP_DataTx(dataToSend, 10);
 			Delayms(10);
 			break;
 		case MAIN_PREHENSEUR:
