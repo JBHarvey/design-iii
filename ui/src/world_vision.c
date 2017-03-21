@@ -1,12 +1,12 @@
-#include "opencv2/videoio/videoio_c.h"
 #include "opencv2/calib3d/calib3d_c.h"
 #include "world_vision.h"
 #include "station_interface.h"
 #include "world_vision_calibration.h"
+#include "world_vision_detection.h"
 #include "ui_event.h"
 #include "logger.h"
-#include "world_vision_detection.h"
 #include "station_client_sender.h"
+#include "Defines.h"
 
 /* Flags definitions */
 
@@ -25,12 +25,6 @@ const int NUMBER_OF_ROW_OF_ROTATION_VECTOR = 3;
 const int NUMBER_OF_COLUMN_OF_ROTATION_VECTOR = 1;
 const char FILE_PATH_OF_DEBUG_MODE_VIDEO_CAPTURE[] = "./build/deploy/camera_calibration/camera_3015_1/video_feed.avi";
 
-/* Type definitions */
-
-struct CameraCapture {
-    CvCapture *camera_capture_feed;
-};
-
 /* Global variables */
 
 GMutex world_camera_feeder_mutex;
@@ -38,6 +32,7 @@ GMutex world_camera_feeder_mutex;
 enum TooltipStatus world_camera_coordinates_tooltip_status = PRINT;
 enum FrameStatus world_camera_frame_status = NOT_READY;
 struct Camera *world_camera = NULL;
+struct CameraCapture *world_camera_capture = NULL;
 IplImage* world_camera_frame = NULL;
 IplImage* world_camera_back_frame = NULL;
 GdkPixbuf *world_camera_pixbuf = NULL;
@@ -148,8 +143,8 @@ static void releaseCamera(struct Camera *input_camera)
     free(input_camera);
 }
 
-static void cleanExitIfMainLoopTerminated(struct CameraCapture *world_camera_capture,
-        IplImage *frame_BGR_corrected, IplImage *frame_RGB_corrected,
+static void cleanExitIfMainLoopTerminated(IplImage *frame_BGR_corrected,
+        IplImage *frame_RGB_corrected,
         GThread *world_vision_detection_worker_thread)
 {
     if(main_loop_status == TERMINATED) {
@@ -197,19 +192,19 @@ void WorldVision_applyWorldCameraBackFrame(void)
     g_mutex_unlock(&world_camera_feeder_mutex);
 }
 
-IplImage *WorldVision_getWorldCameraBackFrame(void)
+IplImage *WorldVision_getWorldCameraFrame(void)
 {
-    return world_camera_back_frame;
+    return world_camera_frame;
 }
 
 /* Worker thread */
 
 gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient *station_client)
 {
+    GThread *world_vision_detection_worker_thread = NULL;
     IplImage *frame_BGR = NULL;
     IplImage *frame_BGR_corrected = NULL;
     IplImage *frame_RGB_corrected = NULL;
-    GThread *world_vision_detection_worker_thread = NULL;
     //CvMemStorage *opencv_storage = cvCreateMemStorage(0);
 
     initializeWorldCamera();
@@ -219,14 +214,12 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient 
                                          WORLD_CAMERA_HEIGHT);
     g_mutex_unlock(&world_camera_feeder_mutex);
 
-    struct CameraCapture *world_camera_capture = malloc(sizeof(struct CameraCapture));
-
+    world_camera_capture = malloc(sizeof(struct CameraCapture));
     initializeCameraCapture(world_camera_capture, WORLD_CAMERA_WIDTH, WORLD_CAMERA_HEIGHT);
 
     while(TRUE) {
 
-        cleanExitIfMainLoopTerminated(world_camera_capture, frame_BGR_corrected, frame_RGB_corrected,
-                                      world_vision_detection_worker_thread);
+        cleanExitIfMainLoopTerminated(frame_BGR_corrected, frame_RGB_corrected, world_vision_detection_worker_thread);
 
         frame_BGR = cvQueryFrame(world_camera_capture->camera_capture_feed);
 
@@ -259,7 +252,11 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient 
                                                            (GThreadFunc) WorldVisionDetection_detectObstaclesAndRobot, (gpointer) world_camera);
                 }
 
-                //struct Detected_Things detected = detectDrawObstaclesRobot(opencv_storage, frame_BGR_corrected, world_camera);
+                cvCvtColor(frame_BGR_corrected, frame_RGB_corrected, CV_BGR2RGB);
+                cvCopy(frame_RGB_corrected, world_camera_back_frame, NULL);
+
+                WorldVisionDetection_drawObstaclesAndRobot(world_camera_back_frame);
+                //struct DetectedThings detected = detectDrawObstaclesRobot(opencv_storage, frame_BGR_corrected, world_camera);
 
                 /* if(detected.robot_detected) {
                      StationClientSender_sendWorldInformationsToRobot(station_client, detected.obstacles, MAX_OBSTACLES, detected.robot);
@@ -267,9 +264,8 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient 
             }
         } else {
             cvCopy(frame_BGR, frame_BGR_corrected, NULL);
+            cvCvtColor(frame_BGR_corrected, frame_RGB_corrected, CV_BGR2RGB);
         }
-
-        cvCvtColor(frame_BGR_corrected, frame_RGB_corrected, CV_BGR2RGB);
 
         if(world_camera_back_frame == NULL) {
             world_camera_back_frame = cvCloneImage(frame_RGB_corrected);

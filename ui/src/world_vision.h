@@ -3,7 +3,10 @@
 
 #include <gtk/gtk.h>
 #include "opencv2/imgproc/imgproc_c.h"
+#include "opencv2/videoio/videoio_c.h"
 #include "station_client.h"
+#include "markers.h"
+#include "vision.h"
 
 #define WORLD_CAMERA_WIDTH 1600
 #define WORLD_CAMERA_HEIGHT 1200
@@ -11,6 +14,10 @@
 /* Type definitions */
 
 enum CameraStatus {UNCALIBRATED, INTRINSICALLY_CALIBRATED, INTRINSICALLY_AND_EXTRINSICALLY_CALIBRATED, FULLY_CALIBRATED};
+
+struct CameraCapture {
+    CvCapture *camera_capture_feed;
+};
 
 struct CameraIntrinsics {
     CvMat *camera_matrix;
@@ -36,6 +43,6 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient 
 
 void WorldVision_applyWorldCameraBackFrame(void);
 
-IplImage *WorldVision_getWorldCameraBackFrame(void);
+IplImage *WorldVision_getWorldCameraFrame(void);
 
 #endif // __WORLD_VISION
