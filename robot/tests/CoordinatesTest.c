@@ -4,6 +4,7 @@
 #include "Coordinates.h"
 #include "Angle.h"
 
+
 const int COORDINATES_X = 1000;
 const int COORDINATES_Y = 2500;
 const int COORDINATES_DELTA = 42;

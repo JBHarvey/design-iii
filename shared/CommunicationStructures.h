@@ -44,7 +44,7 @@ struct __attribute__((__packed__)) Communication_ManchesterSignal {
     int intensity;
 };
 
-struct Communication_ManchesterCode {
+struct __attribute__((__packed__)) Communication_ManchesterCode {
     int painting_number;
     int scale_factor;
     char orientation; // Possibilities 'N' 'E' 'S' 'W'
