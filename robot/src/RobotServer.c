@@ -245,7 +245,7 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
 
             memcpy(&communication_manchester_code, data + 1, sizeof(struct Communication_ManchesterCode));
 
-            FILE *test = fopen("MANCHESTER", "a+");
+            FILE *test = fopen("MANCHESTER.log", "a+");
 
             fprintf(test, "RECEPTION!\n\n");
 
