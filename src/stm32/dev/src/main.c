@@ -40,17 +40,6 @@ volatile uint16_t speedBuffer[MAX_SPEED_INDEX];
 
 volatile int mainState = MAIN_IDLE;
 
-// declaration of pids
-/*PidType PID_SPEED1;
- PidType PID_SPEED2;
- PidType PID_SPEED3;
- PidType PID_SPEED4;
-
- PidType PID_POSITION1;
- PidType PID_POSITION2;
- PidType PID_POSITION3;
- PidType PID_POSITION4;*/
-
 // Buffer contenant tous les bits du manchester
 volatile uint8_t manchesterBuffer[MANCHESTER_BUFFER_LENGTH];
 volatile uint8_t manchesterIndex = 0;
