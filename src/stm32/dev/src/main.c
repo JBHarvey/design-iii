@@ -546,9 +546,7 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 	switch (type) {
 	case COMMAND_MOVE:
 		if (len == 8 && type == 0) {
-			setMoveSettings(&PID_POSITION1, &PID_POSITION2, &PID_POSITION3,
-					&PID_POSITION4, &PID_SPEED1, &PID_SPEED2, &PID_SPEED3,
-					&PID_SPEED4, data);
+			setMoveSettings(data);
 
 			resetPositionEncoderVariables();
 
@@ -558,9 +556,7 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 	case COMMAND_ROTATE:
 		if (len == 4 && type == COMMAND_ROTATE) {
 
-			setRotateSettings(&PID_POSITION1, &PID_POSITION2, &PID_POSITION3,
-					&PID_POSITION4, &PID_SPEED1, &PID_SPEED2, &PID_SPEED3,
-					&PID_SPEED4, data);
+			setRotateSettings(data);
 
 			resetPositionEncoderVariables();
 

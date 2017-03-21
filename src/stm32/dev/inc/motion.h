@@ -20,9 +20,8 @@ float getRadianMoveFromBuffer(uint8_t *data);
 
 float getMoveFromRadian(float radian);
 
-void setMoveSettings(PidType *pidPosition1, PidType *pidPosition2,
-		PidType *pidPosition3, PidType *pidPosition4, PidType *pidSpeed1,
-		PidType *pidSpeed2, PidType *pidSpeed3, PidType *pidSpeed4,
-		uint8_t *data);
+void setMoveSettings(uint8_t *data);
+
+void setRotateSettings(uint8_t *data);
 
 #endif /* MOTION_H_ */
