@@ -36,10 +36,6 @@
 
 #define MIN_SQUARE_AREA 1000
 
-struct Square {
-    CvPoint2D32f corner[4];
-};
-
 double angle(CvPoint *pt1, CvPoint *pt2, CvPoint *pt0)
 {
     double dx1 = pt1->x - pt0->x;
@@ -286,16 +282,28 @@ static CvSeq *findFigure(CvSeq *in)
     return 0;
 }
 
+_Bool findFirstGreenSquare(CvMemStorage *opencv_storage, IplImage *image_yuv, struct Square *square)
+{
+    IplImage *image_black_white = thresholdImage(image_yuv, GREEN_SQUARE_YUV_LOWER_BOUND, GREEN_SQUARE_YUV_UPPER_BOUND,
+                                  ERODE_DILATE_PIXELS);
+
+    _Bool success = 0;
+
+    if(findGreenSquares(opencv_storage, image_black_white, square, 1) >= 1) {
+        success = 1;
+    }
+
+    cvReleaseImage(&image_black_white);
+    return success;
+}
+
 CvSeq *findFirstFigure(CvMemStorage *opencv_storage, IplImage *image_yuv)
 {
     CvSeq *figure_contours = NULL;
 
-    IplImage *image_black_white = thresholdImage(image_yuv, GREEN_SQUARE_YUV_LOWER_BOUND, GREEN_SQUARE_YUV_UPPER_BOUND,
-                                  ERODE_DILATE_PIXELS);
-
     struct Square squares[1];
 
-    if(findGreenSquares(opencv_storage, image_black_white, squares, sizeof(squares) / sizeof(struct Square)) >= 1) {
+    if(findFirstGreenSquare(opencv_storage, image_yuv, squares)) {
         IplImage *square_image = imageInsideSquare(image_yuv, squares[0]);
         IplImage *square_image_black_white = thresholdImage3D(square_image, ERODE_DILATE_PIXELS);
         cvReleaseImage(&square_image);
@@ -305,7 +313,6 @@ CvSeq *findFirstFigure(CvMemStorage *opencv_storage, IplImage *image_yuv)
         figure_contours = findFigure(figure_contours);
     }
 
-    cvReleaseImage(&image_black_white);
     return figure_contours;
 }
 

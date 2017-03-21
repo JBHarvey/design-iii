@@ -9,6 +9,12 @@ double angle(CvPoint *pt1, CvPoint *pt2, CvPoint *pt0);
 _Bool isDualSquare(CvSeq *contours);
 _Bool isFigure(CvSeq *contours);
 
+struct Square {
+    CvPoint2D32f corner[4];
+};
+
+_Bool findFirstGreenSquare(CvMemStorage *opencv_storage, IplImage *image_yuv, struct Square *square);
+
 CvSeq *findFirstFigure(CvMemStorage *opencv_storage, IplImage *image_yuv);
 
 enum ObstacleType {
