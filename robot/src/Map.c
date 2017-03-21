@@ -179,7 +179,7 @@ static int isObstacleValid(struct Obstacle *obstacle)
 {
     return !isObstacleInvalid(obstacle);
 }
-
+/*
 struct Obstacle *Map_retrieveFirstObstacle(struct Map *map)
 {
     struct Obstacle *first_one = NULL;
@@ -201,3 +201,4 @@ struct Obstacle *Map_retrieveFirstObstacle(struct Map *map)
 
     return map->obstacles[2];
 }
+*/
