@@ -4,6 +4,9 @@
 #include "stm32f4xx.h"
 #include "tm_stm32f4_delay.h"
 
+#define LED_PRESCALER 4200-1 // Donne 500k
+#define LED_PERIOD 10000
+
 void InitializeLEDs();
 void initLEDsSignals();
 void turnOnRedLED();

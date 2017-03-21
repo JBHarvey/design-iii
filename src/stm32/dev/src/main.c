@@ -49,6 +49,8 @@ volatile char manchesterOrientationVerification[ORIENTATION_LENGTH] = { ' ',
 		' ', ' ', ' ', ' ' };
 volatile uint8_t manchesterFactorVerification = 0;
 
+volatile int timeCounter = 0; // 100hz
+
 extern void TIM5_IRQHandler() {
 	if (TIM_GetITStatus(TIM5, TIM_IT_Update) != RESET) {
 		TIM_ClearITPendingBit(TIM5, TIM_IT_Update);
@@ -500,7 +502,13 @@ extern void TIM2_IRQHandler() {
 #endif
 
 		resetEncoderSpeedVariables();
+		timeCounter++;
 	}
+}
+
+extern void TIM6_DAC_IRQHandler() {
+	turnOffLEDs();
+	disableTimer6Interrupt();
 }
 /*
  void setPIDCoeficient(float xMove, float yMove) {
@@ -571,6 +579,16 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 			setState(&mainState, MAIN_PID);
 		}
 		break;
+	case COMMAND_TURN_RED_LED_ON:
+		turnOnRedLED();
+		InitializeTimer6();
+		EnableTimer6Interrupt();
+		break;
+	case COMMAND_TURN_GREEN_LED_ON:
+		turnOnGreenLED();
+		InitializeTimer6();
+		EnableTimer6Interrupt();
+		break;
 	case COMMAND_START_IDEN_WHEELS:
 		setState(&mainState, MAIN_ACQUIS_ALL);
 		break;
@@ -602,3 +620,4 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 		break;
 	}
 }
+
