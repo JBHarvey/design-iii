@@ -236,7 +236,7 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
 
         case MANCHESTER_CODE_DECODED:
 
-            if(length != (sizeof(struct ReceptionManchester) + 1)) {
+            if(length != (sizeof(struct Communication_ManchesterCode) + 1)) {
                 printf("wrong struct ReceptionManchester length\n");
                 break;
             }
@@ -249,7 +249,7 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
 
             fprintf(test, "RECEPTION!\n\n");
 
-            fprintf("%d - %d - %s",
+            fprintf(test, "%d - %d - %c",
                     communication_manchester_code.painting_number,
                     communication_manchester_code.scale_factor,
                     communication_manchester_code.orientation);
@@ -372,17 +372,12 @@ void RobotServer_sendLowerPenCommand(void)
 
 void RobotServer_sendLightRedLEDCommand(void)
 {
-    writteTTYACMPacket(COMMAND_TYPE_RED_LED, 0, ACTION_ONLY_COMMAND_LENGTH);
-}
-
-void RobotServer_sendLightRedLEDCommand(void)
-{
-    writteTTYACMPacket(COMMAND_TYPE_RED_LED, 0, ACTION_ONLY_COMMAND_LENGTH);
+    writeTTYACMPacket(COMMAND_TYPE_RED_LED, 0, ACTION_ONLY_COMMAND_LENGTH);
 }
 
 void RobotServer_sendLightGreenLEDCommand(void)
 {
-    writteTTYACMPacket(COMMAND_TYPE_GREEN_LED, 0, ACTION_ONLY_COMMAND_LENGTH);
+    writeTTYACMPacket(COMMAND_TYPE_GREEN_LED, 0, ACTION_ONLY_COMMAND_LENGTH);
 }
 
 void RobotServer_fetchManchesterCodeCommand(void)
