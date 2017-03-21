@@ -57,8 +57,8 @@
 #define PID_POSITION_TOLERANCE 0.0005
 /* PID1 */
 // Parametres en vitesse
-#define PID_SPEED1_KP 55//4.87
-#define PID_SPEED1_KI 0.001 //107.6
+#define PID_SPEED1_KP 0.2392//30//4.87
+#define PID_SPEED1_KI 0.7143 //107.6
 #define PID_SPEED1_KD 0.0
 #define PID_SPEED1_N 0.0
 
@@ -70,8 +70,8 @@
 
 /* PID2 */
 // Parametres en vitesse
-#define PID_SPEED2_KP 55//4.87
-#define PID_SPEED2_KI 0.001 //107.6
+#define PID_SPEED2_KP 0.2736//30//4.87
+#define PID_SPEED2_KI 0.6750//0.0006 //107.6
 #define PID_SPEED2_KD 0.0
 #define PID_SPEED2_N 0.0
 
@@ -83,8 +83,8 @@
 
 /* PID3 */
 // Parametres en vitesse
-#define PID_SPEED3_KP 55//4.87
-#define PID_SPEED3_KI 0.001 //107.6
+#define PID_SPEED3_KP 0.2439//30//4.87
+#define PID_SPEED3_KI 0.6097//0.0006 //107.6
 #define PID_SPEED3_KD 0.0
 #define PID_SPEED3_N 0.0
 
@@ -96,8 +96,8 @@
 
 /* PID4 */
 // Parametres en vitesse
-#define PID_SPEED4_KP 55//4.87
-#define PID_SPEED4_KI 0.001 //107.6
+#define PID_SPEED4_KP 0.2156//30//4.87
+#define PID_SPEED4_KI 0.625 //107.6
 #define PID_SPEED4_KD 0.0
 #define PID_SPEED4_N 0.0
 
