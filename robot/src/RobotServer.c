@@ -233,7 +233,7 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
     // Wheels Rotation
 
     FILE *bob = fopen("bob.log", "a+");
-    fprintf(bob, "Received packet with command number: %d\nExpected size: %d\n", data[0],
+    fprintf(bob, "Received packet with command number: %d\nExpected size: %d\n", (int) data[0],
             (int) sizeof(struct Communication_ManchesterCode));
     fclose(bob);
 
