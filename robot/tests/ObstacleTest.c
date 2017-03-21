@@ -9,14 +9,14 @@ struct Obstacle *center_obstacle;
 struct Obstacle *north_oriented_obstacle;
 struct Obstacle *south_oriented_obstacle;
 
-void setup_obstacle(void)
+void setup_Obstacle(void)
 {
     center_obstacle = Obstacle_new(OBSTACLE_X, OBSTACLE_Y, THEORICAL_OBSTACLE_RADIUS, CENTER);
     north_oriented_obstacle = Obstacle_new(OBSTACLE_X, OBSTACLE_Y, THEORICAL_OBSTACLE_RADIUS, NORTH);
     south_oriented_obstacle = Obstacle_new(OBSTACLE_X, OBSTACLE_Y, THEORICAL_OBSTACLE_RADIUS, SOUTH);
 }
 
-void teardown_obstacle(void)
+void teardown_Obstacle(void)
 {
     Obstacle_delete(center_obstacle);
     Obstacle_delete(north_oriented_obstacle);
@@ -24,8 +24,8 @@ void teardown_obstacle(void)
 }
 
 Test(Obstacle, creation_destruction
-     , .init = setup_obstacle
-     , .fini = teardown_obstacle)
+     , .init = setup_Obstacle
+     , .fini = teardown_Obstacle)
 {
     cr_assert(
         center_obstacle->coordinates->x == OBSTACLE_X &&
@@ -35,8 +35,8 @@ Test(Obstacle, creation_destruction
 }
 
 Test(Obstacle, given_newCoordinates_when_changingCoordinates_then_theyAreChanged
-     , .init = setup_obstacle
-     , .fini = teardown_obstacle)
+     , .init = setup_Obstacle
+     , .fini = teardown_Obstacle)
 {
     struct Coordinates *new_coordinates = Coordinates_new(OBSTACLE_Y, OBSTACLE_X);
     Obstacle_changeCoordinates(center_obstacle, new_coordinates);
@@ -47,8 +47,8 @@ Test(Obstacle, given_newCoordinates_when_changingCoordinates_then_theyAreChanged
 }
 
 Test(Obstacle, given_newOrientation_when_changingOrientation_then_itIsChanged
-     , .init = setup_obstacle
-     , .fini = teardown_obstacle)
+     , .init = setup_Obstacle
+     , .fini = teardown_Obstacle)
 {
     enum CardinalDirection new_orientation = NORTH;
     Obstacle_changeOrientation(center_obstacle, new_orientation);

@@ -371,12 +371,25 @@ void RobotServer_sendLowerPenCommand(void)
     writeTTYACMPacket(COMMAND_TYPE_LOWER_PEN, 0, ACTION_ONLY_COMMAND_LENGTH);
 }
 
+void RobotServer_sendLightRedLEDCommand(void)
+{
+    writteTTYACMPacket(COMMAND_TYPE_RED_LED, 0, ACTION_ONLY_COMMAND_LENGTH);
+}
+
+void RobotServer_sendLightRedLEDCommand(void)
+{
+    writteTTYACMPacket(COMMAND_TYPE_RED_LED, 0, ACTION_ONLY_COMMAND_LENGTH);
+}
+
+void RobotServer_sendLightGreenLEDCommand(void)
+{
+    writteTTYACMPacket(COMMAND_TYPE_GREEN_LED, 0, ACTION_ONLY_COMMAND_LENGTH);
+}
+
 void RobotServer_fetchManchesterCodeCommand(void)
 {
     writeTTYACMPacket(COMMAND_TYPE_FETCH_MANCHESTER, 0, ACTION_ONLY_COMMAND_LENGTH);
 }
 // all of these have the command type + the ACTION_ONLY_COMMAND_LENGHT
-void RobotServer_sendLightRedLEDCommand(void) {}
-void RobotServer_sendLightGreenLEDCommand(void) {}
 void RobotServer_sendStopSendingManchesterSignalCommand(void) {}
 

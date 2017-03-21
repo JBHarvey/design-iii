@@ -131,6 +131,28 @@ void Map_updatePaintingZone(struct Map *map, struct Pose *new_pose, int index)
     Pose_copyValuesFrom(map->painting_zones[index], new_pose);
 }
 
+static int isObstacleInvalid(struct Obstacle *obstacle)
+{
+    struct Coordinates *minus_ones = Coordinates_new(-1, -1);
+    int isInvalid = Coordinates_haveTheSameValues(minus_ones, obstacles->coordinates);
+    Coordinates_delete(minus_ones);
+    return isInvalid;
+}
+
+int Map_fetchNumberOfObstacles(struct Map *map)
+{
+    int number_of_obstacles = MAXIMUM_OBSTACLE_NUMBER;
+    int i;
+
+    for(i = 0; i < MAXIMUM_OBSTACLE_NUMBER; ++i) {
+        if(isObstacleInvalid(map->obstacles[i])) {
+            --number_of_obstacles;
+        }
+    }
+
+    return number_of_obstacles;
+}
+
 struct Map *Map_fetchNavigableMap(struct Map *original_map, int robot_radius)
 {
     struct Map *new_map = Map_new();
@@ -151,4 +173,31 @@ struct Map *Map_fetchNavigableMap(struct Map *original_map, int robot_radius)
     }
 
     return new_map;
+}
+
+static int isObstacleValid(struct Obstacle *obstacle)
+{
+    return !isObstacleInvalid(obstacle);
+}
+
+struct Obstacle *Map_retrieveFirstObstacle(struct Map *map)
+{
+    struct Obstacle *first_one = NULL;
+    struct Obstacle *aspirant;
+    struct Coordinates *eastern_point_of_first;
+    struct Coordinates *eastern_point_of_aspirant;
+    int i;
+
+    for(i = 0; i < MAXIMUM_OBSTACLE_NUMBER; ++i) {
+        aspirant = map->obstacle[i];
+
+        if(isObstacleValid(aspirant)) {
+            if(first_one == NULL) {
+                first_one = aspirant;
+            } else {
+            }
+        }
+    }
+
+    return map->obstacles[2];
 }

@@ -33,5 +33,8 @@ void Map_updateAntennaZone(struct Map *map, struct Coordinates *start, struct Co
 void Map_updateObstacle(struct Map *map, struct Coordinates *new_coordinates, enum CardinalDirection new_orientation, int index);
 void Map_updatePaintingZone(struct Map *map, struct Pose *new_pose, int index);
 
+int Map_fetchNumberOfObstacles(struct Map *map);
 struct Map *Map_fetchNavigableMap(struct Map *original_map, int robot_radius);
+
+struct Obstacle *Map_retrieveFirstObstacle(struct Map *map);
 #endif // MAP_H_
