@@ -11,6 +11,7 @@
 /* Flags definitions */
 
 enum TooltipStatus {PRINT, PASS};
+enum FrameStatus {NOT_READY, READY};
 extern enum ThreadStatus main_loop_status;
 
 /* Constants */
@@ -35,8 +36,10 @@ struct CameraCapture {
 GMutex world_camera_feeder_mutex;
 
 enum TooltipStatus world_camera_coordinates_tooltip_status = PRINT;
-enum CameraStatus world_camera_status = UNCALIBRATED;
+enum FrameStatus world_camera_frame_status = NOT_READY;
 struct Camera *world_camera = NULL;
+IplImage* world_camera_frame = NULL;
+IplImage* world_camera_back_frame = NULL;
 GdkPixbuf *world_camera_pixbuf = NULL;
 
 gboolean worldCameraDrawEventCallback(GtkWidget *widget, GdkEventExpose *event, gpointer data)
@@ -145,7 +148,9 @@ static void releaseCamera(struct Camera *input_camera)
     free(input_camera);
 }
 
-static void cleanExitIfMainLoopTerminated(struct CameraCapture *world_camera_capture)
+static void cleanExitIfMainLoopTerminated(struct CameraCapture *world_camera_capture,
+        IplImage *frame_BGR_corrected, IplImage *frame_RGB_corrected,
+        GThread *world_vision_detection_worker_thread)
 {
     if(main_loop_status == TERMINATED) {
         g_mutex_lock(&world_camera_feeder_mutex);
@@ -153,6 +158,15 @@ static void cleanExitIfMainLoopTerminated(struct CameraCapture *world_camera_cap
         g_mutex_unlock(&world_camera_feeder_mutex);
         releaseCameraCapture(world_camera_capture);
         releaseCamera(world_camera);
+        cvReleaseImage(&world_camera_frame);
+        cvReleaseImage(&world_camera_back_frame);
+        cvReleaseImage(&frame_BGR_corrected);
+        cvReleaseImage(&frame_RGB_corrected);
+
+        if(world_vision_detection_worker_thread != NULL) {
+            g_thread_join(world_vision_detection_worker_thread);
+        }
+
         g_thread_exit((gpointer) TRUE);
     }
 }
@@ -170,14 +184,33 @@ static void undistortCameraCapture(IplImage *input_frame, IplImage *output_undis
     cvReleaseMat(&optimal_camera_matrix);
 }
 
+static void freeWorldPixbufData(guchar *pixels, gpointer data)
+{
+    cvReleaseImage((IplImage **) &data);
+}
+
+void WorldVision_applyWorldCameraBackFrame(void)
+{
+    g_mutex_lock(&world_camera_feeder_mutex);
+    cvCopy(world_camera_back_frame, world_camera_frame, NULL);
+    world_camera_frame_status = READY;
+    g_mutex_unlock(&world_camera_feeder_mutex);
+}
+
+IplImage *WorldVision_getWorldCameraBackFrame(void)
+{
+    return world_camera_back_frame;
+}
+
 /* Worker thread */
 
 gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient *station_client)
 {
-    IplImage* frame = NULL;
-    IplImage* frame_BGR = NULL;
-    IplImage* frame_BGR_corrected = NULL;
-    CvMemStorage *opencv_storage = cvCreateMemStorage(0);
+    IplImage *frame_BGR = NULL;
+    IplImage *frame_BGR_corrected = NULL;
+    IplImage *frame_RGB_corrected = NULL;
+    GThread *world_vision_detection_worker_thread = NULL;
+    //CvMemStorage *opencv_storage = cvCreateMemStorage(0);
 
     initializeWorldCamera();
 
@@ -192,7 +225,8 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient 
 
     while(TRUE) {
 
-        cleanExitIfMainLoopTerminated(world_camera_capture);
+        cleanExitIfMainLoopTerminated(world_camera_capture, frame_BGR_corrected, frame_RGB_corrected,
+                                      world_vision_detection_worker_thread);
 
         frame_BGR = cvQueryFrame(world_camera_capture->camera_capture_feed);
 
@@ -201,41 +235,71 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient 
             continue;
         }
 
-        frame_BGR_corrected = cvCloneImage(frame_BGR);
-        frame = cvCloneImage(frame_BGR);
+        if(world_camera_frame == NULL) {
+            world_camera_frame = cvCloneImage(frame_BGR);
+        }
 
-        if(world_camera->camera_status == INTRINSICALLY_CALIBRATED ||
-           world_camera->camera_status == INTRINSICALLY_AND_EXTRINSICALLY_CALIBRATED ||
-           world_camera->camera_status == FULLY_CALIBRATED) {
+        if(frame_BGR_corrected == NULL) {
+            frame_BGR_corrected = cvCloneImage(frame_BGR);
+        }
+
+        if(frame_RGB_corrected == NULL) {
+            frame_RGB_corrected = cvCloneImage(frame_BGR);
+        }
+
+
+        if(world_camera->camera_status != UNCALIBRATED) {
+
             undistortCameraCapture(frame_BGR, frame_BGR_corrected);
 
             if(world_camera->camera_status == FULLY_CALIBRATED) {
-                struct Detected_Things detected = detectDrawObstaclesRobot(opencv_storage, frame_BGR_corrected, world_camera);
 
-                if(detected.robot_detected) {
-                    StationClientSender_sendWorldInformationsToRobot(station_client, detected.obstacles, MAX_OBSTACLES, detected.robot);
+                if(world_vision_detection_worker_thread == NULL) {
+                    world_vision_detection_worker_thread = g_thread_new("world_camera_detector",
+                                                           (GThreadFunc) WorldVisionDetection_detectObstaclesAndRobot, (gpointer) world_camera);
                 }
+
+                //struct Detected_Things detected = detectDrawObstaclesRobot(opencv_storage, frame_BGR_corrected, world_camera);
+
+                /* if(detected.robot_detected) {
+                     StationClientSender_sendWorldInformationsToRobot(station_client, detected.obstacles, MAX_OBSTACLES, detected.robot);
+                 }*/
             }
+        } else {
+            cvCopy(frame_BGR, frame_BGR_corrected, NULL);
         }
 
-        cvCvtColor((CvArr*) frame_BGR_corrected, frame, CV_BGR2RGB);
+        cvCvtColor(frame_BGR_corrected, frame_RGB_corrected, CV_BGR2RGB);
 
-        g_mutex_lock(&world_camera_feeder_mutex);
-        g_object_unref(world_camera_pixbuf);
+        if(world_camera_back_frame == NULL) {
+            world_camera_back_frame = cvCloneImage(frame_RGB_corrected);
+        }
 
-        world_camera_pixbuf = gdk_pixbuf_new_from_data((guchar*) frame->imageData,
-                              GDK_COLORSPACE_RGB, FALSE, frame->depth, frame->width,
-                              frame->height, (frame->widthStep), NULL, NULL);
+        if(world_camera->camera_status == UNCALIBRATED) {
+            cvCopy(frame_RGB_corrected, world_camera_frame, NULL);
+            world_camera_frame_status = READY;
+        }
 
-        g_mutex_unlock(&world_camera_feeder_mutex);
+        if(world_camera_frame_status == READY) {
+
+            g_mutex_lock(&world_camera_feeder_mutex);
+
+            g_object_unref(world_camera_pixbuf);
+            world_camera_pixbuf = gdk_pixbuf_new_from_data((guchar*) world_camera_frame->imageData,
+                                  GDK_COLORSPACE_RGB, FALSE, world_camera_frame->depth, world_camera_frame->width,
+                                  world_camera_frame->height, (world_camera_frame->widthStep),
+                                  NULL, NULL);
+            //(GdkPixbufDestroyNotify) freeWorldPixbufData, world_camera_frame);
+            world_camera_frame_status = NOT_READY;
+
+            g_mutex_unlock(&world_camera_feeder_mutex);
+
+        }
 
         StationClientSender_sendReceiveData(station_client);
-        cvReleaseImage(&frame_BGR_corrected);
-        cvReleaseImage(&frame);
-
     }
 
-    cvReleaseMemStorage(&opencv_storage);
+    //cvReleaseMemStorage(&opencv_storage);
     return NULL;
 }
 

@@ -1,7 +1,6 @@
 #include <math.h>
-#include "vision.h"
-#include "markers.h"
 #include "world_vision_detection.h"
+#include "station_interface.h"
 
 #define ROBOT_HEIGHT_CM 24.0
 #define ROBOT_RADIUS_CM 16.0
@@ -18,6 +17,8 @@
 
 #define SIZE_DRAW_LINES 3
 #define RADIUS_DRAW_CIRCLE 40
+
+extern enum ThreadStatus main_loop_status;
 
 static int convertAngleToRobotAngle(double angle)
 {
@@ -46,20 +47,84 @@ static void drawMarkerLocationOnImage(IplImage *image_BGR, struct Marker marker)
     cvCircle(image_BGR, cvPoint(marker.x, marker.y), RADIUS_DRAW_CIRCLE, CV_RGB(255, 0, 255), SIZE_DRAW_LINES, 8, 0);
 }
 
-static void drawObstacleOnImage(IplImage *image_BGR, struct Obstacle obstacle)
+static void drawObstaclesOnImage(IplImage *image_BGR, struct Obstacle obstacles[MAXIMUM_OBSTACLE_NUMBER],
+                                 int number_of_obstacles)
 {
-    if(obstacle.type == OBSTACLE_CIRCLE) {
-        cvCircle(image_BGR, cvPoint(obstacle.x, obstacle.y), RADIUS_DRAW_CIRCLE / 2, CV_RGB(255, 0, 0), SIZE_DRAW_LINES, 8, 0);
-        cvCircle(image_BGR, cvPoint(obstacle.x, obstacle.y), RADIUS_DRAW_CIRCLE, CV_RGB(255, 0, 0), SIZE_DRAW_LINES, 8, 0);
-    }
+    for(int i = 0; i < number_of_obstacles; i++) {
+        if(obstacles[i].type == OBSTACLE_CIRCLE) {
+            cvCircle(image_BGR, cvPoint(obstacles[i].x, obstacles[i].y), RADIUS_DRAW_CIRCLE / 2, CV_RGB(255, 0, 0), SIZE_DRAW_LINES,
+                     8, 0);
+            cvCircle(image_BGR, cvPoint(obstacles[i].x, obstacles[i].y), RADIUS_DRAW_CIRCLE, CV_RGB(255, 0, 0), SIZE_DRAW_LINES, 8,
+                     0);
+        }
 
-    if(obstacle.type == OBSTACLE_TRIANGLE) {
-        cvLine(image_BGR, cvPoint(obstacle.x, obstacle.y), cvPoint(obstacle.x + RADIUS_DRAW_CIRCLE * cos(obstacle.angle),
-                obstacle.y + RADIUS_DRAW_CIRCLE * sin(obstacle.angle)), CV_RGB(0, 255, 0), SIZE_DRAW_LINES, 8, 0);
-        cvCircle(image_BGR, cvPoint(obstacle.x, obstacle.y), RADIUS_DRAW_CIRCLE, CV_RGB(0, 255, 0), SIZE_DRAW_LINES, 8, 0);
+        if(obstacles[i].type == OBSTACLE_TRIANGLE) {
+            cvLine(image_BGR, cvPoint(obstacles[i].x, obstacles[i].y),
+                   cvPoint(obstacles[i].x + RADIUS_DRAW_CIRCLE * cos(obstacles[i].angle),
+                           obstacles[i].y + RADIUS_DRAW_CIRCLE * sin(obstacles[i].angle)), CV_RGB(0, 255, 0), SIZE_DRAW_LINES, 8, 0);
+            cvCircle(image_BGR, cvPoint(obstacles[i].x, obstacles[i].y), RADIUS_DRAW_CIRCLE, CV_RGB(0, 255, 0), SIZE_DRAW_LINES, 8,
+                     0);
+        }
     }
 }
 
+static void cleanExitIfMainLoopTerminated(CvMemStorage *opencv_storage)
+{
+    if(main_loop_status == TERMINATED) {
+        cvReleaseMemStorage(&opencv_storage);
+        g_thread_exit((gpointer) TRUE);
+    }
+}
+
+gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camera)
+{
+    CvMemStorage *opencv_storage = cvCreateMemStorage(0);
+
+    while(TRUE) {
+
+        cleanExitIfMainLoopTerminated(opencv_storage);
+
+        IplImage *world_camera_back_frame = WorldVision_getWorldCameraBackFrame();
+        IplImage *image_yuv = cvCreateImage(cvGetSize(world_camera_back_frame), IPL_DEPTH_8U, 3);
+        cvCvtColor(world_camera_back_frame, image_yuv, CV_RGB2YCrCb);
+        cvSmooth(image_yuv, image_yuv, CV_GAUSSIAN, 3, 0, 0, 0);
+
+        struct Obstacle obstacles[MAXIMUM_OBSTACLE_NUMBER];
+        int number_of_obstacles = findObstacles(opencv_storage, obstacles, MAXIMUM_OBSTACLE_NUMBER, image_yuv);
+
+        struct Marker marker = detectMarker(world_camera_back_frame);
+        struct Detected_Things detected = {};
+
+        detected.number_of_obstacles = number_of_obstacles;
+
+        for(int i = 0; i < number_of_obstacles; ++i) {
+
+            CvPoint obstacle_point = coordinateToTableCoordinate(cvPoint(obstacles[i].x, obstacles[i].y), OBSTACLE_HEIGHT_CM,
+                                     cvPoint(cvGetSize(world_camera_back_frame).width / 2, cvGetSize(world_camera_back_frame).height / 2));
+
+            obstacles[i].x = obstacle_point.x;
+            obstacles[i].y = obstacle_point.y;
+            detected.obstacles[i] = obstacles[i];
+        }
+
+        if(marker.valid) {
+
+            CvPoint robot_point = coordinateToTableCoordinate(cvPoint(marker.x, marker.y), ROBOT_HEIGHT_CM,
+                                  cvPoint(cvGetSize(world_camera_back_frame).width / 2, cvGetSize(world_camera_back_frame).height / 2));
+            marker.x = robot_point.x;
+            marker.y = robot_point.y;
+            detected.robot = marker;
+        }
+
+        WorldVision_applyWorldCameraBackFrame();
+
+        cvReleaseImage(&image_yuv);
+    }
+
+    return NULL;
+}
+
+/*
 struct Detected_Things detectDrawObstaclesRobot(CvMemStorage *opencv_storage, IplImage *image_BGR,
         struct Camera *input_camera)
 {
@@ -94,9 +159,10 @@ struct Detected_Things detectDrawObstaclesRobot(CvMemStorage *opencv_storage, Ip
 
         detected.obstacles[i].zone.pose.coordinates.x = convertMMToRobot(obstacles[i].x);
         detected.obstacles[i].zone.pose.coordinates.y = convertMMToRobot(obstacles[i].y);
-        drawObstacleOnImage(image_BGR, obstacles[i]);
         detected.num_obstacles++;
     }
+
+    drawObstaclesOnImage(image_BGR, obstacles, num_obstacles);
 
     if(marker.valid) {
         detected.robot_detected = 1;
@@ -118,4 +184,4 @@ struct Detected_Things detectDrawObstaclesRobot(CvMemStorage *opencv_storage, Ip
 
     cvReleaseImage(&image_yuv);
     return detected;
-}
+}*/

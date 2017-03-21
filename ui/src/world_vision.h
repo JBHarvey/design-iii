@@ -34,4 +34,8 @@ struct Camera {
 
 gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient *station_client);
 
+void WorldVision_applyWorldCameraBackFrame(void);
+
+IplImage *WorldVision_getWorldCameraBackFrame(void);
+
 #endif // __WORLD_VISION
