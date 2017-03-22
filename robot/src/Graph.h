@@ -4,7 +4,6 @@
 #include "Node.h"
 #include "Map.h"
 
-#define MAX_NUMBER_OF_NODE 22
 
 enum ObstaclePlacementType {
     NONE,
@@ -29,4 +28,5 @@ struct Graph {
 struct Graph *Graph_new(void);
 void Graph_delete(struct Graph *graph);
 
+void Graph_updateForMap(struct Graph *graph, struct Map* map);
 #endif // GRAPH_H_

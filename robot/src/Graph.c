@@ -33,3 +33,8 @@ void Graph_delete(struct Graph *graph)
         free(graph);
     }
 }
+
+void Graph_updateForMap(struct Graph *graph, struct Map* map)
+{
+    graph->type = SOLO;
+}

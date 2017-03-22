@@ -254,6 +254,31 @@ Test(Map, given_aMapAndARobotRadius_when_askedToFetchNavigableMap_then_theRobotR
     Coordinates_delete(center_east_coordinates);
 }
 
+Test(Map, given_aMapAndARobot_when_askedToFetchNavigableMap_then_theRobotRadiusIsSubstractedInYToTheAntennaZoneCoordinates
+     , .init = setup_Map
+     , .fini = teardown_Map)
+{
+    int antenna_zone_y = THEORICAL_WORLD_HEIGHT - THEORICAL_ROBOT_RADIUS;
+    struct Coordinates *antenna_zone_start = Coordinates_new(THEORICAL_ANTENNA_ZONE_START_X, THEORICAL_ANTENNA_ZONE_Y);
+    struct Coordinates *antenna_zone_stop = Coordinates_new(THEORICAL_ANTENNA_ZONE_STOP_X, THEORICAL_ANTENNA_ZONE_Y);
+    Map_updateAntennaZone(map, antenna_zone_start, antenna_zone_stop);
+
+    struct Map *navigable_map = Map_fetchNavigableMap(map, THEORICAL_ROBOT_RADIUS);
+
+    struct Coordinates *expected_start = Coordinates_new(THEORICAL_ANTENNA_ZONE_START_X,
+                                         THEORICAL_ANTENNA_ZONE_Y - THEORICAL_ROBOT_RADIUS);
+    struct Coordinates *expected_stop = Coordinates_new(THEORICAL_ANTENNA_ZONE_STOP_X,
+                                        THEORICAL_ANTENNA_ZONE_Y - THEORICAL_ROBOT_RADIUS);
+    cr_assert(Coordinates_haveTheSameValues(expected_start, navigable_map->antenna_zone_start));
+    cr_assert(Coordinates_haveTheSameValues(expected_stop, navigable_map->antenna_zone_stop));
+
+    Coordinates_delete(expected_start);
+    Coordinates_delete(expected_stop);
+    Coordinates_delete(antenna_zone_start);
+    Coordinates_delete(antenna_zone_stop);
+    Map_delete(navigable_map);
+}
+
 void setObstacleCoordinates(struct Map *map, int index, struct Coordinates *new_coordinates)
 {
     Coordinates_copyValuesFrom(map->obstacles[index]->coordinates, new_coordinates);

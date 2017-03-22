@@ -3,8 +3,6 @@
 
 #include "Coordinates.h"
 
-#define THEORICAL_OBSTACLE_RADIUS 625  /* Unit: 0.1 mm */
-
 struct Obstacle {
     struct Object *object;
     struct Coordinates *coordinates;
