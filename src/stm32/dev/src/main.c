@@ -100,7 +100,7 @@ void initAll(void) {
 	initBtn();
 
 // Initialisation des variables
-	mainState = MAIN_IDLE;
+	mainState = MAIN_MANCH;
 //setState(&mainState, MAIN_MOVE);
 
 	int state = IDLE;
@@ -157,23 +157,11 @@ int main(void) {
 					manchesterOrientationVerification,
 					&manchesterFactorVerification);
 
-			int figure = 1;
-			int factor = 4;
+			sendDecodedManchesterCode(manchesterFigureVerification,
+					manchesterFactorVerification,
+					manchesterOrientationVerification[0]);
 
-			uint8_t dataToSend[10];
-			dataToSend[0] = COMMAND_DECODED_MANCHESTER;
-			dataToSend[1] = (uint8_t) figure >> 0;
-			dataToSend[2] = (uint8_t) figure >> 8;
-			dataToSend[3] = (uint8_t) figure >> 16;
-			dataToSend[4] = (uint8_t) figure >> 24;
-			dataToSend[5] = (uint8_t) factor >> 0;
-			dataToSend[6] = (uint8_t) factor >> 8;
-			dataToSend[7] = (uint8_t) factor >> 16;
-			dataToSend[8] = (uint8_t) factor >> 24;
-			dataToSend[9] = 'N';
-
-			VCP_DataTx(dataToSend, 10);
-			Delayms(10);
+			Delayms(1);
 			break;
 		case MAIN_PREHENSEUR:
 			initPrehensor();
@@ -197,7 +185,6 @@ extern void EXTI4_IRQHandler(void) {
 		EnableTimer5Interrupt();
 		disableExternalInterruptLine4();
 	}
-
 }
 
 extern void EXTI9_5_IRQHandler(void) {
@@ -213,7 +200,6 @@ extern void EXTI9_5_IRQHandler(void) {
 
 		// check wheel 1
 		if (wheel1Channel1UP == wheel1Channel2UP) {
-
 			numberOfPositionEdges1++;
 			incWheel1Canal1EncoderCounter++;
 			speedDirection1 = SPEED_DIRECTION_FORWARD;
@@ -421,6 +407,15 @@ extern void TIM2_IRQHandler() {
 		if (ticksIndex4 >= TICKS_BUFFER_SIZE) {
 			ticksIndex4 = 0;
 		}
+
+		if (timeCounter == 5) {
+			sendPositionEncoderTicks(numberOfPositionEdges1, numberOfPositionEdges2,
+					numberOfPositionEdges3, numberOfPositionEdges4,
+					numberOfSpeedEdges1, numberOfSpeedEdges2,
+					numberOfSpeedEdges3, numberOfSpeedEdges4);
+			timeCounter = 0;
+		}
+
 		/* update position pids */
 		PID_POSITION1.myInput = numberOfPositionEdges1;
 		PID_POSITION2.myInput = numberOfPositionEdges2;
@@ -438,6 +433,10 @@ extern void TIM2_IRQHandler() {
 		PID_SetMode(&PID_POSITION2, PID_Mode_Automatic);
 		PID_SetMode(&PID_POSITION3, PID_Mode_Automatic);
 		PID_SetMode(&PID_POSITION4, PID_Mode_Automatic);
+
+		resetEncoderSpeedVariables();
+
+		timeCounter++;
 
 #ifdef ENABLE_ACQUIS
 		if (bufferWheelIndex1 < MAX_WHEEL_INDEX) {
@@ -500,9 +499,6 @@ extern void TIM2_IRQHandler() {
 			}
 		}
 #endif
-
-		resetEncoderSpeedVariables();
-		timeCounter++;
 	}
 }
 
@@ -562,9 +558,9 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 	switch (type) {
 	case COMMAND_MOVE:
 		if (len == 8 && type == 0) {
-			setMoveSettings(data);
-
 			resetPositionEncoderVariables();
+
+			setMoveSettings(data);
 
 			setState(&mainState, MAIN_PID);
 		}
@@ -583,11 +579,13 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 		turnOnRedLED();
 		InitializeTimer6();
 		EnableTimer6Interrupt();
+		sendRedLightConfirmation();
 		break;
 	case COMMAND_TURN_GREEN_LED_ON:
 		turnOnGreenLED();
 		InitializeTimer6();
 		EnableTimer6Interrupt();
+		sendGreenLightConfirmation();
 		break;
 	case COMMAND_START_IDEN_WHEELS:
 		setState(&mainState, MAIN_ACQUIS_ALL);
@@ -608,14 +606,19 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 #endif
 	case COMMAND_PENCIL_UP:
 		moveUpPrehensor();
+		sendMoveUpConfirmation();
 		break;
 	case COMMAND_PENCIL_DOWN:
 		moveDownPrehensor();
+		sendMoveDownConfirmation();
 		break;
 	case COMMAND_DECODE_MANCHESTER:
 		setState(&mainState, MAIN_MANCH);
 		break;
 	case COMMAND_STOP_DECODE_MANCHESTER:
+		setState(&mainState, MAIN_IDLE);
+		break;
+	case COMMAND_IDLE:
 		setState(&mainState, MAIN_IDLE);
 		break;
 	}

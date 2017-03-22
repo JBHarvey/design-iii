@@ -10,7 +10,7 @@ void EnableTimer5Interrupt();
 void disableTimer5Interrupt();
 void SetTimer6(uint16_t period);
 void InitializeTimer6();
-void EnableTimer5Interrupt();
+void EnableTimer6Interrupt();
 void disableTimer6Interrupt();
 
 #endif

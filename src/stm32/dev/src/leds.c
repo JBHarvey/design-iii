@@ -71,6 +71,14 @@ void turnOffLEDs() {
 	GPIO_ResetBits(GPIOC, GPIO_Pin_5 | GPIO_Pin_4);
 }
 
+uint8_t isRedLightOn() {
+	return GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_4);
+}
+
+uint8_t isGreenLightOn() {
+	return GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_5);
+}
+
 /* Routine de test pour les LEDs */
 void startLEDsRoutine() {
 	Delayms(1000);

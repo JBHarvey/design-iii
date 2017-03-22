@@ -34,8 +34,8 @@ void setMoveSettings(uint8_t *data) {
 
 	/*set PID setpoints (xMove, yMove);*/
 	PID_POSITION1.mySetpoint = xMove;
-	PID_POSITION2.mySetpoint = xMove;
-	PID_POSITION3.mySetpoint = yMove;
+	PID_POSITION2.mySetpoint = yMove;
+	PID_POSITION3.mySetpoint = xMove;
 	PID_POSITION4.mySetpoint = yMove;
 
 	// reset pid values
@@ -66,8 +66,8 @@ void setRotateSettings(uint8_t *data) {
 
 	PID_POSITION1.mySetpoint = -move;
 	PID_POSITION2.mySetpoint = move;
-	PID_POSITION3.mySetpoint = -move;
-	PID_POSITION4.mySetpoint = move;
+	PID_POSITION3.mySetpoint = move;
+	PID_POSITION4.mySetpoint = -move;
 
 	PID_POSITION1.ITerm = 0;
 	PID_SPEED1.ITerm = 0;

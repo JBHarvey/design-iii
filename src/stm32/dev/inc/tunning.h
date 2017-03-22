@@ -8,7 +8,7 @@
 #include "PID_v1.h"
 
 /***************************************************
- * Les buffers qui suivent servent à l'acquisition pour
+ * Les buffers qui suivent servent ï¿½ l'acquisition pour
  * bien faire l'asservissement des roues
  ***************************************************/
 //#define ENABLE_ACQUIS
@@ -86,15 +86,15 @@ extern uint16_t bufferDeadZone3[MAX_DEAD_ZONE];
 extern uint16_t bufferDeadZone4[MAX_DEAD_ZONE];
 #endif
 
-// Méthode pour effetuer l'identifications des roues à partir de deux échelons de consigne
+// Mï¿½thode pour effetuer l'identifications des roues ï¿½ partir de deux ï¿½chelons de consigne
 void tunningIdentificationWheels();
 
 void tunningSendIdenWheels();
 
-// Permet de comparer la consigne avec la réponse d'un système à une consigne
+// Permet de comparer la consigne avec la rï¿½ponse d'un systï¿½me ï¿½ une consigne
 void tunningSpeedPI();
 
-// PErmet d'Envoyer les données relatives à l'analyse de la réponse du PID
+// PErmet d'Envoyer les donnï¿½es relatives ï¿½ l'analyse de la rï¿½ponse du PID
 void tunningSendSpeedPI();
 
 void getPIFromBuffer(uint8_t *data);

@@ -12,6 +12,10 @@ void initLEDsSignals();
 void turnOnRedLED();
 void turnOnGreenLED();
 void turnOffLEDs();
+uint8_t isRedLightOn();
+uint8_t isGreenLightOn();
+void sendRedLightConfirmation();
+
 void startLEDsRoutine();
 
 #endif /* LEDS_H_ */
