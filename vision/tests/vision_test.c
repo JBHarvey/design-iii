@@ -205,3 +205,33 @@ Test(vision, findFirstGreenSquare_noSquare)
     cvReleaseImage(&image);
     cvReleaseImage(&image_yuv);
 }
+
+Test(vision, findTableCorners_noTable)
+{
+    CvMemStorage *opencv_storage = cvCreateMemStorage(0);
+    IplImage *image = cvLoadImage("white.jpg", CV_LOAD_IMAGE_COLOR);
+    IplImage *image_yuv = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
+    cvCvtColor(image, image_yuv, CV_BGR2YCrCb);
+
+    struct Square square[1];
+    cr_assert(!findTableCorners(image_yuv, square));
+
+    cvReleaseMemStorage(&opencv_storage);
+    cvReleaseImage(&image);
+    cvReleaseImage(&image_yuv);
+}
+
+Test(vision, findTableCorners)
+{
+    CvMemStorage *opencv_storage = cvCreateMemStorage(0);
+    IplImage *image = cvLoadImage("table_ref.png", CV_LOAD_IMAGE_COLOR);
+    IplImage *image_yuv = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
+    cvCvtColor(image, image_yuv, CV_BGR2YCrCb);
+
+    struct Square square[1];
+    cr_assert(findTableCorners(image_yuv, square));
+
+    cvReleaseMemStorage(&opencv_storage);
+    cvReleaseImage(&image);
+    cvReleaseImage(&image_yuv);
+}

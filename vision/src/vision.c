@@ -322,7 +322,7 @@ _Bool findFirstGreenSquare(CvMemStorage *opencv_storage, IplImage *image_yuv, st
     return success;
 }
 
-CvPoint  fixedCvPointFrom32f(CvPoint2D32f point)
+CvPoint fixedCvPointFrom32f(CvPoint2D32f point)
 {
     CvPoint ipt;
     ipt.x = round(point.x);
@@ -357,7 +357,8 @@ CvSeq *findFirstFigure(CvMemStorage *opencv_storage, IplImage *image_yuv)
         cvReleaseImage(&square_image_black_white);
         figure_contours = findFigure(figure_contours);
         improveFigure(square_image, figure_contours);
-        figure_contours = cvApproxPoly(figure_contours, sizeof(CvContour), opencv_storage, CV_POLY_APPROX_DP, FIGURE_POLY_APPROX, 1);
+        figure_contours = cvApproxPoly(figure_contours, sizeof(CvContour), opencv_storage, CV_POLY_APPROX_DP,
+                                       FIGURE_POLY_APPROX, 1);
         cvReleaseImage(&square_image);
     }
 
@@ -459,18 +460,20 @@ static _Bool isTriangleObstacle(CvSeq *in)
     return 0;
 }
 
+double distancePoints(CvPoint point1, CvPoint point2)
+{
+    return sqrt(((point1.y - point2.y) * (point1.y - point2.y)) + ((point1.x - point2.x) * (point1.x - point2.x)));
+}
+
 #define OBSTACLE_TRIANGLE_POLY_APPROX 5
 #define TRIANGLE_SIDES_RATIO 1.4
 #define TRIANGLE_SIDES_TOLERANCE 0.1
 
 static _Bool validateTriangle(CvPoint points[3])
 {
-    double distance_small = sqrt(((points[1].y - points[2].y) * (points[1].y - points[2].y)) + ((
-                                     points[1].x - points[2].x) * (points[1].x - points[2].x)));
-    double distance1 = sqrt(((points[0].y - points[1].y) * (points[0].y - points[1].y)) + ((points[0].x - points[1].x) *
-                            (points[0].x - points[1].x)));
-    double distance2 = sqrt(((points[0].y - points[2].y) * (points[0].y - points[2].y)) + ((points[0].x - points[2].x) *
-                            (points[0].x - points[2].x)));
+    double distance_small = distancePoints(points[1], points[2]);
+    double distance1 = distancePoints(points[0], points[1]);
+    double distance2 = distancePoints(points[0], points[2]);
 
     double comp_distance = distance_small * TRIANGLE_SIDES_RATIO;
 
@@ -648,4 +651,78 @@ CvPoint coordinateToTableCoordinate(CvPoint point, double height_cm, CvPoint cam
     out.x = return_point_x + camera_midpoint.x;
     out.y = return_point_y + camera_midpoint.y;
     return out;
+}
+
+#define CORNER_1 cvPoint(0, 0)
+#define CORNER_2 cvPoint(0, 70)
+#define CORNER_3 cvPoint(1562, 912)
+#define CORNER_4 cvPoint(34, 902)
+
+#define MIN_TABLE_CORNER_DISTANCE_FROM_SIDE 25
+#define MAX_TABLE_CORNER_DISTANCE_FROM_SIDE 100
+#define MIN_CORNER_DISTANCE 10
+#define MIN_ALLOWED_OFFSET 10
+
+#define TABLE_WIDTH 1507
+#define TABLE_HEIGHT_RIGHT 723
+#define TABLE_HEIGHT_LEFT 740
+#define BLACK_BORDER_SIZE 4
+
+#define DISTANCE_ALLOWED_ERROR 0.1
+
+_Bool findTableCorners(IplImage *image_yuv, struct Square *square)
+{
+    IplImage *image_grayscale = cvCreateImage(cvGetSize(image_yuv), IPL_DEPTH_8U, 1);
+    cvSplit(image_yuv, image_grayscale, 0, 0, 0);
+    IplImage *image_mask = cvCreateImage(cvGetSize(image_yuv), IPL_DEPTH_8U, 1);
+
+    int width = cvGetSize(image_yuv).width, height = cvGetSize(image_yuv).height;
+    cvSet(image_mask, cvScalar(0, 0, 0, 0), NULL);
+    cvRectangle(image_mask, cvPoint(width - MAX_TABLE_CORNER_DISTANCE_FROM_SIDE, 0),
+                cvPoint(width - MIN_TABLE_CORNER_DISTANCE_FROM_SIDE, height), CV_RGB(255, 255, 255), -1, 8, 0);
+
+    int max_corners = 2;
+    CvPoint2D32f corners[max_corners];
+    cvGoodFeaturesToTrack(image_grayscale, NULL, NULL, corners, &max_corners, 0.01, MIN_CORNER_DISTANCE, image_mask, 10, 1,
+                          0.15);
+
+    _Bool success = 0;
+
+    if(max_corners >= 2) {
+        improveCorners(image_yuv, corners, max_corners);
+
+        if(corners[0].y > corners[1].y) {
+            CvPoint2D32f temp = corners[0];
+            corners[0] = corners[1];
+            corners[1] = temp;
+        }
+
+        double distance = distancePoints(fixedCvPointFrom32f(corners[0]), fixedCvPointFrom32f(corners[1]));
+        printf("ok %lf,  %lf %lf | %lf %lf\n", distance, corners[0].x, corners[0].y, corners[1].x, corners[1].y);
+
+        if(distance > TABLE_HEIGHT_RIGHT * (1.0 - DISTANCE_ALLOWED_ERROR)
+           && distance < TABLE_HEIGHT_RIGHT * (1.0 + DISTANCE_ALLOWED_ERROR)) {
+            double angle = atan2(corners[0].y - corners[1].y, corners[0].x - corners[1].x) - (M_PI / 2.0);
+            corners[0] = cvPoint2D32f(corners[0].x + BLACK_BORDER_SIZE * cos(angle + (M_PI / 2.0)),
+                                      corners[0].y + BLACK_BORDER_SIZE * sin(angle + (M_PI / 2.0)));
+            corners[1] = cvPoint2D32f(corners[1].x + BLACK_BORDER_SIZE * cos(angle - (M_PI / 2.0)),
+                                      corners[1].y + BLACK_BORDER_SIZE * sin(angle - (M_PI / 2.0)));
+
+            CvPoint2D32f corners_estimated[2];
+            corners_estimated[0] = cvPoint2D32f(corners[0].x + TABLE_WIDTH * cos(angle), corners[0].y + TABLE_WIDTH * sin(angle));
+            corners_estimated[1] = cvPoint2D32f(corners[1].x + TABLE_WIDTH * cos(angle), corners[1].y + TABLE_WIDTH * sin(angle));
+
+            square->corner[0] = corners_estimated[0];
+            square->corner[1] = corners[0];
+            square->corner[2] = corners[1];
+            square->corner[3] = corners_estimated[1];
+            success = 1;
+        }
+    }
+
+    cvReleaseImage(&image_grayscale);
+    cvReleaseImage(&image_mask);
+
+
+    return success;
 }

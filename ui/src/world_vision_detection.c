@@ -60,6 +60,16 @@ static void drawObstacleOnImage(IplImage *image_BGR, struct Obstacle obstacle)
     }
 }
 
+static void drawSquareOnImage(IplImage *image_BGR, struct Square square)
+{
+    unsigned int i;
+
+    for(i = 0; i < NUM_SQUARE_CORNERS; ++i) {
+        cvLine(image_BGR, fixedCvPointFrom32f(square.corner[i]),
+               fixedCvPointFrom32f(square.corner[(i + 1) % NUM_SQUARE_CORNERS]), CV_RGB(255, 255, 0), SIZE_DRAW_LINES, 8, 0);
+    }
+}
+
 struct Detected_Things detectDrawObstaclesRobot(CvMemStorage *opencv_storage, IplImage *image_BGR,
         struct Camera *input_camera)
 {
@@ -71,6 +81,10 @@ struct Detected_Things detectDrawObstaclesRobot(CvMemStorage *opencv_storage, Ip
     int num_obstacles = findObstacles(opencv_storage, obstacles, MAX_OBSTACLES, image_yuv);
 
     struct Marker marker = detectMarker(image_BGR);
+
+
+    struct Square table_corners;
+    _Bool table_detected = findTableCorners(image_yuv, &table_corners);
 
     struct Detected_Things detected = {};
 
@@ -114,6 +128,10 @@ struct Detected_Things detectDrawObstaclesRobot(CvMemStorage *opencv_storage, Ip
         detected.robot.zone.pose.coordinates.y = convertMMToRobot(point3d_robot.y);
 
         drawMarkerLocationOnImage(image_BGR, marker);
+    }
+
+    if(table_detected) {
+        drawSquareOnImage(image_BGR, table_corners);
     }
 
     cvReleaseImage(&image_yuv);

@@ -131,7 +131,7 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
     }
 
     switch(data[0]) {
-        case DATA_MANCHESTER:
+        case DATA_MANCHESTER_CODE:
             break;
 
         case DATA_IMAGE:
