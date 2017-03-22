@@ -230,7 +230,7 @@ struct __attribute__((__packed__)) TransitionManchester {
     uint8_t painting_number;
     uint8_t scale_factor;
     char orientation;
-}
+};
 
 static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
 {
