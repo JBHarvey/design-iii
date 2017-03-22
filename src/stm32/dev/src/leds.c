@@ -15,7 +15,6 @@ void InitializeLEDs() {
 	gpioStructure.GPIO_Mode = GPIO_Mode_OUT;
 	gpioStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOD, &gpioStructure);
-
 	GPIO_ResetBits(GPIOD, GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14);
 
 	initLEDsSignals();
@@ -53,9 +52,31 @@ void turnOnGreenLED() {
 	GPIO_SetBits(GPIOC, GPIO_Pin_5);
 }
 
+/* Turn off the RED LED for signal
+ * and asset that all the light are off before
+ */
+void turnOffRedLED() {
+	GPIO_ResetBits(GPIOC, GPIO_Pin_4);
+}
+
+/* Turn off the Green LED for signal
+ * and asset that all the LEDs are off before
+ */
+void turnOffGreenLED() {
+	GPIO_ResetBits(GPIOC, GPIO_Pin_5);
+}
+
 // Turn off the LEDs for signals
 void turnOffLEDs() {
 	GPIO_ResetBits(GPIOC, GPIO_Pin_5 | GPIO_Pin_4);
+}
+
+uint8_t isRedLightOn() {
+	return GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_4);
+}
+
+uint8_t isGreenLightOn() {
+	return GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_5);
 }
 
 /* Routine de test pour les LEDs */

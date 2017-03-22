@@ -307,9 +307,12 @@ FloatType calculatePosition(FloatType positionEdges) {
 void initAllPIDS() {
 	PID_init(&PID_SPEED1, PID_SPEED1_KP, PID_SPEED1_KI, PID_SPEED1_KD,
 			PID_Direction_Direct, PID_SPEED1_N);
+
 	PID_SetOutputLimits(&PID_SPEED1, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
+
 	PID_init(&PID_POSITION1, PID_POSITION1_KP, PID_POSITION1_KI,
 			PID_POSITION1_KD, PID_Direction_Direct, PID_POSITION1_N);
+
 	PID_SetOutputLimits(&PID_POSITION1, MIN_POS_COMMAND, MAX_POS_COMMAND);
 
 	/* Initialization of wheel 2 PIDs */
@@ -454,7 +457,6 @@ void computeAllPIDS() {
 			} else {
 				speedDirection4 = SPEED_DIRECTION_NONE;
 				MotorSetDirection(4, BRAKE_V);
-
 			}
 
 			MotorSetSpeed(4, cmdMotor4);

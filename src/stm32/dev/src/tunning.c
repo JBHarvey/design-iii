@@ -1,7 +1,7 @@
 #include "tunning.h"
 
 /***************************************************
- *  Les buffers qui suivent servent à l'acquisition pour
+ *  Les buffers qui suivent servent ï¿½ l'acquisition pour
  * bien faire l'asservissement des roues
  ***************************************************/
 #ifdef ENABLE_ACQUIS
@@ -111,25 +111,25 @@ uint8_t wheelsStartedY2 = 0;
 #ifdef ENABLE_ACQUIS
 void tunningIdentificationWheels() {
 	/***** Motor 1 *****/
-	// On défini la direction
+	// On dï¿½fini la direction
 	MotorSetDirection(1, COUNTER_CLOCK);
 	MotorSetDirection(2, COUNTER_CLOCK);
 	MotorSetDirection(3, CLOCK);
 	MotorSetDirection(4, CLOCK);
 
-	// On initialise le début du remplissage du buffer
+	// On initialise le dï¿½but du remplissage du buffer
 	bufferWheelIndex1 = 0;
 	bufferWheelIndex2 = 0;
 	bufferWheelIndex3 = 0;
 	bufferWheelIndex4 = 0;
 
-	// Tous les moteurs débutent à la même vitesse
+	// Tous les moteurs dï¿½butent ï¿½ la mï¿½me vitesse
 	MotorSetSpeed(1, PREMIER_ECHELON);
 	MotorSetSpeed(2, PREMIER_ECHELON);
 	MotorSetSpeed(3, PREMIER_ECHELON);
 	MotorSetSpeed(4, PREMIER_ECHELON);
 
-	// On attend le régime permanent
+	// On attend le rï¿½gime permanent
 	Delayms (DUREE_ECHELON_1);
 	// On change la vitesse du moteur 1 seulement
 	MotorSetSpeed(1, DEUXIEME_ECHELON);
@@ -137,10 +137,10 @@ void tunningIdentificationWheels() {
 	MotorSetSpeed(3, DEUXIEME_ECHELON);
 	MotorSetSpeed(4, DEUXIEME_ECHELON);
 
-	// On attend le régume permanent
+	// On attend le rï¿½gume permanent
 	Delayms (DUREE_ECHELON_2);
 	/*
-	 // On arrête les moteurs
+	 // On arrï¿½te les moteurs
 	 MotorSetSpeed(1, 0);
 	 MotorSetSpeed(2, 0);
 	 MotorSetSpeed(3, 0);
@@ -152,24 +152,24 @@ void tunningIdentificationWheels() {
 	 MotorSetDirection(3, CLOCK);
 	 MotorSetDirection(4, CLOCK);
 
-	 // On initialise le début du remplissage du buffer
+	 // On initialise le dï¿½but du remplissage du buffer
 	 bufferWheelIndex2 = 0;
 
-	 // Tous les moteurs débutent à la même vitesse
+	 // Tous les moteurs dï¿½butent ï¿½ la mï¿½me vitesse
 	 MotorSetSpeed(1, PREMIER_ECHELON);
 	 MotorSetSpeed(2, PREMIER_ECHELON);
 	 MotorSetSpeed(3, PREMIER_ECHELON);
 	 MotorSetSpeed(4, PREMIER_ECHELON);
 
-	 // On attend le régime permanent
+	 // On attend le rï¿½gime permanent
 	 Delayms (DUREE_ECHELON_1);
 	 // On change la vitesse du moteur 1 seulement
 	 MotorSetSpeed(2, DEUXIEME_ECHELON);
 
-	 // On attend le régume permanent
+	 // On attend le rï¿½gume permanent
 	 Delayms (DUREE_ECHELON_2);
 
-	 // On arrête les moteurs
+	 // On arrï¿½te les moteurs
 	 MotorSetSpeed(1, 0);
 	 MotorSetSpeed(2, 0);
 	 MotorSetSpeed(3, 0);
@@ -183,24 +183,24 @@ void tunningIdentificationWheels() {
 	 MotorSetDirection(3, COUNTER_CLOCK);
 	 MotorSetDirection(4, COUNTER_CLOCK);
 
-	 // On initialise le début du remplissage du buffer
+	 // On initialise le dï¿½but du remplissage du buffer
 	 bufferWheelIndex3 = 0;
 
-	 // Tous les moteurs débutent à la même vitesse
+	 // Tous les moteurs dï¿½butent ï¿½ la mï¿½me vitesse
 	 MotorSetSpeed(1, PREMIER_ECHELON);
 	 MotorSetSpeed(2, PREMIER_ECHELON);
 	 MotorSetSpeed(3, PREMIER_ECHELON);
 	 MotorSetSpeed(4, PREMIER_ECHELON);
 
-	 // On attend le régime permanent
+	 // On attend le rï¿½gime permanent
 	 Delayms (DUREE_ECHELON_1);
 	 // On change la vitesse du moteur 1 seulement
 	 MotorSetSpeed(3, DEUXIEME_ECHELON);
 
-	 // On attend le régume permanent
+	 // On attend le rï¿½gume permanent
 	 Delayms (DUREE_ECHELON_2);
 
-	 // On arrête les moteurs
+	 // On arrï¿½te les moteurs
 	 MotorSetSpeed(1, 0);
 	 MotorSetSpeed(2, 0);
 	 MotorSetSpeed(3, 0);
@@ -214,24 +214,24 @@ void tunningIdentificationWheels() {
 	 MotorSetDirection(3, CLOCK);
 	 MotorSetDirection(4, CLOCK);
 
-	 // On initialise le début du remplissage du buffer
+	 // On initialise le dï¿½but du remplissage du buffer
 	 bufferWheelIndex4 = 0;
 
-	 // Tous les moteurs débutent à la même vitesse
+	 // Tous les moteurs dï¿½butent ï¿½ la mï¿½me vitesse
 	 MotorSetSpeed(1, PREMIER_ECHELON);
 	 MotorSetSpeed(2, PREMIER_ECHELON);
 	 MotorSetSpeed(3, PREMIER_ECHELON);
 	 MotorSetSpeed(4, PREMIER_ECHELON);
 
-	 // On attend le régime permanent
+	 // On attend le rï¿½gime permanent
 	 Delayms (DUREE_ECHELON_1);
 	 // On change la vitesse du moteur 1 seulement
 	 MotorSetSpeed(4, DEUXIEME_ECHELON);
 
-	 // On attend le régume permanent
+	 // On attend le rï¿½gume permanent
 	 Delayms (DUREE_ECHELON_2);
 	 */
-	// On arrête les moteurs
+	// On arrï¿½te les moteurs
 	MotorSetSpeed(1, 0);
 	MotorSetSpeed(2, 0);
 	MotorSetSpeed(3, 0);
@@ -239,26 +239,26 @@ void tunningIdentificationWheels() {
 
 	/*** FIN de l'identification ***/
 
-	// On attends que l'ordinateur demande des données
+	// On attends que l'ordinateur demande des donnï¿½es
 	TM_DISCO_LedOn (LED_ORANGE);
 	while (bSendData == 0) {
-		// Intermédiaire nécessaire pour la synchonisation des données
+		// Intermï¿½diaire nï¿½cessaire pour la synchonisation des donnï¿½es
 		bSendData = bFlagSendData;
 	}
 	tunningSendIdenWheels();
 }
 
 void tunningSendIdenWheels() {
-	/****** ENVOIE DONNÉES MOTEUR 1 ******/
+	/****** ENVOIE DONNï¿½ES MOTEUR 1 ******/
 	VCP_DataTx((uint8_t*) bufferWheel1, MAX_WHEEL_INDEX * 2);
 	Delayms(2000);
-	/****** ENVOIE DONNÉES MOTEUR 2 ******/
+	/****** ENVOIE DONNï¿½ES MOTEUR 2 ******/
 	VCP_DataTx((uint8_t*) bufferWheel2, MAX_WHEEL_INDEX * 2);
 	Delayms(2000);
-	/****** ENVOIE DONNÉES MOTEUR 3 ******/
+	/****** ENVOIE DONNï¿½ES MOTEUR 3 ******/
 	VCP_DataTx((uint8_t*) bufferWheel3, MAX_WHEEL_INDEX * 2);
 	Delayms(2000);
-	/****** ENVOIE DONNÉES MOTEUR 4 ******/
+	/****** ENVOIE DONNï¿½ES MOTEUR 4 ******/
 	VCP_DataTx((uint8_t*) bufferWheel4, MAX_WHEEL_INDEX * 2);
 	bSendData = 0;
 	while(1)
@@ -313,13 +313,13 @@ void tunningSpeedPI() {
 		MotorSetDirection(4, BRAKE_G);
 	}
 
-	// Redémarre les buffers
+	// Redï¿½marre les buffers
 	bufferSpeedPIDIndex1 = 0;
 	bufferSpeedPIDIndex2 = 0;
 	bufferSpeedPIDIndex3 = 0;
 	bufferSpeedPIDIndex4 = 0;
 
-	// Initialise l'état
+	// Initialise l'ï¿½tat
 	bTunningSpeedDone = 0;
 	bFlagTunningSpeedDone = 0;
 	bFlagStartTunningSpeed = 1;
@@ -366,25 +366,24 @@ void tunningSpeedPI() {
 	}
 	bFlagStartTunningSpeed = 0;
 
-	// On arrête les roues
+	// On arrï¿½te les roues
 	MotorSetSpeed(1, 0);
 	MotorSetSpeed(2, 0);
 	MotorSetSpeed(3, 0);
 	MotorSetSpeed(4, 0);
 
-	// On attends que l'ordinateur demande des données
+	// On attends que l'ordinateur demande des donnï¿½es
 	TM_DISCO_LedOn (LED_ORANGE);
 	while (bSendDataSpeed == 0) {
-		// Intermédiaire nécessaire pour la synchonisation des données
+		// Intermï¿½diaire nï¿½cessaire pour la synchonisation des donnï¿½es
 		bSendDataSpeed = bFlagSendDataSpeed;
 	}
 	tunningSendSpeedPI();
 }
 
 void tunningSendSpeedPI() {
-	/****** ENVOIE DONNÉES MOTEUR 1 ******/
+	/****** ENVOIE DONNï¿½ES MOTEUR 1 ******/
 	VCP_DataTx((uint8_t*) bufferSpeedPID1, MAX_SPEED_PID_INDEX * 2);
-
 	VCP_DataTx((uint8_t*) bufferSpeedCmd1, MAX_SPEED_PID_INDEX);
 	Delayms(1000);
 	/****** ENVOIE DONNÉES MOTEUR 2 ******/
