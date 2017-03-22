@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
     RobotServer_updateDataReceiverCallbacks(test_callbacks);
 
     // MANCHESTER ASK + LOG RETURN TEST
-    //    RobotServer_fetchManchesterCodeCommand();
+    RobotServer_fetchManchesterCodeCommand();
 
     /*
     // HOUSE TEST

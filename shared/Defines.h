@@ -10,7 +10,10 @@
 
 // World related
 
+#define THEORICAL_ROBOT_RADIUS 1700
 #define MAXIMUM_OBSTACLE_NUMBER 3
+#define THEORICAL_WORLD_LENGTH 23300
+#define THEORICAL_WORLD_HEIGHT 11300
 
 // Units and mesurements related
 

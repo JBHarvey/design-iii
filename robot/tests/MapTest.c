@@ -188,21 +188,20 @@ Test(Map, given_newPaintingZones_when_updatesMap_then_theCorrespondingZonesHaveC
     Pose_delete(paintingZone7);
 }
 
-const int TEST_ROBOT_RADIUS = 2100;
 Test(Map, given_aMapAndARobotRadius_when_askedToFetchNavigableMap_then_theTableCornersAreBroughtTowardsTheCenterOfTheMapByTheRobotRadiusInXAndY
      , .init = setup_Map
      , .fini = teardown_Map)
 {
-    struct Map *navigable_map = Map_fetchNavigableMap(map, TEST_ROBOT_RADIUS);
+    struct Map *navigable_map = Map_fetchNavigableMap(map, THEORICAL_ROBOT_RADIUS);
 
-    int expected_south_western_table_corner_x = map->south_western_table_corner->x + TEST_ROBOT_RADIUS;
-    int expected_south_western_table_corner_y = map->south_western_table_corner->y + TEST_ROBOT_RADIUS;
-    int expected_south_eastern_table_corner_x = map->south_eastern_table_corner->x - TEST_ROBOT_RADIUS;
-    int expected_south_eastern_table_corner_y = map->south_eastern_table_corner->y + TEST_ROBOT_RADIUS;
-    int expected_north_western_table_corner_x = map->north_western_table_corner->x + TEST_ROBOT_RADIUS;
-    int expected_north_western_table_corner_y = map->north_western_table_corner->y - TEST_ROBOT_RADIUS;
-    int expected_north_eastern_table_corner_x = map->north_eastern_table_corner->x - TEST_ROBOT_RADIUS;
-    int expected_north_eastern_table_corner_y = map->north_eastern_table_corner->y - TEST_ROBOT_RADIUS;
+    int expected_south_western_table_corner_x = map->south_western_table_corner->x + THEORICAL_ROBOT_RADIUS;
+    int expected_south_western_table_corner_y = map->south_western_table_corner->y + THEORICAL_ROBOT_RADIUS;
+    int expected_south_eastern_table_corner_x = map->south_eastern_table_corner->x - THEORICAL_ROBOT_RADIUS;
+    int expected_south_eastern_table_corner_y = map->south_eastern_table_corner->y + THEORICAL_ROBOT_RADIUS;
+    int expected_north_western_table_corner_x = map->north_western_table_corner->x + THEORICAL_ROBOT_RADIUS;
+    int expected_north_western_table_corner_y = map->north_western_table_corner->y - THEORICAL_ROBOT_RADIUS;
+    int expected_north_eastern_table_corner_x = map->north_eastern_table_corner->x - THEORICAL_ROBOT_RADIUS;
+    int expected_north_eastern_table_corner_y = map->north_eastern_table_corner->y - THEORICAL_ROBOT_RADIUS;
 
     cr_assert_eq(navigable_map->south_western_table_corner->x, expected_south_western_table_corner_x);
     cr_assert_eq(navigable_map->south_western_table_corner->y, expected_south_western_table_corner_y);
@@ -216,21 +215,43 @@ Test(Map, given_aMapAndARobotRadius_when_askedToFetchNavigableMap_then_theTableC
     Map_delete(navigable_map);
 }
 
+struct Coordinates *center_west_coordinates;
+struct Coordinates *center_center_coordinates;
+struct Coordinates *center_east_coordinates;
 Test(Map, given_aMapAndARobotRadius_when_askedToFetchNavigableMap_then_theRobotRadiusIsAddedToTheObstaclesRadius
      , .init = setup_Map
      , .fini = teardown_Map)
 {
-    struct Map *navigable_map = Map_fetchNavigableMap(map, TEST_ROBOT_RADIUS);
+    enum CardinalDirection cardinal_direction_0 = NORTH;
+    enum CardinalDirection cardinal_direction_1 = SOUTH;
+    enum CardinalDirection cardinal_direction_2 = CENTER;
+    center_west_coordinates = Coordinates_new(4775, 3550);
+    center_center_coordinates = Coordinates_new(9550, 3550);
+    center_east_coordinates = Coordinates_new(14325, 3550);
+    Map_updateObstacle(map, center_west_coordinates, cardinal_direction_0, 0);
+    Map_updateObstacle(map, center_center_coordinates, cardinal_direction_1, 1);
+    Map_updateObstacle(map, center_east_coordinates, cardinal_direction_2, 2);
 
-    int expected_radius_0 = map->obstacles[0]->radius + TEST_ROBOT_RADIUS;
-    int expected_radius_1 = map->obstacles[1]->radius + TEST_ROBOT_RADIUS;
-    int expected_radius_2 = map->obstacles[2]->radius + TEST_ROBOT_RADIUS;
+    struct Map *navigable_map = Map_fetchNavigableMap(map, THEORICAL_ROBOT_RADIUS);
+
+    int expected_radius_0 = map->obstacles[0]->radius + THEORICAL_ROBOT_RADIUS;
+    int expected_radius_1 = map->obstacles[1]->radius + THEORICAL_ROBOT_RADIUS;
+    int expected_radius_2 = map->obstacles[2]->radius + THEORICAL_ROBOT_RADIUS;
 
     cr_assert_eq(navigable_map->obstacles[0]->radius, expected_radius_0);
     cr_assert_eq(navigable_map->obstacles[1]->radius, expected_radius_1);
     cr_assert_eq(navigable_map->obstacles[2]->radius, expected_radius_2);
+    cr_assert(Coordinates_haveTheSameValues(navigable_map->obstacles[0]->coordinates, center_west_coordinates));
+    cr_assert(Coordinates_haveTheSameValues(navigable_map->obstacles[1]->coordinates, center_center_coordinates));
+    cr_assert(Coordinates_haveTheSameValues(navigable_map->obstacles[2]->coordinates, center_east_coordinates));
+    cr_assert_eq(navigable_map->obstacles[0]->orientation, cardinal_direction_0);
+    cr_assert_eq(navigable_map->obstacles[1]->orientation, cardinal_direction_1);
+    cr_assert_eq(navigable_map->obstacles[2]->orientation, cardinal_direction_2);
 
     Map_delete(navigable_map);
+    Coordinates_delete(center_west_coordinates);
+    Coordinates_delete(center_center_coordinates);
+    Coordinates_delete(center_east_coordinates);
 }
 
 void setObstacleCoordinates(struct Map *map, int index, struct Coordinates *new_coordinates)
@@ -239,9 +260,6 @@ void setObstacleCoordinates(struct Map *map, int index, struct Coordinates *new_
 }
 
 struct Map *navigable_map;
-struct Coordinates *center_west_coordinates;
-struct Coordinates *center_center_coordinates;
-struct Coordinates *center_east_coordinates;
 struct Coordinates *north_west_coordinates;
 struct Coordinates *south_west_coordinates;
 struct Coordinates *south_south_south_west_coordinates;
@@ -253,7 +271,7 @@ struct Coordinates *reset_coordinates;
 void setup_NavigableMap(void)
 {
     setup_Map();
-    navigable_map = Map_fetchNavigableMap(map, TEST_ROBOT_RADIUS);
+    navigable_map = Map_fetchNavigableMap(map, THEORICAL_ROBOT_RADIUS);
     center_west_coordinates = Coordinates_new(4775, 3550);
     center_center_coordinates = Coordinates_new(9550, 3550);
     center_east_coordinates = Coordinates_new(14325, 3550);

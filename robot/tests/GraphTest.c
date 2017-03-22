@@ -22,4 +22,27 @@ Test(Graph, given_aMapWithNoObstacles_when_createsGraph_then_theGraphTypeIsZero)
     Graph_delete(graph);
 }
 
+struct Map *graph_map;
+struct Graph *graph;
+void setup_GraphOne(void)
+{
+    graph = Graph_new();
+    struct Map *base_map = Map_new();
+    //    struct Coordinates coordinates_center_center
+    graph_map = Map_fetchNavigableMap(base_map, THEORICAL_ROBOT_RADIUS);
 
+    Map_delete(base_map);
+}
+
+void teardown_GraphOne(void)
+{
+    Map_delete(graph_map);
+    Graph_delete(graph);
+}
+
+Test(Graph, given_aNavigableMapWithOneObstacle_when_updatesGraph_then_theGraphTypeIsSOLO
+     , .init = setup_GraphOne
+     , .fini = teardown_GraphOne)
+{
+
+}
