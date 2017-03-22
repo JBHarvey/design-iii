@@ -179,12 +179,11 @@ static int isObstacleValid(struct Obstacle *obstacle)
 {
     return !isObstacleInvalid(obstacle);
 }
+
 struct Obstacle *Map_retrieveFirstObstacle(struct Map *map)
 {
     struct Obstacle *first_one = NULL;
     struct Obstacle *aspirant;
-    struct Coordinates *eastern_point_of_first;
-    struct Coordinates *eastern_point_of_aspirant;
     int i;
 
     for(i = 0; i < MAXIMUM_OBSTACLE_NUMBER; ++i) {
@@ -194,9 +193,31 @@ struct Obstacle *Map_retrieveFirstObstacle(struct Map *map)
             if(first_one == NULL) {
                 first_one = aspirant;
             } else {
+                first_one = Obstacle_retrieveEastern(first_one, aspirant);
             }
         }
     }
 
-    return map->obstacles[2];
+    return first_one;
+}
+
+struct Obstacle *Map_retrieveLastObstacle(struct Map *map)
+{
+    struct Obstacle *last_one = NULL;
+    struct Obstacle *aspirant;
+    int i;
+
+    for(i = 0; i < MAXIMUM_OBSTACLE_NUMBER; ++i) {
+        aspirant = map->obstacles[i];
+
+        if(isObstacleValid(aspirant)) {
+            if(last_one == NULL) {
+                last_one = aspirant;
+            } else {
+                last_one = Obstacle_retrieveWestern(last_one, aspirant);
+            }
+        }
+    }
+
+    return last_one;
 }

@@ -262,7 +262,7 @@ void setup_NavigableMap(void)
     south_south_south_west_coordinates = Coordinates_new(7640, 1775);
     south_south_west_coordinates = Coordinates_new(6367, 1775);
     north_north_north_west_coordinates = Coordinates_new(7640, 5325);
-    north_north_west_coordinates = Coordinates_new(7640, 5325);
+    north_north_west_coordinates = Coordinates_new(6367, 5325);
     reset_coordinates = Coordinates_new(-1, -1);
 }
 
@@ -321,7 +321,44 @@ Test(Map, given_aNavigableMapWithTwoObstacles_when_askedToRetrieveTheFirstOne_th
 
     struct Obstacle *retrieved = Map_retrieveFirstObstacle(map);
 
-    /*
     cr_assert(Coordinates_haveTheSameValues(retrieved->coordinates, center_east_coordinates));
-    */
+}
+
+Test(Map, given_aNavigableMapWithTwoObstaclesWithSameXCoordinates_when_askedToRetrieveTheFirstOne_then_theNorthEasternOneIsRetrieved
+     , .init = setup_NavigableMap
+     , .fini = teardown_NavigableMap)
+{
+    setObstacleCoordinates(map, 0, north_west_coordinates);
+    setObstacleCoordinates(map, 1, center_west_coordinates);
+    setObstacleCoordinates(map, 2, reset_coordinates);
+
+    struct Obstacle *retrieved = Map_retrieveFirstObstacle(map);
+
+    cr_assert(Coordinates_haveTheSameValues(retrieved->coordinates, north_west_coordinates));
+}
+
+Test(Map, given_aNavigableMapWithThreeObstacles_when_askedToRetrieveTheLastOne_then_theWesternOneIsRetrieved
+     , .init = setup_NavigableMap
+     , .fini = teardown_NavigableMap)
+{
+    setObstacleCoordinates(map, 0, center_east_coordinates);
+    setObstacleCoordinates(map, 1, center_center_coordinates);
+    setObstacleCoordinates(map, 2, center_west_coordinates);
+
+    struct Obstacle *retrieved = Map_retrieveLastObstacle(map);
+
+    cr_assert(Coordinates_haveTheSameValues(retrieved->coordinates, center_west_coordinates));
+}
+
+Test(Map, given_aNavigableMapWithThreeObstaclesAndTheTwoWesternOnesWithSameXCoordinates_when_askedToRetrieveTheLastOne_then_theSouthWesternOneIsRetrieved
+     , .init = setup_NavigableMap
+     , .fini = teardown_NavigableMap)
+{
+    setObstacleCoordinates(map, 0, south_south_west_coordinates);
+    setObstacleCoordinates(map, 1, center_east_coordinates);
+    setObstacleCoordinates(map, 2, north_north_west_coordinates);
+
+    struct Obstacle *retrieved = Map_retrieveLastObstacle(map);
+
+    cr_assert(Coordinates_haveTheSameValues(retrieved->coordinates, south_south_west_coordinates));
 }

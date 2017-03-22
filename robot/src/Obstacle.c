@@ -72,7 +72,11 @@ struct Coordinates *Obstacle_retrieveSouthernPointOf(struct Obstacle *obstacle)
 struct Obstacle *Obstacle_retrieveEastern(struct Obstacle *a, struct Obstacle *b)
 {
     if(a->coordinates->x == b->coordinates->x && a->radius == b->radius) {
-        return NULL;
+        if(a->coordinates->y > b->coordinates->y) {
+            return a;
+        } else {
+            return b;
+        }
     }
 
     struct Coordinates *eastern_point_of_a = Obstacle_retrieveEasternPointOf(a);
@@ -96,7 +100,11 @@ struct Obstacle *Obstacle_retrieveEastern(struct Obstacle *a, struct Obstacle *b
 struct Obstacle *Obstacle_retrieveWestern(struct Obstacle *a, struct Obstacle *b)
 {
     if(a->coordinates->x == b->coordinates->x && a->radius == b->radius) {
-        return NULL;
+        if(a->coordinates->y < b->coordinates->y) {
+            return a;
+        } else {
+            return b;
+        }
     }
 
     struct Coordinates *western_point_of_a = Obstacle_retrieveWesternPointOf(a);

@@ -37,4 +37,5 @@ int Map_fetchNumberOfObstacles(struct Map *map);
 struct Map *Map_fetchNavigableMap(struct Map *original_map, int robot_radius);
 
 struct Obstacle *Map_retrieveFirstObstacle(struct Map *map);
+struct Obstacle *Map_retrieveLastObstacle(struct Map *map);
 #endif // MAP_H_

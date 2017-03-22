@@ -116,12 +116,13 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstacleWithTheSameXCoordinatesAndRadius_when_askedToRetrieveTheEasternOne_then_nullIsReturned
+     given_twoObstacleWithTheSameXCoordinatesAndRadius_when_askedToRetrieveTheEasternOne_then_theNorthenOneIsReturned
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
+    south_oriented_obstacle->coordinates->y = OBSTACLE_Y + THEORICAL_OBSTACLE_RADIUS;
     struct Obstacle *eastern = Obstacle_retrieveEastern(north_oriented_obstacle, south_oriented_obstacle);
-    cr_assert(eastern == NULL);
+    cr_assert(eastern == south_oriented_obstacle);
 }
 
 Test(Obstacle,
@@ -139,8 +140,9 @@ Test(Obstacle,
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
+    north_oriented_obstacle->coordinates->y = OBSTACLE_Y - THEORICAL_OBSTACLE_RADIUS;
     struct Obstacle *western = Obstacle_retrieveWestern(north_oriented_obstacle, south_oriented_obstacle);
-    cr_assert(western == NULL);
+    cr_assert(western == north_oriented_obstacle);
 }
 
 Test(Obstacle,
