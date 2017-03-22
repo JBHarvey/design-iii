@@ -152,7 +152,7 @@ static unsigned int seqToPoints(CvSeq *sequence, CvPoint2D32f *points, unsigned 
     unsigned int i;
 
     for(i = 0; i < sequence->total && i < max_points; ++i) {
-        points[i] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(sequence->v_next, i));
+        points[i] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(sequence, i));
     }
 
     return i;
@@ -170,7 +170,7 @@ static void findGreenSquaresRecursive(CvSeq *contours, struct Square *out_square
     while(horizontal_sequence) {
         if(isDualSquare(horizontal_sequence)) {
             struct Square square;
-            seqToPoints(horizontal_sequence, square.corner, 4);
+            seqToPoints(horizontal_sequence->v_next, square.corner, 4);
 
             /* fix rotation */
             if(square.corner[0].x * square.corner[0].y > square.corner[3].x * square.corner[3].y) {
