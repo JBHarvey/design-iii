@@ -36,6 +36,12 @@ void setState(int* state, int newState) {
 	case MAIN_TEST_SPEED_PID:
 		*state = MAIN_TEST_SPEED_PID;
 		break;
+	case MAIN_TEST_POS_PID:
+		*state = MAIN_TEST_POS_PID;
+		break;
+	case MAIN_TEST_DEAD_ZONE:
+		*state = MAIN_TEST_DEAD_ZONE;
+		break;
 	case MAIN_MOVE:
 		*state = MAIN_MOVE;
 		TM_HD44780_Puts(0, 0, "MOVE");
@@ -49,4 +55,14 @@ void setState(int* state, int newState) {
 		TM_HD44780_Puts(0, 0, MSG_ERR);
 		break;
 	}
+}
+
+float sqroot(float square) {
+	float root = square / 3;
+	int i;
+	if (square <= 0)
+		return 0;
+	for (i = 0; i < 32; i++)
+		root = (root + square / root) / 2;
+	return root;
 }

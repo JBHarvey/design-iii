@@ -37,8 +37,8 @@ void setMoveSettings(PidType *pidPosition1, PidType *pidPosition2,
 
 	/*set PID setpoints (xMove, yMove);*/
 	pidPosition1->mySetpoint = xMove;
-	pidPosition2->mySetpoint = xMove;
-	pidPosition3->mySetpoint = yMove;
+	pidPosition2->mySetpoint = yMove;
+	pidPosition3->mySetpoint = xMove;
 	pidPosition4->mySetpoint = yMove;
 
 	// reset pid values

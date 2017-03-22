@@ -145,6 +145,17 @@ int main(void) {
 			tunningSpeedPI();
 #endif
 			break;
+		case MAIN_TEST_POS_PID:
+#ifdef ENABLE_POSITION_PID
+			tunningPositionPID();
+#endif
+			break;
+		case MAIN_TEST_DEAD_ZONE:
+#ifdef ENABLE_DEAD_ZONE
+			tunningDeadZone();
+#endif
+			break;
+
 		case MAIN_PID:
 			computeAllPIDS();
 
@@ -444,17 +455,19 @@ extern void TIM2_IRQHandler() {
 #endif
 #ifdef ENABLE_DEAD_ZONE
 		// rentrer les valeurs dans la mï¿½me buffer, dans le while on change l'index
-		if (bufferDeadZoneIndex1 < MAX_DEAD_ZONE) {
-			bufferDeadZone1[bufferDeadZoneIndex1] = numberOfSpeedEdges1;
-		}
-		if (bufferDeadZoneIndex2 < MAX_DEAD_ZONE) {
-			bufferDeadZone2[bufferDeadZoneIndex2] = numberOfSpeedEdges2;
-		}
-		if (bufferDeadZoneIndex3 < MAX_DEAD_ZONE) {
-			bufferDeadZone3[bufferDeadZoneIndex3] = numberOfSpeedEdges3;
-		}
-		if (bufferDeadZoneIndex4 < MAX_DEAD_ZONE) {
-			bufferDeadZone4[bufferDeadZoneIndex4] = numberOfSpeedEdges4;
+		if (bufferDeadZoneIndex < MAX_DEAD_ZONE) {
+			if(bufferDeadZoneToFill == 1) {
+				bufferDeadZone1[bufferDeadZoneIndex] = numberOfSpeedEdges1;
+			}
+			if(bufferDeadZoneToFill == 2) {
+				bufferDeadZone2[bufferDeadZoneIndex] = numberOfSpeedEdges2;
+			}
+			if(bufferDeadZoneToFill == 3) {
+				bufferDeadZone3[bufferDeadZoneIndex] = numberOfSpeedEdges3;
+			}
+			if(bufferDeadZoneToFill == 4) {
+				bufferDeadZone4[bufferDeadZoneIndex] = numberOfSpeedEdges4;
+			}
 		}
 #endif
 #ifdef ENABLE_SPEED_PI
@@ -489,7 +502,44 @@ extern void TIM2_IRQHandler() {
 			}
 		}
 #endif
+#ifdef ENABLE_POSITION_PID
 
+		// On met à jour l'input du PID de position
+		float setPoint = sqroot((numberOfPositionEdges1*numberOfPositionEdges3)
+				+ (numberOfPositionEdges2 * numberOfPositionEdges4));
+		tunningPositionPID1.myInput = setPoint;
+
+		// On active le PID de position
+		PID_SetMode(&tunningPositionPID1, PID_Mode_Automatic);
+
+		// On met à jour les inputs des PI de vitesse
+		tunningSpeedPI1.myInput = numberOfSpeedEdges1;
+		tunningSpeedPI2.myInput = numberOfSpeedEdges2;
+		tunningSpeedPI3.myInput = numberOfSpeedEdges3;
+		tunningSpeedPI4.myInput = numberOfSpeedEdges4;
+
+		// On active les PI de vitesse
+		PID_SetMode(&tunningSpeedPI1, PID_Mode_Automatic);
+		PID_SetMode(&tunningSpeedPI3, PID_Mode_Automatic);
+		PID_SetMode(&tunningSpeedPI2, PID_Mode_Automatic);
+		PID_SetMode(&tunningSpeedPI4, PID_Mode_Automatic);
+
+		if (bufferPositionPIDIndex1 < MAX_POSITION_INDEX) {
+			bufferPositionPID1[bufferPositionPIDIndex1++] = calculatePosition(setPoint);
+		}
+		if (bufferSpeedPIIndex1 < MAX_POSITION_INDEX) {
+			bufferSpeedPI1[bufferSpeedPIIndex1++] = numberOfSpeedEdges1;
+		}
+		if (bufferSpeedPIIndex2 < MAX_POSITION_INDEX) {
+			bufferSpeedPI2[bufferSpeedPIIndex2++] = numberOfSpeedEdges2;
+		}
+		if (bufferSpeedPIIndex3 < MAX_POSITION_INDEX) {
+			bufferSpeedPI3[bufferSpeedPIIndex3++] = numberOfSpeedEdges3;
+		}
+		if (bufferSpeedPIIndex4 < MAX_POSITION_INDEX) {
+			bufferSpeedPI4[bufferSpeedPIIndex4++] = numberOfSpeedEdges4;
+		}
+#endif
 		resetEncoderSpeedVariables();
 	}
 }
@@ -574,13 +624,26 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 		break;
 #ifdef ENABLE_SPEED_PI
 		case COMMAND_START_TEST_PID_SPEED:
-		if(len == 32) {
-			getPIFromBuffer(data);
-			setState(&mainState, MAIN_TEST_SPEED_PID);
-		}
+		setState(&mainState, MAIN_TEST_SPEED_PID);
 		break;
 		case COMMAND_SEND_PID_SPEED:
 		bFlagSendDataSpeed = 1;
+		break;
+#endif
+#ifdef ENABLE_POSITION_PID
+		case COMMAND_START_TEST_PID_POS:
+		setState(&mainState, MAIN_TEST_POS_PID);
+		break;
+		case COMMAND_SEND_PID_POS:
+		bFlagTunningPositionDone = 1;
+		break;
+#endif
+#ifdef ENABLE_DEAD_ZONE
+		case COMMAND_START_TEST_DEAD_ZONE:
+		setState(&mainState, MAIN_TEST_DEAD_ZONE);
+		break;
+		case COMMAND_SEND_DEAD_ZONE:
+		bFlagTunningDeadZone = 1;
 		break;
 #endif
 	case COMMAND_PENCIL_UP:

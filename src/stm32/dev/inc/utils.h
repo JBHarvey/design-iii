@@ -18,7 +18,8 @@ enum MainState {
 	MAIN_ACQUIS,
 	MAIN_ACQUIS_ALL,
 	MAIN_TEST_SPEED_PID,
-	MAIN_DEAD_ZONE,
+	MAIN_TEST_POS_PID,
+	MAIN_TEST_DEAD_ZONE,
 	MAIN_MOVE,
 	MAIN_PID,
 	MAIN_PREHENSEUR
@@ -39,5 +40,7 @@ enum COMMUNICATION_STATUS {
 void cleanNumberString(char *numberString, int size);
 
 void setState(int* state, int newState);
+
+float sqroot(float square);
 
 #endif

@@ -48,6 +48,8 @@ typedef struct {
 	unsigned long SampleTime;
 	FloatType outMin, outMax;
 	bool inAuto;
+
+	uint8_t offset;
 } PidType;
 
 /*************************************

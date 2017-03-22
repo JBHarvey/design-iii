@@ -39,6 +39,7 @@ void PID_init(PidType* pid, FloatType Kp, FloatType Ki, FloatType Kd,
 	pid->lastInput = 0;
 	pid->inAuto = false;
 	pid->N = N;
+	pid->offset = 0;
 
 	PID_SetOutputLimits(pid, 0, 0xffff);
 
@@ -73,7 +74,7 @@ bool PID_Compute_Speed(PidType* pid) {
 		pid->ITerm = pid->outMax;
 	else if (pid->ITerm < pid->outMin)
 		pid->ITerm = pid->outMin;
-	FloatType dInput = (input - pid->lastInput);
+	FloatType dInput = (input - calculateSpeed(pid->lastInput));
 
 	/*Compute PID Output*/
 	FloatType output = pid->kp * pid->error + pid->ITerm - pid->kd * dInput;
@@ -85,7 +86,7 @@ bool PID_Compute_Speed(PidType* pid) {
 	pid->myOutput = output;
 
 	/*Remember some variables for next time*/
-	pid->lastInput = input;
+	pid->lastInput = pid->myInput;
 //    pid->lastTime = now;
 	return true;
 //  } else {
@@ -119,7 +120,7 @@ bool PID_Compute_Position(PidType* pid) {
 		pid->ITerm = pid->outMax;
 	else if (pid->ITerm < pid->outMin)
 		pid->ITerm = pid->outMin;
-	FloatType dInput = (input - pid->lastInput);
+	FloatType dInput = (input - calculatePosition(pid->lastInput));
 
 	/*Compute PID Output*/
 	//FloatType output = pid->kp * pid->error + pid->ITerm - pid->kd * dInput;
@@ -139,7 +140,7 @@ bool PID_Compute_Position(PidType* pid) {
 	pid->myOutput = output;
 
 	/*Remember some variables for next time*/
-	pid->lastInput = input;
+	pid->lastInput = pid->myInput;
 //    pid->lastTime = now;
 	return true;
 //  } else {
@@ -470,4 +471,3 @@ void computeAllPIDS() {
 		}
 	}
 }
-
