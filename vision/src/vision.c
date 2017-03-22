@@ -294,6 +294,7 @@ static CvSeq *findFigure(CvSeq *in)
 void improveCorners(IplImage *image_yuv, CvPoint2D32f *corners, unsigned int num_corners)
 {
     CvTermCriteria criteria = {};
+    criteria.type = CV_TERMCRIT_EPS;
     criteria.max_iter = 50;
     criteria.epsilon = 0.5;
     IplImage *image_grayscale = cvCreateImage(cvGetSize(image_yuv), IPL_DEPTH_8U, 1);
