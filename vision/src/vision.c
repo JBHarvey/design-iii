@@ -147,6 +147,16 @@ static IplImage *thresholdImage3D(IplImage *image_yuv, unsigned int erode_dilate
     return image_black_white;
 }
 
+static unsigned int seqToPoints(CvSeq *sequence, CvPoint2D32f *points, unsigned int max_points)
+{
+    unsigned int i;
+
+    for(i = 0; i < sequence->total && i < max_points; ++i) {
+        points[i] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(sequence->v_next, i));
+    }
+
+    return i;
+}
 
 static void findGreenSquaresRecursive(CvSeq *contours, struct Square *out_squares, unsigned int max_squares,
                                       unsigned int *num_squares)
@@ -160,10 +170,7 @@ static void findGreenSquaresRecursive(CvSeq *contours, struct Square *out_square
     while(horizontal_sequence) {
         if(isDualSquare(horizontal_sequence)) {
             struct Square square;
-            square.corner[0] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(horizontal_sequence->v_next, 0));
-            square.corner[1] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(horizontal_sequence->v_next, 1));
-            square.corner[2] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(horizontal_sequence->v_next, 2));
-            square.corner[3] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(horizontal_sequence->v_next, 3));
+            seqToPoints(horizontal_sequence, square.corner, 4);
 
             /* fix rotation */
             if(square.corner[0].x * square.corner[0].y > square.corner[3].x * square.corner[3].y) {
@@ -282,6 +289,20 @@ static CvSeq *findFigure(CvSeq *in)
     return 0;
 }
 
+#define CORNER_IMPROVEMENT_RADIUS 10
+
+void improveCorners(IplImage *image_yuv, CvPoint2D32f *corners, unsigned int num_corners)
+{
+    CvTermCriteria criteria = {};
+    criteria.max_iter = 50;
+    criteria.epsilon = 0.5;
+    IplImage *image_grayscale = cvCreateImage(cvGetSize(image_yuv), IPL_DEPTH_8U, 1);
+    cvSplit(image_yuv, image_grayscale, 0, 0, 0);
+    cvFindCornerSubPix(image_grayscale, corners, num_corners, cvSize(CORNER_IMPROVEMENT_RADIUS, CORNER_IMPROVEMENT_RADIUS),
+                       cvSize(-1, -1),  criteria);
+    cvReleaseImage(&image_grayscale);
+}
+
 _Bool findFirstGreenSquare(CvMemStorage *opencv_storage, IplImage *image_yuv, struct Square *square)
 {
     IplImage *image_black_white = thresholdImage(image_yuv, GREEN_SQUARE_YUV_LOWER_BOUND, GREEN_SQUARE_YUV_UPPER_BOUND,
@@ -290,6 +311,7 @@ _Bool findFirstGreenSquare(CvMemStorage *opencv_storage, IplImage *image_yuv, st
     _Bool success = 0;
 
     if(findGreenSquares(opencv_storage, image_black_white, square, 1) >= 1) {
+        improveCorners(image_yuv, square->corner, 4);
         success = 1;
     }
 

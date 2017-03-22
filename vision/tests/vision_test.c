@@ -59,6 +59,12 @@ _Bool in_range(double value, double expected, double error_percent)
     return (fabs(value) > fabs(expected) * (1.0 - error_percent)) && (fabs(value) < fabs(expected) * (1.0 + error_percent));
 }
 
+_Bool in_range_pixels(double value, double expected, double pixels)
+{
+    return (fabs(value) > fabs(expected) - pixels) && (fabs(value) < fabs(expected) + pixels);
+}
+
+
 void obstacle_exists(enum ObstacleType type, int x, int y, double angle, struct Obstacle *obstacles,
                      unsigned int num_obstacles)
 {
@@ -171,14 +177,14 @@ Test(vision, findFirstGreenSquare)
 
     struct Square square;
     cr_assert(findFirstGreenSquare(opencv_storage, image_yuv, &square));
-    cr_assert(in_range(square.corner[0].x, 197, 0.02));
-    cr_assert(in_range(square.corner[0].y, 334, 0.02));
-    cr_assert(in_range(square.corner[1].x, 596, 0.02));
-    cr_assert(in_range(square.corner[1].y, 336, 0.02));
-    cr_assert(in_range(square.corner[2].x, 596, 0.02));
-    cr_assert(in_range(square.corner[2].y, 732, 0.02));
-    cr_assert(in_range(square.corner[3].x, 200, 0.02));
-    cr_assert(in_range(square.corner[3].y, 731, 0.02));
+    cr_assert(in_range_pixels(square.corner[0].x, 196, 2));
+    cr_assert(in_range_pixels(square.corner[0].y, 332, 2));
+    cr_assert(in_range_pixels(square.corner[1].x, 596, 2));
+    cr_assert(in_range_pixels(square.corner[1].y, 336, 2));
+    cr_assert(in_range_pixels(square.corner[2].x, 596, 2));
+    cr_assert(in_range_pixels(square.corner[2].y, 732, 2));
+    cr_assert(in_range_pixels(square.corner[3].x, 200, 2));
+    cr_assert(in_range_pixels(square.corner[3].y, 731, 2));
 
     cvReleaseMemStorage(&opencv_storage);
     cvReleaseImage(&image);
