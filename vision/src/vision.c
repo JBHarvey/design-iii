@@ -27,7 +27,7 @@
 
 
 #define GREEN_SQUARE_POLY_APPROX 100
-#define FIGURE_POLY_APPROX 5
+#define FIGURE_POLY_APPROX 10
 
 #define WIDTH_HEIGHT_EXTRACTED_SQUARE_IMAGE 1000
 
@@ -320,6 +320,27 @@ _Bool findFirstGreenSquare(CvMemStorage *opencv_storage, IplImage *image_yuv, st
     return success;
 }
 
+CvPoint  fixedCvPointFrom32f(CvPoint2D32f point)
+{
+    CvPoint ipt;
+    ipt.x = round(point.x);
+    ipt.y = round(point.y);
+
+    return ipt;
+}
+
+void improveFigure(IplImage *image_yuv, CvSeq *figure)
+{
+    unsigned int i;
+
+    for(i = 0; i < figure->total; ++i) {
+        CvPoint *element_pointer = (CvPoint *)cvGetSeqElem(figure, i);
+        CvPoint2D32f point = cvPointTo32f(*element_pointer);
+        improveCorners(image_yuv, &point, 1);
+        *element_pointer = fixedCvPointFrom32f(point);
+    }
+}
+
 CvSeq *findFirstFigure(CvMemStorage *opencv_storage, IplImage *image_yuv)
 {
     CvSeq *figure_contours = NULL;
@@ -329,11 +350,12 @@ CvSeq *findFirstFigure(CvMemStorage *opencv_storage, IplImage *image_yuv)
     if(findFirstGreenSquare(opencv_storage, image_yuv, squares)) {
         IplImage *square_image = imageInsideSquare(image_yuv, squares[0]);
         IplImage *square_image_black_white = thresholdImage3D(square_image, ERODE_DILATE_PIXELS);
-        cvReleaseImage(&square_image);
 
         figure_contours = findFigureContours(opencv_storage, square_image_black_white);
         cvReleaseImage(&square_image_black_white);
         figure_contours = findFigure(figure_contours);
+        improveFigure(square_image, figure_contours);
+        cvReleaseImage(&square_image);
     }
 
     return figure_contours;
