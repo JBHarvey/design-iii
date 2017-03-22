@@ -177,14 +177,14 @@ Test(vision, findFirstGreenSquare)
 
     struct Square square;
     cr_assert(findFirstGreenSquare(opencv_storage, image_yuv, &square));
-    cr_assert(in_range_pixels(square.corner[0].x, 196, 2));
-    cr_assert(in_range_pixels(square.corner[0].y, 332, 2));
-    cr_assert(in_range_pixels(square.corner[1].x, 596, 2));
-    cr_assert(in_range_pixels(square.corner[1].y, 336, 2));
-    cr_assert(in_range_pixels(square.corner[2].x, 596, 2));
-    cr_assert(in_range_pixels(square.corner[2].y, 732, 2));
-    cr_assert(in_range_pixels(square.corner[3].x, 200, 2));
-    cr_assert(in_range_pixels(square.corner[3].y, 731, 2));
+    cr_assert(in_range_pixels(square.corner[0].x, 196, 1));
+    cr_assert(in_range_pixels(square.corner[0].y, 332, 1));
+    cr_assert(in_range_pixels(square.corner[1].x, 596, 1));
+    cr_assert(in_range_pixels(square.corner[1].y, 336, 1));
+    cr_assert(in_range_pixels(square.corner[2].x, 596, 1));
+    cr_assert(in_range_pixels(square.corner[2].y, 732, 1));
+    cr_assert(in_range_pixels(square.corner[3].x, 199, 1));
+    cr_assert(in_range_pixels(square.corner[3].y, 731, 1));
 
     cvReleaseMemStorage(&opencv_storage);
     cvReleaseImage(&image);

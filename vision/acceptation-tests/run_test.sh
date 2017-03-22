@@ -41,6 +41,11 @@ echo execute with tolerance 1000/52 +-0.57cm
 TOLERANCE=47.0 ./build.sh || exit 1
 
 echo execute with tolerance 1000/47 +-0.63cm
+. ./execute_test.sh
+
+TOLERANCE=43.0 ./build.sh || exit 1
+
+echo execute with tolerance 1000/43 +-0.7cm
 . ./execute_test.sh || fail=1
 
 llvm-cov gcov ../src/vision.c -o ./

@@ -27,7 +27,7 @@
 
 
 #define GREEN_SQUARE_POLY_APPROX 100
-#define FIGURE_POLY_APPROX 10
+#define FIGURE_POLY_APPROX 5
 
 #define WIDTH_HEIGHT_EXTRACTED_SQUARE_IMAGE 1000
 
@@ -235,13 +235,15 @@ static IplImage *imageInsideSquare(IplImage *image_yuv, struct Square square)
     return corrected_image;
 }
 
+#define FIGURE_POLY_FIRST_APPROX 3
+
 static CvSeq *findFigureContours(CvMemStorage *opencv_storage, IplImage *image_black_white)
 {
     CvSeq *contours = NULL;
 
     if(cvFindContours(image_black_white, opencv_storage, &contours, sizeof(CvContour), CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE,
                       cvPoint(0, 0))) {
-        contours = cvApproxPoly(contours, sizeof(CvContour), opencv_storage, CV_POLY_APPROX_DP, FIGURE_POLY_APPROX, 1);
+        contours = cvApproxPoly(contours, sizeof(CvContour), opencv_storage, CV_POLY_APPROX_DP, FIGURE_POLY_FIRST_APPROX, 1);
     }
 
     return contours;
@@ -296,7 +298,7 @@ void improveCorners(IplImage *image_yuv, CvPoint2D32f *corners, unsigned int num
     CvTermCriteria criteria = {};
     criteria.type = CV_TERMCRIT_EPS;
     criteria.max_iter = 50;
-    criteria.epsilon = 0.5;
+    criteria.epsilon = 0.1;
     IplImage *image_grayscale = cvCreateImage(cvGetSize(image_yuv), IPL_DEPTH_8U, 1);
     cvSplit(image_yuv, image_grayscale, 0, 0, 0);
     cvFindCornerSubPix(image_grayscale, corners, num_corners, cvSize(CORNER_IMPROVEMENT_RADIUS, CORNER_IMPROVEMENT_RADIUS),
@@ -355,6 +357,7 @@ CvSeq *findFirstFigure(CvMemStorage *opencv_storage, IplImage *image_yuv)
         cvReleaseImage(&square_image_black_white);
         figure_contours = findFigure(figure_contours);
         improveFigure(square_image, figure_contours);
+        figure_contours = cvApproxPoly(figure_contours, sizeof(CvContour), opencv_storage, CV_POLY_APPROX_DP, FIGURE_POLY_APPROX, 1);
         cvReleaseImage(&square_image);
     }
 
