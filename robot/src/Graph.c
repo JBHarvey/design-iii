@@ -36,5 +36,19 @@ void Graph_delete(struct Graph *graph)
 
 void Graph_updateForMap(struct Graph *graph, struct Map* map)
 {
-    graph->type = SOLO;
-}
+    int number_of_obstacle = Map_fetchNumberOfObstacles(map);
+
+    switch(number_of_obstacle) {
+        case 0:
+            graph->type = NONE;
+            break;
+
+        case 1:
+            graph->type = SOLO;
+            break;
+
+        case 2:
+            graph->type = SOLO_SOLO;
+            break;
+
+    }

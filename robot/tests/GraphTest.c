@@ -24,6 +24,10 @@ Test(Graph, given_aMapWithNoObstacles_when_createsGraph_then_theGraphTypeIsZero)
 }
 
 struct Map *base_map;
+struct Map *graph_map;
+struct Graph *graph;
+int navigable_length;
+int navigable_height;
 struct Coordinates *south_western_table_corner;
 struct Coordinates *south_eastern_table_corner;
 struct Coordinates *north_western_table_corner;
@@ -34,7 +38,10 @@ struct Coordinates *north_western_drawing_zone_corner;
 struct Coordinates *north_eastern_drawing_zone_corner;
 struct Coordinates *invalid_coordinates;
 
-void setup_baseMapAndComponents(void)
+struct Coordinates *coordinates_center_west;
+struct Coordinates *coordinates_center_center;
+struct Coordinates *coordinates_center_east;
+void setup_Graph(void)
 {
     base_map = Map_new();
     south_western_table_corner = Coordinates_zero();
@@ -55,10 +62,22 @@ void setup_baseMapAndComponents(void)
     Map_updateDrawingCorners(base_map, north_eastern_drawing_zone_corner, south_eastern_drawing_zone_corner,
                              south_western_drawing_zone_corner, north_western_drawing_zone_corner);
     invalid_coordinates = Coordinates_new(-1, -1);
+
+    Map_updateObstacle(base_map, invalid_coordinates, CENTER, 0);
+    Map_updateObstacle(base_map, invalid_coordinates, CENTER, 1);
+    Map_updateObstacle(base_map, invalid_coordinates, CENTER, 2);
+    graph_map = Map_fetchNavigableMap(base_map, THEORICAL_ROBOT_RADIUS);
+
+    navigable_length = graph_map->south_eastern_table_corner->x - south_western_table_corner->x;
+    navigable_height = graph_map->north_western_drawing_zone_corner->y - south_western_table_corner->y;
+
+    graph = Graph_new();
 }
 
-void teardown_baseMapAndComponents(void)
+void teardown_Graph(void)
 {
+    Graph_delete(graph);
+    Map_delete(graph_map);
     Coordinates_delete(invalid_coordinates);
     Coordinates_delete(south_western_drawing_zone_corner);
     Coordinates_delete(south_eastern_drawing_zone_corner);
@@ -71,37 +90,49 @@ void teardown_baseMapAndComponents(void)
     Map_delete(base_map);
 }
 
-struct Map *graph_map;
-struct Graph *graph;
-struct Coordinates *coordinates_center_center;
-void setup_GraphOne(void)
-{
-    setup_baseMapAndComponents();
-    graph = Graph_new();
+const int GRAPH_WESTERN_OBSTACLE_X = 4125;
+const int GRAPH_WEST_OBSTACLE_X = 6500;
+const int GRAPH_CENTER_OBSTACLE_X = 8875;
+const int GRAPH_EAST_OBSTACLE_X = 11250;
+const int GRAPH_EASTERN_OBSTACLE_X = 13625;
 
-    coordinates_center_center = Coordinates_new(THEORICAL_WORLD_LENGTH / 2, THEORICAL_WORLD_HEIGHT / 2);
-    Map_updateObstacle(base_map, coordinates_center_center, CENTER, 0);
-    Map_updateObstacle(base_map, invalid_coordinates, CENTER, 1);
-    Map_updateObstacle(base_map, invalid_coordinates, CENTER, 2);
-
-    graph_map = Map_fetchNavigableMap(base_map, THEORICAL_ROBOT_RADIUS);
-
-}
-void teardown_GraphOne(void)
-{
-    Coordinates_delete(coordinates_center_center);
-    Graph_delete(graph);
-    teardown_baseMapAndComponents();
-}
+const int GRAPH_SOUTHERN_OBSTACLE_Y = 625;
+const int GRAPH_SOUTH_OBSTACLE_Y = 1875;
+const int GRAPH_CENTER_OBSTACLE_Y = 5650;
+const int GRAPH_NORTH_OBSTACLE_Y = 9425;
+const int GRAPH_NORTHERN_OBSTACLE_Y = 10675;
 
 Test(Graph, given_aNavigableMapWithOneObstacle_when_updatesGraph_then_theGraphTypeIsSOLO
-     , .init = setup_GraphOne
-     , .fini = teardown_GraphOne)
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
 {
+    struct Coordinates *center = Coordinates_new(GRAPH_CENTER_OBSTACLE_X, GRAPH_CENTER_OBSTACLE_Y);
+    Map_updateObstacle(graph_map, center, CENTER, 0);
     Graph_updateForMap(graph, graph_map);
 
     enum ObstaclePlacementType actual_type = graph->type;
     enum ObstaclePlacementType expected_type = SOLO;
 
     cr_assert_eq(expected_type, actual_type);
+
+    Coordinates_delete(center);
+}
+
+Test(Graph, given_aNavigableMapWithTwoNonOverlappingObstacles_when_updatesGrah_then_theGraphTypeIsSOLO_SOLO
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    struct Coordinates *center = Coordinates_new(GRAPH_CENTER_OBSTACLE_X, GRAPH_CENTER_OBSTACLE_Y);
+    struct Coordinates *west = Coordinates_new(GRAPH_WESTERN_OBSTACLE_X, GRAPH_CENTER_OBSTACLE_Y);
+    Map_updateObstacle(graph_map, center, CENTER, 0);
+    Map_updateObstacle(graph_map, west, CENTER, 1);
+    Graph_updateForMap(graph, graph_map);
+
+    enum ObstaclePlacementType actual_type = graph->type;
+    enum ObstaclePlacementType expected_type = SOLO_SOLO;
+
+    cr_assert_eq(expected_type, actual_type);
+
+    Coordinates_delete(center);
+    Coordinates_delete(west);
 }
