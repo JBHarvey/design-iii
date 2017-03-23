@@ -69,7 +69,7 @@ void setup_Graph(void)
     graph_map = Map_fetchNavigableMap(base_map, THEORICAL_ROBOT_RADIUS);
 
     navigable_length = graph_map->south_eastern_table_corner->x - south_western_table_corner->x;
-    navigable_height = graph_map->north_western_drawing_zone_corner->y - south_western_table_corner->y;
+    navigable_height = graph_map->south_eastern_drawing_corner->y - south_western_table_corner->y;
 
     graph = Graph_new();
 }
@@ -133,6 +133,47 @@ Test(Graph, given_aNavigableMapWithTwoNonOverlappingObstacles_when_updatesGrah_t
 
     cr_assert_eq(expected_type, actual_type);
 
+    Coordinates_delete(center);
+    Coordinates_delete(west);
+}
+
+Test(Graph, given_aNavigableMapWithTwoOverlappingObstacles_when_updatesGrah_then_theGraphTypeIsDUO
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    struct Coordinates *south = Coordinates_new(GRAPH_CENTER_OBSTACLE_X, GRAPH_SOUTHERN_OBSTACLE_Y);
+    struct Coordinates *north = Coordinates_new(GRAPH_CENTER_OBSTACLE_X, GRAPH_NORTHERN_OBSTACLE_Y);
+    Map_updateObstacle(graph_map, south, CENTER, 0);
+    Map_updateObstacle(graph_map, north, CENTER, 1);
+    Graph_updateForMap(graph, graph_map);
+
+    enum ObstaclePlacementType actual_type = graph->type;
+    enum ObstaclePlacementType expected_type = DUO;
+
+    cr_assert_eq(expected_type, actual_type);
+
+    Coordinates_delete(south);
+    Coordinates_delete(north);
+}
+
+Test(Graph, given_aNavigableMapWithThreeNonOverlappingObstacles_when_updatesGrah_then_theGraphTypeIsSOLO_SOLO_SOLO
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    struct Coordinates *east = Coordinates_new(GRAPH_EASTERN_OBSTACLE_X, GRAPH_CENTER_OBSTACLE_Y);
+    struct Coordinates *center = Coordinates_new(GRAPH_CENTER_OBSTACLE_X, GRAPH_CENTER_OBSTACLE_Y);
+    struct Coordinates *west = Coordinates_new(GRAPH_WESTERN_OBSTACLE_X, GRAPH_CENTER_OBSTACLE_Y);
+    Map_updateObstacle(graph_map, east, CENTER, 0);
+    Map_updateObstacle(graph_map, center, CENTER, 1);
+    Map_updateObstacle(graph_map, west, CENTER, 2);
+    Graph_updateForMap(graph, graph_map);
+
+    enum ObstaclePlacementType actual_type = graph->type;
+    enum ObstaclePlacementType expected_type = SOLO_SOLO_SOLO;
+
+    cr_assert_eq(expected_type, actual_type);
+
+    Coordinates_delete(east);
     Coordinates_delete(center);
     Coordinates_delete(west);
 }

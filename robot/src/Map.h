@@ -38,4 +38,8 @@ struct Map *Map_fetchNavigableMap(struct Map *original_map, int robot_radius);
 
 struct Obstacle *Map_retrieveFirstObstacle(struct Map *map);
 struct Obstacle *Map_retrieveLastObstacle(struct Map *map);
+struct Obstacle *Map_retrieveMiddleObstacle(struct Map *map, struct Obstacle *first, struct Obstacle *last);
+
+struct Obstacle *Map_retrieveFirstOverlappingObstacle(struct Map *map);
+struct Obstacle *Map_retrieveLastOverlappingObstacle(struct Map *map);
 #endif // MAP_H_

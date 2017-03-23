@@ -227,3 +227,61 @@ struct Obstacle *Map_retrieveLastObstacle(struct Map *map)
 
     return last_one;
 }
+
+struct Obstacle *Map_retrieveMiddleObstacle(struct Map *map, struct Obstacle *first, struct Obstacle *last)
+{
+    struct Obstacle *middle;
+    int i;
+
+    for(i = 0; i < MAXIMUM_OBSTACLE_NUMBER; ++i) {
+        middle = map->obstacles[i];
+
+        if(middle != first && middle != last) {
+            return middle;
+        }
+    }
+
+    return NULL;
+}
+
+struct Obstacle *Map_retrieveFirstOverlappingObstacle(struct Map *map)
+{
+    struct Obstacle *last_one = NULL;
+    struct Obstacle *aspirant;
+    int i;
+
+    for(i = 0; i < MAXIMUM_OBSTACLE_NUMBER; ++i) {
+        aspirant = map->obstacles[i];
+
+        if(isObstacleValid(aspirant)) {
+            if(last_one == NULL) {
+                last_one = aspirant;
+            } else {
+                last_one = Obstacle_retrieveNorthern(last_one, aspirant);
+            }
+        }
+    }
+
+    return last_one;
+}
+
+struct Obstacle *Map_retrieveLastOverlappingObstacle(struct Map *map)
+{
+    struct Obstacle *last_one = NULL;
+    struct Obstacle *aspirant;
+    int i;
+
+    for(i = 0; i < MAXIMUM_OBSTACLE_NUMBER; ++i) {
+        aspirant = map->obstacles[i];
+
+        if(isObstacleValid(aspirant)) {
+            if(last_one == NULL) {
+                last_one = aspirant;
+            } else {
+                last_one = Obstacle_retrieveSouthern(last_one, aspirant);
+            }
+        }
+    }
+
+    return last_one;
+}

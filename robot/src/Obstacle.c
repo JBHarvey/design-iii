@@ -125,7 +125,43 @@ struct Obstacle *Obstacle_retrieveWestern(struct Obstacle *a, struct Obstacle *b
     return western_obstacle;
 }
 
-int Obstacle_areFacing(struct Obstacle *a, struct Obstacle *b)
+struct Obstacle *Obstacle_retrieveNorthern(struct Obstacle *a, struct Obstacle *b)
+{
+    struct Coordinates *northern_point_of_a = Obstacle_retrieveNorthernPointOf(a);
+    struct Coordinates *northern_point_of_b = Obstacle_retrieveNorthernPointOf(b);
+    struct Obstacle *northern_obstacle;
+
+    if(northern_point_of_a->y > northern_point_of_b->y) {
+        northern_obstacle = a;
+    } else {
+        northern_obstacle = b;
+    }
+
+    Coordinates_delete(northern_point_of_a);
+    Coordinates_delete(northern_point_of_b);
+
+    return northern_obstacle;
+}
+
+struct Obstacle *Obstacle_retrieveSouthern(struct Obstacle *a, struct Obstacle *b)
+{
+    struct Coordinates *southern_point_of_a = Obstacle_retrieveSouthernPointOf(a);
+    struct Coordinates *southern_point_of_b = Obstacle_retrieveSouthernPointOf(b);
+    struct Obstacle *southern_obstacle;
+
+    if(southern_point_of_a->y < southern_point_of_b->y) {
+        southern_obstacle = a;
+    } else {
+        southern_obstacle = b;
+    }
+
+    Coordinates_delete(southern_point_of_a);
+    Coordinates_delete(southern_point_of_b);
+
+    return southern_obstacle;
+}
+
+int Obstacle_areOverlapping(struct Obstacle *a, struct Obstacle *b)
 {
     int horizontal_distance = abs(a->coordinates->x - b->coordinates->x);
     int radius_total = a->radius + b->radius;

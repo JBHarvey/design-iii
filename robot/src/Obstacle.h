@@ -23,6 +23,8 @@ struct Coordinates *Obstacle_retrieveSouthernPointOf(struct Obstacle *obstacle);
 
 struct Obstacle *Obstacle_retrieveEastern(struct Obstacle *a, struct Obstacle *b);
 struct Obstacle *Obstacle_retrieveWestern(struct Obstacle *a, struct Obstacle *b);
+struct Obstacle *Obstacle_retrieveNorthern(struct Obstacle *a, struct Obstacle *b);
+struct Obstacle *Obstacle_retrieveSouthern(struct Obstacle *a, struct Obstacle *b);
 
-int Obstacle_areFacing(struct Obstacle *a, struct Obstacle *b);
+int Obstacle_areOverlapping(struct Obstacle *a, struct Obstacle *b);
 #endif // OBSTACLE_H_

@@ -156,30 +156,51 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstacleSeparatedHorizontallyByASmallerDistanceThanTheAdditionOfTheirRadius_when_askedIfTheyAreFacingEachOther_then_returnsOne
+     given_twoObstacleSeparatedHorizontallyByASmallerDistanceThanTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOther_then_returnsOne
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
-    int areFacing = Obstacle_areFacing(center_obstacle, south_oriented_obstacle);
-    cr_assert(areFacing);
+    int areOverlapping = Obstacle_areOverlapping(center_obstacle, south_oriented_obstacle);
+    cr_assert(areOverlapping);
 }
 
 Test(Obstacle,
-     given_twoObstacleSeparatedHorizontallyByTheExactDistanceOfTheAdditionOfTheirRadius_when_askedIfTheyAreFacingEachOther_then_returnsOne
+     given_twoObstacleSeparatedHorizontallyByTheExactDistanceOfTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOther_then_returnsOne
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
     center_obstacle->coordinates->x = OBSTACLE_X + 2 * THEORICAL_OBSTACLE_RADIUS;
-    int areFacing = Obstacle_areFacing(center_obstacle, south_oriented_obstacle);
-    cr_assert(areFacing);
+    int areOverlapping = Obstacle_areOverlapping(center_obstacle, south_oriented_obstacle);
+    cr_assert(areOverlapping);
 }
 
 Test(Obstacle,
-     given_twoObstacleSeparatedHorizontallyByABiggerDistanceOfTheAdditionOfTheirRadius_when_askedIfTheyAreFacingEachOther_then_returnsZero
+     given_twoObstacleSeparatedHorizontallyByABiggerDistanceOfTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOther_then_returnsZero
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
     center_obstacle->coordinates->x = OBSTACLE_X + 3 * THEORICAL_OBSTACLE_RADIUS;
-    int areFacing = Obstacle_areFacing(center_obstacle, south_oriented_obstacle);
-    cr_assert(!areFacing);
+    int areOverlapping = Obstacle_areOverlapping(center_obstacle, south_oriented_obstacle);
+    cr_assert(!areOverlapping);
 }
+
+Test(Obstacle,
+     given_twoObstacle_when_askedToRetrieveTheNorthernOne_then_theOneWithTheHighestYValueOfNorthernCoordinatesIsReturned
+     , .init = setup_Obstacle
+     , .fini = teardown_Obstacle)
+{
+    south_oriented_obstacle->coordinates->y = OBSTACLE_Y * 2;
+    struct Obstacle *northern = Obstacle_retrieveNorthern(north_oriented_obstacle, south_oriented_obstacle);
+    cr_assert(northern == south_oriented_obstacle);
+}
+
+Test(Obstacle,
+     given_twoObstacle_when_askedToRetrieveTheSouthernOne_then_theOneWithTheLowestYValueOfNorthernCoordinatesIsReturned
+     , .init = setup_Obstacle
+     , .fini = teardown_Obstacle)
+{
+    south_oriented_obstacle->coordinates->y = OBSTACLE_Y * 2;
+    struct Obstacle *southern = Obstacle_retrieveSouthern(north_oriented_obstacle, south_oriented_obstacle);
+    cr_assert(southern == north_oriented_obstacle);
+}
+

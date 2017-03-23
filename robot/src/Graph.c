@@ -38,6 +38,11 @@ void Graph_updateForMap(struct Graph *graph, struct Map* map)
 {
     int number_of_obstacle = Map_fetchNumberOfObstacles(map);
 
+    struct Obstacle *first;
+    struct Obstacle *middle;
+    struct Obstacle *last;
+    int are_overlapping;
+
     switch(number_of_obstacle) {
         case 0:
             graph->type = NONE;
@@ -48,7 +53,21 @@ void Graph_updateForMap(struct Graph *graph, struct Map* map)
             break;
 
         case 2:
-            graph->type = SOLO_SOLO;
+            first = Map_retrieveFirstObstacle(map);
+            last = Map_retrieveLastObstacle(map);
+            are_overlapping = Obstacle_areOverlapping(first, last);
+
+            if(are_overlapping) {
+                graph->type = DUO;
+            } else {
+                graph->type = SOLO_SOLO;
+            }
+
             break;
 
-    }
+        case 3:
+            graph->type = SOLO_SOLO_SOLO;
+            break;
+
+    };
+}

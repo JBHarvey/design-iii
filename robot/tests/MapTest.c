@@ -405,3 +405,44 @@ Test(Map, given_aNavigableMapWithThreeObstaclesAndTheTwoWesternOnesWithSameXCoor
 
     cr_assert(Coordinates_haveTheSameValues(retrieved->coordinates, south_south_west_coordinates));
 }
+
+Test(Map, given_aFirstAndSecondObstacleAndNoOverlap_when_askedToRetrieveTheMiddleOne_then_theMiddleOneIsRetrieved
+     , .init = setup_NavigableMap
+     , .fini = teardown_NavigableMap)
+{
+    setObstacleCoordinates(map, 0, center_east_coordinates);
+    setObstacleCoordinates(map, 1, center_center_coordinates);
+    setObstacleCoordinates(map, 2, center_west_coordinates);
+
+    struct Obstacle *first = Map_retrieveFirstObstacle(map);
+    struct Obstacle *last = Map_retrieveLastObstacle(map);
+    struct Obstacle *middle = Map_retrieveMiddleObstacle(map, first, last);
+
+    cr_assert(Coordinates_haveTheSameValues(middle->coordinates, center_center_coordinates));
+}
+
+Test(Map, given_threeOverlappingOverlappingObstacle_when_askedToRetrieveTheFirstOne_then_theNorthernOneIsReturned
+     , .init = setup_NavigableMap
+     , .fini = teardown_NavigableMap)
+{
+    setObstacleCoordinates(map, 0, south_south_west_coordinates);
+    setObstacleCoordinates(map, 1, center_west_coordinates);
+    setObstacleCoordinates(map, 2, north_north_west_coordinates);
+
+    struct Obstacle *retrieved = Map_retrieveFirstOverlappingObstacle(map);
+
+    cr_assert(Coordinates_haveTheSameValues(retrieved->coordinates, north_north_west_coordinates));
+}
+
+Test(Map, given_threeOverlappingOverlappingObstacle_when_askedToRetrieveTheLastOne_then_theSouthernOneIsReturned
+     , .init = setup_NavigableMap
+     , .fini = teardown_NavigableMap)
+{
+    setObstacleCoordinates(map, 0, south_south_west_coordinates);
+    setObstacleCoordinates(map, 1, center_west_coordinates);
+    setObstacleCoordinates(map, 2, north_north_west_coordinates);
+
+    struct Obstacle *retrieved = Map_retrieveLastOverlappingObstacle(map);
+
+    cr_assert(Coordinates_haveTheSameValues(retrieved->coordinates, south_south_west_coordinates));
+}
