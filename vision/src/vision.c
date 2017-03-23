@@ -291,9 +291,10 @@ static CvSeq *findFigure(CvSeq *in)
     return 0;
 }
 
-#define CORNER_IMPROVEMENT_RADIUS 10
+#define CORNER_IMPROVEMENT_RADIUS_DEFAULT 10
 
-void improveCorners(IplImage *image_yuv, CvPoint2D32f *corners, unsigned int num_corners)
+void improveCorners(IplImage *image_yuv, CvPoint2D32f *corners, unsigned int num_corners,
+                    unsigned int corner_improvement_radius)
 {
     CvTermCriteria criteria = {};
     criteria.type = CV_TERMCRIT_EPS;
@@ -301,7 +302,7 @@ void improveCorners(IplImage *image_yuv, CvPoint2D32f *corners, unsigned int num
     criteria.epsilon = 0.1;
     IplImage *image_grayscale = cvCreateImage(cvGetSize(image_yuv), IPL_DEPTH_8U, 1);
     cvSplit(image_yuv, image_grayscale, 0, 0, 0);
-    cvFindCornerSubPix(image_grayscale, corners, num_corners, cvSize(CORNER_IMPROVEMENT_RADIUS, CORNER_IMPROVEMENT_RADIUS),
+    cvFindCornerSubPix(image_grayscale, corners, num_corners, cvSize(corner_improvement_radius, corner_improvement_radius),
                        cvSize(-1, -1),  criteria);
     cvReleaseImage(&image_grayscale);
 }
@@ -314,7 +315,7 @@ _Bool findFirstGreenSquare(CvMemStorage *opencv_storage, IplImage *image_yuv, st
     _Bool success = 0;
 
     if(findGreenSquares(opencv_storage, image_black_white, square, 1) >= 1) {
-        improveCorners(image_yuv, square->corner, 4);
+        improveCorners(image_yuv, square->corner, 4, CORNER_IMPROVEMENT_RADIUS_DEFAULT);
         success = 1;
     }
 
@@ -338,7 +339,7 @@ void improveFigure(IplImage *image_yuv, CvSeq *figure)
     for(i = 0; i < figure->total; ++i) {
         CvPoint *element_pointer = (CvPoint *)cvGetSeqElem(figure, i);
         CvPoint2D32f point = cvPointTo32f(*element_pointer);
-        improveCorners(image_yuv, &point, 1);
+        improveCorners(image_yuv, &point, 1, CORNER_IMPROVEMENT_RADIUS_DEFAULT);
         *element_pointer = fixedCvPointFrom32f(point);
     }
 }
@@ -653,15 +654,9 @@ CvPoint coordinateToTableCoordinate(CvPoint point, double height_cm, CvPoint cam
     return out;
 }
 
-#define CORNER_1 cvPoint(0, 0)
-#define CORNER_2 cvPoint(0, 70)
-#define CORNER_3 cvPoint(1562, 912)
-#define CORNER_4 cvPoint(34, 902)
-
-#define MIN_TABLE_CORNER_DISTANCE_FROM_SIDE 25
+#define MIN_TABLE_CORNER_DISTANCE_FROM_SIDE 10
 #define MAX_TABLE_CORNER_DISTANCE_FROM_SIDE 100
 #define MIN_CORNER_DISTANCE 10
-#define MIN_ALLOWED_OFFSET 10
 
 #define TABLE_WIDTH 1507
 #define TABLE_HEIGHT_RIGHT 723
@@ -669,6 +664,32 @@ CvPoint coordinateToTableCoordinate(CvPoint point, double height_cm, CvPoint cam
 #define BLACK_BORDER_SIZE 4
 
 #define DISTANCE_ALLOWED_ERROR 0.1
+#define MAX_DETECTED_CORNERS 20
+#define CORNER_IMPROVEMENT_RADIUS_TABLE_CORNERS 5
+
+static void findCornersWithDistance(CvPoint2D32f *corners, unsigned int num_corners, double distance)
+{
+    unsigned int corner1 = num_corners, corner2 = num_corners;
+    double current_distance = 1000000000;
+
+    unsigned int i, j;
+
+    for(i = 0; i < num_corners; ++i) {
+        for(j = (i + 1); j < num_corners; ++j) {
+            double distance_temp = fabs(distance - distancePoints(fixedCvPointFrom32f(corners[i]),
+                                        fixedCvPointFrom32f(corners[j])));
+
+            if(distance_temp < current_distance) {
+                corner1 = i;
+                corner2 = j;
+                current_distance = distance_temp;
+            }
+        }
+    }
+
+    corners[0] = corners[corner1];
+    corners[1] = corners[corner2];
+}
 
 _Bool findTableCorners(IplImage *image_yuv, struct Square *square)
 {
@@ -681,7 +702,7 @@ _Bool findTableCorners(IplImage *image_yuv, struct Square *square)
     cvRectangle(image_mask, cvPoint(width - MAX_TABLE_CORNER_DISTANCE_FROM_SIDE, 0),
                 cvPoint(width - MIN_TABLE_CORNER_DISTANCE_FROM_SIDE, height), CV_RGB(255, 255, 255), -1, 8, 0);
 
-    int max_corners = 2;
+    int max_corners = MAX_DETECTED_CORNERS;
     CvPoint2D32f corners[max_corners];
     cvGoodFeaturesToTrack(image_grayscale, NULL, NULL, corners, &max_corners, 0.01, MIN_CORNER_DISTANCE, image_mask, 10, 1,
                           0.15);
@@ -689,7 +710,8 @@ _Bool findTableCorners(IplImage *image_yuv, struct Square *square)
     _Bool success = 0;
 
     if(max_corners >= 2) {
-        improveCorners(image_yuv, corners, max_corners);
+        improveCorners(image_yuv, corners, max_corners, CORNER_IMPROVEMENT_RADIUS_TABLE_CORNERS);
+        findCornersWithDistance(corners, max_corners, TABLE_HEIGHT_RIGHT);
 
         if(corners[0].y > corners[1].y) {
             CvPoint2D32f temp = corners[0];
@@ -698,7 +720,6 @@ _Bool findTableCorners(IplImage *image_yuv, struct Square *square)
         }
 
         double distance = distancePoints(fixedCvPointFrom32f(corners[0]), fixedCvPointFrom32f(corners[1]));
-        printf("ok %lf,  %lf %lf | %lf %lf\n", distance, corners[0].x, corners[0].y, corners[1].x, corners[1].y);
 
         if(distance > TABLE_HEIGHT_RIGHT * (1.0 - DISTANCE_ALLOWED_ERROR)
            && distance < TABLE_HEIGHT_RIGHT * (1.0 + DISTANCE_ALLOWED_ERROR)) {
@@ -711,6 +732,7 @@ _Bool findTableCorners(IplImage *image_yuv, struct Square *square)
             CvPoint2D32f corners_estimated[2];
             corners_estimated[0] = cvPoint2D32f(corners[0].x + TABLE_WIDTH * cos(angle), corners[0].y + TABLE_WIDTH * sin(angle));
             corners_estimated[1] = cvPoint2D32f(corners[1].x + TABLE_WIDTH * cos(angle), corners[1].y + TABLE_WIDTH * sin(angle));
+            improveCorners(image_yuv, corners_estimated, 2, CORNER_IMPROVEMENT_RADIUS_TABLE_CORNERS);
 
             square->corner[0] = corners_estimated[0];
             square->corner[1] = corners[0];
