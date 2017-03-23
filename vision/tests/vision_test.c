@@ -228,10 +228,19 @@ Test(vision, findTableCorners)
     IplImage *image_yuv = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
     cvCvtColor(image, image_yuv, CV_BGR2YCrCb);
 
-    struct Square square[1];
-    cr_assert(findTableCorners(image_yuv, square));
+    struct Square square;
+    cr_assert(findTableCorners(image_yuv, &square));
 
     cvReleaseMemStorage(&opencv_storage);
     cvReleaseImage(&image);
     cvReleaseImage(&image_yuv);
+
+    cr_assert(in_range_pixels(square.corner[0].x, 41, 1));
+    cr_assert(in_range_pixels(square.corner[0].y, 225, 1));
+    cr_assert(in_range_pixels(square.corner[1].x, 1551, 1));
+    cr_assert(in_range_pixels(square.corner[1].y, 223, 1));
+    cr_assert(in_range_pixels(square.corner[2].x, 1553, 1));
+    cr_assert(in_range_pixels(square.corner[2].y, 954, 1));
+    cr_assert(in_range_pixels(square.corner[3].x, 45, 1));
+    cr_assert(in_range_pixels(square.corner[3].y, 956, 1));
 }
