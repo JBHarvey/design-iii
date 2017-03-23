@@ -285,3 +285,40 @@ struct Obstacle *Map_retrieveLastOverlappingObstacle(struct Map *map)
 
     return last_one;
 }
+
+int Map_isCoordinateFree(struct Map *map, struct Coordinates *coordinates)
+{
+    int is_free = 1;
+
+    if(Coordinates_isToTheNorthOf(coordinates, map->north_eastern_drawing_corner)) {
+        is_free = 0;
+    }
+
+    if(Coordinates_isToTheSouthOf(coordinates, map->south_eastern_table_corner)) {
+        is_free = 0;
+    }
+
+    if(Coordinates_isToTheEastOf(coordinates, map->north_eastern_drawing_corner)) {
+        is_free = 0;
+    }
+
+    if(Coordinates_isToTheWestOf(coordinates, map->south_western_table_corner)) {
+        is_free = 0;
+    }
+
+    int distance;
+    int radius;
+    int actual_number_of_obstacles = Map_fetchNumberOfObstacles(map);
+    int i;
+
+    for(i = 0; i < actual_number_of_obstacles; ++i) {
+        distance = Coordinates_distanceBetween(coordinates, map->obstacles[i]->coordinates);
+        radius = map->obstacles[i]->radius;
+
+        if(distance <= radius) {
+            is_free = 0;
+        }
+    }
+
+    return is_free;
+}

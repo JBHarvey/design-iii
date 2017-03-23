@@ -34,6 +34,21 @@ void Graph_delete(struct Graph *graph)
     }
 }
 
+static void establishEasternNode(struct Graph *graph, struct Obstacle *eastern_obstacle, struct Map *map)
+{
+    struct Coordinates *eastern_obstacle_coordinates = Obstacle_retrieveEasternPointOf(eastern_obstacle);
+    int obstacle_eastern_x = eastern_obstacle_coordinates->x;
+    int eastern_navigable_point = map->south_eastern_table_corner->x;
+    int middle_x = (obstacle_eastern_x + eastern_navigable_point) / 2;
+    int new_y = 0;
+
+
+    struct Coordinates *new_eastern_node_coordinates = Coordinates_new(middle_x, new_y);
+    Coordinates_copyValuesFrom(graph->eastern_node->coordinates, new_eastern_node_coordinates);
+    Coordinates_delete(eastern_obstacle_coordinates);
+    Coordinates_delete(new_eastern_node_coordinates);
+}
+
 void Graph_updateForMap(struct Graph *graph, struct Map* map)
 {
     int number_of_obstacle = Map_fetchNumberOfObstacles(map);
@@ -48,6 +63,8 @@ void Graph_updateForMap(struct Graph *graph, struct Map* map)
 
         case 1:
             graph->type = SOLO;
+            first = Map_retrieveFirstObstacle(map);
+            establishEasternNode(graph, first, map);
             break;
 
         case 2:

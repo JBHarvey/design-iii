@@ -446,3 +446,80 @@ Test(Map, given_threeOverlappingOverlappingObstacle_when_askedToRetrieveTheLastO
 
     cr_assert(Coordinates_haveTheSameValues(retrieved->coordinates, south_south_west_coordinates));
 }
+
+Test(Map, given_aCoordinateToTheNorthOfTheNorthernNavigableY_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_NavigableMap
+     , .fini = teardown_NavigableMap)
+{
+    struct Coordinates *too_to_the_north = Coordinates_new(0, THEORICAL_WORLD_HEIGHT * 2);
+
+    int is_within_navigable_space = Map_isCoordinateFree(map, too_to_the_north);
+    cr_assert(!is_within_navigable_space);
+
+    Coordinates_delete(too_to_the_north);
+}
+
+Test(Map, given_aCoordinateToTheSouthOfTheSouthernNavigableY_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_NavigableMap
+     , .fini = teardown_NavigableMap)
+{
+    struct Coordinates *too_to_the_south = Coordinates_new(0, -1);
+
+    int is_within_navigable_space = Map_isCoordinateFree(map, too_to_the_south);
+    cr_assert(!is_within_navigable_space);
+
+    Coordinates_delete(too_to_the_south);
+}
+
+Test(Map, given_aCoordinateToTheEastOfTheEasternNavigableY_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_NavigableMap
+     , .fini = teardown_NavigableMap)
+{
+    struct Coordinates *too_to_the_east = Coordinates_new(THEORICAL_WORLD_LENGTH * 2, 0);
+
+    int is_within_navigable_space = Map_isCoordinateFree(map, too_to_the_east);
+    cr_assert(!is_within_navigable_space);
+
+    Coordinates_delete(too_to_the_east);
+}
+
+Test(Map, given_aCoordinateToTheWestOfTheWesternNavigableY_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_NavigableMap
+     , .fini = teardown_NavigableMap)
+{
+    struct Coordinates *too_to_the_west = Coordinates_new(-1, 0);
+
+    int is_within_navigable_space = Map_isCoordinateFree(map, too_to_the_west);
+    cr_assert(!is_within_navigable_space);
+
+    Coordinates_delete(too_to_the_west);
+}
+
+Test(Map, given_aCoordinateWithinTheRangeOfAnyOfTheObstacles_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_NavigableMap
+     , .fini = teardown_NavigableMap)
+{
+    setObstacleCoordinates(map, 0, south_south_west_coordinates);
+    setObstacleCoordinates(map, 1, center_west_coordinates);
+    setObstacleCoordinates(map, 2, north_north_west_coordinates);
+    struct Coordinates *within_obstacle_0_radius = Coordinates_zero();
+    struct Coordinates *within_obstacle_1_radius = Coordinates_zero();
+    struct Coordinates *within_obstacle_2_radius = Coordinates_zero();
+    Coordinates_copyValuesFrom(within_obstacle_0_radius, south_south_west_coordinates);
+    Coordinates_copyValuesFrom(within_obstacle_1_radius, center_west_coordinates);
+    Coordinates_copyValuesFrom(within_obstacle_2_radius, north_north_west_coordinates);
+
+    within_obstacle_0_radius->x = within_obstacle_0_radius->x + THEORICAL_OBSTACLE_RADIUS;
+    within_obstacle_1_radius->x = within_obstacle_1_radius->x - THEORICAL_ROBOT_RADIUS - THEORICAL_OBSTACLE_RADIUS;
+    within_obstacle_2_radius->y = within_obstacle_2_radius->y + THEORICAL_ROBOT_RADIUS;
+    int is_within_navigable_space =
+        Map_isCoordinateFree(map, within_obstacle_0_radius)
+        || Map_isCoordinateFree(map, within_obstacle_1_radius)
+        || Map_isCoordinateFree(map, within_obstacle_2_radius);
+
+    cr_assert(!is_within_navigable_space);
+
+    Coordinates_delete(within_obstacle_0_radius);
+    Coordinates_delete(within_obstacle_1_radius);
+    Coordinates_delete(within_obstacle_2_radius);
+}

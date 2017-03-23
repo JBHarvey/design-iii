@@ -42,4 +42,6 @@ struct Obstacle *Map_retrieveMiddleObstacle(struct Map *map, struct Obstacle *fi
 
 struct Obstacle *Map_retrieveFirstOverlappingObstacle(struct Map *map);
 struct Obstacle *Map_retrieveLastOverlappingObstacle(struct Map *map);
+
+int Map_isCoordinateFree(struct Map *map, struct Coordinates *coordinates);
 #endif // MAP_H_

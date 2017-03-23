@@ -102,20 +102,45 @@ const int GRAPH_CENTER_OBSTACLE_Y = 5650;
 const int GRAPH_NORTH_OBSTACLE_Y = 9425;
 const int GRAPH_NORTHERN_OBSTACLE_Y = 10675;
 
+void createSOLOOriented(enum CardinalDirection orientation)
+{
+    struct Coordinates *center = Coordinates_new(GRAPH_CENTER_OBSTACLE_X, GRAPH_CENTER_OBSTACLE_Y);
+    Map_updateObstacle(graph_map, center, orientation, 0);
+    Graph_updateForMap(graph, graph_map);
+
+    Coordinates_delete(center);
+}
+
 Test(Graph, given_aNavigableMapWithOneObstacle_when_updatesGraph_then_theGraphTypeIsSOLO
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
-    struct Coordinates *center = Coordinates_new(GRAPH_CENTER_OBSTACLE_X, GRAPH_CENTER_OBSTACLE_Y);
-    Map_updateObstacle(graph_map, center, CENTER, 0);
-    Graph_updateForMap(graph, graph_map);
+    createSOLOOriented(CENTER);
 
     enum ObstaclePlacementType actual_type = graph->type;
     enum ObstaclePlacementType expected_type = SOLO;
 
     cr_assert_eq(expected_type, actual_type);
 
-    Coordinates_delete(center);
+}
+
+Test(Graph,
+     given_aSOLOGraph_when_updatesGraph_then_itsEasternNodeIsBetweenTheTheEasternPointOfTheObstacleAndTheEasternNavigableCoordinates
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    createSOLOOriented(CENTER);
+
+    struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
+    struct Coordinates *node_coordinates = graph->eastern_node->coordinates;
+    struct Coordinates *eastern_point_of_the_obstacle = Obstacle_retrieveEasternPointOf(obstacle);
+    struct Coordinates *eastern_navigable_point = graph_map->south_eastern_table_corner;
+    int to_the_east_of_the_obstacle = Coordinates_isToTheEastOf(node_coordinates, eastern_point_of_the_obstacle);
+    int to_the_west_of_the_east_wall = Coordinates_isToTheWestOf(node_coordinates, eastern_navigable_point);
+    cr_assert(to_the_west_of_the_east_wall);
+    cr_assert(to_the_east_of_the_obstacle);
+
+    Coordinates_delete(eastern_point_of_the_obstacle);
 }
 
 Test(Graph, given_aNavigableMapWithTwoNonOverlappingObstacles_when_updatesGrah_then_theGraphTypeIsSOLO_SOLO
