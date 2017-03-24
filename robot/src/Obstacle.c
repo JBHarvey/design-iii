@@ -168,12 +168,14 @@ int Obstacle_areOverlappingInX(struct Obstacle *a, struct Obstacle *b)
     return horizontal_distance <= radius_total;
 }
 /*
+ * TODO: Test these 2 functions and add them to the graph
 int Obstacle_areOverlappingInY(struct Obstacle *a, struct Obstacle *b)
 {
     int vertical_distance = abs(a->coordinates->y - b->coordinates->y);
     int radius_total = a->radius + b->radius;
     return vertical_distance <= radius_total;
 }
+
 int Obstacle_areOverlapping(struct Obstacle *a, struct Obstacle *b)
 {
     return (Obstacle_areOverlappingInX(a, b) || Obstacle_areOverlappingInY(a, b));
