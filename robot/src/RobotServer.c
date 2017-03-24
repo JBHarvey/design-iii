@@ -171,6 +171,17 @@ void sendWorldToRobot(struct Communication_World communication_world)
     addPacket(data, sizeof(data));
 }
 */
+
+void RobotServer_sendImageToStation(IplImage *image)
+{
+    CvMat *image_data = cvEncodeImage(".jpg", image, 0);
+    uint8_t data[1 + image_data->cols];
+    data[0] = DATA_IMAGE;
+    memcpy(data + 1, image_data->data.ptr, image_data->cols);
+    addPacket(data, sizeof(data));
+    cvReleaseMat(&image_data);
+}
+
 void handleReceivedPacket(uint8_t *data, uint32_t length)
 {
     if(length == 0) {

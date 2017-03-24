@@ -124,7 +124,7 @@ void acceptCallback(struct ev_loop *loop, struct ev_io *watcher, int revents)
 /* Read client message */
 void readWriteCallback(struct ev_loop *loop, struct ev_io *watcher, int revents)
 {
-    char buffer[BUFFER_SIZE];
+   char buffer[BUFFER_SIZE];
     ssize_t read;
 
     if(EV_ERROR & revents) {
@@ -147,67 +147,66 @@ void readWriteCallback(struct ev_loop *loop, struct ev_io *watcher, int revents)
         return;
     }
 
-    if(!packet) {
-        int bytes_available = 0;
-        ioctl(watcher->fd, FIONREAD, &bytes_available);
+    while(1) {
+        if(!packet) {
+            int bytes_available = 0;
+            ioctl(watcher->fd, FIONREAD, &bytes_available);
 
-        /* make sure packet beggining can always be read at once */
-        if(bytes_available < sizeof(total_packet_length)) {
+            /* make sure packet beggining can always be read at once */
+            if(bytes_available < sizeof(total_packet_length)) {
+                return;
+            }
+
+            read = recv(watcher->fd, buffer, sizeof(total_packet_length), 0);
+        } else {
+            unsigned int read_size = 0;
+
+            if(BUFFER_SIZE > (total_packet_length - received_packet_length)) {
+                read_size = (total_packet_length - received_packet_length);
+            } else {
+                read_size = BUFFER_SIZE;
+            }
+
+            printf("rs %u\n", read_size);
+            read = recv(watcher->fd, buffer, read_size, 0);
+        }
+
+        if(read < 0) {
             return;
         }
 
-        read = recv(watcher->fd, buffer, sizeof(total_packet_length), 0);
-    } else {
-        unsigned int read_size = 0;
-
-        if(BUFFER_SIZE > (total_packet_length - received_packet_length)) {
-            read_size = (total_packet_length - received_packet_length);
+        if(read == 0) {
+            // Stop and free watcher if client socket is closing
+            ev_io_stop(loop, watcher);
+            free(watcher);
+            perror("peer might closing");
+            return;
         } else {
-            read_size = BUFFER_SIZE;
-        }
+            if(packet) {
+                //printf("%i %u\n", read, received_packet_length);
+                memcpy(packet + received_packet_length, buffer, read);
+                received_packet_length += read;
 
-        read = recv(watcher->fd, buffer, read_size, 0);
-    }
+                if(total_packet_length  == received_packet_length) {
+                    //CALLBACK
+                    handleReceivedPacket(packet, received_packet_length);
+                    printf("Message of length %u\n", received_packet_length);
+                    //
+                    free(packet);
+                    packet = 0;
+                    total_packet_length = received_packet_length = 0;
+                }
+            } else if(read == 4) {
+                memcpy(&total_packet_length, buffer, sizeof(total_packet_length));
+                packet = malloc(total_packet_length);
 
-    // Receive message from client socket
-
-
-    if(read < 0) {
-        perror("read error");
-        return;
-    }
-
-    if(read == 0) {
-        // Stop and free watcher if client socket is closing
-        ev_io_stop(loop, watcher);
-        free(watcher);
-        perror("peer might closing");
-        return;
-    } else {
-        if(packet) {
-            //printf("%i %u\n", read, received_packet_length);
-            memcpy(packet + received_packet_length, buffer, read);
-            received_packet_length += read;
-
-            if(total_packet_length  == received_packet_length) {
-                //CALLBACK
-                handleReceivedPacket(packet, received_packet_length);
-                //printf("Message of length %u:%s\n", received_packet_length, packet);
-                //
-                free(packet);
-                packet = 0;
-                total_packet_length = received_packet_length = 0;
+                if(!packet) {
+                    perror("malloc error");
+                    return;
+                }
+            } else {
+                printf("shit packet error\n");
             }
-        } else if(read == 4) {
-            memcpy(&total_packet_length, buffer, sizeof(total_packet_length));
-            packet = malloc(total_packet_length);
-
-            if(!packet) {
-                perror("malloc error");
-                return;
-            }
-        } else {
-            printf("shit packet error\n");
         }
     }
 }
