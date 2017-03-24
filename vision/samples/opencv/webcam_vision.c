@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 
             IplImage *img_yuv = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
             cvCvtColor(img, img_yuv, CV_BGR2YCrCb);
-            CvSeq *contour = findFirstFigure(opencv_storage, img_yuv);
+            CvSeq *contour = findFirstFigure(opencv_storage, img_yuv, NULL);
             cvReleaseImage(&img_yuv);
 
             IplImage *im_square_image = cvCreateImage(cvSize(1000, 1000), IPL_DEPTH_8U, 3);

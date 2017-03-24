@@ -344,7 +344,7 @@ void improveFigure(IplImage *image_yuv, CvSeq *figure)
     }
 }
 
-CvSeq *findFirstFigure(CvMemStorage *opencv_storage, IplImage *image_yuv)
+CvSeq *findFirstFigure(CvMemStorage *opencv_storage, IplImage *image_yuv, IplImage **image_yuv_in_green_square)
 {
     CvSeq *figure_contours = NULL;
 
@@ -360,7 +360,12 @@ CvSeq *findFirstFigure(CvMemStorage *opencv_storage, IplImage *image_yuv)
         improveFigure(square_image, figure_contours);
         figure_contours = cvApproxPoly(figure_contours, sizeof(CvContour), opencv_storage, CV_POLY_APPROX_DP,
                                        FIGURE_POLY_APPROX, 1);
-        cvReleaseImage(&square_image);
+
+        if(image_yuv_in_green_square) {
+            *image_yuv_in_green_square = square_image;
+        } else {
+            cvReleaseImage(&square_image);
+        }
     }
 
     return figure_contours;

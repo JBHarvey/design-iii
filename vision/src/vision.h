@@ -14,7 +14,7 @@ struct Square {
 
 _Bool findFirstGreenSquare(CvMemStorage *opencv_storage, IplImage *image_yuv, struct Square *square);
 
-CvSeq *findFirstFigure(CvMemStorage *opencv_storage, IplImage *image_yuv);
+CvSeq *findFirstFigure(CvMemStorage *opencv_storage, IplImage *image_yuv, IplImage **image_yuv_in_green_square);
 
 enum ObstacleType {
     OBSTACLE_NONE,
