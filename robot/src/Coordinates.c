@@ -154,3 +154,15 @@ void Coordinates_rotateOfAngle(struct Coordinates *toRotate, struct Angle *angle
     Coordinates_rotateOfAngleAround(toRotate, angle, zero);
     Coordinates_delete(zero);
 }
+
+int Coordinates_computeMeanX(struct Coordinates *a, struct Coordinates *b)
+{
+    int mean_x = (a->x + b->x) / 2;
+    return mean_x;
+}
+
+int Coordinates_computeMeanY(struct Coordinates *a, struct Coordinates *b)
+{
+    int mean_y = (a->y + b->y) / 2;
+    return mean_y;
+}

@@ -204,3 +204,34 @@ Test(Obstacle,
     cr_assert(southern == north_oriented_obstacle);
 }
 
+Test(Obstacle, given_coordinatesFarAwayFromTheObstacle_when_askedIfTheCoordinateIsFree_then_itIs
+     , .init = setup_Obstacle
+     , .fini = teardown_Obstacle)
+{
+    struct Coordinates *zero = Coordinates_zero();
+    int is_free = Obstacle_isCoordinateFree(center_obstacle, zero);
+    cr_assert(is_free);
+    Coordinates_delete(zero);
+}
+
+Test(Obstacle, given_theObstacleCoordinates_when_askedIfTheCoordinateIsFree_then_itIsNot
+     , .init = setup_Obstacle
+     , .fini = teardown_Obstacle)
+{
+    struct Coordinates *coordinates = Coordinates_new(OBSTACLE_X, OBSTACLE_Y);
+    int is_free = Obstacle_isCoordinateFree(center_obstacle, coordinates);
+    cr_assert(!is_free);
+    Coordinates_delete(coordinates);
+}
+
+Test(Obstacle,
+     given_coordinatesAnObstacleRadiusDistanceFromTheObstacleCoordinates_when_askedIfTheCoordinateIsFree_then_itIsNot
+     , .init = setup_Obstacle
+     , .fini = teardown_Obstacle)
+{
+    int radius = center_obstacle->radius;
+    struct Coordinates *coordinates = Coordinates_new(OBSTACLE_X + radius, OBSTACLE_Y);
+    int is_free = Obstacle_isCoordinateFree(center_obstacle, coordinates);
+    cr_assert(!is_free);
+    Coordinates_delete(coordinates);
+}

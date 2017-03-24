@@ -34,18 +34,74 @@ void Graph_delete(struct Graph *graph)
     }
 }
 
-static void establishEasternNode(struct Graph *graph, struct Obstacle *eastern_obstacle, struct Map *map)
+static int computeYNorthBetweenObstacleAndWall(struct Map *map, struct Obstacle *obstacle)
+{
+    struct Coordinates *northern_obstacle_coordinates = Obstacle_retrieveNorthernPointOf(obstacle);
+    int y = Coordinates_computeMeanY(northern_obstacle_coordinates, map->north_eastern_table_corner);
+    Coordinates_delete(northern_obstacle_coordinates);
+    return y;
+}
+
+static int computeYSouthBetweenObstacleAndWall(struct Map *map, struct Obstacle *obstacle)
+{
+    struct Coordinates *southern_obstacle_coordinates = Obstacle_retrieveSouthernPointOf(obstacle);
+    int y = Coordinates_computeMeanY(southern_obstacle_coordinates, map->south_eastern_table_corner);
+    Coordinates_delete(southern_obstacle_coordinates);
+    return y;
+}
+
+static int isNorthOfTheObstacleNavigable(struct Map *map, struct Obstacle *obstacle)
+{
+    struct Coordinates *northern_coordinates = Obstacle_retrieveNorthernPointOf(obstacle);
+    // This ensure the robot has enough space next to the obstacle
+    northern_coordinates->y += MINIMAL_GAP;
+    int navigable = Map_isCoordinateFree(map, northern_coordinates);
+    Coordinates_delete(northern_coordinates);
+    return navigable;
+}
+
+static int isSouthOfTheObstacleNavigable(struct Map *map, struct Obstacle *obstacle)
+{
+    struct Coordinates *southern_coordinates = Obstacle_retrieveSouthernPointOf(obstacle);
+    // This ensure the robot has enough space next to the obstacle
+    southern_coordinates->y -= MINIMAL_GAP;
+    int navigable = Map_isCoordinateFree(map, southern_coordinates);
+    Coordinates_delete(southern_coordinates);
+    return navigable;
+}
+
+static void establishEasternNodeSOLO(struct Graph *graph, struct Obstacle *eastern_obstacle, struct Map *map)
 {
     struct Coordinates *eastern_obstacle_coordinates = Obstacle_retrieveEasternPointOf(eastern_obstacle);
-    int obstacle_eastern_x = eastern_obstacle_coordinates->x;
-    int eastern_navigable_point = map->south_eastern_table_corner->x;
-    int middle_x = (obstacle_eastern_x + eastern_navigable_point) / 2;
-    int new_y = 0;
-
-
-    struct Coordinates *new_eastern_node_coordinates = Coordinates_new(middle_x, new_y);
-    Coordinates_copyValuesFrom(graph->eastern_node->coordinates, new_eastern_node_coordinates);
+    int x = Coordinates_computeMeanX(eastern_obstacle_coordinates, map->south_eastern_table_corner);
     Coordinates_delete(eastern_obstacle_coordinates);
+
+    int y = 0;
+    enum CardinalDirection orientation = eastern_obstacle->orientation;
+
+    if(orientation == NORTH) {
+        y = computeYNorthBetweenObstacleAndWall(map, eastern_obstacle);
+    } else if(orientation == SOUTH) {
+        y = computeYSouthBetweenObstacleAndWall(map, eastern_obstacle);
+    } else if(orientation == CENTER) {
+        int north_is_navigable = isNorthOfTheObstacleNavigable(map, eastern_obstacle);
+        int south_is_navigable = isSouthOfTheObstacleNavigable(map, eastern_obstacle);
+
+        if(!north_is_navigable && south_is_navigable) {
+            y = computeYSouthBetweenObstacleAndWall(map, eastern_obstacle);
+        } else if(north_is_navigable && !south_is_navigable) {
+            y = computeYNorthBetweenObstacleAndWall(map, eastern_obstacle);
+        } else if(north_is_navigable && south_is_navigable) {
+            int y_north = computeYNorthBetweenObstacleAndWall(map, eastern_obstacle);
+            int y_south = computeYSouthBetweenObstacleAndWall(map, eastern_obstacle);
+            y = (y_north + y_south) / 2;
+        }
+    }
+
+    struct Coordinates *new_eastern_node_coordinates = Coordinates_new(x, y);
+
+    Coordinates_copyValuesFrom(graph->eastern_node->coordinates, new_eastern_node_coordinates);
+
     Coordinates_delete(new_eastern_node_coordinates);
 }
 
@@ -64,7 +120,7 @@ void Graph_updateForMap(struct Graph *graph, struct Map* map)
         case 1:
             graph->type = SOLO;
             first = Map_retrieveFirstObstacle(map);
-            establishEasternNode(graph, first, map);
+            establishEasternNodeSOLO(graph, first, map);
             break;
 
         case 2:

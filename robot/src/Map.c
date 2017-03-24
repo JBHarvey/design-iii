@@ -290,34 +290,32 @@ int Map_isCoordinateFree(struct Map *map, struct Coordinates *coordinates)
 {
     int is_free = 1;
 
-    if(Coordinates_isToTheNorthOf(coordinates, map->north_eastern_drawing_corner)) {
+    if(!Coordinates_isToTheSouthOf(coordinates, map->north_eastern_table_corner)) {
         is_free = 0;
     }
 
-    if(Coordinates_isToTheSouthOf(coordinates, map->south_eastern_table_corner)) {
+    if(!Coordinates_isToTheNorthOf(coordinates, map->south_eastern_table_corner)) {
         is_free = 0;
     }
 
-    if(Coordinates_isToTheEastOf(coordinates, map->north_eastern_drawing_corner)) {
+    if(!Coordinates_isToTheWestOf(coordinates, map->north_eastern_table_corner)) {
         is_free = 0;
     }
 
-    if(Coordinates_isToTheWestOf(coordinates, map->south_western_table_corner)) {
+    if(!Coordinates_isToTheEastOf(coordinates, map->south_western_table_corner)) {
         is_free = 0;
     }
 
-    int distance;
-    int radius;
-    int actual_number_of_obstacles = Map_fetchNumberOfObstacles(map);
-    int i;
+    struct Obstacle *obstacle;
 
-    for(i = 0; i < actual_number_of_obstacles; ++i) {
-        distance = Coordinates_distanceBetween(coordinates, map->obstacles[i]->coordinates);
-        radius = map->obstacles[i]->radius;
+    for(int i = 0; i < MAXIMUM_OBSTACLE_NUMBER; ++i) {
+        obstacle = map->obstacles[i];
 
-        if(distance <= radius) {
-            is_free = 0;
-        }
+        if(isObstacleValid(obstacle)) {
+            if(!Obstacle_isCoordinateFree(obstacle, coordinates)) {
+                is_free = 0;
+            }
+        };
     }
 
     return is_free;

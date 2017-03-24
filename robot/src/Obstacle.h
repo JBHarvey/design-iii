@@ -27,4 +27,5 @@ struct Obstacle *Obstacle_retrieveNorthern(struct Obstacle *a, struct Obstacle *
 struct Obstacle *Obstacle_retrieveSouthern(struct Obstacle *a, struct Obstacle *b);
 
 int Obstacle_areOverlapping(struct Obstacle *a, struct Obstacle *b);
+int Obstacle_isCoordinateFree(struct Obstacle *obstacle, struct Coordinates *coordinates);
 #endif // OBSTACLE_H_

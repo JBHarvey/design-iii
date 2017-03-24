@@ -447,9 +447,26 @@ Test(Map, given_threeOverlappingOverlappingObstacle_when_askedToRetrieveTheLastO
     cr_assert(Coordinates_haveTheSameValues(retrieved->coordinates, south_south_west_coordinates));
 }
 
-Test(Map, given_aCoordinateToTheNorthOfTheNorthernNavigableY_when_askedIfItIsFree_then_itIsNot
-     , .init = setup_NavigableMap
-     , .fini = teardown_NavigableMap)
+void setup_FreeMap(void)
+{
+    setup_Map();
+    struct Coordinates *south_western_table_corner = Coordinates_zero();
+    struct Coordinates *south_eastern_table_corner = Coordinates_new(THEORICAL_WORLD_LENGTH, 0);
+    struct Coordinates *north_western_table_corner = Coordinates_new(0, THEORICAL_WORLD_HEIGHT);
+    struct Coordinates *north_eastern_table_corner = Coordinates_new(THEORICAL_WORLD_LENGTH, THEORICAL_WORLD_HEIGHT);
+
+    Map_updateTableCorners(map, north_eastern_table_corner, south_eastern_table_corner, south_western_table_corner,
+                           north_western_table_corner);
+
+    Coordinates_delete(south_western_table_corner);
+    Coordinates_delete(south_eastern_table_corner);
+    Coordinates_delete(north_western_table_corner);
+    Coordinates_delete(north_eastern_table_corner);
+}
+
+Test(Map, given_coordinatesToTheNorthOfTheNorthernNavigableY_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_FreeMap
+     , .fini = teardown_Map)
 {
     struct Coordinates *too_to_the_north = Coordinates_new(0, THEORICAL_WORLD_HEIGHT * 2);
 
@@ -459,11 +476,23 @@ Test(Map, given_aCoordinateToTheNorthOfTheNorthernNavigableY_when_askedIfItIsFre
     Coordinates_delete(too_to_the_north);
 }
 
-Test(Map, given_aCoordinateToTheSouthOfTheSouthernNavigableY_when_askedIfItIsFree_then_itIsNot
-     , .init = setup_NavigableMap
-     , .fini = teardown_NavigableMap)
+Test(Map, given_coordinatesOnTheNorthernNavigableY_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_FreeMap
+     , .fini = teardown_Map)
 {
-    struct Coordinates *too_to_the_south = Coordinates_new(0, -1);
+    struct Coordinates *too_to_the_north = Coordinates_new(0, THEORICAL_WORLD_HEIGHT);
+
+    int is_within_navigable_space = Map_isCoordinateFree(map, too_to_the_north);
+    cr_assert(!is_within_navigable_space);
+
+    Coordinates_delete(too_to_the_north);
+}
+
+Test(Map, given_coordinatesToTheSouthOfTheSouthernNavigableY_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_FreeMap
+     , .fini = teardown_Map)
+{
+    struct Coordinates *too_to_the_south = Coordinates_new(0, -1 * THEORICAL_WORLD_HEIGHT);
 
     int is_within_navigable_space = Map_isCoordinateFree(map, too_to_the_south);
     cr_assert(!is_within_navigable_space);
@@ -471,9 +500,21 @@ Test(Map, given_aCoordinateToTheSouthOfTheSouthernNavigableY_when_askedIfItIsFre
     Coordinates_delete(too_to_the_south);
 }
 
-Test(Map, given_aCoordinateToTheEastOfTheEasternNavigableY_when_askedIfItIsFree_then_itIsNot
-     , .init = setup_NavigableMap
-     , .fini = teardown_NavigableMap)
+Test(Map, given_coordinatesOnTheSouthernNavigableY_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_FreeMap
+     , .fini = teardown_Map)
+{
+    struct Coordinates *too_to_the_south = Coordinates_new(0, 0);
+
+    int is_within_navigable_space = Map_isCoordinateFree(map, too_to_the_south);
+    cr_assert(!is_within_navigable_space);
+
+    Coordinates_delete(too_to_the_south);
+}
+
+Test(Map, given_coordinatesToTheEastOfTheEasternNavigableY_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_FreeMap
+     , .fini = teardown_Map)
 {
     struct Coordinates *too_to_the_east = Coordinates_new(THEORICAL_WORLD_LENGTH * 2, 0);
 
@@ -483,11 +524,23 @@ Test(Map, given_aCoordinateToTheEastOfTheEasternNavigableY_when_askedIfItIsFree_
     Coordinates_delete(too_to_the_east);
 }
 
-Test(Map, given_aCoordinateToTheWestOfTheWesternNavigableY_when_askedIfItIsFree_then_itIsNot
-     , .init = setup_NavigableMap
-     , .fini = teardown_NavigableMap)
+Test(Map, given_coordinatesOnTheEasternNavigableY_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_FreeMap
+     , .fini = teardown_Map)
 {
-    struct Coordinates *too_to_the_west = Coordinates_new(-1, 0);
+    struct Coordinates *too_to_the_east = Coordinates_new(THEORICAL_WORLD_LENGTH, 0);
+
+    int is_within_navigable_space = Map_isCoordinateFree(map, too_to_the_east);
+    cr_assert(!is_within_navigable_space);
+
+    Coordinates_delete(too_to_the_east);
+}
+
+Test(Map, given_coordinatesToTheWestOfTheWesternNavigableY_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_FreeMap
+     , .fini = teardown_Map)
+{
+    struct Coordinates *too_to_the_west = Coordinates_new(-1 * THEORICAL_WORLD_HEIGHT, 0);
 
     int is_within_navigable_space = Map_isCoordinateFree(map, too_to_the_west);
     cr_assert(!is_within_navigable_space);
@@ -495,31 +548,37 @@ Test(Map, given_aCoordinateToTheWestOfTheWesternNavigableY_when_askedIfItIsFree_
     Coordinates_delete(too_to_the_west);
 }
 
-Test(Map, given_aCoordinateWithinTheRangeOfAnyOfTheObstacles_when_askedIfItIsFree_then_itIsNot
-     , .init = setup_NavigableMap
-     , .fini = teardown_NavigableMap)
+Test(Map, given_coordinatesOnTheWesternNavigableY_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_FreeMap
+     , .fini = teardown_Map)
 {
-    setObstacleCoordinates(map, 0, south_south_west_coordinates);
-    setObstacleCoordinates(map, 1, center_west_coordinates);
-    setObstacleCoordinates(map, 2, north_north_west_coordinates);
-    struct Coordinates *within_obstacle_0_radius = Coordinates_zero();
-    struct Coordinates *within_obstacle_1_radius = Coordinates_zero();
-    struct Coordinates *within_obstacle_2_radius = Coordinates_zero();
-    Coordinates_copyValuesFrom(within_obstacle_0_radius, south_south_west_coordinates);
-    Coordinates_copyValuesFrom(within_obstacle_1_radius, center_west_coordinates);
-    Coordinates_copyValuesFrom(within_obstacle_2_radius, north_north_west_coordinates);
+    struct Coordinates *too_to_the_west = Coordinates_new(0, 0);
 
-    within_obstacle_0_radius->x = within_obstacle_0_radius->x + THEORICAL_OBSTACLE_RADIUS;
-    within_obstacle_1_radius->x = within_obstacle_1_radius->x - THEORICAL_ROBOT_RADIUS - THEORICAL_OBSTACLE_RADIUS;
-    within_obstacle_2_radius->y = within_obstacle_2_radius->y + THEORICAL_ROBOT_RADIUS;
-    int is_within_navigable_space =
-        Map_isCoordinateFree(map, within_obstacle_0_radius)
-        || Map_isCoordinateFree(map, within_obstacle_1_radius)
-        || Map_isCoordinateFree(map, within_obstacle_2_radius);
-
+    int is_within_navigable_space = Map_isCoordinateFree(map, too_to_the_west);
     cr_assert(!is_within_navigable_space);
 
-    Coordinates_delete(within_obstacle_0_radius);
-    Coordinates_delete(within_obstacle_1_radius);
-    Coordinates_delete(within_obstacle_2_radius);
+    Coordinates_delete(too_to_the_west);
+}
+
+Test(Map, given_coordinatesNotFreeOfAnObstacle_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_FreeMap
+     , .fini = teardown_Map)
+{
+    struct Coordinates *coordinates = Coordinates_new(THEORICAL_WORLD_LENGTH / 2, THEORICAL_WORLD_HEIGHT / 2);
+    setObstacleCoordinates(map, 1, coordinates);
+    int is_within_navigable_space = Map_isCoordinateFree(map, coordinates);
+    cr_assert(!is_within_navigable_space);
+
+    Coordinates_delete(coordinates);
+}
+
+Test(Map, given_coordinatesFreeOfTheWallsAndObstacles_when_askedIfItIsFree_then_itIs
+     , .init = setup_FreeMap
+     , .fini = teardown_Map)
+{
+    struct Coordinates *coordinates = Coordinates_new(THEORICAL_WORLD_LENGTH / 2, THEORICAL_WORLD_HEIGHT / 2);
+    int is_within_navigable_space = Map_isCoordinateFree(map, coordinates);
+    cr_assert(is_within_navigable_space);
+
+    Coordinates_delete(coordinates);
 }

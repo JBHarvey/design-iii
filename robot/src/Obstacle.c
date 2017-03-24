@@ -167,3 +167,9 @@ int Obstacle_areOverlapping(struct Obstacle *a, struct Obstacle *b)
     int radius_total = a->radius + b->radius;
     return horizontal_distance <= radius_total;
 }
+
+int Obstacle_isCoordinateFree(struct Obstacle *obstacle, struct Coordinates *coordinates)
+{
+    int distance = Coordinates_distanceBetween(obstacle->coordinates, coordinates);
+    return (distance > obstacle->radius);
+}

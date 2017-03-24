@@ -293,3 +293,23 @@ Test(Coordinates,
 
     Angle_delete(angle);
 }
+
+Test(Coordinates, given_twoCoordinates_when_askedToComputeTheirMeanX_then_theMeanOfTheirXIsReturned
+     , .init = setup_coordinates
+     , .fini = teardown_coordinates)
+{
+    other_coordinates->x = other_coordinates->x + COORDINATES_DELTA;
+    int computed_mean = Coordinates_computeMeanX(coordinates, other_coordinates);
+    int expected_mean = (COORDINATES_X + COORDINATES_X + COORDINATES_DELTA) / 2;
+    cr_assert_eq(computed_mean, expected_mean);
+}
+
+Test(Coordinates, given_twoCoordinates_when_askedToComputeTheirMeanY_then_theMeanOfTheirYIsReturned
+     , .init = setup_coordinates
+     , .fini = teardown_coordinates)
+{
+    other_coordinates->y = other_coordinates->y + COORDINATES_DELTA;
+    int computed_mean = Coordinates_computeMeanY(coordinates, other_coordinates);
+    int expected_mean = (COORDINATES_Y + COORDINATES_Y + COORDINATES_DELTA) / 2;
+    cr_assert_eq(computed_mean, expected_mean);
+}
