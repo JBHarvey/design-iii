@@ -46,11 +46,17 @@ void CoordinatesSequence_append(struct CoordinatesSequence *coordinates_sequence
     }
 }
 
-int CoordinatesSequence_size(struct CoordinatesSequence *coordinates_sequence)
+static int countSizeOfSequenceFrom(struct CoordinatesSequence *coordinates_sequence, int current_size)
 {
     if(CoordinatesSequence_isLast(coordinates_sequence)) {
-        return 1;
-    } else {
-        return 1 + CoordinatesSequence_size(coordinates_sequence->next_element);
+        return current_size;
     }
+
+    int size = countSizeOfSequenceFrom(coordinates_sequence->next_element, current_size + 1);
+    return size;
+}
+
+int CoordinatesSequence_size(struct CoordinatesSequence *coordinates_sequence)
+{
+    return countSizeOfSequenceFrom(coordinates_sequence, 1);
 }
