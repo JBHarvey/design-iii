@@ -667,7 +667,7 @@ CvPoint coordinateToTableCoordinate(CvPoint point, double height_cm, CvPoint cam
 #define MAX_DETECTED_CORNERS 20
 #define CORNER_IMPROVEMENT_RADIUS_TABLE_CORNERS 5
 
-static void findCornersWithDistance(CvPoint2D32f *corners, unsigned int num_corners, double distance)
+static void findCornersWithDistance(CvPoint2D32f *corners, unsigned int num_corners, double target_distance)
 {
     unsigned int corner1 = num_corners, corner2 = num_corners;
     double current_distance = 1000000000;
@@ -676,7 +676,7 @@ static void findCornersWithDistance(CvPoint2D32f *corners, unsigned int num_corn
 
     for(i = 0; i < num_corners; ++i) {
         for(j = (i + 1); j < num_corners; ++j) {
-            double distance_temp = fabs(distance - distancePoints(fixedCvPointFrom32f(corners[i]),
+            double distance_temp = fabs(target_distance - distancePoints(fixedCvPointFrom32f(corners[i]),
                                         fixedCvPointFrom32f(corners[j])));
 
             if(distance_temp < current_distance) {
