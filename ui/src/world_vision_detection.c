@@ -1,5 +1,4 @@
 #include <math.h>
-#include "vision.h"
 #include "markers.h"
 #include "world_vision_detection.h"
 
@@ -60,18 +59,18 @@ static void drawObstacleOnImage(IplImage *image_BGR, struct Obstacle obstacle)
     }
 }
 
-static void drawSquareOnImage(IplImage *image_BGR, struct Square square)
+static void drawSquareOnImage(IplImage *image_BGR, struct Square square, CvScalar color)
 {
     unsigned int i;
 
     for(i = 0; i < NUM_SQUARE_CORNERS; ++i) {
         cvLine(image_BGR, fixedCvPointFrom32f(square.corner[i]),
-               fixedCvPointFrom32f(square.corner[(i + 1) % NUM_SQUARE_CORNERS]), CV_RGB(255, 255, 0), SIZE_DRAW_LINES, 8, 0);
+               fixedCvPointFrom32f(square.corner[(i + 1) % NUM_SQUARE_CORNERS]), color, SIZE_DRAW_LINES, 8, 0);
     }
 }
 
-struct Detected_Things detectDrawObstaclesRobot(CvMemStorage *opencv_storage, IplImage *image_BGR,
-        struct Camera *input_camera)
+struct Detected_Things detectDrawThings(CvMemStorage *opencv_storage, IplImage *image_BGR,
+                                        struct Camera *input_camera)
 {
     IplImage *image_yuv = cvCreateImage(cvGetSize(image_BGR), IPL_DEPTH_8U, 3);
     cvCvtColor(image_BGR, image_yuv, CV_BGR2YCrCb);
@@ -85,6 +84,9 @@ struct Detected_Things detectDrawObstaclesRobot(CvMemStorage *opencv_storage, Ip
 
     struct Square table_corners;
     _Bool table_detected = findTableCorners(image_yuv, &table_corners);
+
+    struct Square green_square;
+    _Bool green_square_detected = findFirstGreenSquare(opencv_storage, image_yuv, &green_square);
 
     struct Detected_Things detected = {};
 
@@ -131,7 +133,15 @@ struct Detected_Things detectDrawObstaclesRobot(CvMemStorage *opencv_storage, Ip
     }
 
     if(table_detected) {
-        drawSquareOnImage(image_BGR, table_corners);
+        detected.table_detected = 1;
+        detected.table = table_corners;
+        drawSquareOnImage(image_BGR, detected.table, CV_RGB(255, 255, 0));
+    }
+
+    if(green_square_detected) {
+        detected.green_square_detected = 1;
+        detected.green_square = green_square;
+        drawSquareOnImage(image_BGR, detected.green_square, CV_RGB(0, 255, 255));
     }
 
     cvReleaseImage(&image_yuv);

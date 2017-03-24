@@ -208,10 +208,9 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient 
            world_camera->camera_status == INTRINSICALLY_AND_EXTRINSICALLY_CALIBRATED ||
            world_camera->camera_status == FULLY_CALIBRATED) {
             undistortCameraCapture(frame_BGR, frame_BGR_corrected);
+            struct Detected_Things detected = detectDrawThings(opencv_storage, frame_BGR_corrected, world_camera);
 
             if(world_camera->camera_status == FULLY_CALIBRATED) {
-                struct Detected_Things detected = detectDrawObstaclesRobot(opencv_storage, frame_BGR_corrected, world_camera);
-
                 if(detected.robot_detected) {
                     StationClientSender_sendWorldInformationsToRobot(station_client, detected.obstacles, MAX_OBSTACLES, detected.robot);
                 }
