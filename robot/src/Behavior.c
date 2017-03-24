@@ -1,12 +1,12 @@
 #include <stdlib.h>
 #include "Behavior.h"
 
-static int Behavior_hasChild(struct Behavior *behavior)
+static int hasChild(struct Behavior *behavior)
 {
     return behavior->first_child != behavior;
 }
 
-static int Behavior_hasSibling(struct Behavior *behavior)
+static int hasSibling(struct Behavior *behavior)
 {
     return behavior->next_sibling != behavior;
 }
@@ -14,7 +14,7 @@ static int Behavior_hasSibling(struct Behavior *behavior)
 struct Behavior *Behavior_new(struct Objective *new_entry_conditions)
 {
     struct Object *new_object = Object_new();
-    struct Behavior *pointer = (struct Behavior *) malloc(sizeof(struct Behavior));
+    struct Behavior *pointer = malloc(sizeof(struct Behavior));
 
     pointer->object = new_object;
     pointer->entry_conditions = new_entry_conditions;
@@ -35,11 +35,11 @@ void Behavior_delete(struct Behavior *behavior)
         Object_delete(behavior->object);
         Objective_delete(behavior->entry_conditions);
 
-        if(Behavior_hasChild(behavior)) {
+        if(hasChild(behavior)) {
             Behavior_delete(behavior->first_child);
         }
 
-        if(Behavior_hasSibling(behavior)) {
+        if(hasSibling(behavior)) {
             Behavior_delete(behavior->next_sibling);
         }
 
@@ -57,7 +57,7 @@ int Behavior_areEntryConditionsReached(struct Behavior *behavior, struct State *
 struct Behavior *Behavior_fetchFirstReachedChildOrReturnSelf(struct Behavior *self, struct State *current_state)
 {
 
-    if(Behavior_hasChild(self)) {
+    if(hasChild(self)) {
 
         struct Behavior *child = self->first_child;
 
@@ -65,7 +65,7 @@ struct Behavior *Behavior_fetchFirstReachedChildOrReturnSelf(struct Behavior *se
             return child;
         }
 
-        while(Behavior_hasSibling(child)) {
+        while(hasSibling(child)) {
             child = child->next_sibling;
 
             if(Behavior_areEntryConditionsReached(child, current_state)) {
@@ -85,11 +85,11 @@ void Behavior_addChild(struct Behavior *behavior, struct Behavior *new_child)
         return;
     }
 
-    if(Behavior_hasChild(behavior)) {
+    if(hasChild(behavior)) {
 
         struct Behavior *last_child = behavior->first_child;
 
-        while(Behavior_hasSibling(last_child)) {
+        while(hasSibling(last_child)) {
             last_child = last_child->next_sibling;
         }
 
