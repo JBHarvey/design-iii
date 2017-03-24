@@ -17,4 +17,6 @@ struct Node *Node_new();
 void Node_delete(struct Node *node);
 
 void Node_attemptToConnectAsNeighbours(struct Node *a, struct Node *b);
+int Node_areNeighbours(struct Node *a, struct Node *b);
+float Node_distanceToNeighbour(struct Node *node, struct Node *neighbours);
 #endif // NODE_H_

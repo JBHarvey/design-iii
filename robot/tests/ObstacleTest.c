@@ -185,6 +185,35 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
+     given_twoObstacleSeparatedVerticallyByASmallerDistanceThanTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInY_then_returnsOne
+     , .init = setup_Obstacle
+     , .fini = teardown_Obstacle)
+{
+    int areOverlapping = Obstacle_areOverlappingInY(center_obstacle, south_oriented_obstacle);
+    cr_assert(areOverlapping);
+}
+
+Test(Obstacle,
+     given_twoObstacleSeparatedVerticallyByTheExactDistanceOfTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInY_then_returnsOne
+     , .init = setup_Obstacle
+     , .fini = teardown_Obstacle)
+{
+    center_obstacle->coordinates->y = OBSTACLE_Y + 2 * THEORICAL_OBSTACLE_RADIUS;
+    int areOverlapping = Obstacle_areOverlappingInY(center_obstacle, south_oriented_obstacle);
+    cr_assert(areOverlapping);
+}
+
+Test(Obstacle,
+     given_twoObstacleSeparatedVerticallyByABiggerDistanceOfTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInY_then_returnsZero
+     , .init = setup_Obstacle
+     , .fini = teardown_Obstacle)
+{
+    center_obstacle->coordinates->y = OBSTACLE_Y + 3 * THEORICAL_OBSTACLE_RADIUS;
+    int areOverlapping = Obstacle_areOverlappingInY(center_obstacle, south_oriented_obstacle);
+    cr_assert(!areOverlapping);
+}
+
+Test(Obstacle,
      given_twoObstacle_when_askedToRetrieveTheNorthernOne_then_theOneWithTheHighestYValueOfNorthernCoordinatesIsReturned
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)

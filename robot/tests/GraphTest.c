@@ -212,9 +212,7 @@ Test(Graph,
     struct Coordinates *southern_navigable_point = graph_map->south_eastern_table_corner;
     int to_the_south_of_the_obstacle = Coordinates_isToTheSouthOf(node_coordinates, southern_point_of_the_obstacle);
     int to_the_north_of_the_south_wall = Coordinates_isToTheNorthOf(node_coordinates, southern_navigable_point);
-    cr_assert(to_the_north_of_the_south_wall,
-              "Not to the north of the south Wall :(\n Obstacle Radius: %d\n X limit: %d, X of node: %d",
-              obstacle->radius, southern_navigable_point->x, node_coordinates->x);
+    cr_assert(to_the_north_of_the_south_wall);
     cr_assert(to_the_south_of_the_obstacle);
 
     Coordinates_delete(southern_point_of_the_obstacle);
@@ -235,9 +233,7 @@ Test(Graph,
     int to_the_north_of_the_obstacle = Coordinates_isToTheNorthOf(node_coordinates, northern_point_of_the_obstacle);
     int to_the_south_of_the_north_wall = Coordinates_isToTheSouthOf(node_coordinates, northern_navigable_point);
     cr_assert(to_the_south_of_the_north_wall);
-    cr_assert(to_the_north_of_the_obstacle, "Node Y: %d\nNorthern Y:%d\nNorthern y of the obstacle:%d\nSouthernWall:%d",
-              node_coordinates->y, northern_navigable_point->y, northern_point_of_the_obstacle->y,
-              graph_map->south_eastern_table_corner->y);
+    cr_assert(to_the_north_of_the_obstacle);
 
     Coordinates_delete(northern_point_of_the_obstacle);
 }
@@ -296,6 +292,76 @@ Test(Graph, given_aSoloGraph_when_updatesGraph_then_itsWesternNodeYValueIsTheSam
     struct Coordinates *western_node_coordinates = graph->western_node->coordinates;
     cr_assert_eq(eastern_node_coordinates->y, western_node_coordinates->y);
 }
+
+Test(Graph, given_aSoloGraphWithNorthObstacle_when_updatesGraph_then_theTotalNumberOfNodeIsFour
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    generateSoloMap(NORTH);
+    Graph_updateForMap(graph, graph_map);
+    int total_number_of_nodes = graph->actual_number_of_nodes;
+    int expected_number = 4;
+    cr_assert_eq(total_number_of_nodes, expected_number);
+}
+
+Test(Graph, given_aSoloGraphWithSouthObstacle_when_updatesGraph_then_theTotalNumberOfNodeIsFour
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    generateSoloMap(SOUTH);
+    Graph_updateForMap(graph, graph_map);
+    int total_number_of_nodes = graph->actual_number_of_nodes;
+    int expected_number = 4;
+    cr_assert_eq(total_number_of_nodes, expected_number);
+}
+
+Test(Graph, given_aSoloGraphWithNorthernCenterObstacle_when_updatesGraph_then_theTotalNumberOfNodeIsFour
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    generateSoloCenterNorthMap();
+    Graph_updateForMap(graph, graph_map);
+    int total_number_of_nodes = graph->actual_number_of_nodes;
+    int expected_number = 4;
+    cr_assert_eq(total_number_of_nodes, expected_number);
+}
+
+Test(Graph, given_aSoloGraphWithSouthernCenterObstacle_when_updatesGraph_then_theTotalNumberOfNodeIsFour
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    generateSoloCenterSouthMap();
+    Graph_updateForMap(graph, graph_map);
+    int total_number_of_nodes = graph->actual_number_of_nodes;
+    int expected_number = 4;
+    cr_assert_eq(total_number_of_nodes, expected_number);
+}
+
+Test(Graph,
+     given_anySoloGraphWithFourNode_when_updatesGraph_then_theTwoAddedNodesAreCreateANeighbourLinkFromTheEasternToTheWestern
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+
+    generateSoloMap(NORTH);
+    Graph_updateForMap(graph, graph_map);
+    //    int link_exists_between_east_and_west = Node_areConnected(graph->eastern_node, graph->western_node);
+}
+
+
+Test(Graph, given_aSoloGraphWithCenterObstacle_when_updatesGraph_then_theTotalNumberOfNodeIsSix
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    generateSoloMap(CENTER);
+    Graph_updateForMap(graph, graph_map);
+    int total_number_of_nodes = graph->actual_number_of_nodes;
+    int expected_number = 6;
+    cr_assert_eq(total_number_of_nodes, expected_number);
+}
+
+
+/* -- END OF SOLO GRAPH --  */
 
 Test(Graph, given_aNavigableMapWithTwoNonOverlappingObstacles_when_updatesGrah_then_theGraphTypeIsSOLO_SOLO
      , .init = setup_Graph

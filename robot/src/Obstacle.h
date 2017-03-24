@@ -29,6 +29,6 @@ struct Obstacle *Obstacle_retrieveSouthern(struct Obstacle *a, struct Obstacle *
 // TODO: Test these 2 functions and add them to the graph
 //int Obstacle_areOverlapping(struct Obstacle *a, struct Obstacle *b);
 int Obstacle_areOverlappingInX(struct Obstacle *a, struct Obstacle *b);
-//int Obstacle_areOverlappingInY(struct Obstacle *a, struct Obstacle *b);
+int Obstacle_areOverlappingInY(struct Obstacle *a, struct Obstacle *b);
 int Obstacle_isCoordinateFree(struct Obstacle *obstacle, struct Coordinates *coordinates);
 #endif // OBSTACLE_H_

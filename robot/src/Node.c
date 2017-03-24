@@ -39,7 +39,7 @@ int canBecomeNeighbours(struct Node *a, struct Node *b)
     int i;
 
     for(i = 0; i < MAX_NUMBER_OF_NEIGHBOURS; ++i) {
-        if(a->neighbours[i] == b) {
+        if(Node_areNeighbours(a, b)) {
             are_already_neighbours = 1;
         }
     }
@@ -64,4 +64,28 @@ void Node_attemptToConnectAsNeighbours(struct Node *a, struct Node *b)
         ++a->actual_number_of_neighbours;
         ++b->actual_number_of_neighbours;
     }
+}
+
+int Node_areNeighbours(struct Node *a, struct Node *b)
+{
+    int neighbours_of_a = a->actual_number_of_neighbours;
+
+    for(int i = 0; i < neighbours_of_a; ++i) {
+        if(a->neighbours[i] == b) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+float Node_distanceToNeighbour(struct Node *node, struct Node *neighbour)
+{
+    for(int i = 0; i < node->actual_number_of_neighbours; ++i) {
+        if(node->neighbours[i] == neighbour) {
+            return node->distance_to_neighbours[i];
+        }
+    }
+
+    return MAX_VALUE_OF_FLOAT;
 }

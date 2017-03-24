@@ -113,6 +113,29 @@ static int computeOptimalYValueForSideSoloObstacleNode(struct Obstacle *obstacle
     return y;
 }
 
+static void linkNodesForSoloObstacle(struct Graph *graph, struct Node *east_node, struct Node *west_node,
+                                     struct Obstacle *obstacle, struct Map *map)
+{
+    int addition_to_number_of_nodes = 2;
+
+    enum CardinalDirection orientation = obstacle->orientation;
+
+    if(orientation == NORTH) {
+    } else if(orientation == SOUTH) {
+    } else if(orientation == CENTER) {
+        int north_is_navigable = isNorthOfTheObstacleNavigable(map, obstacle);
+        int south_is_navigable = isSouthOfTheObstacleNavigable(map, obstacle);
+
+        if(!north_is_navigable && south_is_navigable) {
+        } else if(north_is_navigable && !south_is_navigable) {
+        } else if(north_is_navigable && south_is_navigable) {
+            addition_to_number_of_nodes = 4;
+        }
+    }
+
+    graph->actual_number_of_nodes += addition_to_number_of_nodes;
+}
+
 static void establishEasternNodeSolo(struct Graph *graph, struct Obstacle *obstacle, struct Map *map)
 {
 
@@ -152,6 +175,9 @@ void Graph_updateForMap(struct Graph *graph, struct Map* map)
             first = Map_retrieveFirstObstacle(map);
             establishEasternNodeSolo(graph, first, map);
             establishWesternNodeSolo(graph, first, map);
+            graph->actual_number_of_nodes = 2;
+
+            linkNodesForSoloObstacle(graph, graph->eastern_node, graph->western_node, first, map);
             break;
 
         case 2:

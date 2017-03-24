@@ -138,3 +138,38 @@ Test(Node, given_aNodeWithNeighbours_when__then_itHasTheCorrectDistanceToItsNeig
     cr_assert_eq((int)(node_a->distance_to_neighbours[3]), 20);
     cr_assert_eq((int)(node_e->distance_to_neighbours[0]), 20);
 }
+
+Test(Node, given_twoNeighbourNodes_when_askedToReturnTheirConnectingDistance_then_itIsReturned
+     , .init = setup_Node
+     , .fini = teardown_Node)
+{
+    Node_attemptToConnectAsNeighbours(node_a, node_b);
+    float distance = Node_distanceToNeighbour(node_a, node_b);
+    cr_assert_float_eq(distance, node_a->distance_to_neighbours[0], 0.1);
+}
+
+Test(Node, given_twoNotNeighbourNodes_when_askedToReturnTheirConnectingDistance_then_InfinityIsReturned
+     , .init = setup_Node
+     , .fini = teardown_Node)
+{
+    float distance = Node_distanceToNeighbour(node_a, node_b);
+    cr_assert_float_eq(distance, MAX_VALUE_OF_FLOAT, 0.1);
+}
+
+Test(Node, given_twoNeighbourNodes_when_askedIfTheyAreNeighbours_then_theyAre
+     , .init = setup_Node
+     , .fini = teardown_Node)
+{
+    Node_attemptToConnectAsNeighbours(node_a, node_b);
+    int connected = Node_areNeighbours(node_a, node_b);
+    cr_assert(connected);
+}
+
+Test(Node, given_twoNotNeighbourNodes_when_askedIfTheyAreNeighbours_then_theyAreNot
+     , .init = setup_Node
+     , .fini = teardown_Node)
+{
+    int connected = Node_areNeighbours(node_a, node_b);
+    cr_assert(!connected);
+}
+

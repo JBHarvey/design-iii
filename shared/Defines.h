@@ -1,6 +1,8 @@
 #ifndef DEFINES_H_
 #define DEFINES_H_
 
+#include <float.h>
+
 // Flags / boolean related
 
 #define TRUE 1
@@ -27,6 +29,7 @@
 
 // Graph and pathfinding related
 #define MAX_NUMBER_OF_NODE 22
+#define MAX_VALUE_OF_FLOAT FLT_MAX
 
 // Units and mesurements related
 
