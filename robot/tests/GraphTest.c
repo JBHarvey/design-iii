@@ -267,6 +267,36 @@ Test(Graph,
 
 }
 
+Test(Graph, given_aSoloGraph_when_updatesGraph_then_itsWesternNodeIsBetweenTheWesternWallAndTheWesternPointOfTheObstacle
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    generateSoloMap(CENTER);
+    Graph_updateForMap(graph, graph_map);
+
+    struct Obstacle *obstacle = Map_retrieveLastObstacle(graph_map);
+    struct Coordinates *node_coordinates = graph->western_node->coordinates;
+    struct Coordinates *western_point_of_the_obstacle = Obstacle_retrieveWesternPointOf(obstacle);
+    struct Coordinates *western_navigable_point = graph_map->south_western_table_corner;
+    int to_the_west_of_the_obstacle = Coordinates_isToTheWestOf(node_coordinates, western_point_of_the_obstacle);
+    int to_the_east_of_the_west_wall = Coordinates_isToTheEastOf(node_coordinates, western_navigable_point);
+    cr_assert(to_the_east_of_the_west_wall);
+    cr_assert(to_the_west_of_the_obstacle);
+
+    Coordinates_delete(western_point_of_the_obstacle);
+}
+
+Test(Graph, given_aSoloGraph_when_updatesGraph_then_itsWesternNodeYValueIsTheSameAsItsEasternNodeXValue
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    generateSoloMap(CENTER);
+    Graph_updateForMap(graph, graph_map);
+    struct Coordinates *eastern_node_coordinates = graph->eastern_node->coordinates;
+    struct Coordinates *western_node_coordinates = graph->western_node->coordinates;
+    cr_assert_eq(eastern_node_coordinates->y, western_node_coordinates->y);
+}
+
 Test(Graph, given_aNavigableMapWithTwoNonOverlappingObstacles_when_updatesGrah_then_theGraphTypeIsSOLO_SOLO
      , .init = setup_Graph
      , .fini = teardown_Graph)

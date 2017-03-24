@@ -70,39 +70,69 @@ static int isSouthOfTheObstacleNavigable(struct Map *map, struct Obstacle *obsta
     return navigable;
 }
 
-static void establishEasternNodeSOLO(struct Graph *graph, struct Obstacle *eastern_obstacle, struct Map *map)
+static int computeOptimalXValueForSoloObstacleEasternNode(struct Obstacle *eastern_obstacle, struct Map *map)
 {
     struct Coordinates *eastern_obstacle_coordinates = Obstacle_retrieveEasternPointOf(eastern_obstacle);
     int x = Coordinates_computeMeanX(eastern_obstacle_coordinates, map->south_eastern_table_corner);
     Coordinates_delete(eastern_obstacle_coordinates);
+    return x;
+}
 
+static int computeOptimalXValueForSoloObstacleWesternNode(struct Obstacle *western_obstacle, struct Map *map)
+{
+    struct Coordinates *western_obstacle_coordinates = Obstacle_retrieveWesternPointOf(western_obstacle);
+    int x = Coordinates_computeMeanX(western_obstacle_coordinates, map->south_western_table_corner);
+    Coordinates_delete(western_obstacle_coordinates);
+    return x;
+}
+
+static int computeOptimalYValueForSideSoloObstacleNode(struct Obstacle *obstacle, struct Map *map)
+{
     int y = 0;
-    enum CardinalDirection orientation = eastern_obstacle->orientation;
+    enum CardinalDirection orientation = obstacle->orientation;
 
     if(orientation == NORTH) {
-        y = computeYNorthBetweenObstacleAndWall(map, eastern_obstacle);
+        y = computeYNorthBetweenObstacleAndWall(map, obstacle);
     } else if(orientation == SOUTH) {
-        y = computeYSouthBetweenObstacleAndWall(map, eastern_obstacle);
+        y = computeYSouthBetweenObstacleAndWall(map, obstacle);
     } else if(orientation == CENTER) {
-        int north_is_navigable = isNorthOfTheObstacleNavigable(map, eastern_obstacle);
-        int south_is_navigable = isSouthOfTheObstacleNavigable(map, eastern_obstacle);
+        int north_is_navigable = isNorthOfTheObstacleNavigable(map, obstacle);
+        int south_is_navigable = isSouthOfTheObstacleNavigable(map, obstacle);
 
         if(!north_is_navigable && south_is_navigable) {
-            y = computeYSouthBetweenObstacleAndWall(map, eastern_obstacle);
+            y = computeYSouthBetweenObstacleAndWall(map, obstacle);
         } else if(north_is_navigable && !south_is_navigable) {
-            y = computeYNorthBetweenObstacleAndWall(map, eastern_obstacle);
+            y = computeYNorthBetweenObstacleAndWall(map, obstacle);
         } else if(north_is_navigable && south_is_navigable) {
-            int y_north = computeYNorthBetweenObstacleAndWall(map, eastern_obstacle);
-            int y_south = computeYSouthBetweenObstacleAndWall(map, eastern_obstacle);
+            int y_north = computeYNorthBetweenObstacleAndWall(map, obstacle);
+            int y_south = computeYSouthBetweenObstacleAndWall(map, obstacle);
             y = (y_north + y_south) / 2;
         }
     }
 
+    return y;
+}
+
+static void establishEasternNodeSolo(struct Graph *graph, struct Obstacle *obstacle, struct Map *map)
+{
+
+    int x = computeOptimalXValueForSoloObstacleEasternNode(obstacle, map);
+    int y = computeOptimalYValueForSideSoloObstacleNode(obstacle, map);
     struct Coordinates *new_eastern_node_coordinates = Coordinates_new(x, y);
 
     Coordinates_copyValuesFrom(graph->eastern_node->coordinates, new_eastern_node_coordinates);
-
     Coordinates_delete(new_eastern_node_coordinates);
+}
+
+static void establishWesternNodeSolo(struct Graph *graph, struct Obstacle *obstacle, struct Map *map)
+{
+
+    int x = computeOptimalXValueForSoloObstacleWesternNode(obstacle, map);
+    int y = computeOptimalYValueForSideSoloObstacleNode(obstacle, map);
+    struct Coordinates *new_western_node_coordinates = Coordinates_new(x, y);
+
+    Coordinates_copyValuesFrom(graph->western_node->coordinates, new_western_node_coordinates);
+    Coordinates_delete(new_western_node_coordinates);
 }
 
 void Graph_updateForMap(struct Graph *graph, struct Map* map)
@@ -120,7 +150,8 @@ void Graph_updateForMap(struct Graph *graph, struct Map* map)
         case 1:
             graph->type = SOLO;
             first = Map_retrieveFirstObstacle(map);
-            establishEasternNodeSOLO(graph, first, map);
+            establishEasternNodeSolo(graph, first, map);
+            establishWesternNodeSolo(graph, first, map);
             break;
 
         case 2:
