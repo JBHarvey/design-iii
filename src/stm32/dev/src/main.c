@@ -2,6 +2,7 @@
 #include "stm32f4xx.h"
 #include "stm32f4_discovery.h"
 #include "stm32f4xx_exti.h"
+#include "stm32f4xx_it.h"
 #include "stm32f4xx_syscfg.h"
 // Libraries TM
 #include "tm_stm32f4_usb_vcp.h"
@@ -100,7 +101,7 @@ void initAll(void) {
 	initBtn();
 
 // Initialisation des variables
-	mainState = MAIN_MANCH;
+	mainState = MAIN_IDLE;
 //setState(&mainState, MAIN_MOVE);
 
 	int state = IDLE;
@@ -516,8 +517,7 @@ extern void TIM2_IRQHandler() {
 #ifdef ENABLE_POSITION_PID
 
 		// On met à jour l'input du PID de position
-		float setPoint = sqroot((numberOfPositionEdges1*numberOfPositionEdges3)
-				+ (numberOfPositionEdges2 * numberOfPositionEdges4));
+		float setPoint = (numberOfPositionEdges1+numberOfPositionEdges3)/2;
 		tunningPositionPID1.myInput = setPoint;
 
 		// On active le PID de position

@@ -91,7 +91,7 @@ extern uint8_t bufferDeadZoneToFill;
 #ifdef ENABLE_POSITION_PID
 
 #define MAX_POSITION_INDEX 1400
-#define CONSIGNE_POSITION_X 0.00
+#define CONSIGNE_POSITION_X 0.10
 #define CONSIGNE_POSITION_Y -0.30
 
 extern uint16_t bufferPositionPIDIndex1;

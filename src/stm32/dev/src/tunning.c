@@ -454,7 +454,7 @@ void tunningPositionPID() {
 
 	float squared = sqroot(toSquare);
 
-	tunningPositionPID1.mySetpoint = squared;
+	tunningPositionPID1.mySetpoint = CONSIGNE_POSITION_X;
 
 	float ratioX = CONSIGNE_POSITION_X
 			/ (CONSIGNE_POSITION_X + CONSIGNE_POSITION_Y);
