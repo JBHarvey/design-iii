@@ -10,7 +10,7 @@
 #include "prehenseur.h"
 
 /***************************************************
- * Les buffers qui suivent servent ï¿½ l'acquisition pour
+ * Les buffers qui suivent servent à l'acquisition pour
  * bien faire l'asservissement des roues
  ***************************************************/
 //#define ENABLE_ACQUIS
@@ -91,8 +91,12 @@ extern uint8_t bufferDeadZoneToFill;
 #ifdef ENABLE_POSITION_PID
 
 #define MAX_POSITION_INDEX 1400
-#define CONSIGNE_POSITION_X 0.10
-#define CONSIGNE_POSITION_Y -0.30
+#define CONSIGNE_POSITION_X 0.30
+#define CONSIGNE_POSITION_Y 0.00
+#define CONSIGNE_ANGLE 30
+
+#define CONSIGNE_SPEED_MEDIUM 0.08
+#define CONSIGNE_SPEED_LOW 0.02
 
 extern uint16_t bufferPositionPIDIndex1;
 extern float bufferPositionPID1[MAX_POSITION_INDEX];
@@ -130,8 +134,15 @@ extern uint8_t wheelsStartedY2;
 
 #endif
 
+/*************** VARIABLES POUR ROTATION*****************/
+#define ENABLE_ROTATION
+#ifdef ENABLE_ROTATION
+
+#endif ENABLE_ROTATION
+
 /******************** IDENTIFICATION ****************************/
 // Méthode pour effetuer l'identifications des roues à partir de deux échelons de consigne
+void tunningIdentificationWheels();
 void tunningSendIdenWheels();
 
 /******************** PI VITESSE ********************************/
@@ -153,6 +164,12 @@ void tunningSendPositionPID();
 // Permet d'identifier la zone mort de chacune des roues
 void tunningDeadZone();
 void tunningSendDeadZone();
+#endif
+
+/************************ ROTATION ******************************/
+#ifdef ENABLE_ROTATION
+void tunningRotation();
+void tunningSendRotation();
 #endif
 
 #endif
