@@ -14,8 +14,6 @@ static int findIndexOf(struct Node *node, struct Graph *graph, int number_of_nod
     return -1;
 }
 
-// TODO: rename to Pathfinder_findPathDijksta
-// TODO: add Pathfinder_pathExists return ^ path not null;
 struct CoordinatesSequence *Pathfinder_generatePathWithDijkstra(struct Graph *graph, struct Node *start,
         struct Node *end)
 {
@@ -130,23 +128,4 @@ struct CoordinatesSequence *Pathfinder_generatePathWithDijkstra(struct Graph *gr
     node_coordinates = graph->nodes[end_index]->coordinates;
     CoordinatesSequence_append(sequence, node_coordinates);
     return sequence;
-}
-
-int Pathfinder_pathExists(struct Graph *graph, struct Node *start, struct Node *end)
-{
-    struct CoordinatesSequence *sequence = Pathfinder_generatePathWithDijkstra(graph, start, end);
-
-    if(sequence == NULL) {
-        return 0;
-    }
-
-    struct CoordinatesSequence *last = sequence->next_element;
-
-    while(!CoordinatesSequence_isLast(last)) {
-        last = last->next_element;
-    }
-
-    int path_exists = (Coordinates_haveTheSameValues(start->coordinates, sequence->coordinates) &&
-                       Coordinates_haveTheSameValues(end->coordinates, last->coordinates));
-    return path_exists;
 }

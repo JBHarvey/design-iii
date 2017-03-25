@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include "Pathfinder.h"
 
-
 Test(Graph, given_aMapWithNoObstacles_when_createsGraph_then_theGraphTypeIsZero)
 {
     struct Graph *graph = Graph_new();
@@ -479,19 +478,51 @@ Test(Graph,
     cr_assert(Node_areNeighbours(first_new_node, second_new_node));
 }
 
-/* Later, wider test
 Test(Graph,
      given_anySoloGraphWithFourNode_when_updatesGraph_then_aPathExistsBetweenTheEasternAndWesternNode
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
-
     generateSoloMap(NORTH);
     Graph_updateForMap(graph, graph_map);
-    int path_exists = Pathfinder_pathExists(graph, graph->eastern_node, graph->western_node);
-    cr_assert(path_exists);
+    struct CoordinatesSequence *sequence = Pathfinder_generatePathWithDijkstra(graph, graph->eastern_node,
+                                           graph->western_node);
+    int size = CoordinatesSequence_size(sequence);
+    int expected = 4;
+    cr_assert_eq(size, expected);
+
+    CoordinatesSequence_delete(sequence);
 }
-*/
+
+Test(Graph, given_thePathOfASoloGraphWithFourNode_when_updatesGraph_then_allTheCoordinatesAreFree
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    generateSoloMap(NORTH);
+    Graph_updateForMap(graph, graph_map);
+    struct CoordinatesSequence *sequence_head = Pathfinder_generatePathWithDijkstra(graph, graph->eastern_node,
+            graph->western_node);
+    struct CoordinatesSequence *sequence = sequence_head;
+
+    struct Coordinates *coordinates = sequence->coordinates;
+    cr_assert(Map_isCoordinateFree(graph_map, coordinates));
+
+    sequence = sequence->next_element;
+    coordinates = sequence->coordinates;
+    cr_assert(Map_isCoordinateFree(graph_map, coordinates));
+
+    sequence = sequence->next_element;
+    coordinates = sequence->coordinates;
+    cr_assert(Map_isCoordinateFree(graph_map, coordinates));
+
+    sequence = sequence->next_element;
+    coordinates = sequence->coordinates;
+    cr_assert(Map_isCoordinateFree(graph_map, coordinates));
+
+
+    CoordinatesSequence_delete(sequence_head);
+}
+
 /*
 //-------------------------------------------
 Test(Graph, given_aSoloGraphWithCenterObstacle_when_updatesGraph_then_theTotalNumberOfNodeIsSix
