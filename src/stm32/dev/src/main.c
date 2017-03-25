@@ -166,14 +166,18 @@ int main(void) {
 
 			break;
 		case MAIN_MANCH:
+
 			tryToDecodeManchesterCode(&manchesterState, manchesterBuffer,
 					&manchesterFigureVerification,
 					manchesterOrientationVerification,
 					&manchesterFactorVerification);
 
-			sendManchesterCode(manchesterFigureVerification,
-					manchesterFactorVerification,
-					manchesterOrientationVerification);
+			if (manchesterFactorVerification != 0
+					&& manchesterOrientationVerification[2] != ' ') {
+				sendManchesterCode(manchesterFigureVerification,
+						manchesterFactorVerification,
+						manchesterOrientationVerification);
+			}
 
 			break;
 		case MAIN_PREHENSEUR:

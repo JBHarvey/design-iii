@@ -108,7 +108,7 @@ void sendManchesterCode(uint8_t figure, uint8_t factor, uint8_t *orientation) {
 	dataToSend[2] = 1;
 	dataToSend[3] = 4;
 
-	switch (orientation[3]) {
+	switch (orientation[2]) {
 	case 'o':
 		dataToSend[4] = 'N';
 		break;
