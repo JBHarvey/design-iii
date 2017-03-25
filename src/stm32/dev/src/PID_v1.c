@@ -17,11 +17,15 @@ PidType PID_SPEED1;
 PidType PID_SPEED2;
 PidType PID_SPEED3;
 PidType PID_SPEED4;
-
 PidType PID_POSITION1;
 PidType PID_POSITION2;
 PidType PID_POSITION3;
 PidType PID_POSITION4;
+
+float xMoveSetpoint = 0;
+float yMoveSetpoint = 0;
+uint8_t isMoving = 0;
+uint8_t isMoveDone = 0;
 
 volatile int ticksIndex5 = 0;
 volatile FloatType ticksBuffer5[100];
@@ -469,6 +473,62 @@ void computeAllPIDS() {
 			 sprintf(numberString, "%d", cmdMotor4);
 			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
 			 TM_HD44780_Puts(3, 0, numberString);*/
+		}
+	}
+}
+
+void computeCustomPIDS() {
+	if (isMoveDone == 0) {
+
+		float deplacementY = calculatePosition(
+				(numberOfPositionEdges2 + numberOfPositionEdges4) / 2);
+		float deplacementX = calculatePosition(
+				(numberOfPositionEdges1 + numberOfPositionEdges3) / 2);
+		if ((yMoveSetpoint != 0 && deplacementY < (yMoveSetpoint / 2))
+				|| (xMoveSetpoint != 0 && deplacementX < (xMoveSetpoint / 2))) {
+
+			PID_SPEED1.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+			PID_SPEED2.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+			PID_SPEED3.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+			PID_SPEED4.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+		} else {
+			PID_SPEED1.mySetpoint = 0;
+			PID_SPEED2.mySetpoint = 0;
+			PID_SPEED3.mySetpoint = 0;
+			PID_SPEED4.mySetpoint = 0;
+			isMoving = 1;
+		}
+
+		// Apply command for motor 1
+		if (PID_Compute_Speed(&PID_SPEED1)) {
+			FloatType cmdMotor = PID_SPEED1.myOutput;
+			MotorSetSpeed(1, (uint8_t) cmdMotor);
+			PID_SetMode(&PID_SPEED1, PID_Mode_Manual);
+		}
+		// Apply command for motor 2
+		if (PID_Compute_Speed(&PID_SPEED2)) {
+			FloatType cmdMotor = PID_SPEED2.myOutput;
+			uint8_t cmdPWM = (uint8_t) cmdMotor;
+			MotorSetSpeed(2, (uint8_t) cmdPWM);
+			PID_SetMode(&PID_SPEED2, PID_Mode_Manual);
+		}
+		// Apply command for motor 3
+		if (PID_Compute_Speed(&PID_SPEED3)) {
+			FloatType cmdMotor = PID_SPEED3.myOutput;
+			MotorSetSpeed(3, (uint8_t) cmdMotor);
+			PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
+		}
+		// Apply command for motor 4
+		if (PID_Compute_Speed(&PID_SPEED4)) {
+			FloatType cmdMotor = PID_SPEED4.myOutput;
+			MotorSetSpeed(4, (uint8_t) cmdMotor);
+			PID_SetMode(&PID_SPEED4, PID_Mode_Manual);
+		}
+
+		if (isMoving && PID_SPEED1.myInput == 0 && PID_SPEED2.myInput == 0
+				&& PID_SPEED3.myInput == 0 && PID_SPEED4.myInput == 0) {
+			isMoving = 0;
+			isMoveDone = 1;
 		}
 	}
 }

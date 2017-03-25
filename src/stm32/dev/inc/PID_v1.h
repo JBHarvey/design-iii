@@ -68,7 +68,7 @@ extern PidType PID_POSITION4;
 extern float xMoveSetpoint;
 extern float yMoveSetpoint;
 extern uint8_t isMoving;
-extern uint8_t isPositionDone;
+extern uint8_t isMoveDone;
 
 //commonly used functions **************************************************************************
 
