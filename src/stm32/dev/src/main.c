@@ -155,7 +155,11 @@ int main(void) {
 			tunningDeadZone();
 #endif
 			break;
-
+#ifdef ENABLE_ROTATION
+			case MAIN_TEST_ROTATION:
+			tunningRotation();
+			break;
+#endif
 		case MAIN_PID:
 			computeAllPIDS();
 
@@ -541,6 +545,37 @@ extern void TIM2_IRQHandler() {
 			bufferSpeedPI4[bufferSpeedPIIndex4++] = numberOfSpeedEdges4;
 		}
 #endif
+#ifdef ENABLE_ROTATION
+
+		// On met à jour les inputs des PI de vitesse
+		tunningRotationPI1.myInput = numberOfSpeedEdges1;
+		tunningRotationPI2.myInput = numberOfSpeedEdges2;
+		tunningRotationPI3.myInput = numberOfSpeedEdges3;
+		tunningRotationPI4.myInput = numberOfSpeedEdges4;
+
+		// On active les PI de vitesse
+		PID_SetMode(&tunningRotationPI1, PID_Mode_Automatic);
+		PID_SetMode(&tunningRotationPI2, PID_Mode_Automatic);
+		PID_SetMode(&tunningRotationPI3, PID_Mode_Automatic);
+		PID_SetMode(&tunningRotationPI4, PID_Mode_Automatic);
+
+		if (bufferRotationIndex < MAX_ROTATION_INDEX) {
+			bufferRotation[bufferRotationIndex++] =
+			calculatePosition((numberOfPositionEdges1)/ROTATION_RAYON);
+		}
+		if (bufferRotationPIIndex1 < MAX_ROTATION_INDEX) {
+			bufferRotationPI1[bufferRotationPIIndex1++] = numberOfSpeedEdges1;
+		}
+		if (bufferRotationPIIndex2 < MAX_ROTATION_INDEX) {
+			bufferRotationPI2[bufferRotationPIIndex2++] = numberOfSpeedEdges2;
+		}
+		if (bufferRotationPIIndex3 < MAX_ROTATION_INDEX) {
+			bufferRotationPI3[bufferRotationPIIndex3++] = numberOfSpeedEdges3;
+		}
+		if (bufferRotationPIIndex4 < MAX_ROTATION_INDEX) {
+			bufferRotationPI4[bufferRotationPIIndex4++] = numberOfSpeedEdges4;
+		}
+#endif
 		resetEncoderSpeedVariables();
 	}
 }
@@ -645,6 +680,14 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 		break;
 		case COMMAND_SEND_DEAD_ZONE:
 		bFlagTunningDeadZone = 1;
+		break;
+#endif
+#ifdef ENABLE_ROTATION
+		case COMMAND_START_ROTATION:
+		setState(&mainState, MAIN_TEST_ROTATION);
+		break;
+		case COMMAND_SEND_ROTATION:
+		bFlagTunningRotationDone = 1;
 		break;
 #endif
 	case COMMAND_PENCIL_UP:

@@ -64,7 +64,7 @@ extern uint8_t bFlagStartTunningSpeed;
 /********************************************************
  * Variables pour trouver la zone morte de chacune des roues
  ********************************************************/
-#define ENABLE_DEAD_ZONE
+//#define ENABLE_DEAD_ZONE
 #ifdef ENABLE_DEAD_ZONE
 #define DEAD_START_PWM 0
 #define DEAD_STOP_PWM 35
@@ -87,7 +87,7 @@ extern uint8_t bufferDeadZoneToFill;
 /*********************************************************
  * Variables pour tester le PID de position
  *********************************************************/
-#define ENABLE_POSITION_PID
+//#define ENABLE_POSITION_PID
 #ifdef ENABLE_POSITION_PID
 
 #define MAX_POSITION_INDEX 1400
@@ -137,8 +137,43 @@ extern uint8_t wheelsStartedY2;
 /*************** VARIABLES POUR ROTATION*****************/
 #define ENABLE_ROTATION
 #ifdef ENABLE_ROTATION
+#define MAX_ROTATION_INDEX 1400
+#define CONSIGNE_ANGLE 30
+#define ROTATION_RAYON 10
 
-#endif ENABLE_ROTATION
+#define CONSIGNE_SPEED_MEDIUM 0.08
+#define CONSIGNE_SPEED_LOW 0.02
+
+extern uint16_t bufferRotationIndex;
+extern float bufferRotation[MAX_ROTATION_INDEX];
+
+extern uint16_t bufferRotationPI1[MAX_ROTATION_INDEX];
+extern uint16_t bufferRotationPI2[MAX_ROTATION_INDEX];
+extern uint16_t bufferRotationPI3[MAX_ROTATION_INDEX];
+extern uint16_t bufferRotationPI4[MAX_ROTATION_INDEX];
+
+extern uint16_t bufferRotationPIIndex1;
+extern uint16_t bufferRotationPIIndex2;
+extern uint16_t bufferRotationPIIndex3;
+extern uint16_t bufferRotationPIIndex4;
+
+extern PidType tunningRotationPI1;
+extern PidType tunningRotationPI2;
+extern PidType tunningRotationPI3;
+extern PidType tunningRotationPI4;
+
+extern PidType tunningRotationPID1;
+extern PidType tunningRotationPID2;
+extern PidType tunningRotationPID3;
+extern PidType tunningRotationPID4;
+
+extern uint8_t bSendDataRotation;
+extern uint8_t bFlagSendDataRotation;
+extern uint8_t bTunningRotationDone;
+extern uint8_t bFlagTunningRotationDone;
+extern uint8_t bFlagStartTunningRotation;
+
+#endif
 
 /******************** IDENTIFICATION ****************************/
 // Méthode pour effetuer l'identifications des roues à partir de deux échelons de consigne
