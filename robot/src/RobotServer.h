@@ -4,6 +4,7 @@
 #include "network.h"
 #include "DataReceiver.h"
 #include "opencv2/highgui/highgui_c.h"
+#include "CoordinatesSequence.h"
 
 struct RobotServer {
     struct Object *object;
@@ -31,6 +32,8 @@ void RobotServer_fetchManchesterCodeCommand(void);
 void RobotServer_sendStopSendingManchesterSignalCommand(void);
 
 void RobotServer_sendImageToStation(IplImage *image);
+void RobotServer_sendPlannedTrajectoryToStation(struct CoordinatesSequence *coordinates_sequence);
+void RobotServer_sendContoursToStation(struct CoordinatesSequence *coordinates_sequence);
 
 
 #endif // ROBOTSERVER_H_

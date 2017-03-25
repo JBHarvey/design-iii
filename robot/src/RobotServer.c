@@ -163,15 +163,6 @@ void RobotServer_communicate(struct RobotServer *robot_server)
 {
     ev_run(robot_server->loop, EVRUN_NOWAIT);
 }
-/*
-void sendWorldToRobot(struct Communication_World communication_world)
-{
-    uint8_t data[1 + sizeof(struct Communication_World)];
-    data[0] = PACKET_WORLD;
-    memcpy(data + 1, &communication_world, sizeof(struct Communication_World));
-    addPacket(data, sizeof(data));
-}
-*/
 
 void RobotServer_sendImageToStation(IplImage *image)
 {
@@ -182,6 +173,39 @@ void RobotServer_sendImageToStation(IplImage *image)
     addPacket(data, sizeof(data));
     cvReleaseMat(&image_data);
 }
+
+static void sendCoordinatesToStation(uint8_t packet_id, struct CoordinatesSequence *coordinates_sequence)
+{
+    unsigned int size = CoordinatesSequence_size(coordinates_sequence);
+
+    struct Communication_Coordinates coordinates[size];
+
+    struct CoordinatesSequence *coordinates_sequence_current = coordinates_sequence;
+
+    unsigned int i;
+
+    for(i = 0; i < size; ++i) {
+        coordinates[i].x = coordinates_sequence_current->coordinates->x;
+        coordinates[i].y = coordinates_sequence_current->coordinates->y;
+        coordinates_sequence_current = coordinates_sequence_current->next_element;
+    }
+
+    uint8_t data[1 + sizeof(coordinates)];
+    data[0] = packet_id;
+    memcpy(data + 1, coordinates, sizeof(coordinates));
+    addPacket(data, sizeof(data));
+}
+
+void RobotServer_sendPlannedTrajectoryToStation(struct CoordinatesSequence *coordinates_sequence)
+{
+    sendCoordinatesToStation(DATA_PLANNED_TRAJECTORY, coordinates_sequence);
+}
+
+void RobotServer_sendContoursToStation(struct CoordinatesSequence *coordinates_sequence)
+{
+    sendCoordinatesToStation(DATA_CONTOURS, coordinates_sequence);
+}
+
 
 void handleReceivedPacket(uint8_t *data, uint32_t length)
 {

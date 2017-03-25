@@ -176,7 +176,9 @@ gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camer
         }
 
         struct Obstacle obstacles[MAXIMUM_OBSTACLE_NUMBER];
+
         int number_of_obstacles = findObstacles(opencv_storage, obstacles, MAXIMUM_OBSTACLE_NUMBER, image_yuv);
+
         struct Marker marker = detectMarker(input_camera->camera_capture->current_safe_copy_frame);
 
         if(detected->has_changed == 0 && detected->number_of_obstacles != number_of_obstacles) {
