@@ -40,5 +40,4 @@ void PoseFilter_executeFilter(struct PoseFilter *pose_filter, void (*filter)(str
 
 void PoseFilter_updateFromCameraOnly(struct PoseFilter *pose_filter)
 {
-    int i = 5;
 }
