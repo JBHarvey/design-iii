@@ -1,5 +1,5 @@
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/highgui.hpp>
 #include <opencv2/aruco.hpp>
 
 #ifdef __cplusplus
@@ -16,11 +16,11 @@ struct Marker detectMarker(CvArr *image)
 
     std::vector<int> ids;
     std::vector<std::vector<cv::Point2f> > corners;
-#if (CV_MINOR_VERSION > 1)
+    #if (CV_MINOR_VERSION > 1)
     cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
-#else
+    #else
     cv::aruco::Dictionary dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
-#endif
+    #endif
     cv::aruco::detectMarkers(src, dictionary, corners, ids);
     std::vector< cv::Mat > rvecs, tvecs;
 

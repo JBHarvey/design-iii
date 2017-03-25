@@ -11,6 +11,7 @@
 #include "station_interface.h"
 #include "station_client_sender.h"
 #include "logger.h"
+#include "opencv2/highgui/highgui_c.h"
 
 /* Constants */
 
@@ -131,11 +132,19 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
     }
 
     switch(data[0]) {
-        case DATA_MANCHESTER:
+        case DATA_MANCHESTER_CODE:
             break;
 
-        case DATA_IMAGE:
+        case DATA_IMAGE: {
+            CvMat *image_data = cvCreateMat(1, length - 1, CV_8UC1);
+            memcpy(image_data->data.ptr, data + 1, length - 1);
+            IplImage *image = cvDecodeImage(image_data, CV_LOAD_IMAGE_COLOR);
+            cvReleaseMat(&image_data);
+            printf("got image of size: %u %u\n", cvGetSize(image).width, cvGetSize(image).height);
+            //TODO display image.
+            cvReleaseImage(&image);
             break;
+        }
 
         case DATA_PLANNED_TRAJECTORY:
             break;

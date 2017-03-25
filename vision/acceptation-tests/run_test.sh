@@ -2,7 +2,12 @@
 SUCCEEDED_IMAGES=()
 fail=0
 
-TOLERANCE=124.0 ./build.sh || exit 1
+TOLERANCE=199.0 ./build.sh || exit 1
+
+echo execute with tolerance 1000/200 +-0.15cm
+. ./execute_test.sh
+
+TOLERANCE=142.0 ./build.sh || exit 1
 
 echo execute with tolerance 1000/124 +-0.21cm
 . ./execute_test.sh
@@ -41,6 +46,11 @@ echo execute with tolerance 1000/52 +-0.57cm
 TOLERANCE=47.0 ./build.sh || exit 1
 
 echo execute with tolerance 1000/47 +-0.63cm
+. ./execute_test.sh
+
+TOLERANCE=43.0 ./build.sh || exit 1
+
+echo execute with tolerance 1000/43 +-0.7cm
 . ./execute_test.sh || fail=1
 
 llvm-cov gcov ../src/vision.c -o ./
