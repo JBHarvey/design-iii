@@ -2,8 +2,6 @@
 #include "station_client.h"
 #include "station_interface.h"
 
-extern enum ThreadStatus main_loop_status;
-
 // Fake data
 #define ANGLE_BASE_UNIT 0.00001
 #define QUARTER_PI 78540
