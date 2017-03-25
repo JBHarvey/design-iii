@@ -17,6 +17,8 @@ enum CameraStatus {UNCALIBRATED, INTRINSICALLY_CALIBRATED, INTRINSICALLY_AND_EXT
 
 struct CameraCapture {
     CvCapture *camera_capture_feed;
+    IplImage *current_raw_frame;
+    IplImage *current_safe_copy_frame;
 };
 
 struct CameraIntrinsics {
@@ -36,6 +38,7 @@ struct CameraExtrinsics {
 struct Camera {
     struct CameraIntrinsics *camera_intrinsics;
     struct CameraExtrinsics *camera_extrinsics;
+    struct CameraCapture *camera_capture;
     enum CameraStatus camera_status;
 };
 
@@ -43,6 +46,7 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient 
 
 void WorldVision_applyWorldCameraBackFrame(void);
 
-IplImage *WorldVision_getWorldCameraFrame(void);
+void WorldVision_createWorldCameraFrameSafeCopy(void);
+
 
 #endif // __WORLD_VISION

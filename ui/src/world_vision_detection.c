@@ -23,7 +23,6 @@ extern enum ThreadStatus main_loop_status;
 
 int first_detection_happened = 0;
 
-extern struct CameraCapture *world_camera_capture;
 struct DetectedThings *detected = NULL;
 
 static int convertAngleToRobotAngle(double angle)
@@ -88,8 +87,6 @@ void WorldVisionDetection_drawObstaclesAndRobot(IplImage *world_camera_back_fram
 static void cleanExitIfMainLoopTerminated(CvMemStorage *opencv_storage)
 {
     if(main_loop_status == TERMINATED) {
-        cvReleaseMemStorage(&opencv_storage);
-
         if(opencv_storage != NULL) {
             cvReleaseMemStorage(&opencv_storage);
         }
@@ -112,24 +109,36 @@ gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camer
 
         cleanExitIfMainLoopTerminated(opencv_storage);
 
-        IplImage *world_camera_frame = cvQueryFrame(world_camera_capture->camera_capture_feed);
-        IplImage * image_yuv = cvCreateImage(cvGetSize(world_camera_frame), IPL_DEPTH_8U, 3);
-        cvCvtColor(world_camera_frame, image_yuv, CV_BGR2YCrCb);
+        WorldVision_createWorldCameraFrameSafeCopy();
+        IplImage *image_yuv = cvCreateImage(cvGetSize(input_camera->camera_capture->current_safe_copy_frame), IPL_DEPTH_8U, 3);
+        cvCvtColor(input_camera->camera_capture->current_safe_copy_frame, image_yuv, CV_RGB2YCrCb);
         cvSmooth(image_yuv, image_yuv, CV_GAUSSIAN, 3, 0, 0, 0);
 
         struct Obstacle obstacles[MAXIMUM_OBSTACLE_NUMBER];
         int number_of_obstacles = findObstacles(opencv_storage, obstacles, MAXIMUM_OBSTACLE_NUMBER, image_yuv);
-        struct Marker marker = detectMarker(world_camera_frame);
+        struct Marker marker = detectMarker(input_camera->camera_capture->current_safe_copy_frame);
+
+        if(detected->number_of_obstacles != number_of_obstacles) {
+
+            detected->has_changed = 1;
+        }
 
         detected->number_of_obstacles = number_of_obstacles;
 
         for(int i = 0; i < number_of_obstacles; ++i) {
 
             CvPoint obstacle_point = coordinateToTableCoordinate(cvPoint(obstacles[i].x, obstacles[i].y), OBSTACLE_HEIGHT_CM,
-                                     cvPoint(cvGetSize(world_camera_frame).width / 2, cvGetSize(world_camera_frame).height / 2));
+                                     cvPoint(cvGetSize(input_camera->camera_capture->current_safe_copy_frame).width / 2,
+                                             cvGetSize(input_camera->camera_capture->current_safe_copy_frame).height / 2));
 
             obstacles[i].x = obstacle_point.x;
             obstacles[i].y = obstacle_point.y;
+
+            if(detected->has_changed == 0 && (detected->obstacles[i].x != obstacles[i].x ||
+                                              detected->obstacles[i].y != obstacles[i].y)) {
+
+                detected->has_changed = 1;
+            }
 
             detected->obstacles[i] = obstacles[i];
         }
@@ -137,9 +146,16 @@ gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camer
         if(marker.valid) {
 
             CvPoint robot_point = coordinateToTableCoordinate(cvPoint(marker.x, marker.y), ROBOT_HEIGHT_CM,
-                                  cvPoint(cvGetSize(world_camera_frame).width / 2, cvGetSize(world_camera_frame).height / 2));
+                                  cvPoint(cvGetSize(input_camera->camera_capture->current_safe_copy_frame).width / 2,
+                                          cvGetSize(input_camera->camera_capture->current_safe_copy_frame).height / 2));
             marker.x = robot_point.x;
             marker.y = robot_point.y;
+
+            if(detected->has_changed == 0 && (detected->robot.x != marker.x || detected->robot.y != marker.y)) {
+
+                detected->has_changed = 1;
+            }
+
             detected->robot = marker;
         }
 
