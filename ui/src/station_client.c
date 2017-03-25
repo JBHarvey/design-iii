@@ -13,6 +13,7 @@
 #include "station_interface.h"
 #include "station_client_sender.h"
 #include "logger.h"
+#include "robot_vision.h"
 
 /* Constants */
 
@@ -141,7 +142,7 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
                 IplImage *image = cvDecodeImage(image_data, CV_LOAD_IMAGE_COLOR);
                 cvReleaseMat(&image_data);
                 printf("got image of size: %u %u\n", cvGetSize(image).width, cvGetSize(image).height);
-                //TODO display image.
+                RobotVision_setImage(image);
                 cvReleaseImage(&image);
                 break;
             }
