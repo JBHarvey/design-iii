@@ -146,13 +146,15 @@ static void cleanExitIfMainLoopTerminated(GThread *world_vision_detection_worker
         g_mutex_lock(&world_vision_pixbuf_mutex);
         g_object_unref(world_camera_pixbuf);
         g_mutex_unlock(&world_vision_pixbuf_mutex);
+
+        if(world_vision_detection_worker_thread != NULL) {
+
+            g_thread_join(world_vision_detection_worker_thread);
+        }
+
         releaseWorldCamera();
         cvReleaseImage(&world_camera_frame);
         cvReleaseImage(&world_camera_back_frame);
-
-        if(world_vision_detection_worker_thread != NULL) {
-            g_thread_join(world_vision_detection_worker_thread);
-        }
 
         g_thread_exit((gpointer) TRUE);
     }
@@ -204,11 +206,9 @@ static void worldCameraQueryNextFrame(void)
 
 void WorldVision_createWorldCameraFrameSafeCopy(void)
 {
-    do {
-        g_mutex_lock(&world_vision_camera_frame_mutex);
-        cvCopy(world_camera->camera_capture->current_raw_frame, world_camera->camera_capture->current_safe_copy_frame, NULL);
-        g_mutex_unlock(&world_vision_camera_frame_mutex);
-    } while(world_camera->camera_capture->current_safe_copy_frame == NULL);
+    g_mutex_lock(&world_vision_camera_frame_mutex);
+    cvCopy(world_camera->camera_capture->current_raw_frame, world_camera->camera_capture->current_safe_copy_frame, NULL);
+    g_mutex_unlock(&world_vision_camera_frame_mutex);
 }
 
 void WorldVision_applyWorldCameraBackFrame(void)
@@ -250,10 +250,6 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient 
 
             cvCopy(world_camera->camera_capture->current_raw_frame, world_camera_back_frame, NULL);
             WorldVisionDetection_drawObstaclesAndRobot(world_camera_back_frame);
-
-            /* if(detected.robot_detected) {
-                 StationClientSender_sendWorldInformationsToRobot(station_client, detected.obstacles, MAX_OBSTACLES, detected.robot);
-             }*/
         }
 
         if(world_camera->camera_status != FULLY_CALIBRATED) {
