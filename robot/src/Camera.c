@@ -37,3 +37,25 @@ IplImage *Camera_get_image()
         return 0;
     }
 }
+
+struct CoordinatesSequence *Camera_cvSeqToCoordinatesSequence(CvSeq *opencv_sequence)
+{
+    struct CoordinatesSequence *sequence = 0;
+
+    unsigned int i;
+
+    for(i = 0; i < opencv_sequence->total; ++i) {
+        CvPoint *element_pointer = (CvPoint *)cvGetSeqElem(opencv_sequence, i);
+        struct Coordinates *coordinates = Coordinates_new(element_pointer->x, element_pointer->y);
+
+        if(!i) {
+            sequence = CoordinatesSequence_new(coordinates);
+        } else {
+            CoordinatesSequence_append(sequence, coordinates);
+        }
+
+        Coordinates_delete(coordinates);
+    }
+
+    return sequence;
+}
