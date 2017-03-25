@@ -141,7 +141,7 @@ static void packageWorldInformationsAndSendToRobot(struct Camera *input_camera)
         obstacles[i].zone.pose.coordinates.y = convertMMToRobot(detected->obstacles[i].y);
     }
 
-    for (; i < MAXIMUM_OBSTACLE_NUMBER; ++i) {
+    for(; i < MAXIMUM_OBSTACLE_NUMBER; ++i) {
         obstacles[i].zone.pose.coordinates.x = INVALID_OBSTACLE_COORDINATE;
         obstacles[i].zone.pose.coordinates.y = INVALID_OBSTACLE_COORDINATE;
     }
