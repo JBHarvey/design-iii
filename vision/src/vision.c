@@ -36,10 +36,6 @@
 
 #define MIN_SQUARE_AREA 1000
 
-struct Square {
-    CvPoint2D32f corner[4];
-};
-
 double angle(CvPoint *pt1, CvPoint *pt2, CvPoint *pt0)
 {
     double dx1 = pt1->x - pt0->x;
@@ -151,6 +147,16 @@ static IplImage *thresholdImage3D(IplImage *image_yuv, unsigned int erode_dilate
     return image_black_white;
 }
 
+static unsigned int seqToPoints(CvSeq *sequence, CvPoint2D32f *points, unsigned int max_points)
+{
+    unsigned int i;
+
+    for(i = 0; i < sequence->total && i < max_points; ++i) {
+        points[i] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(sequence, i));
+    }
+
+    return i;
+}
 
 static void findGreenSquaresRecursive(CvSeq *contours, struct Square *out_squares, unsigned int max_squares,
                                       unsigned int *num_squares)
@@ -164,10 +170,7 @@ static void findGreenSquaresRecursive(CvSeq *contours, struct Square *out_square
     while(horizontal_sequence) {
         if(isDualSquare(horizontal_sequence)) {
             struct Square square;
-            square.corner[0] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(horizontal_sequence->v_next, 0));
-            square.corner[1] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(horizontal_sequence->v_next, 1));
-            square.corner[2] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(horizontal_sequence->v_next, 2));
-            square.corner[3] = cvPointTo32f(*(CvPoint *)cvGetSeqElem(horizontal_sequence->v_next, 3));
+            seqToPoints(horizontal_sequence->v_next, square.corner, 4);
 
             /* fix rotation */
             if(square.corner[0].x * square.corner[0].y > square.corner[3].x * square.corner[3].y) {
@@ -232,13 +235,15 @@ static IplImage *imageInsideSquare(IplImage *image_yuv, struct Square square)
     return corrected_image;
 }
 
+#define FIGURE_POLY_FIRST_APPROX 3
+
 static CvSeq *findFigureContours(CvMemStorage *opencv_storage, IplImage *image_black_white)
 {
     CvSeq *contours = NULL;
 
     if(cvFindContours(image_black_white, opencv_storage, &contours, sizeof(CvContour), CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE,
                       cvPoint(0, 0))) {
-        contours = cvApproxPoly(contours, sizeof(CvContour), opencv_storage, CV_POLY_APPROX_DP, FIGURE_POLY_APPROX, 1);
+        contours = cvApproxPoly(contours, sizeof(CvContour), opencv_storage, CV_POLY_APPROX_DP, FIGURE_POLY_FIRST_APPROX, 1);
     }
 
     return contours;
@@ -286,26 +291,83 @@ static CvSeq *findFigure(CvSeq *in)
     return 0;
 }
 
-CvSeq *findFirstFigure(CvMemStorage *opencv_storage, IplImage *image_yuv)
-{
-    CvSeq *figure_contours = NULL;
+#define CORNER_IMPROVEMENT_RADIUS_DEFAULT 10
 
+void improveCorners(IplImage *image_yuv, CvPoint2D32f *corners, unsigned int num_corners,
+                    unsigned int corner_improvement_radius)
+{
+    CvTermCriteria criteria = {};
+    criteria.type = CV_TERMCRIT_EPS;
+    criteria.max_iter = 50;
+    criteria.epsilon = 0.1;
+    IplImage *image_grayscale = cvCreateImage(cvGetSize(image_yuv), IPL_DEPTH_8U, 1);
+    cvSplit(image_yuv, image_grayscale, 0, 0, 0);
+    cvFindCornerSubPix(image_grayscale, corners, num_corners, cvSize(corner_improvement_radius, corner_improvement_radius),
+                       cvSize(-1, -1),  criteria);
+    cvReleaseImage(&image_grayscale);
+}
+
+_Bool findFirstGreenSquare(CvMemStorage *opencv_storage, IplImage *image_yuv, struct Square *square)
+{
     IplImage *image_black_white = thresholdImage(image_yuv, GREEN_SQUARE_YUV_LOWER_BOUND, GREEN_SQUARE_YUV_UPPER_BOUND,
                                   ERODE_DILATE_PIXELS);
 
+    _Bool success = 0;
+
+    if(findGreenSquares(opencv_storage, image_black_white, square, 1) >= 1) {
+        improveCorners(image_yuv, square->corner, 4, CORNER_IMPROVEMENT_RADIUS_DEFAULT);
+        success = 1;
+    }
+
+    cvReleaseImage(&image_black_white);
+    return success;
+}
+
+CvPoint fixedCvPointFrom32f(CvPoint2D32f point)
+{
+    CvPoint ipt;
+    ipt.x = round(point.x);
+    ipt.y = round(point.y);
+
+    return ipt;
+}
+
+void improveFigure(IplImage *image_yuv, CvSeq *figure)
+{
+    unsigned int i;
+
+    for(i = 0; i < figure->total; ++i) {
+        CvPoint *element_pointer = (CvPoint *)cvGetSeqElem(figure, i);
+        CvPoint2D32f point = cvPointTo32f(*element_pointer);
+        improveCorners(image_yuv, &point, 1, CORNER_IMPROVEMENT_RADIUS_DEFAULT);
+        *element_pointer = fixedCvPointFrom32f(point);
+    }
+}
+
+CvSeq *findFirstFigure(CvMemStorage *opencv_storage, IplImage *image_yuv, IplImage **image_yuv_in_green_square)
+{
+    CvSeq *figure_contours = NULL;
+
     struct Square squares[1];
 
-    if(findGreenSquares(opencv_storage, image_black_white, squares, sizeof(squares) / sizeof(struct Square)) >= 1) {
+    if(findFirstGreenSquare(opencv_storage, image_yuv, squares)) {
         IplImage *square_image = imageInsideSquare(image_yuv, squares[0]);
         IplImage *square_image_black_white = thresholdImage3D(square_image, ERODE_DILATE_PIXELS);
-        cvReleaseImage(&square_image);
 
         figure_contours = findFigureContours(opencv_storage, square_image_black_white);
         cvReleaseImage(&square_image_black_white);
         figure_contours = findFigure(figure_contours);
+        improveFigure(square_image, figure_contours);
+        figure_contours = cvApproxPoly(figure_contours, sizeof(CvContour), opencv_storage, CV_POLY_APPROX_DP,
+                                       FIGURE_POLY_APPROX, 1);
+
+        if(image_yuv_in_green_square) {
+            *image_yuv_in_green_square = square_image;
+        } else {
+            cvReleaseImage(&square_image);
+        }
     }
 
-    cvReleaseImage(&image_black_white);
     return figure_contours;
 }
 
@@ -404,18 +466,20 @@ static _Bool isTriangleObstacle(CvSeq *in)
     return 0;
 }
 
+double distancePoints(CvPoint point1, CvPoint point2)
+{
+    return sqrt(((point1.y - point2.y) * (point1.y - point2.y)) + ((point1.x - point2.x) * (point1.x - point2.x)));
+}
+
 #define OBSTACLE_TRIANGLE_POLY_APPROX 5
 #define TRIANGLE_SIDES_RATIO 1.4
 #define TRIANGLE_SIDES_TOLERANCE 0.1
 
 static _Bool validateTriangle(CvPoint points[3])
 {
-    double distance_small = sqrt(((points[1].y - points[2].y) * (points[1].y - points[2].y)) + ((
-                                     points[1].x - points[2].x) * (points[1].x - points[2].x)));
-    double distance1 = sqrt(((points[0].y - points[1].y) * (points[0].y - points[1].y)) + ((points[0].x - points[1].x) *
-                            (points[0].x - points[1].x)));
-    double distance2 = sqrt(((points[0].y - points[2].y) * (points[0].y - points[2].y)) + ((points[0].x - points[2].x) *
-                            (points[0].x - points[2].x)));
+    double distance_small = distancePoints(points[1], points[2]);
+    double distance1 = distancePoints(points[0], points[1]);
+    double distance2 = distancePoints(points[0], points[2]);
 
     double comp_distance = distance_small * TRIANGLE_SIDES_RATIO;
 
@@ -553,6 +617,45 @@ static void findObstaclesRecursive(CvSeq *contours, struct Obstacle *out_obstacl
     }
 }
 
+#define COMPARE_ERROR_PIXELS (5.0)
+
+static int compareObstacles(const struct Obstacle *obstacle1, const struct Obstacle *obstacle2)
+{
+    if(obstacle1->type < obstacle2->type) {
+        return -1;
+    }
+
+    if(obstacle1->type > obstacle2->type) {
+        return 1;
+    }
+
+    double distance1 = sqrt((obstacle1->x * obstacle1->x) + (obstacle1->y * obstacle1->y));
+    double distance2 = sqrt((obstacle2->x * obstacle2->x) + (obstacle2->y * obstacle2->y));
+
+    if(distance1 < (distance2 - COMPARE_ERROR_PIXELS)) {
+        return -1;
+    }
+
+    if(distance1 > (distance2 + COMPARE_ERROR_PIXELS)) {
+        return 1;
+    }
+
+    if(obstacle1->x < obstacle2->x) {
+        return -1;
+    }
+
+    if(obstacle1->x > obstacle2->x) {
+        return 1;
+    }
+
+    return 0;
+}
+
+void sortObstacles(struct Obstacle *obstacles, unsigned int num_obstacles)
+{
+    qsort(obstacles, num_obstacles, sizeof(struct Obstacle), compareObstacles);
+}
+
 #define OBSTACLE_POLY_APPROX 1
 
 unsigned int findObstacles(CvMemStorage *opencv_storage, struct Obstacle *obstacles_out, unsigned int max_obstacles,
@@ -569,6 +672,7 @@ unsigned int findObstacles(CvMemStorage *opencv_storage, struct Obstacle *obstac
         contours = cvApproxPoly(contours, sizeof(CvContour), opencv_storage, CV_POLY_APPROX_DP, OBSTACLE_POLY_APPROX, 1);
 
         findObstaclesRecursive(contours, obstacles_out, max_obstacles, &num_obstacles);
+        sortObstacles(obstacles_out, num_obstacles);
     }
 
     cvReleaseImage(&image_black_white);
@@ -593,4 +697,99 @@ CvPoint coordinateToTableCoordinate(CvPoint point, double height_cm, CvPoint cam
     out.x = return_point_x + camera_midpoint.x;
     out.y = return_point_y + camera_midpoint.y;
     return out;
+}
+
+#define MIN_TABLE_CORNER_DISTANCE_FROM_SIDE 10
+#define MAX_TABLE_CORNER_DISTANCE_FROM_SIDE 100
+#define MIN_CORNER_DISTANCE 10
+
+#define TABLE_WIDTH 1507
+#define TABLE_HEIGHT_RIGHT 723
+#define TABLE_HEIGHT_LEFT 740
+#define BLACK_BORDER_SIZE 4
+
+#define DISTANCE_ALLOWED_ERROR 0.1
+#define MAX_DETECTED_CORNERS 20
+#define CORNER_IMPROVEMENT_RADIUS_TABLE_CORNERS 5
+
+static void findCornersWithDistance(CvPoint2D32f *corners, unsigned int num_corners, double target_distance)
+{
+    unsigned int corner1 = num_corners, corner2 = num_corners;
+    double current_distance = 1000000000;
+
+    unsigned int i, j;
+
+    for(i = 0; i < num_corners; ++i) {
+        for(j = (i + 1); j < num_corners; ++j) {
+            double distance_temp = fabs(target_distance - distancePoints(fixedCvPointFrom32f(corners[i]),
+                                        fixedCvPointFrom32f(corners[j])));
+
+            if(distance_temp < current_distance) {
+                corner1 = i;
+                corner2 = j;
+                current_distance = distance_temp;
+            }
+        }
+    }
+
+    corners[0] = corners[corner1];
+    corners[1] = corners[corner2];
+}
+
+_Bool findTableCorners(IplImage *image_yuv, struct Square *square)
+{
+    IplImage *image_grayscale = cvCreateImage(cvGetSize(image_yuv), IPL_DEPTH_8U, 1);
+    cvSplit(image_yuv, image_grayscale, 0, 0, 0);
+    IplImage *image_mask = cvCreateImage(cvGetSize(image_yuv), IPL_DEPTH_8U, 1);
+
+    int width = cvGetSize(image_yuv).width, height = cvGetSize(image_yuv).height;
+    cvSet(image_mask, cvScalar(0, 0, 0, 0), NULL);
+    cvRectangle(image_mask, cvPoint(width - MAX_TABLE_CORNER_DISTANCE_FROM_SIDE, 0),
+                cvPoint(width - MIN_TABLE_CORNER_DISTANCE_FROM_SIDE, height), CV_RGB(255, 255, 255), -1, 8, 0);
+
+    int max_corners = MAX_DETECTED_CORNERS;
+    CvPoint2D32f corners[max_corners];
+    cvGoodFeaturesToTrack(image_grayscale, NULL, NULL, corners, &max_corners, 0.01, MIN_CORNER_DISTANCE, image_mask, 10, 1,
+                          0.15);
+
+    _Bool success = 0;
+
+    if(max_corners >= 2) {
+        improveCorners(image_yuv, corners, max_corners, CORNER_IMPROVEMENT_RADIUS_TABLE_CORNERS);
+        findCornersWithDistance(corners, max_corners, TABLE_HEIGHT_RIGHT);
+
+        if(corners[0].y > corners[1].y) {
+            CvPoint2D32f temp = corners[0];
+            corners[0] = corners[1];
+            corners[1] = temp;
+        }
+
+        double distance = distancePoints(fixedCvPointFrom32f(corners[0]), fixedCvPointFrom32f(corners[1]));
+
+        if(distance > TABLE_HEIGHT_RIGHT * (1.0 - DISTANCE_ALLOWED_ERROR)
+           && distance < TABLE_HEIGHT_RIGHT * (1.0 + DISTANCE_ALLOWED_ERROR)) {
+            double angle = atan2(corners[0].y - corners[1].y, corners[0].x - corners[1].x) - (M_PI / 2.0);
+            corners[0] = cvPoint2D32f(corners[0].x + BLACK_BORDER_SIZE * cos(angle + (M_PI / 2.0)),
+                                      corners[0].y + BLACK_BORDER_SIZE * sin(angle + (M_PI / 2.0)));
+            corners[1] = cvPoint2D32f(corners[1].x + BLACK_BORDER_SIZE * cos(angle - (M_PI / 2.0)),
+                                      corners[1].y + BLACK_BORDER_SIZE * sin(angle - (M_PI / 2.0)));
+
+            CvPoint2D32f corners_estimated[2];
+            corners_estimated[0] = cvPoint2D32f(corners[0].x + TABLE_WIDTH * cos(angle), corners[0].y + TABLE_WIDTH * sin(angle));
+            corners_estimated[1] = cvPoint2D32f(corners[1].x + TABLE_WIDTH * cos(angle), corners[1].y + TABLE_WIDTH * sin(angle));
+            improveCorners(image_yuv, corners_estimated, 2, CORNER_IMPROVEMENT_RADIUS_TABLE_CORNERS);
+
+            square->corner[0] = corners_estimated[0];
+            square->corner[1] = corners[0];
+            square->corner[2] = corners[1];
+            square->corner[3] = corners_estimated[1];
+            success = 1;
+        }
+    }
+
+    cvReleaseImage(&image_grayscale);
+    cvReleaseImage(&image_mask);
+
+
+    return success;
 }

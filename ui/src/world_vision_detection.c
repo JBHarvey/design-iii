@@ -71,6 +71,17 @@ static void drawObstacleOnImage(IplImage *image_BGR, struct Obstacle obstacle)
     }
 }
 
+
+static void drawSquareOnImage(IplImage *image_BGR, struct Square square, CvScalar color)
+{
+    unsigned int i;
+
+    for(i = 0; i < NUM_SQUARE_CORNERS; ++i) {
+        cvLine(image_BGR, fixedCvPointFrom32f(square.corner[i]),
+               fixedCvPointFrom32f(square.corner[(i + 1) % NUM_SQUARE_CORNERS]), color, SIZE_DRAW_LINES, 8, 0);
+    }
+}
+
 void WorldVisionDetection_drawObstaclesAndRobot(IplImage *world_camera_back_frame)
 {
     if(first_detection_happened && detected != NULL) {
@@ -80,6 +91,9 @@ void WorldVisionDetection_drawObstaclesAndRobot(IplImage *world_camera_back_fram
         for(int i = 0; i < detected->number_of_obstacles; i++) {
             drawObstacleOnImage(world_camera_back_frame, detected->obstacles[i]);
         }
+
+        drawSquareOnImage(world_camera_back_frame, detected->table, CV_RGB(255, 255, 0));
+        drawSquareOnImage(world_camera_back_frame, detected->green_square, CV_RGB(0, 255, 255));
     }
 
     WorldVision_applyWorldCameraBackFrame();
@@ -144,6 +158,22 @@ gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camer
         IplImage *image_yuv = cvCreateImage(cvGetSize(input_camera->camera_capture->current_safe_copy_frame), IPL_DEPTH_8U, 3);
         cvCvtColor(input_camera->camera_capture->current_safe_copy_frame, image_yuv, CV_RGB2YCrCb);
         cvSmooth(image_yuv, image_yuv, CV_GAUSSIAN, 3, 0, 0, 0);
+
+        struct Square table_corners;
+        _Bool table_detected = findTableCorners(image_yuv, &table_corners);
+
+        struct Square green_square;
+        _Bool green_square_detected = findFirstGreenSquare(opencv_storage, image_yuv, &green_square);
+
+        if(table_detected) {
+            detected->table_detected = 1;
+            detected->table = table_corners;
+        }
+
+        if(green_square_detected) {
+            detected->green_square_detected = 1;
+            detected->green_square = green_square;
+        }
 
         struct Obstacle obstacles[MAXIMUM_OBSTACLE_NUMBER];
         int number_of_obstacles = findObstacles(opencv_storage, obstacles, MAXIMUM_OBSTACLE_NUMBER, image_yuv);

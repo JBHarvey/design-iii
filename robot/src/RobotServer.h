@@ -3,6 +3,7 @@
 
 #include "network.h"
 #include "DataReceiver.h"
+#include "opencv2/highgui/highgui_c.h"
 
 struct RobotServer {
     struct Object *object;
@@ -28,5 +29,8 @@ void RobotServer_sendRisePenCommand(void);
 void RobotServer_sendLowerPenCommand(void);
 void RobotServer_fetchManchesterCodeCommand(void);
 void RobotServer_sendStopSendingManchesterSignalCommand(void);
+
+void RobotServer_sendImageToStation(IplImage *image);
+
 
 #endif // ROBOTSERVER_H_
