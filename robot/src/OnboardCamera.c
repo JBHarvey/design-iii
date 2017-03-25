@@ -48,11 +48,14 @@ static int convertToCartesian(double coord)
     return round((coord - (SIZE_SIDE_IN / 2.0)) * (SIZE_SIDE_OUT / SIZE_SIDE_IN));
 }
 
+#define LINE_SIZE 3
+
 struct CoordinatesSequence *OnboardCamera_cvSeqToCoordinatesSequence(IplImage **image_yuv_in_green_square)
 {
     CvMemStorage *opencv_storage = cvCreateMemStorage(0);
     IplImage *image = get_image();
     CvSeq *opencv_sequence = findFirstFigure(opencv_storage, image, image_yuv_in_green_square);
+    cvDrawContours(*image_yuv_in_green_square, opencv_sequence, CV_RGB(255, 0, 0), CV_RGB(255, 0, 0), 0, LINE_SIZE, 8, cvPoint(0, 0));
 
     struct CoordinatesSequence *sequence = 0;
 
