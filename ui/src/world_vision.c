@@ -286,6 +286,6 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data)
 void WorldVision_sendWorldInformationToRobot(struct Communication_Object robot,
         struct Communication_Object obstacles[MAXIMUM_OBSTACLE_NUMBER])
 {
-    StationClientSender_sendWorldInformationsToRobot(station_client, obstacles, 0, robot);
+    StationClientSender_sendWorldInformationsToRobot(station_client, obstacles, MAXIMUM_OBSTACLE_NUMBER, robot);
 }
 
