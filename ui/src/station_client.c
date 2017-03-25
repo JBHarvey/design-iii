@@ -21,7 +21,6 @@ const int FIVE_SECONDS_IN_MICROSECONDS = 5000000;
 
 /* Flag definitions */
 
-extern enum ThreadStatus main_loop_status;
 extern enum ConnectionStatus robot_connection_status;
 
 static struct ev_io *watcher;
@@ -101,7 +100,7 @@ gpointer StationClient_init(struct StationClient *station_client)
         Logger_startRobotConnectionHandlerSectionAndAppend("Connection to robot failed, trying again");
         usleep(FIVE_SECONDS_IN_MICROSECONDS);
 
-        if(main_loop_status == TERMINATED) {
+        if(StationInterface_getStatus() == TERMINATED) {
             return (gpointer) FALSE;
         }
     }

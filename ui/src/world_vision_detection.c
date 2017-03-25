@@ -20,8 +20,6 @@
 #define SIZE_DRAW_LINES 3
 #define RADIUS_DRAW_CIRCLE 40
 
-extern enum ThreadStatus main_loop_status;
-
 int first_detection_happened = 0;
 
 struct DetectedThings *detected = NULL;
@@ -101,7 +99,7 @@ void WorldVisionDetection_drawObstaclesAndRobot(IplImage *world_camera_back_fram
 
 static void cleanExitIfMainLoopTerminated(CvMemStorage *opencv_storage)
 {
-    if(main_loop_status == TERMINATED) {
+    if(StationInterface_getStatus() == TERMINATED) {
         if(opencv_storage != NULL) {
             cvReleaseMemStorage(&opencv_storage);
         }

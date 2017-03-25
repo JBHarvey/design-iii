@@ -18,6 +18,7 @@ const char *ROBOT_SERVER_IP = "127.0.0.1";
 
 /* Global variables */
 
+GMutex main_loop_status_mutex;
 enum ThreadStatus main_loop_status;
 enum ConnectionStatus robot_connection_status;
 gint timer_tag;
@@ -47,6 +48,15 @@ static gboolean timeHandler(GtkWidget *widget)
     return  TRUE;
 }
 
+enum ThreadStatus StationInterface_getStatus(void)
+{
+    g_mutex_lock(&main_loop_status_mutex);
+    enum ThreadStatus status = main_loop_status;
+    g_mutex_unlock(&main_loop_status_mutex);
+
+    return status;
+}
+
 /* Main thread */
 
 void StationInterface_launch(int argc, char *argv[])
@@ -63,7 +73,9 @@ void StationInterface_launch(int argc, char *argv[])
     g_object_ref(ui_window);
     timer_tag = g_timeout_add(VIDEO_FEED_REFRESH_RATE_IN_MS, (GSourceFunc) timeHandler, (gpointer) ui_window);
 
+    g_mutex_lock(&main_loop_status_mutex);
     main_loop_status = RUNNING;
+    g_mutex_unlock(&main_loop_status_mutex);
 
     station_client = StationClient_new(ROBOT_SERVER_PORT, ROBOT_SERVER_IP);
     StationClient_init(station_client);
@@ -78,7 +90,9 @@ void StationInterface_launch(int argc, char *argv[])
 
     gtk_main();
 
+    g_mutex_lock(&main_loop_status_mutex);
     main_loop_status = TERMINATED;
+    g_mutex_unlock(&main_loop_status_mutex);
 
     g_thread_join(world_vision_worker_thread);
     StationClient_delete(station_client);
