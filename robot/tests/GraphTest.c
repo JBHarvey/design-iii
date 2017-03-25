@@ -318,7 +318,7 @@ Test(Graph, given_aSoloGraphWithNorthObstacle_when_updatesGraph_then_theTotalNum
 }
 
 Test(Graph,
-     given_aNorthSoloGraphWithFourNode_when_updatesGraph_then_theFirstNewNodeIsConnectedToTheEasternNode
+     given_aNorthSoloGraphWithFourNodes_when_updatesGraph_then_theFirstNewNodeIsConnectedToTheEasternNode
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -335,7 +335,7 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_aNorthSoloGraphWithFourNode_when_updatesGraph_then_theSecondNewNodeIsConnectedToTheWesternNode
+     given_aNorthSoloGraphWithFourNodes_when_updatesGraph_then_theSecondNewNodeIsConnectedToTheWesternNode
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -352,7 +352,7 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_aNorthSoloGraphWithFourNode_when_updatesGraph_then_theCoordinatesOfTheTwoNewNodesAreTheEasternAndWesternPointBetweenTheObstacleAndTheNorthWall
+     given_aNorthSoloGraphWithFourNodes_when_updatesGraph_then_theCoordinatesOfTheTwoNewNodesAreTheEasternAndWesternPointBetweenTheObstacleAndTheNorthWall
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -379,7 +379,7 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_aNorthSoloGraphWithFourNode_when_updatesGraph_then_theNewNodesAreNeighbours
+     given_aNorthSoloGraphWithFourNodes_when_updatesGraph_then_theNewNodesAreNeighbours
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -404,7 +404,7 @@ Test(Graph, given_aSouthSoloGraphWithSouthObstacle_when_updatesGraph_then_theTot
 }
 
 Test(Graph,
-     given_aSouthSoloGraphWithFourNode_when_updatesGraph_then_theFirstNewNodeIsConnectedToTheEasternNode
+     given_aSouthSoloGraphWithFourNodes_when_updatesGraph_then_theFirstNewNodeIsConnectedToTheEasternNode
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -421,7 +421,7 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_aSouthSoloGraphWithFourNode_when_updatesGraph_then_theSecondNewNodeIsConnectedToTheWesternNode
+     given_aSouthSoloGraphWithFourNodes_when_updatesGraph_then_theSecondNewNodeIsConnectedToTheWesternNode
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -438,7 +438,7 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_aSouthSoloGraphWithFourNode_when_updatesGraph_then_theCoordinatesOfTheTwoNewNodesAreTheEasternAndWesternPointBetweenTheObstacleAndTheSouthWall
+     given_aSouthSoloGraphWithFourNodes_when_updatesGraph_then_theCoordinatesOfTheTwoNewNodesAreTheEasternAndWesternPointBetweenTheObstacleAndTheSouthWall
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -465,7 +465,7 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_aSouthSoloGraphWithFourNode_when_updatesGraph_then_theNewNodesAreNeighbours
+     given_aSouthSoloGraphWithFourNodes_when_updatesGraph_then_theNewNodesAreNeighbours
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -479,7 +479,7 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_anySoloGraphWithFourNode_when_updatesGraph_then_aPathExistsBetweenTheEasternAndWesternNode
+     given_anySoloGraphWithFourNodes_when_updatesGraph_then_aPathExistsBetweenTheEasternAndWesternNode
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -494,7 +494,7 @@ Test(Graph,
     CoordinatesSequence_delete(sequence);
 }
 
-Test(Graph, given_thePathOfASoloGraphWithFourNode_when_updatesGraph_then_allTheCoordinatesAreFree
+Test(Graph, given_thePathOfASoloGraphWithFourNodes_when_updatesGraph_then_allTheCoordinatesAreFree
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
