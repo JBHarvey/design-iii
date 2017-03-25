@@ -327,8 +327,6 @@ void TTYACMCallback(struct ev_loop *loop, struct ev_io *watcher, int revents)
     }
 
     if(EV_READ & revents) {
-        printf("read\n");
-
         while(readTTYACMPacket(watcher->fd));
 
         return;
