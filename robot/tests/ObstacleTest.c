@@ -116,7 +116,7 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstacleWithTheSameXCoordinatesAndRadius_when_askedToRetrieveTheEasternOne_then_theNorthenOneIsReturned
+     given_twoObstaclesWithTheSameXCoordinatesAndRadius_when_askedToRetrieveTheEasternOne_then_theNorthenOneIsReturned
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
@@ -126,7 +126,7 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstacle_when_askedToRetrieveTheEasternOne_then_theOneWithTheHighestXValueOfEasternCoordinatesIsReturned
+     given_twoObstacles_when_askedToRetrieveTheEasternOne_then_theOneWithTheHighestXValueOfEasternCoordinatesIsReturned
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
@@ -136,7 +136,7 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstacleWithTheSameXCoordinatesAndRadius_when_askedToRetrieveTheWesternOne_then_nullIsReturned
+     given_twoObstaclesWithTheSameXCoordinatesAndRadius_when_askedToRetrieveTheWesternOne_then_nullIsReturned
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
@@ -146,7 +146,7 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstacle_when_askedToRetrieveTheWesternOne_then_theOneWithTheLowestXValueOfWesternCoordinatesIsReturned
+     given_twoObstacles_when_askedToRetrieveTheWesternOne_then_theOneWithTheLowestXValueOfWesternCoordinatesIsReturned
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
@@ -156,7 +156,7 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstacleSeparatedHorizontallyByASmallerDistanceThanTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInX_then_returnsOne
+     given_twoObstaclesSeparatedHorizontallyByASmallerDistanceThanTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInX_then_returnsOne
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
@@ -165,7 +165,7 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstacleSeparatedHorizontallyByTheExactDistanceOfTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInX_then_returnsOne
+     given_twoObstaclesSeparatedHorizontallyByTheExactDistanceOfTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInX_then_returnsOne
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
@@ -175,7 +175,7 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstacleSeparatedHorizontallyByABiggerDistanceOfTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInX_then_returnsZero
+     given_twoObstaclesSeparatedHorizontallyByABiggerDistanceOfTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInX_then_returnsZero
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
@@ -185,7 +185,7 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstacleSeparatedVerticallyByASmallerDistanceThanTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInY_then_returnsOne
+     given_twoObstaclesSeparatedVerticallyByASmallerDistanceThanTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInY_then_returnsOne
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
@@ -194,7 +194,7 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstacleSeparatedVerticallyByTheExactDistanceOfTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInY_then_returnsOne
+     given_twoObstaclesSeparatedVerticallyByTheExactDistanceOfTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInY_then_returnsOne
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
@@ -204,7 +204,7 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstacleSeparatedVerticallyByABiggerDistanceOfTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInY_then_returnsZero
+     given_twoObstaclesSeparatedVerticallyByABiggerDistanceOfTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInY_then_returnsZero
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
@@ -214,7 +214,7 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstacle_when_askedToRetrieveTheNorthernOne_then_theOneWithTheHighestYValueOfNorthernCoordinatesIsReturned
+     given_twoObstacles_when_askedToRetrieveTheNorthernOne_then_theOneWithTheHighestYValueOfNorthernCoordinatesIsReturned
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
@@ -224,7 +224,7 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstacle_when_askedToRetrieveTheSouthernOne_then_theOneWithTheLowestYValueOfNorthernCoordinatesIsReturned
+     given_twoObstacles_when_askedToRetrieveTheSouthernOne_then_theOneWithTheLowestYValueOfNorthernCoordinatesIsReturned
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
