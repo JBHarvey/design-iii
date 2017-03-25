@@ -55,6 +55,7 @@
 
 /* PID positiob tolerance */
 #define PID_POSITION_TOLERANCE 0.0005
+#define DEPLACEMENT_TOLERANCE 0.005
 /* PID1 */
 // Parametres en vitesse
 #define PID_SPEED1_KP 0.35//30//4.87
@@ -118,6 +119,8 @@
 #define MIN_SPEED_COMMAND -40
 #define MIN_POS_COMMAND -0.2
 #define MAX_POS_COMMAND 0.2
+
+#define CONSIGNE_SPEED_MEDIUM 0.08
 
 #define Y_MOVE_DATA_BUFFER_INDEX 4
 

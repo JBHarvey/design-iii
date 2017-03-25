@@ -84,16 +84,16 @@ void systickInit(uint16_t frequency) {
 void initAll(void) {
 	// Initialization of STM system
 	SystemInit();
-	// Motors initialization
-	initMotors();
-	// Encoder initialization
-	initEncoders();
 	// LCD initialization
 	TM_HD44780_Init(16, 2);
 	// Intern LEDs initialization
 	TM_DISCO_LedInit();
 	// COM port initialization
 	TM_USB_VCP_Init();
+	// Motors initialization
+	initMotors();
+	// Encoder initialization
+	initEncoders();
 	// Push button initialization
 	initBtn();
 
@@ -125,8 +125,7 @@ int main(void) {
 	initPrehensor();
 
 	/* Test routine LEDs */
-	startLEDsRoutine();
-
+	//startLEDsRoutine();
 	while (1) {
 		/* Main state machine */
 		switch (mainState) {
@@ -504,7 +503,7 @@ extern void TIM2_IRQHandler() {
 #endif
 #ifdef ENABLE_POSITION_PID
 
-		// On met à jour l'input du PID de position
+		// On met ï¿½ jour l'input du PID de position
 		float setPoint = sqroot((numberOfPositionEdges1*numberOfPositionEdges3)
 				+ (numberOfPositionEdges2 * numberOfPositionEdges4));
 		tunningPositionPID1.myInput = (numberOfPositionEdges2 + numberOfPositionEdges4)/2;
@@ -512,7 +511,7 @@ extern void TIM2_IRQHandler() {
 		// On active le PID de position
 		PID_SetMode(&tunningPositionPID1, PID_Mode_Automatic);
 
-		// On met à jour les inputs des PI de vitesse
+		// On met ï¿½ jour les inputs des PI de vitesse
 		tunningSpeedPI1.myInput = numberOfSpeedEdges1;
 		tunningSpeedPI2.myInput = numberOfSpeedEdges2;
 		tunningSpeedPI3.myInput = numberOfSpeedEdges3;

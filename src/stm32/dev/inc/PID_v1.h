@@ -65,6 +65,11 @@ extern PidType PID_POSITION2;
 extern PidType PID_POSITION3;
 extern PidType PID_POSITION4;
 
+extern float xMoveSetpoint;
+extern float yMoveSetpoint;
+extern uint8_t isMoving;
+extern uint8_t isPositionDone;
+
 //commonly used functions **************************************************************************
 
 //  constructor.  links the PID to the Input, Output, and
@@ -127,6 +132,7 @@ FloatType calculatePosition(FloatType positionEdges);
  *******************************************************/
 void initAllPIDS();
 void computeAllPIDS();
+void computeCustomPIDS();
 
 #endif
 
