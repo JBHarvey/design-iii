@@ -523,8 +523,6 @@ Test(Graph, given_thePathOfASoloGraphWithFourNode_when_updatesGraph_then_allTheC
     CoordinatesSequence_delete(sequence_head);
 }
 
-/*
-//-------------------------------------------
 Test(Graph, given_aSoloGraphWithCenterObstacle_when_updatesGraph_then_theTotalNumberOfNodeIsSix
      , .init = setup_Graph
      , .fini = teardown_Graph)
@@ -536,15 +534,21 @@ Test(Graph, given_aSoloGraphWithCenterObstacle_when_updatesGraph_then_theTotalNu
     cr_assert_eq(total_number_of_nodes, expected_number);
 }
 
-Test(Graph, given_aSoloGraphWithCenterObstacle_when_updatesGraph_then_theCoordinatesOfTheAddedNodesCorrespondToThoseOfNorthAndSouthForASoloObstacle
+Test(Graph,
+     given_aSoloGraphWithCenterObstacleAndSixNodes_when_updatesGraph_then_thePathGeneratedFromTheGraphHasFourElements
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
     generateSoloMap(CENTER);
     Graph_updateForMap(graph, graph_map);
+    struct CoordinatesSequence *sequence = Pathfinder_generatePathWithDijkstra(graph, graph->eastern_node,
+                                           graph->western_node);
+    int size = CoordinatesSequence_size(sequence);
+    int expected = 4;
+    cr_assert_eq(size, expected);
+
+    CoordinatesSequence_delete(sequence);
 }
-//-------------------------------------------
-*/
 
 /* -- END OF SOLO GRAPH --  */
 
