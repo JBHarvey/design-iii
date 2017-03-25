@@ -617,6 +617,45 @@ static void findObstaclesRecursive(CvSeq *contours, struct Obstacle *out_obstacl
     }
 }
 
+#define COMPARE_ERROR_PIXELS (5.0)
+
+static int compareObstacles(const struct Obstacle *obstacle1, const struct Obstacle *obstacle2)
+{
+    if(obstacle1->type < obstacle2->type) {
+        return -1;
+    }
+
+    if(obstacle1->type > obstacle2->type) {
+        return 1;
+    }
+
+    double distance1 = sqrt((obstacle1->x * obstacle1->x) + (obstacle1->y * obstacle1->y));
+    double distance2 = sqrt((obstacle2->x * obstacle2->x) + (obstacle2->y * obstacle2->y));
+
+    if(distance1 < (distance2 - COMPARE_ERROR_PIXELS)) {
+        return -1;
+    }
+
+    if(distance1 > (distance2 + COMPARE_ERROR_PIXELS)) {
+        return 1;
+    }
+
+    if(obstacle1->x < obstacle2->x) {
+        return -1;
+    }
+
+    if(obstacle1->x > obstacle2->x) {
+        return 1;
+    }
+
+    return 0;
+}
+
+static void sortObstacles(struct Obstacle *obstacles, unsigned int num_obstacles)
+{
+    qsort(obstacles, num_obstacles, sizeof(struct Obstacle), compareObstacles);
+}
+
 #define OBSTACLE_POLY_APPROX 1
 
 unsigned int findObstacles(CvMemStorage *opencv_storage, struct Obstacle *obstacles_out, unsigned int max_obstacles,
@@ -633,6 +672,7 @@ unsigned int findObstacles(CvMemStorage *opencv_storage, struct Obstacle *obstac
         contours = cvApproxPoly(contours, sizeof(CvContour), opencv_storage, CV_POLY_APPROX_DP, OBSTACLE_POLY_APPROX, 1);
 
         findObstaclesRecursive(contours, obstacles_out, max_obstacles, &num_obstacles);
+        sortObstacles(obstacles_out, num_obstacles);
     }
 
     cvReleaseImage(&image_black_white);
