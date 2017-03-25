@@ -357,9 +357,12 @@ CvSeq *findFirstFigure(CvMemStorage *opencv_storage, IplImage *image_yuv, IplIma
         figure_contours = findFigureContours(opencv_storage, square_image_black_white);
         cvReleaseImage(&square_image_black_white);
         figure_contours = findFigure(figure_contours);
-        improveFigure(square_image, figure_contours);
-        figure_contours = cvApproxPoly(figure_contours, sizeof(CvContour), opencv_storage, CV_POLY_APPROX_DP,
-                                       FIGURE_POLY_APPROX, 1);
+
+        if(figure_contours) {
+            improveFigure(square_image, figure_contours);
+            figure_contours = cvApproxPoly(figure_contours, sizeof(CvContour), opencv_storage, CV_POLY_APPROX_DP,
+                                           FIGURE_POLY_APPROX, 1);
+        }
 
         if(image_yuv_in_green_square) {
             *image_yuv_in_green_square = square_image;
