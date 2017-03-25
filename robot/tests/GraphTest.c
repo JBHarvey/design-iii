@@ -284,8 +284,7 @@ Test(Graph, given_aSoloGraph_when_updatesGraph_then_itsWesternNodeYValueIsTheSam
     struct Coordinates *western_node_coordinates = graph->western_node->coordinates;
     cr_assert_eq(eastern_node_coordinates->y, western_node_coordinates->y);
 }
-/*
-//-------------------------------------------
+
 Test(Graph, given_aSoloGraphWithNorthernCenterObstacle_when_updatesGraph_then_theTotalNumberOfNodeIsFour
      , .init = setup_Graph
      , .fini = teardown_Graph)
@@ -307,8 +306,6 @@ Test(Graph, given_aSoloGraphWithSouthernCenterObstacle_when_updatesGraph_then_th
     int expected_number = 4;
     cr_assert_eq(total_number_of_nodes, expected_number);
 }
-//-------------------------------------------
-*/
 
 Test(Graph, given_aSoloGraphWithNorthObstacle_when_updatesGraph_then_theTotalNumberOfNodeIsFour
      , .init = setup_Graph
