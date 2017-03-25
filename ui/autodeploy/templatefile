@@ -1,6 +1,6 @@
 CC=clang
-CFLAGS+= -g -O0 `pkg-config --cflags gtk+-3.0 opencv gmodule-2.0` -I/usr/include/libevdev-1.0 -fsanitize=address
-LIBS=`pkg-config --libs gtk+-3.0 opencv gmodule-2.0` markers.o -lev -lstdc++
+CFLAGS+= -g -O1 -fsanitize=thread `pkg-config --cflags gtk+-3.0 opencv gmodule-2.0` -I/usr/include/libevdev-1.0
+LIBS=`pkg-config --libs gtk+-3.0 opencv gmodule-2.0` markers.o -lev -lstdc++ -lm
 ODIR=obj
 RDIR=station-resources
 DEPS=HFILES

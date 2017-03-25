@@ -48,7 +48,7 @@ cp -u --preserve=all ../shared/Defines.h build/deploy/
 
 #[BUILD] Build markers.cpp
 cp -u --preserve=all ../vision/src/markers.h build/deploy/
-clang++ -c -o build/deploy/markers.o ../vision/src/markers.cpp -g -fsanitize=address -fno-omit-frame-pointer -I ../src/
+clang++ -c -o build/deploy/markers.o ../vision/src/markers.cpp -g -fno-omit-frame-pointer -I ../src/
 
 #[BUILD] Launches the build
 cd build/deploy
