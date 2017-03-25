@@ -11,7 +11,6 @@
 
 enum TooltipStatus {PRINT, PASS};
 enum FrameStatus {NOT_READY, READY};
-extern enum ThreadStatus main_loop_status;
 
 /* Constants */
 
@@ -29,6 +28,7 @@ const char FILE_PATH_OF_DEBUG_MODE_VIDEO_CAPTURE[] = "./build/deploy/camera_cali
 GMutex world_vision_pixbuf_mutex;
 GMutex world_vision_frame_mutex;
 GMutex world_vision_camera_frame_mutex;
+GMutex world_vision_camera_intrinsics_mutex;
 
 extern struct StationClient *station_client;
 
@@ -143,7 +143,7 @@ static void releaseWorldCamera(void)
 
 static void cleanExitIfMainLoopTerminated(GThread *world_vision_detection_worker_thread)
 {
-    if(main_loop_status == TERMINATED) {
+    if(StationInterface_getStatus() == TERMINATED) {
         g_mutex_lock(&world_vision_pixbuf_mutex);
         g_object_unref(world_camera_pixbuf);
         g_mutex_unlock(&world_vision_pixbuf_mutex);
@@ -163,6 +163,7 @@ static void cleanExitIfMainLoopTerminated(GThread *world_vision_detection_worker
 
 static void undistortFrame(IplImage *input_output_frame)
 {
+    g_mutex_lock(&world_vision_camera_intrinsics_mutex);
     IplImage *temporary_frame = cvCloneImage(input_output_frame);
     CvMat *optimal_camera_matrix = cvCreateMat(NUMBER_OF_ROW_OF_CAMERA_MATRIX, NUMBER_OF_COLUMN_OF_CAMERA_MATRIX, CV_64F);
     cvGetOptimalNewCameraMatrix(world_camera->camera_intrinsics->camera_matrix,
@@ -174,6 +175,7 @@ static void undistortFrame(IplImage *input_output_frame)
                  world_camera->camera_intrinsics->distortion_coefficients, optimal_camera_matrix);
     cvReleaseImage(&temporary_frame);
     cvReleaseMat(&optimal_camera_matrix);
+    g_mutex_unlock(&world_vision_camera_intrinsics_mutex);
 }
 
 static void correctFrameColor(IplImage *input_output_frame)

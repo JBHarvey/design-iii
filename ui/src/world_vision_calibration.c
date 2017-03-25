@@ -20,6 +20,8 @@ const int LENGTH_OF_THE_TABLE_IN_MM = 2306;
 
 /* Global variables */
 
+extern GMutex world_vision_camera_intrinsics_mutex;
+
 enum CameraCalibrationProcessMode world_camera_calibration_process_mode = NONE;
 struct Point2DSet *image_point_set_defining_the_corners_of_the_table;
 struct Point3DSet *object_point_set_defining_the_corners_of_the_table;
@@ -105,6 +107,9 @@ static gboolean setCameraMatrixAndDistortionCoefficientsFromFile(struct CameraIn
 {
     gboolean is_calibration_file_valid = TRUE;
     CvFileStorage *file_storage = cvOpenFileStorage(filename, NULL, CV_STORAGE_READ, NULL);
+
+    g_mutex_lock(&world_vision_camera_intrinsics_mutex);
+
     output_camera_intrinsics->camera_matrix = (CvMat*) cvReadByName(file_storage, NULL, "Camera_Matrix", NULL);
     output_camera_intrinsics->distortion_coefficients = (CvMat*) cvReadByName(file_storage, NULL, "Distortion_Coefficients",
             NULL);
@@ -112,6 +117,8 @@ static gboolean setCameraMatrixAndDistortionCoefficientsFromFile(struct CameraIn
     if(output_camera_intrinsics->camera_matrix == NULL || output_camera_intrinsics->distortion_coefficients == NULL) {
         is_calibration_file_valid = FALSE;
     }
+
+    g_mutex_unlock(&world_vision_camera_intrinsics_mutex);
 
     cvReleaseFileStorage(&file_storage);
 
