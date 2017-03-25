@@ -1,0 +1,16 @@
+#ifndef ONBOARDCAMERA_H
+#define ONBOARDCAMERA_H
+
+#include "opencv2/highgui/highgui_c.h"
+#include "opencv2/imgproc/imgproc_c.h"
+#include "CoordinatesSequence.h"
+
+void OnboardCamera_init();
+
+/* NOTE: returned image is in yuv color space and must be freed.
+ */
+IplImage *OnboardCamera_get_image();
+
+struct CoordinatesSequence *OnboardCamera_cvSeqToCoordinatesSequence(CvSeq *opencv_sequence);
+
+#endif

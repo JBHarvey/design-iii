@@ -147,7 +147,31 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             }
 
         case DATA_PLANNED_TRAJECTORY:
-            break;
+        case DATA_CONTOURS: {
+                unsigned int number_points = (length - 1) / sizeof(struct Communication_Coordinates);
+                struct Communication_Coordinates coordinates[number_points];
+
+                memcpy(coordinates, data + 1, sizeof(coordinates));
+
+                struct Point2DSet *point_set = PointTypes_initializePoint2DSet(number_points);
+                unsigned int i;
+
+                for(i = 0; i < number_points; ++i) {
+                    PointTypes_addPointToPoint2DSet(point_set, PointTypes_createPoint2D(coordinates[i].x, coordinates[i].y));
+                }
+
+                if(data[0] == DATA_PLANNED_TRAJECTORY) {
+                    printf("Planned trajectory %u\n", point_set->number_of_points);
+                    //TODO
+                } else {
+                    printf("Contours %u\n", point_set->number_of_points);
+                    //TODO
+                }
+
+                PointTypes_releasePoint2DSet(point_set);
+                break;
+            }
+
 
         case DATA_ESTIMATED_ROBOT_POSITION:
             break;
