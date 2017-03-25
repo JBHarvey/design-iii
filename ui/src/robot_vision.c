@@ -16,7 +16,7 @@ void RobotVision_setImage(IplImage *image)
                           GDK_COLORSPACE_RGB, FALSE, robot_vision_image->depth, robot_vision_image->width,
                           robot_vision_image->height, (robot_vision_image->widthStep),
                           NULL, NULL);
-    gtk_image_set_from_pixbuf(GTK_IMAGE(robot_vision_image), robot_vision_pixbuf);
+    gtk_image_set_from_pixbuf(GTK_IMAGE(robot_vision_widget), robot_vision_pixbuf);
 }
 
 void RobotVision_finalize(void)
