@@ -1,6 +1,6 @@
 #include <criterion/criterion.h>
 #include <stdio.h>
-#include "Graph.h"
+#include "Pathfinder.h"
 
 
 Test(Graph, given_aMapWithNoObstacles_when_createsGraph_then_theGraphTypeIsZero)
@@ -243,21 +243,13 @@ Test(Graph,
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
-    generateSoloCenterNorthMap();
-    Graph_updateForMap(graph, graph_map);
-    struct Coordinates *south = graph->eastern_node->coordinates;
-    generateSoloCenterSouthMap();
-    Graph_updateForMap(graph, graph_map);
-    struct Coordinates *north = graph->eastern_node->coordinates;
     generateSoloMap(CENTER);
     Graph_updateForMap(graph, graph_map);
+    struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
     struct Coordinates *middle = graph->eastern_node->coordinates;
 
-    int distance_to_north = Coordinates_distanceBetween(middle, north);
-    int distance_to_south = Coordinates_distanceBetween(middle, south);
     int is_south_of_the_north_wall = Coordinates_isToTheSouthOf(middle, graph_map->north_eastern_table_corner);
     int is_north_of_the_south_wall = Coordinates_isToTheNorthOf(middle, graph_map->south_eastern_table_corner);
-    cr_assert_eq(distance_to_north, distance_to_south);
     cr_assert(is_south_of_the_north_wall);
     cr_assert(is_north_of_the_south_wall);
 
@@ -292,29 +284,8 @@ Test(Graph, given_aSoloGraph_when_updatesGraph_then_itsWesternNodeYValueIsTheSam
     struct Coordinates *western_node_coordinates = graph->western_node->coordinates;
     cr_assert_eq(eastern_node_coordinates->y, western_node_coordinates->y);
 }
-
-Test(Graph, given_aSoloGraphWithNorthObstacle_when_updatesGraph_then_theTotalNumberOfNodeIsFour
-     , .init = setup_Graph
-     , .fini = teardown_Graph)
-{
-    generateSoloMap(NORTH);
-    Graph_updateForMap(graph, graph_map);
-    int total_number_of_nodes = graph->actual_number_of_nodes;
-    int expected_number = 4;
-    cr_assert_eq(total_number_of_nodes, expected_number);
-}
-
-Test(Graph, given_aSoloGraphWithSouthObstacle_when_updatesGraph_then_theTotalNumberOfNodeIsFour
-     , .init = setup_Graph
-     , .fini = teardown_Graph)
-{
-    generateSoloMap(SOUTH);
-    Graph_updateForMap(graph, graph_map);
-    int total_number_of_nodes = graph->actual_number_of_nodes;
-    int expected_number = 4;
-    cr_assert_eq(total_number_of_nodes, expected_number);
-}
-
+/*
+//-------------------------------------------
 Test(Graph, given_aSoloGraphWithNorthernCenterObstacle_when_updatesGraph_then_theTotalNumberOfNodeIsFour
      , .init = setup_Graph
      , .fini = teardown_Graph)
@@ -336,19 +307,196 @@ Test(Graph, given_aSoloGraphWithSouthernCenterObstacle_when_updatesGraph_then_th
     int expected_number = 4;
     cr_assert_eq(total_number_of_nodes, expected_number);
 }
+//-------------------------------------------
+*/
+
+Test(Graph, given_aSoloGraphWithNorthObstacle_when_updatesGraph_then_theTotalNumberOfNodeIsFour
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    generateSoloMap(NORTH);
+    Graph_updateForMap(graph, graph_map);
+    int total_number_of_nodes = graph->actual_number_of_nodes;
+    int expected_number = 4;
+    cr_assert_eq(total_number_of_nodes, expected_number);
+}
 
 Test(Graph,
-     given_anySoloGraphWithFourNode_when_updatesGraph_then_theTwoAddedNodesAreCreateANeighbourLinkFromTheEasternToTheWestern
+     given_aNorthSoloGraphWithFourNode_when_updatesGraph_then_theFirstNewNodeIsConnectedToTheEasternNode
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
 
     generateSoloMap(NORTH);
     Graph_updateForMap(graph, graph_map);
-    //    int link_exists_between_east_and_west = Node_areConnected(graph->eastern_node, graph->western_node);
+
+    struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
+    struct Node *eastern_node = graph->eastern_node;
+    struct Node *first_new_node = graph->nodes[2];
+
+    cr_assert(Node_areNeighbours(eastern_node, first_new_node));
+
 }
 
+Test(Graph,
+     given_aNorthSoloGraphWithFourNode_when_updatesGraph_then_theSecondNewNodeIsConnectedToTheWesternNode
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
 
+    generateSoloMap(NORTH);
+    Graph_updateForMap(graph, graph_map);
+
+    struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
+    struct Node *western_node = graph->western_node;
+    struct Node *second_new_node = graph->nodes[3];
+
+    cr_assert(Node_areNeighbours(western_node, second_new_node));
+
+}
+
+Test(Graph,
+     given_aNorthSoloGraphWithFourNode_when_updatesGraph_then_theCoordinatesOfTheTwoNewNodesAreTheEasternAndWesternPointBetweenTheObstacleAndTheNorthWall
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+
+    generateSoloMap(NORTH);
+    Graph_updateForMap(graph, graph_map);
+
+    struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
+    struct Coordinates *eastern_point = Obstacle_retrieveEasternPointOf(obstacle);
+    struct Coordinates *western_point = Obstacle_retrieveWesternPointOf(obstacle);
+    struct Coordinates *northern_point = Obstacle_retrieveNorthernPointOf(obstacle);
+    int y = Coordinates_computeMeanY(northern_point, graph_map->north_eastern_table_corner);
+    eastern_point->y = y;
+    western_point->y = y;
+
+    struct Node *first_new_node = graph->nodes[2];
+    struct Node *second_new_node = graph->nodes[3];
+    cr_assert(Coordinates_haveTheSameValues(first_new_node->coordinates, eastern_point));
+    cr_assert(Coordinates_haveTheSameValues(second_new_node->coordinates, western_point));
+
+    Coordinates_delete(eastern_point);
+    Coordinates_delete(western_point);
+    Coordinates_delete(northern_point);
+}
+
+Test(Graph,
+     given_aNorthSoloGraphWithFourNode_when_updatesGraph_then_theNewNodesAreNeighbours
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+
+    generateSoloMap(NORTH);
+    Graph_updateForMap(graph, graph_map);
+
+    struct Node *first_new_node = graph->nodes[2];
+    struct Node *second_new_node = graph->nodes[3];
+    cr_assert(Node_areNeighbours(first_new_node, second_new_node));
+}
+
+Test(Graph, given_aSouthSoloGraphWithSouthObstacle_when_updatesGraph_then_theTotalNumberOfNodeIsFour
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    generateSoloMap(SOUTH);
+    Graph_updateForMap(graph, graph_map);
+    int total_number_of_nodes = graph->actual_number_of_nodes;
+    int expected_number = 4;
+    cr_assert_eq(total_number_of_nodes, expected_number);
+}
+
+Test(Graph,
+     given_aSouthSoloGraphWithFourNode_when_updatesGraph_then_theFirstNewNodeIsConnectedToTheEasternNode
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+
+    generateSoloMap(SOUTH);
+    Graph_updateForMap(graph, graph_map);
+
+    struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
+    struct Node *eastern_node = graph->eastern_node;
+    struct Node *first_new_node = graph->nodes[2];
+
+    cr_assert(Node_areNeighbours(eastern_node, first_new_node));
+
+}
+
+Test(Graph,
+     given_aSouthSoloGraphWithFourNode_when_updatesGraph_then_theSecondNewNodeIsConnectedToTheWesternNode
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+
+    generateSoloMap(SOUTH);
+    Graph_updateForMap(graph, graph_map);
+
+    struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
+    struct Node *western_node = graph->western_node;
+    struct Node *second_new_node = graph->nodes[3];
+
+    cr_assert(Node_areNeighbours(western_node, second_new_node));
+
+}
+
+Test(Graph,
+     given_aSouthSoloGraphWithFourNode_when_updatesGraph_then_theCoordinatesOfTheTwoNewNodesAreTheEasternAndWesternPointBetweenTheObstacleAndTheSouthWall
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+
+    generateSoloMap(SOUTH);
+    Graph_updateForMap(graph, graph_map);
+
+    struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
+    struct Coordinates *eastern_point = Obstacle_retrieveEasternPointOf(obstacle);
+    struct Coordinates *western_point = Obstacle_retrieveWesternPointOf(obstacle);
+    struct Coordinates *southern_point = Obstacle_retrieveSouthernPointOf(obstacle);
+    int y = Coordinates_computeMeanY(southern_point, graph_map->south_eastern_table_corner);
+    eastern_point->y = y;
+    western_point->y = y;
+
+    struct Node *first_new_node = graph->nodes[2];
+    struct Node *second_new_node = graph->nodes[3];
+    cr_assert(Coordinates_haveTheSameValues(first_new_node->coordinates, eastern_point));
+    cr_assert(Coordinates_haveTheSameValues(second_new_node->coordinates, western_point));
+
+    Coordinates_delete(eastern_point);
+    Coordinates_delete(western_point);
+    Coordinates_delete(southern_point);
+}
+
+Test(Graph,
+     given_aSouthSoloGraphWithFourNode_when_updatesGraph_then_theNewNodesAreNeighbours
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+
+    generateSoloMap(SOUTH);
+    Graph_updateForMap(graph, graph_map);
+
+    struct Node *first_new_node = graph->nodes[2];
+    struct Node *second_new_node = graph->nodes[3];
+    cr_assert(Node_areNeighbours(first_new_node, second_new_node));
+}
+
+/* Later, wider test
+Test(Graph,
+     given_anySoloGraphWithFourNode_when_updatesGraph_then_aPathExistsBetweenTheEasternAndWesternNode
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+
+    generateSoloMap(NORTH);
+    Graph_updateForMap(graph, graph_map);
+    int path_exists = Pathfinder_pathExists(graph, graph->eastern_node, graph->western_node);
+    cr_assert(path_exists);
+}
+*/
+/*
+//-------------------------------------------
 Test(Graph, given_aSoloGraphWithCenterObstacle_when_updatesGraph_then_theTotalNumberOfNodeIsSix
      , .init = setup_Graph
      , .fini = teardown_Graph)
@@ -360,6 +508,15 @@ Test(Graph, given_aSoloGraphWithCenterObstacle_when_updatesGraph_then_theTotalNu
     cr_assert_eq(total_number_of_nodes, expected_number);
 }
 
+Test(Graph, given_aSoloGraphWithCenterObstacle_when_updatesGraph_then_theCoordinatesOfTheAddedNodesCorrespondToThoseOfNorthAndSouthForASoloObstacle
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    generateSoloMap(CENTER);
+    Graph_updateForMap(graph, graph_map);
+}
+//-------------------------------------------
+*/
 
 /* -- END OF SOLO GRAPH --  */
 

@@ -30,6 +30,10 @@ void Graph_delete(struct Graph *graph)
         Node_delete(graph->eastern_node);
         Node_delete(graph->western_node);
 
+        for(int i = 2; i < graph->actual_number_of_nodes; ++i) {
+            Node_delete(graph->nodes[i]);
+        }
+
         free(graph);
     }
 }
@@ -113,27 +117,71 @@ static int computeOptimalYValueForSideSoloObstacleNode(struct Obstacle *obstacle
     return y;
 }
 
+static void addNodesToSoloObstacleWithYValue(struct Graph *graph, struct Node *east_node, struct Node *west_node,
+        struct Obstacle *obstacle, struct Map *map, int y)
+{
+    struct Coordinates *new_east_node_coordinates = Obstacle_retrieveEasternPointOf(obstacle);
+    struct Coordinates *new_west_node_coordinates = Obstacle_retrieveWesternPointOf(obstacle);
+    new_east_node_coordinates->y = y;
+    new_west_node_coordinates->y = y;
+
+    struct Node *new_east_node = Node_new();
+    struct Node *new_west_node = Node_new();
+
+    Coordinates_copyValuesFrom(new_east_node->coordinates, new_east_node_coordinates);
+    Coordinates_copyValuesFrom(new_west_node->coordinates, new_west_node_coordinates);
+
+    Coordinates_delete(new_east_node_coordinates);
+    Coordinates_delete(new_west_node_coordinates);
+
+    Node_attemptToConnectAsNeighbours(east_node, new_east_node);
+    Node_attemptToConnectAsNeighbours(new_east_node, new_west_node);
+    Node_attemptToConnectAsNeighbours(west_node, new_west_node);
+
+    int next_node_index = graph->actual_number_of_nodes;
+    graph->nodes[next_node_index++] = new_east_node;
+    graph->nodes[next_node_index++] = new_west_node;
+    graph->actual_number_of_nodes = next_node_index;
+}
+
+static void addNodesNorthOfSoloObstacle(struct Graph *graph, struct Node *east_node, struct Node *west_node,
+                                        struct Obstacle *obstacle, struct Map *map)
+{
+    int new_nodes_y = computeYNorthBetweenObstacleAndWall(map, obstacle);
+    addNodesToSoloObstacleWithYValue(graph, east_node, west_node, obstacle, map, new_nodes_y);
+}
+
+
+static void addNodesSouthOfSoloObstacle(struct Graph *graph, struct Node *east_node, struct Node *west_node,
+                                        struct Obstacle *obstacle, struct Map *map)
+{
+    int new_nodes_y = computeYSouthBetweenObstacleAndWall(map, obstacle);
+    addNodesToSoloObstacleWithYValue(graph, east_node, west_node, obstacle, map, new_nodes_y);
+}
+
 static void linkNodesForSoloObstacle(struct Graph *graph, struct Node *east_node, struct Node *west_node,
                                      struct Obstacle *obstacle, struct Map *map)
 {
-    int addition_to_number_of_nodes = 2;
 
     enum CardinalDirection orientation = obstacle->orientation;
 
     if(orientation == NORTH) {
+        addNodesNorthOfSoloObstacle(graph, east_node, west_node, obstacle, map);
     } else if(orientation == SOUTH) {
+        addNodesSouthOfSoloObstacle(graph, east_node, west_node, obstacle, map);
     } else if(orientation == CENTER) {
         int north_is_navigable = isNorthOfTheObstacleNavigable(map, obstacle);
         int south_is_navigable = isSouthOfTheObstacleNavigable(map, obstacle);
 
         if(!north_is_navigable && south_is_navigable) {
+            addNodesSouthOfSoloObstacle(graph, east_node, west_node, obstacle, map);
         } else if(north_is_navigable && !south_is_navigable) {
+            addNodesNorthOfSoloObstacle(graph, east_node, west_node, obstacle, map);
         } else if(north_is_navigable && south_is_navigable) {
-            addition_to_number_of_nodes = 4;
+            addNodesNorthOfSoloObstacle(graph, east_node, west_node, obstacle, map);
+            addNodesSouthOfSoloObstacle(graph, east_node, west_node, obstacle, map);
         }
     }
-
-    graph->actual_number_of_nodes += addition_to_number_of_nodes;
 }
 
 static void establishEasternNodeSolo(struct Graph *graph, struct Obstacle *obstacle, struct Map *map)

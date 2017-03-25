@@ -16,12 +16,13 @@ static int findIndexOf(struct Node *node, struct Graph *graph, int number_of_nod
 
 // TODO: rename to Pathfinder_findPathDijksta
 // TODO: add Pathfinder_pathExists return ^ path not null;
-int Pathfinder_pathExists(struct Graph *graph, struct Node *start, struct Node *end)
+struct CoordinatesSequence *Pathfinder_generatePathWithDijkstra(struct Graph *graph, struct Node *start,
+        struct Node *end)
 {
     int number_of_nodes = graph->actual_number_of_nodes;
     struct Node *neighbour;
-    struct Node *precedent_node[number_of_nodes];
     float distance_from_start_to_node[number_of_nodes];
+    int precedent_node_indexes[number_of_nodes];
     int unvisited_nodes[number_of_nodes];
 
     int i;
@@ -44,7 +45,7 @@ int Pathfinder_pathExists(struct Graph *graph, struct Node *start, struct Node *
 
         distance_from_start_to_node[i] = distance;
         unvisited_nodes[i] = unvisited;
-        precedent_node[i] = NULL;
+        precedent_node_indexes[i] = -1;
     }
 
     struct Node *current = start;
@@ -64,7 +65,7 @@ int Pathfinder_pathExists(struct Graph *graph, struct Node *start, struct Node *
 
                 if(distance < distance_from_start_to_node[index_of_neighbour]) {
                     distance_from_start_to_node[index_of_neighbour] = distance;
-                    precedent_node[index_of_neighbour] = current;
+                    precedent_node_indexes[index_of_neighbour] = index_of_current;
                 }
             }
         }
@@ -88,6 +89,64 @@ int Pathfinder_pathExists(struct Graph *graph, struct Node *start, struct Node *
         }
     }
 
-    return 0;
+    // Creates a reversed array of the node indexes forming the shortest path
+    int reversed_path_node_indexes[number_of_nodes];
+    int start_index = findIndexOf(start, graph, number_of_nodes);
+    int end_index = findIndexOf(end, graph, number_of_nodes);
 
+    for(i = 0; i < number_of_nodes; ++i) {
+        // Fills the array with "empty" node indexes
+        reversed_path_node_indexes[i] = -1;
+    }
+
+    i = 0;
+    int precedence_index = end_index;
+
+    do {
+        reversed_path_node_indexes[i] = precedent_node_indexes[precedence_index];
+        precedence_index = precedent_node_indexes[precedence_index];
+        ++i;
+    } while(precedence_index != start_index);
+
+    // Creates the CoordinatesSequence
+    i = number_of_nodes - 1;
+    struct Coordinates *node_coordinates;
+    node_coordinates = graph->nodes[start_index]->coordinates;
+    struct CoordinatesSequence *sequence = CoordinatesSequence_new(node_coordinates);
+
+    while(i >= 0) {
+
+        // skips empty indexes and the first node, as they already have been added
+        index_of_current = reversed_path_node_indexes[i];
+
+        if(index_of_current != -1 && index_of_current != start_index) {
+            node_coordinates = graph->nodes[index_of_current]->coordinates;
+            CoordinatesSequence_append(sequence, node_coordinates);
+        }
+
+        --i;
+    }
+
+    node_coordinates = graph->nodes[end_index]->coordinates;
+    CoordinatesSequence_append(sequence, node_coordinates);
+    return sequence;
+}
+
+int Pathfinder_pathExists(struct Graph *graph, struct Node *start, struct Node *end)
+{
+    struct CoordinatesSequence *sequence = Pathfinder_generatePathWithDijkstra(graph, start, end);
+
+    if(sequence == NULL) {
+        return 0;
+    }
+
+    struct CoordinatesSequence *last = sequence->next_element;
+
+    while(!CoordinatesSequence_isLast(last)) {
+        last = last->next_element;
+    }
+
+    int path_exists = (Coordinates_haveTheSameValues(start->coordinates, sequence->coordinates) &&
+                       Coordinates_haveTheSameValues(end->coordinates, last->coordinates));
+    return path_exists;
 }
