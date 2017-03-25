@@ -110,10 +110,12 @@ static void cleanExitIfMainLoopTerminated(CvMemStorage *opencv_storage)
     }
 }
 
+#define INVALID_OBSTACLE_COORDINATE (-1)
+
 static void packageWorldInformationsAndSendToRobot(struct Camera *input_camera)
 {
     struct Communication_Object robot;
-    struct Communication_Object obstacles[MAXIMUM_OBSTACLE_NUMBER];
+    struct Communication_Object obstacles[MAXIMUM_OBSTACLE_NUMBER] = {};
 
     robot.radius = convertCMToRobot(ROBOT_RADIUS_CM);
     robot.zone.index = 0;
@@ -123,7 +125,9 @@ static void packageWorldInformationsAndSendToRobot(struct Camera *input_camera)
     robot.zone.pose.coordinates.x = convertMMToRobot(point3d_robot.x);
     robot.zone.pose.coordinates.y = convertMMToRobot(point3d_robot.y);
 
-    for(int i = 0; i < detected->number_of_obstacles; i++) {
+    unsigned int i;
+
+    for(i = 0; i < detected->number_of_obstacles; i++) {
         obstacles[i].radius = convertCMToRobot(OBSTACLE_RADIUS_CM);
         obstacles[i].zone.index = i;
 
@@ -135,6 +139,11 @@ static void packageWorldInformationsAndSendToRobot(struct Camera *input_camera)
 
         obstacles[i].zone.pose.coordinates.x = convertMMToRobot(detected->obstacles[i].x);
         obstacles[i].zone.pose.coordinates.y = convertMMToRobot(detected->obstacles[i].y);
+    }
+
+    for (; i < MAXIMUM_OBSTACLE_NUMBER; ++i) {
+        obstacles[i].zone.pose.coordinates.x = INVALID_OBSTACLE_COORDINATE;
+        obstacles[i].zone.pose.coordinates.y = INVALID_OBSTACLE_COORDINATE;
     }
 
     WorldVision_sendWorldInformationToRobot(robot, obstacles);
@@ -222,12 +231,11 @@ gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camer
             detected->robot = marker;
         }
 
-        if(!first_detection_happened && (number_of_obstacles > 0 || marker.valid)) {
+        if(!first_detection_happened && (number_of_obstacles > 0 || marker.valid || table_detected || green_square_detected)) {
             first_detection_happened = 1;
         }
 
-        if(detected->has_changed == 1) {
-
+        if(detected->has_changed == 1 && marker.valid) {
             packageWorldInformationsAndSendToRobot(input_camera);
             detected->has_changed = 0;
         }
