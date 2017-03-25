@@ -4,7 +4,7 @@
 #include "world_vision_calibration.h"
 #include "station_interface.h"
 
-#define ROBOT_HEIGHT_CM 24.0
+#define ROBOT_HEIGHT_CM 24.5
 #define ROBOT_RADIUS_CM 16.0
 
 #define OBSTACLE_HEIGHT_CM 41.0
