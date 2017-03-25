@@ -651,7 +651,7 @@ static int compareObstacles(const struct Obstacle *obstacle1, const struct Obsta
     return 0;
 }
 
-static void sortObstacles(struct Obstacle *obstacles, unsigned int num_obstacles)
+void sortObstacles(struct Obstacle *obstacles, unsigned int num_obstacles)
 {
     qsort(obstacles, num_obstacles, sizeof(struct Obstacle), compareObstacles);
 }

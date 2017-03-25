@@ -29,6 +29,8 @@ struct Obstacle {
     double angle; /* rads */
 };
 
+void sortObstacles(struct Obstacle *obstacles, unsigned int num_obstacles);
+
 unsigned int findObstacles(CvMemStorage *opencv_storage, struct Obstacle *obstacles_out, unsigned int max_obstacles,
                            IplImage *image_yuv);
 

@@ -121,6 +121,21 @@ Test(vision, findObstacles_noObstacles)
     cvReleaseImage(&image_yuv);
 }
 
+Test(vision, sortObstacles)
+{
+    struct Obstacle obstacles[4] = {{.type = OBSTACLE_TRIANGLE, .x = 2, .y = 2}, {.type = OBSTACLE_CIRCLE, .x = 200, .y = 200}, {.type = OBSTACLE_TRIANGLE, .x = 200, .y = 2}, {.type = OBSTACLE_CIRCLE, .x = 500, .y = 203}};
+
+    sortObstacles(obstacles, 4);
+
+    cr_assert(obstacles[0].type == OBSTACLE_CIRCLE);
+    cr_assert(obstacles[1].type == OBSTACLE_CIRCLE);
+    cr_assert(obstacles[2].type == OBSTACLE_TRIANGLE);
+    cr_assert(obstacles[3].type == OBSTACLE_TRIANGLE);
+
+    cr_assert(obstacles[0].x == 200);
+    cr_assert(obstacles[2].x == 2);
+}
+
 Test(vision, detectMarker)
 {
     IplImage *image = cvLoadImage("obstacles_robot.jpg", CV_LOAD_IMAGE_COLOR);
