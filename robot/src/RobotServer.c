@@ -8,6 +8,7 @@
 #include <strings.h>
 #include <string.h>
 #include <termios.h>
+#include "opencv2/imgcodecs/imgcodecs_c.h"
 
 #include "RobotServer.h"
 #include "CommunicationStructures.h"
