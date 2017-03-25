@@ -6,8 +6,8 @@ static struct Robot *robot;
 struct Logger *logger;
 struct RobotServer *robot_server;
 const int port = 35794;
-//char *ttyACM = "/dev/null";
-char *ttyACM = "/dev/ttyACM0";
+char *ttyACM = "/dev/null";
+//char *ttyACM = "/dev/ttyACM0";
 
 static void waitASecond()
 {

@@ -57,4 +57,3 @@ make all
 #[ROOT] Brings back the runnable and runs it
 cd ../..
 cp build/deploy/station-main .
-./station-main
