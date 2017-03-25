@@ -9,4 +9,6 @@ enum ConnectionStatus {DISCONNECTED, CONNECTED};
 
 void StationInterface_launch(int argc, char *argv[]);
 
+enum ThreadStatus StationInterface_getStatus(void);
+
 #endif // STATION_INTERFACE_H_

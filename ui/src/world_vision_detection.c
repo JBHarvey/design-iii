@@ -20,8 +20,6 @@
 #define SIZE_DRAW_LINES 3
 #define RADIUS_DRAW_CIRCLE 40
 
-extern enum ThreadStatus main_loop_status;
-
 int first_detection_happened = 0;
 
 struct DetectedThings *detected = NULL;
@@ -101,7 +99,7 @@ void WorldVisionDetection_drawObstaclesAndRobot(IplImage *world_camera_back_fram
 
 static void cleanExitIfMainLoopTerminated(CvMemStorage *opencv_storage)
 {
-    if(main_loop_status == TERMINATED) {
+    if(StationInterface_getStatus() == TERMINATED) {
         if(opencv_storage != NULL) {
             cvReleaseMemStorage(&opencv_storage);
         }
@@ -176,7 +174,9 @@ gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camer
         }
 
         struct Obstacle obstacles[MAXIMUM_OBSTACLE_NUMBER];
+
         int number_of_obstacles = findObstacles(opencv_storage, obstacles, MAXIMUM_OBSTACLE_NUMBER, image_yuv);
+
         struct Marker marker = detectMarker(input_camera->camera_capture->current_safe_copy_frame);
 
         if(detected->has_changed == 0 && detected->number_of_obstacles != number_of_obstacles) {

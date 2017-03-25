@@ -1,5 +1,6 @@
+#include <math.h>
+#include "OnboardCamera.h"
 
-#include "Camera.h"
 #define CALIBRATION_FILE "camera_calibration.xml"
 #define CAMERA_INDEX 0
 
@@ -7,7 +8,7 @@ static CvCapture *cv_cap;
 CvMat *camera_matrix = 0;
 CvMat *distortion_coeffs = 0;
 
-void Camera_init()
+void OnboardCamera_init()
 {
     CvMemStorage *opencv_storage = cvCreateMemStorage(0);
     camera_matrix = (CvMat *)cvLoad(CALIBRATION_FILE, opencv_storage, "Camera_Matrix", 0);
@@ -22,7 +23,7 @@ void Camera_init()
 
 /* NOTE: returned image is in yuv color space and must be freed.
  */
-IplImage *Camera_get_image()
+IplImage *OnboardCamera_get_image()
 {
     IplImage *image = cvQueryFrame(cv_cap);
 
@@ -36,4 +37,35 @@ IplImage *Camera_get_image()
     } else {
         return 0;
     }
+}
+
+#define SIZE_SIDE_IN 1000.0
+#define SIZE_SIDE_OUT (5900.0 / 4.0)
+
+static int convertToCartesian(double coord)
+{
+    return round((coord - (SIZE_SIDE_IN / 2.0)) * (SIZE_SIDE_OUT / SIZE_SIDE_IN));
+}
+
+struct CoordinatesSequence *OnboardCamera_cvSeqToCoordinatesSequence(CvSeq *opencv_sequence)
+{
+    struct CoordinatesSequence *sequence = 0;
+
+    unsigned int i;
+
+    for(i = 0; i < opencv_sequence->total; ++i) {
+        CvPoint *element_pointer = (CvPoint *)cvGetSeqElem(opencv_sequence, i);
+        struct Coordinates *coordinates = Coordinates_new(convertToCartesian(element_pointer->x),
+                                          convertToCartesian(element_pointer->y));
+
+        if(!i) {
+            sequence = CoordinatesSequence_new(coordinates);
+        } else {
+            CoordinatesSequence_append(sequence, coordinates);
+        }
+
+        Coordinates_delete(coordinates);
+    }
+
+    return sequence;
 }

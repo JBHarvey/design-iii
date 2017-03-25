@@ -7,11 +7,12 @@
 #include <stdlib.h>
 #include <strings.h>
 
+#include "opencv2/highgui/highgui_c.h"
+#include "opencv2/imgcodecs/imgcodecs_c.h"
 #include "station_client.h"
 #include "station_interface.h"
 #include "station_client_sender.h"
 #include "logger.h"
-#include "opencv2/highgui/highgui_c.h"
 
 /* Constants */
 
@@ -20,7 +21,6 @@ const int FIVE_SECONDS_IN_MICROSECONDS = 5000000;
 
 /* Flag definitions */
 
-extern enum ThreadStatus main_loop_status;
 extern enum ConnectionStatus robot_connection_status;
 
 static struct ev_io *watcher;
@@ -100,7 +100,7 @@ gpointer StationClient_init(struct StationClient *station_client)
         Logger_startRobotConnectionHandlerSectionAndAppend("Connection to robot failed, trying again");
         usleep(FIVE_SECONDS_IN_MICROSECONDS);
 
-        if(main_loop_status == TERMINATED) {
+        if(StationInterface_getStatus() == TERMINATED) {
             return (gpointer) FALSE;
         }
     }
@@ -136,18 +136,42 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             break;
 
         case DATA_IMAGE: {
-            CvMat *image_data = cvCreateMat(1, length - 1, CV_8UC1);
-            memcpy(image_data->data.ptr, data + 1, length - 1);
-            IplImage *image = cvDecodeImage(image_data, CV_LOAD_IMAGE_COLOR);
-            cvReleaseMat(&image_data);
-            printf("got image of size: %u %u\n", cvGetSize(image).width, cvGetSize(image).height);
-            //TODO display image.
-            cvReleaseImage(&image);
-            break;
-        }
+                CvMat *image_data = cvCreateMat(1, length - 1, CV_8UC1);
+                memcpy(image_data->data.ptr, data + 1, length - 1);
+                IplImage *image = cvDecodeImage(image_data, CV_LOAD_IMAGE_COLOR);
+                cvReleaseMat(&image_data);
+                printf("got image of size: %u %u\n", cvGetSize(image).width, cvGetSize(image).height);
+                //TODO display image.
+                cvReleaseImage(&image);
+                break;
+            }
 
         case DATA_PLANNED_TRAJECTORY:
-            break;
+        case DATA_CONTOURS: {
+                unsigned int number_points = (length - 1) / sizeof(struct Communication_Coordinates);
+                struct Communication_Coordinates coordinates[number_points];
+
+                memcpy(coordinates, data + 1, sizeof(coordinates));
+
+                struct Point2DSet *point_set = PointTypes_initializePoint2DSet(number_points);
+                unsigned int i;
+
+                for(i = 0; i < number_points; ++i) {
+                    PointTypes_addPointToPoint2DSet(point_set, PointTypes_createPoint2D(coordinates[i].x, coordinates[i].y));
+                }
+
+                if(data[0] == DATA_PLANNED_TRAJECTORY) {
+                    printf("Planned trajectory %u\n", point_set->number_of_points);
+                    //TODO
+                } else {
+                    printf("Contours %u\n", point_set->number_of_points);
+                    //TODO
+                }
+
+                PointTypes_releasePoint2DSet(point_set);
+                break;
+            }
+
 
         case DATA_ESTIMATED_ROBOT_POSITION:
             break;
