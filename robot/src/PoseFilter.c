@@ -40,4 +40,13 @@ void PoseFilter_executeFilter(struct PoseFilter *pose_filter, void (*filter)(str
 
 void PoseFilter_updateFromCameraOnly(struct PoseFilter *pose_filter)
 {
+    struct Robot *robot = pose_filter->robot;
+    int new_data_from_world = robot->world_camera->robot_sensor->has_received_new_data;
+
+    if(new_data_from_world) {
+        struct Pose *current_robot_pose = robot->current_state->pose;
+        struct Pose *world_camera_pose = robot->world_camera->robot_pose;
+        Pose_copyValuesFrom(current_robot_pose, world_camera_pose);
+        Sensor_readsData(robot->world_camera->robot_sensor);
+    }
 }
