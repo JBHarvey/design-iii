@@ -71,7 +71,7 @@ void StationInterface_launch(int argc, char *argv[])
     /* Starts worker thread */
     world_vision_worker_thread = g_thread_new("world_camera_feeder",
                                  (GThreadFunc) WorldVision_prepareImageFromWorldCameraForDrawing,
-                                 station_client);
+                                 NULL);
 
     gtk_window_fullscreen(GTK_WINDOW(ui_window));
     gtk_widget_show_all(GTK_WIDGET(ui_window));

@@ -6,7 +6,6 @@
 #include "ui_event.h"
 #include "logger.h"
 #include "station_client_sender.h"
-#include "Defines.h"
 
 /* Flags definitions */
 
@@ -30,6 +29,8 @@ const char FILE_PATH_OF_DEBUG_MODE_VIDEO_CAPTURE[] = "./build/deploy/camera_cali
 GMutex world_vision_pixbuf_mutex;
 GMutex world_vision_frame_mutex;
 GMutex world_vision_camera_frame_mutex;
+
+extern struct StationClient *station_client;
 
 enum TooltipStatus world_camera_coordinates_tooltip_status = PRINT;
 enum FrameStatus world_camera_frame_status = NOT_READY;
@@ -204,11 +205,9 @@ static void worldCameraQueryNextFrame(void)
 
 void WorldVision_createWorldCameraFrameSafeCopy(void)
 {
-    do {
-        g_mutex_lock(&world_vision_camera_frame_mutex);
-        cvCopy(world_camera->camera_capture->current_raw_frame, world_camera->camera_capture->current_safe_copy_frame, NULL);
-        g_mutex_unlock(&world_vision_camera_frame_mutex);
-    } while(world_camera->camera_capture->current_safe_copy_frame == NULL);
+    g_mutex_lock(&world_vision_camera_frame_mutex);
+    cvCopy(world_camera->camera_capture->current_raw_frame, world_camera->camera_capture->current_safe_copy_frame, NULL);
+    g_mutex_unlock(&world_vision_camera_frame_mutex);
 }
 
 void WorldVision_applyWorldCameraBackFrame(void)
@@ -221,7 +220,7 @@ void WorldVision_applyWorldCameraBackFrame(void)
 
 /* Worker thread */
 
-gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient *station_client)
+gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data)
 {
     GThread *world_vision_detection_worker_thread = NULL;
 
@@ -250,10 +249,6 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient 
 
             cvCopy(world_camera->camera_capture->current_raw_frame, world_camera_back_frame, NULL);
             WorldVisionDetection_drawObstaclesAndRobot(world_camera_back_frame);
-
-            /* if(detected.robot_detected) {
-                 StationClientSender_sendWorldInformationsToRobot(station_client, detected.obstacles, MAX_OBSTACLES, detected.robot);
-             }*/
         }
 
         if(world_camera->camera_status != FULLY_CALIBRATED) {
@@ -282,5 +277,11 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient 
     }
 
     return NULL;
+}
+
+void WorldVision_sendWorldInformationToRobot(struct Communication_Object robot,
+        struct Communication_Object obstacles[MAXIMUM_OBSTACLE_NUMBER])
+{
+    StationClientSender_sendWorldInformationsToRobot(station_client, obstacles, 0, robot);
 }
 

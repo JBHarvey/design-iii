@@ -1,17 +1,7 @@
-
-#include "CommunicationStructures.h"
-#include "world_vision_calibration.h"
+#include <gtk/gtk.h>
+#include "opencv2/imgproc/imgproc_c.h"
+#include "world_vision.h"
 #include "Defines.h"
-
-/*
-struct DetectedThings {
-    _Bool robot_detected;
-    struct Communication_Object robot;
-
-    unsigned int num_obstacles;
-    struct Communication_Object obstacles[MAX_OBSTACLES];
-};
-*/
 
 struct DetectedThings {
     struct Marker robot;    
@@ -24,7 +14,3 @@ gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camer
 
 void WorldVisionDetection_drawObstaclesAndRobot(IplImage *world_camera_back_frame);
 
-/*
-struct DetectedThings detectDrawObstaclesRobot(CvMemStorage *opencv_storage, IplImage *image_BGR,
-        struct Camera *input_camera);
-*/

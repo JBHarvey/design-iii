@@ -4,9 +4,11 @@
 #include <gtk/gtk.h>
 #include "opencv2/imgproc/imgproc_c.h"
 #include "opencv2/videoio/videoio_c.h"
+#include "CommunicationStructures.h"
 #include "station_client.h"
 #include "markers.h"
 #include "vision.h"
+#include "Defines.h"
 
 #define WORLD_CAMERA_WIDTH 1600
 #define WORLD_CAMERA_HEIGHT 1200
@@ -42,11 +44,13 @@ struct Camera {
     enum CameraStatus camera_status;
 };
 
-gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient *station_client);
+gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data);
 
 void WorldVision_applyWorldCameraBackFrame(void);
 
 void WorldVision_createWorldCameraFrameSafeCopy(void);
 
+void WorldVision_sendWorldInformationToRobot(struct Communication_Object robot,
+        struct Communication_Object obstacles[MAXIMUM_OBSTACLE_NUMBER]);
 
 #endif // __WORLD_VISION
