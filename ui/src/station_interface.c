@@ -4,6 +4,7 @@
 #include "ui_builder.h"
 #include "logger.h"
 #include "timer.h"
+#include "robot_vision.h"
 #include "world_vision.h"
 #include "station_client.h"
 #include "station_client_sender.h"
@@ -28,6 +29,7 @@ void uiWindowDestroyEventCallback(GtkWidget *widget, gpointer data)
 {
     Logger_finalize();
     Timer_release();
+    RobotVision_finalize();
     g_source_remove(timer_tag);
     g_object_unref(widget);
     gtk_main_quit();
