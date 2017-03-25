@@ -1,7 +1,8 @@
 #include <math.h>
+#include "CommunicationStructures.h"
 #include "world_vision_detection.h"
+#include "world_vision_calibration.h"
 #include "station_interface.h"
-#include "world_vision.h"
 
 #define ROBOT_HEIGHT_CM 24.0
 #define ROBOT_RADIUS_CM 16.0
@@ -97,6 +98,36 @@ static void cleanExitIfMainLoopTerminated(CvMemStorage *opencv_storage)
     }
 }
 
+static void packageWorldInformationsAndSendToRobot(struct Camera *input_camera)
+{
+    struct Communication_Object robot;
+    struct Communication_Object obstacles[MAXIMUM_OBSTACLE_NUMBER];
+
+    robot.radius = convertCMToRobot(ROBOT_RADIUS_CM);
+    robot.zone.index = 0;
+    robot.zone.pose.theta = convertAngleToRobotAngle(detected->robot.angle);
+    struct Point3D point3d_robot = WorldVisionCalibration_convertImageCoordinatesToWorldCoordinates(
+                                       PointTypes_createPoint2D(detected->robot.x, detected->robot.y), input_camera);
+    robot.zone.pose.coordinates.x = convertMMToRobot(point3d_robot.x);
+    robot.zone.pose.coordinates.y = convertMMToRobot(point3d_robot.y);
+
+    for(int i = 0; i < detected->number_of_obstacles; i++) {
+        obstacles[i].radius = convertCMToRobot(OBSTACLE_RADIUS_CM);
+        obstacles[i].zone.index = i;
+
+        if(detected->obstacles[i].type == OBSTACLE_CIRCLE) {
+            obstacles[i].zone.pose.theta = 0;
+        } else {
+            obstacles[i].zone.pose.theta = convertObstacleAngleToRobotAngle(detected->obstacles[i].angle);
+        }
+
+        obstacles[i].zone.pose.coordinates.x = convertMMToRobot(detected->obstacles[i].x);
+        obstacles[i].zone.pose.coordinates.y = convertMMToRobot(detected->obstacles[i].y);
+    }
+
+    WorldVision_sendWorldInformationToRobot(robot, obstacles);
+}
+
 gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camera)
 {
     detected = malloc(sizeof(struct DetectedThings));
@@ -118,7 +149,7 @@ gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camer
         int number_of_obstacles = findObstacles(opencv_storage, obstacles, MAXIMUM_OBSTACLE_NUMBER, image_yuv);
         struct Marker marker = detectMarker(input_camera->camera_capture->current_safe_copy_frame);
 
-        if(detected->number_of_obstacles != number_of_obstacles) {
+        if(detected->has_changed == 0 && detected->number_of_obstacles != number_of_obstacles) {
 
             detected->has_changed = 1;
         }
@@ -135,7 +166,8 @@ gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camer
             obstacles[i].y = obstacle_point.y;
 
             if(detected->has_changed == 0 && (detected->obstacles[i].x != obstacles[i].x ||
-                                              detected->obstacles[i].y != obstacles[i].y)) {
+                                              detected->obstacles[i].y != obstacles[i].y ||
+                                              detected->obstacles[i].angle != obstacles[i].angle)) {
 
                 detected->has_changed = 1;
             }
@@ -151,7 +183,8 @@ gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camer
             marker.x = robot_point.x;
             marker.y = robot_point.y;
 
-            if(detected->has_changed == 0 && (detected->robot.x != marker.x || detected->robot.y != marker.y)) {
+            if(detected->has_changed == 0 && (detected->robot.x != marker.x || detected->robot.y != marker.y ||
+                                              detected->robot.angle != detected->robot.angle)) {
 
                 detected->has_changed = 1;
             }
@@ -161,6 +194,12 @@ gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camer
 
         if(!first_detection_happened && (number_of_obstacles > 0 || marker.valid)) {
             first_detection_happened = 1;
+        }
+
+        if(detected->has_changed == 1) {
+
+            packageWorldInformationsAndSendToRobot(input_camera);
+            detected->has_changed = 0;
         }
 
         cvReleaseMemStorage(&opencv_storage);
