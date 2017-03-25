@@ -11,6 +11,6 @@ void OnboardCamera_init();
  */
 IplImage *OnboardCamera_get_image();
 
-struct CoordinatesSequence *OnboardCamera_cvSeqToCoordinatesSequence(CvSeq *opencv_sequence);
+struct CoordinatesSequence *OnboardCamera_cvSeqToCoordinatesSequence(IplImage **image_yuv_in_green_square);
 
 #endif

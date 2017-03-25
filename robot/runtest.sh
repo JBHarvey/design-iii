@@ -5,8 +5,10 @@ rm -rf build/code
 mkdir -p build/code
 
 #Updates shared code
-cp ../shared/CommunicationStructures.h src/.
-cp ../shared/Defines.h src/.
+cp -u --preserve=all ../shared/CommunicationStructures.h src/.
+cp -u --preserve=all ../shared/Defines.h src/.
+cp -u --preserve=all ../vision/src/vision.c src/.
+cp -u --preserve=all ../vision/src/vision.h src/.
 
 #Prepares compilation files
 find src -type f -regex '.*\.\(c\|\h\)' -exec cp \{\} build \;

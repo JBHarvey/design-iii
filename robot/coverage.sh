@@ -3,8 +3,10 @@
 rm -rf build/coverage
 mkdir -p build/coverage
 
-cp ../shared/CommunicationStructures.h src/.
-cp ../shared/Defines.h src/.
+cp -u --preserve=all ../shared/CommunicationStructures.h src/.
+cp -u --preserve=all ../shared/Defines.h src/.
+cp -u --preserve=all ../vision/src/vision.c src/.
+cp -u --preserve=all ../vision/src/vision.h src/.
 cp -r src/* build/coverage/.
 cp -r tests/* build/coverage/.
 
