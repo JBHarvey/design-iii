@@ -1,5 +1,7 @@
 #include "opencv2/imgproc/imgproc_c.h"
 
+#ifndef VISION_H
+#define VISION_H
 
 double angle(CvPoint *pt1, CvPoint *pt2, CvPoint *pt0);
 CvPoint fixedCvPointFrom32f(CvPoint2D32f point);
@@ -37,3 +39,5 @@ unsigned int findObstacles(CvMemStorage *opencv_storage, struct Obstacle *obstac
 CvPoint coordinateToTableCoordinate(CvPoint point, double height_cm, CvPoint camera_midpoint);
 
 _Bool findTableCorners(IplImage *image_yuv, struct Square *square);
+
+#endif

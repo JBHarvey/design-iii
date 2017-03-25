@@ -10,7 +10,7 @@
 
 // World related
 
-#define MAXIMIN_NUMBER_OF_OBSTACLE 3
+#define MAXIMUM_OBSTACLE_NUMBER 3
 
 // Units and mesurements related
 

@@ -1,23 +1,22 @@
-
-#include "CommunicationStructures.h"
+#include <gtk/gtk.h>
+#include "opencv2/imgproc/imgproc_c.h"
+#include "world_vision.h"
 #include "Defines.h"
 #include "world_vision_calibration.h"
 #include "vision.h"
 
-#define MAX_OBSTACLES (MAXIMIN_NUMBER_OF_OBSTACLE)
 
-struct Detected_Things {
+struct DetectedThings {
     _Bool table_detected;
     struct Square table;
-
     _Bool green_square_detected;
     struct Square green_square;
-
-    _Bool robot_detected;
-    struct Communication_Object robot;
-
-    unsigned int num_obstacles;
-    struct Communication_Object obstacles[MAX_OBSTACLES];
+    struct Marker robot;
+    int number_of_obstacles;
+    struct Obstacle obstacles[MAXIMUM_OBSTACLE_NUMBER];
+    int has_changed;
 };
 
-struct Detected_Things detectDrawThings(CvMemStorage *opencv_storage, IplImage *image_BGR, struct Camera *input_camera);
+gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camera);
+
+void WorldVisionDetection_drawObstaclesAndRobot(IplImage *world_camera_back_frame);
