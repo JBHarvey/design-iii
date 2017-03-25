@@ -237,8 +237,8 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 #define MANCHESTER_CODE_DECODED 106
 #define PHYSICAL_ACK_STOP_SENDING_SIGNAL 107
 
-struct __attribute__((__packed__)) ReceptionManchester {
-    uint8_t portrait_number;
+struct __attribute__((__packed__)) TransitionManchester {
+    uint8_t painting_number;
     uint8_t scale_factor;
     char orientation;
 };
@@ -249,23 +249,23 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
     // Wheels Translation
     // Wheels Rotation
 
-    switch(data[0]) {
+    switch(type) {
 
         case MANCHESTER_CODE_DECODED:
 
-            if(length != (sizeof(struct ReceptionManchester) + 1)) {
-                printf("wrong struct ReceptionManchester length\n");
+            if(length != (sizeof(struct TransitionManchester) + 1)) {
+                printf("wrong struct TransitionManchester length\n");
                 break;
             }
 
-            struct ReceptionManchester reception_manchester;
+            struct TransitionManchester transition_manchester;
 
-            memcpy(&reception_manchester, data + 1, sizeof(struct ReceptionManchester));
+            memcpy(&transition_manchester, data, sizeof(struct TransitionManchester));
 
             struct Communication_ManchesterCode communication_manchester_code = {
-                .painting_number = (int) reception_manchester.scale_factor,
-                .scale_factor = (int) reception_manchester.scale_factor,
-                .orientation = (int) reception_manchester.orientation
+                .painting_number = (int) transition_manchester.painting_number,
+                .scale_factor = (int) transition_manchester.scale_factor,
+                .orientation = transition_manchester.orientation
             };
 
             reception_callbacks.updateManchesterCode(robot_server->robot->manchester_code, communication_manchester_code);
@@ -382,12 +382,20 @@ void RobotServer_sendLowerPenCommand(void)
     writeTTYACMPacket(COMMAND_TYPE_LOWER_PEN, 0, ACTION_ONLY_COMMAND_LENGTH);
 }
 
+void RobotServer_sendLightRedLEDCommand(void)
+{
+    writeTTYACMPacket(COMMAND_TYPE_RED_LED, 0, ACTION_ONLY_COMMAND_LENGTH);
+}
+
+void RobotServer_sendLightGreenLEDCommand(void)
+{
+    writeTTYACMPacket(COMMAND_TYPE_GREEN_LED, 0, ACTION_ONLY_COMMAND_LENGTH);
+}
+
 void RobotServer_fetchManchesterCodeCommand(void)
 {
     writeTTYACMPacket(COMMAND_TYPE_FETCH_MANCHESTER, 0, ACTION_ONLY_COMMAND_LENGTH);
 }
 // all of these have the command type + the ACTION_ONLY_COMMAND_LENGHT
-void RobotServer_sendLightRedLEDCommand(void) {}
-void RobotServer_sendLightGreenLEDCommand(void) {}
 void RobotServer_sendStopSendingManchesterSignalCommand(void) {}
 

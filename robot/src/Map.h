@@ -16,7 +16,7 @@ struct Map {
     struct Coordinates *south_western_drawing_corner;
     struct Coordinates *antenna_zone_start;
     struct Coordinates *antenna_zone_stop;
-    struct Obstacle *obstacles[3];
+    struct Obstacle *obstacles[MAXIMUM_OBSTACLE_NUMBER];
     struct Pose *painting_zones[8];
 };
 
@@ -32,4 +32,16 @@ void Map_updateDrawingCorners(struct Map *map, struct Coordinates *north_eastern
 void Map_updateAntennaZone(struct Map *map, struct Coordinates *start, struct Coordinates *stop);
 void Map_updateObstacle(struct Map *map, struct Coordinates *new_coordinates, enum CardinalDirection new_orientation, int index);
 void Map_updatePaintingZone(struct Map *map, struct Pose *new_pose, int index);
+
+int Map_fetchNumberOfObstacles(struct Map *map);
+struct Map *Map_fetchNavigableMap(struct Map *original_map, int robot_radius);
+
+struct Obstacle *Map_retrieveFirstObstacle(struct Map *map);
+struct Obstacle *Map_retrieveLastObstacle(struct Map *map);
+struct Obstacle *Map_retrieveMiddleObstacle(struct Map *map, struct Obstacle *first, struct Obstacle *last);
+
+struct Obstacle *Map_retrieveFirstOverlappingObstacle(struct Map *map);
+struct Obstacle *Map_retrieveLastOverlappingObstacle(struct Map *map);
+
+int Map_isCoordinateFree(struct Map *map, struct Coordinates *coordinates);
 #endif // MAP_H_

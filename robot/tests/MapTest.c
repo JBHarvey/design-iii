@@ -4,19 +4,19 @@
 
 struct Map *map;
 
-void setup_map(void)
+void setup_Map(void)
 {
     map = Map_new();
 }
 
-void teardown_map(void)
+void teardown_Map(void)
 {
     Map_delete(map);
 }
 
 Test(Map, creation_destruction
-     , .init = setup_map
-     , .fini = teardown_map)
+     , .init = setup_Map
+     , .fini = teardown_Map)
 {
     struct Coordinates *coordinates_zero = Coordinates_zero();
     struct Pose *pose_zero = Pose_zero();
@@ -56,8 +56,8 @@ Test(Map, creation_destruction
 }
 
 Test(Map, given_newTableCorners_when_updatesMap_then_theCorrespondingCornersHaveChanged
-     , .init = setup_map
-     , .fini = teardown_map)
+     , .init = setup_Map
+     , .fini = teardown_Map)
 {
     const int MAP_TABLE_HEIGHT = 11000;
     const int MAP_TABLE_LENGTH = 20000;
@@ -81,8 +81,8 @@ Test(Map, given_newTableCorners_when_updatesMap_then_theCorrespondingCornersHave
 }
 
 Test(Map, given_newDrawingCorners_when_updatesMap_then_theCorrespondingCornersHaveChanged
-     , .init = setup_map
-     , .fini = teardown_map)
+     , .init = setup_Map
+     , .fini = teardown_Map)
 {
     const int MAP_DRAWING_SIDE = 6600;
     struct Coordinates *north_eastern_drawing_corner = Coordinates_new(MAP_DRAWING_SIDE, MAP_DRAWING_SIDE);
@@ -105,8 +105,8 @@ Test(Map, given_newDrawingCorners_when_updatesMap_then_theCorrespondingCornersHa
 }
 
 Test(Map, given_newAntennaZone_when_updatesMap_then_theCorrespondingCoordinatesHaveChanged
-     , .init = setup_map
-     , .fini = teardown_map)
+     , .init = setup_Map
+     , .fini = teardown_Map)
 {
     const int ZONE_X = 10000;
     const int ZONE_Y = 10000;
@@ -124,8 +124,8 @@ Test(Map, given_newAntennaZone_when_updatesMap_then_theCorrespondingCoordinatesH
 }
 
 Test(Map, given_newObstacles_when_updatesMap_then_theCorrespondingObstaclesHaveChanged
-     , .init = setup_map
-     , .fini = teardown_map)
+     , .init = setup_Map
+     , .fini = teardown_Map)
 {
     struct Coordinates *coordinates0 = Coordinates_new(1250, 3250);
     struct Coordinates *coordinates1 = Coordinates_new(5500, 4500);
@@ -148,8 +148,8 @@ Test(Map, given_newObstacles_when_updatesMap_then_theCorrespondingObstaclesHaveC
 }
 
 Test(Map, given_newPaintingZones_when_updatesMap_then_theCorrespondingZonesHaveChanged
-     , .init = setup_map
-     , .fini = teardown_map)
+     , .init = setup_Map
+     , .fini = teardown_Map)
 {
     struct Pose *paintingZone0 = Pose_new(4060, 2500, MINUS_HALF_PI);
     struct Pose *paintingZone1 = Pose_new(1620, 2500, MINUS_HALF_PI);
@@ -186,4 +186,399 @@ Test(Map, given_newPaintingZones_when_updatesMap_then_theCorrespondingZonesHaveC
     Pose_delete(paintingZone5);
     Pose_delete(paintingZone6);
     Pose_delete(paintingZone7);
+}
+
+Test(Map, given_aMapAndARobotRadius_when_askedToFetchNavigableMap_then_theTableCornersAreBroughtTowardsTheCenterOfTheMapByTheRobotRadiusInXAndY
+     , .init = setup_Map
+     , .fini = teardown_Map)
+{
+    struct Map *navigable_map = Map_fetchNavigableMap(map, THEORICAL_ROBOT_RADIUS);
+
+    int expected_south_western_table_corner_x = map->south_western_table_corner->x + THEORICAL_ROBOT_RADIUS;
+    int expected_south_western_table_corner_y = map->south_western_table_corner->y + THEORICAL_ROBOT_RADIUS;
+    int expected_south_eastern_table_corner_x = map->south_eastern_table_corner->x - THEORICAL_ROBOT_RADIUS;
+    int expected_south_eastern_table_corner_y = map->south_eastern_table_corner->y + THEORICAL_ROBOT_RADIUS;
+    int expected_north_western_table_corner_x = map->north_western_table_corner->x + THEORICAL_ROBOT_RADIUS;
+    int expected_north_western_table_corner_y = map->north_western_table_corner->y - THEORICAL_ROBOT_RADIUS;
+    int expected_north_eastern_table_corner_x = map->north_eastern_table_corner->x - THEORICAL_ROBOT_RADIUS;
+    int expected_north_eastern_table_corner_y = map->north_eastern_table_corner->y - THEORICAL_ROBOT_RADIUS;
+
+    cr_assert_eq(navigable_map->south_western_table_corner->x, expected_south_western_table_corner_x);
+    cr_assert_eq(navigable_map->south_western_table_corner->y, expected_south_western_table_corner_y);
+    cr_assert_eq(navigable_map->south_eastern_table_corner->x, expected_south_eastern_table_corner_x);
+    cr_assert_eq(navigable_map->south_eastern_table_corner->y, expected_south_eastern_table_corner_y);
+    cr_assert_eq(navigable_map->north_western_table_corner->x, expected_north_western_table_corner_x);
+    cr_assert_eq(navigable_map->north_western_table_corner->y, expected_north_western_table_corner_y);
+    cr_assert_eq(navigable_map->north_eastern_table_corner->x, expected_north_eastern_table_corner_x);
+    cr_assert_eq(navigable_map->north_eastern_table_corner->y, expected_north_eastern_table_corner_y);
+
+    Map_delete(navigable_map);
+}
+
+struct Coordinates *center_west_coordinates;
+struct Coordinates *center_center_coordinates;
+struct Coordinates *center_east_coordinates;
+Test(Map, given_aMapAndARobotRadius_when_askedToFetchNavigableMap_then_theRobotRadiusIsAddedToTheObstaclesRadius
+     , .init = setup_Map
+     , .fini = teardown_Map)
+{
+    enum CardinalDirection cardinal_direction_0 = NORTH;
+    enum CardinalDirection cardinal_direction_1 = SOUTH;
+    enum CardinalDirection cardinal_direction_2 = CENTER;
+    center_west_coordinates = Coordinates_new(4775, 3550);
+    center_center_coordinates = Coordinates_new(9550, 3550);
+    center_east_coordinates = Coordinates_new(14325, 3550);
+    Map_updateObstacle(map, center_west_coordinates, cardinal_direction_0, 0);
+    Map_updateObstacle(map, center_center_coordinates, cardinal_direction_1, 1);
+    Map_updateObstacle(map, center_east_coordinates, cardinal_direction_2, 2);
+
+    struct Map *navigable_map = Map_fetchNavigableMap(map, THEORICAL_ROBOT_RADIUS);
+
+    int expected_radius_0 = map->obstacles[0]->radius + THEORICAL_ROBOT_RADIUS;
+    int expected_radius_1 = map->obstacles[1]->radius + THEORICAL_ROBOT_RADIUS;
+    int expected_radius_2 = map->obstacles[2]->radius + THEORICAL_ROBOT_RADIUS;
+
+    cr_assert_eq(navigable_map->obstacles[0]->radius, expected_radius_0);
+    cr_assert_eq(navigable_map->obstacles[1]->radius, expected_radius_1);
+    cr_assert_eq(navigable_map->obstacles[2]->radius, expected_radius_2);
+    cr_assert(Coordinates_haveTheSameValues(navigable_map->obstacles[0]->coordinates, center_west_coordinates));
+    cr_assert(Coordinates_haveTheSameValues(navigable_map->obstacles[1]->coordinates, center_center_coordinates));
+    cr_assert(Coordinates_haveTheSameValues(navigable_map->obstacles[2]->coordinates, center_east_coordinates));
+    cr_assert_eq(navigable_map->obstacles[0]->orientation, cardinal_direction_0);
+    cr_assert_eq(navigable_map->obstacles[1]->orientation, cardinal_direction_1);
+    cr_assert_eq(navigable_map->obstacles[2]->orientation, cardinal_direction_2);
+
+    Map_delete(navigable_map);
+    Coordinates_delete(center_west_coordinates);
+    Coordinates_delete(center_center_coordinates);
+    Coordinates_delete(center_east_coordinates);
+}
+
+Test(Map, given_aMapAndARobot_when_askedToFetchNavigableMap_then_theRobotRadiusIsSubstractedInYToTheAntennaZoneCoordinates
+     , .init = setup_Map
+     , .fini = teardown_Map)
+{
+    int antenna_zone_y = THEORICAL_WORLD_HEIGHT - THEORICAL_ROBOT_RADIUS;
+    struct Coordinates *antenna_zone_start = Coordinates_new(THEORICAL_ANTENNA_ZONE_START_X, THEORICAL_ANTENNA_ZONE_Y);
+    struct Coordinates *antenna_zone_stop = Coordinates_new(THEORICAL_ANTENNA_ZONE_STOP_X, THEORICAL_ANTENNA_ZONE_Y);
+    Map_updateAntennaZone(map, antenna_zone_start, antenna_zone_stop);
+
+    struct Map *navigable_map = Map_fetchNavigableMap(map, THEORICAL_ROBOT_RADIUS);
+
+    struct Coordinates *expected_start = Coordinates_new(THEORICAL_ANTENNA_ZONE_START_X,
+                                         THEORICAL_ANTENNA_ZONE_Y - THEORICAL_ROBOT_RADIUS);
+    struct Coordinates *expected_stop = Coordinates_new(THEORICAL_ANTENNA_ZONE_STOP_X,
+                                        THEORICAL_ANTENNA_ZONE_Y - THEORICAL_ROBOT_RADIUS);
+    cr_assert(Coordinates_haveTheSameValues(expected_start, navigable_map->antenna_zone_start));
+    cr_assert(Coordinates_haveTheSameValues(expected_stop, navigable_map->antenna_zone_stop));
+
+    Coordinates_delete(expected_start);
+    Coordinates_delete(expected_stop);
+    Coordinates_delete(antenna_zone_start);
+    Coordinates_delete(antenna_zone_stop);
+    Map_delete(navigable_map);
+}
+
+void setObstacleCoordinates(struct Map *map, int index, struct Coordinates *new_coordinates)
+{
+    Coordinates_copyValuesFrom(map->obstacles[index]->coordinates, new_coordinates);
+}
+
+struct Map *navigable_map;
+struct Coordinates *north_west_coordinates;
+struct Coordinates *south_west_coordinates;
+struct Coordinates *south_south_south_west_coordinates;
+struct Coordinates *south_south_west_coordinates;
+struct Coordinates *north_north_north_west_coordinates;
+struct Coordinates *north_north_west_coordinates;
+struct Coordinates *reset_coordinates;
+
+void setup_NavigableMap(void)
+{
+    setup_Map();
+    navigable_map = Map_fetchNavigableMap(map, THEORICAL_ROBOT_RADIUS);
+    center_west_coordinates = Coordinates_new(4775, 3550);
+    center_center_coordinates = Coordinates_new(9550, 3550);
+    center_east_coordinates = Coordinates_new(14325, 3550);
+    north_west_coordinates = Coordinates_new(4775, 5325);
+    south_west_coordinates = Coordinates_new(4775, 1775);
+    south_south_south_west_coordinates = Coordinates_new(7640, 1775);
+    south_south_west_coordinates = Coordinates_new(6367, 1775);
+    north_north_north_west_coordinates = Coordinates_new(7640, 5325);
+    north_north_west_coordinates = Coordinates_new(6367, 5325);
+    reset_coordinates = Coordinates_new(-1, -1);
+}
+
+void teardown_NavigableMap(void)
+{
+    teardown_Map();
+    Map_delete(navigable_map);
+
+    Coordinates_delete(reset_coordinates);
+    Coordinates_delete(center_west_coordinates);
+    Coordinates_delete(center_center_coordinates);
+    Coordinates_delete(center_east_coordinates);
+    Coordinates_delete(north_west_coordinates);
+    Coordinates_delete(south_west_coordinates);
+    Coordinates_delete(south_south_south_west_coordinates);
+    Coordinates_delete(south_south_west_coordinates);
+    Coordinates_delete(north_north_north_west_coordinates);
+    Coordinates_delete(north_north_west_coordinates);
+}
+
+
+Test(Map, given_aMapWithObstacles_when_coordinatesOfAnObstacleAreMinusOneInXAndY_then_theObstacleIsNotConsidered
+     , .init = setup_NavigableMap
+     , .fini = teardown_NavigableMap)
+{
+    cr_assert_eq(Map_fetchNumberOfObstacles(map), 3);
+    setObstacleCoordinates(map, 0, reset_coordinates);
+    cr_assert_eq(Map_fetchNumberOfObstacles(map), 2);
+    setObstacleCoordinates(map, 1, reset_coordinates);
+
+    cr_assert_eq(Map_fetchNumberOfObstacles(map), 1);
+    setObstacleCoordinates(map, 2, reset_coordinates);
+    cr_assert_eq(Map_fetchNumberOfObstacles(map), 0);
+}
+
+Test(Map, given_aNavigableMapWithOneObstacle_when_askedToRetrieveTheFirstOne_then_theEasternOneIsRetrieved
+     , .init = setup_NavigableMap
+     , .fini = teardown_NavigableMap)
+{
+    setObstacleCoordinates(map, 0, reset_coordinates);
+    setObstacleCoordinates(map, 1, reset_coordinates);
+    setObstacleCoordinates(map, 2, center_west_coordinates);
+
+    struct Obstacle *retrieved = Map_retrieveFirstObstacle(map);
+
+    cr_assert(Coordinates_haveTheSameValues(retrieved->coordinates, center_west_coordinates));
+}
+
+Test(Map, given_aNavigableMapWithTwoObstacles_when_askedToRetrieveTheFirstOne_then_theEasternOneIsRetrieved
+     , .init = setup_NavigableMap
+     , .fini = teardown_NavigableMap)
+{
+    setObstacleCoordinates(map, 0, center_east_coordinates);
+    setObstacleCoordinates(map, 1, center_west_coordinates);
+    setObstacleCoordinates(map, 2, reset_coordinates);
+
+    struct Obstacle *retrieved = Map_retrieveFirstObstacle(map);
+
+    cr_assert(Coordinates_haveTheSameValues(retrieved->coordinates, center_east_coordinates));
+}
+
+Test(Map, given_aNavigableMapWithTwoObstaclesWithSameXCoordinates_when_askedToRetrieveTheFirstOne_then_theNorthEasternOneIsRetrieved
+     , .init = setup_NavigableMap
+     , .fini = teardown_NavigableMap)
+{
+    setObstacleCoordinates(map, 0, north_west_coordinates);
+    setObstacleCoordinates(map, 1, center_west_coordinates);
+    setObstacleCoordinates(map, 2, reset_coordinates);
+
+    struct Obstacle *retrieved = Map_retrieveFirstObstacle(map);
+
+    cr_assert(Coordinates_haveTheSameValues(retrieved->coordinates, north_west_coordinates));
+}
+
+Test(Map, given_aNavigableMapWithThreeObstacles_when_askedToRetrieveTheLastOne_then_theWesternOneIsRetrieved
+     , .init = setup_NavigableMap
+     , .fini = teardown_NavigableMap)
+{
+    setObstacleCoordinates(map, 0, center_east_coordinates);
+    setObstacleCoordinates(map, 1, center_center_coordinates);
+    setObstacleCoordinates(map, 2, center_west_coordinates);
+
+    struct Obstacle *retrieved = Map_retrieveLastObstacle(map);
+
+    cr_assert(Coordinates_haveTheSameValues(retrieved->coordinates, center_west_coordinates));
+}
+
+Test(Map, given_aNavigableMapWithThreeObstaclesAndTheTwoWesternOnesWithSameXCoordinates_when_askedToRetrieveTheLastOne_then_theSouthWesternOneIsRetrieved
+     , .init = setup_NavigableMap
+     , .fini = teardown_NavigableMap)
+{
+    setObstacleCoordinates(map, 0, south_south_west_coordinates);
+    setObstacleCoordinates(map, 1, center_east_coordinates);
+    setObstacleCoordinates(map, 2, north_north_west_coordinates);
+
+    struct Obstacle *retrieved = Map_retrieveLastObstacle(map);
+
+    cr_assert(Coordinates_haveTheSameValues(retrieved->coordinates, south_south_west_coordinates));
+}
+
+Test(Map, given_aFirstAndSecondObstacleAndNoOverlap_when_askedToRetrieveTheMiddleOne_then_theMiddleOneIsRetrieved
+     , .init = setup_NavigableMap
+     , .fini = teardown_NavigableMap)
+{
+    setObstacleCoordinates(map, 0, center_east_coordinates);
+    setObstacleCoordinates(map, 1, center_center_coordinates);
+    setObstacleCoordinates(map, 2, center_west_coordinates);
+
+    struct Obstacle *first = Map_retrieveFirstObstacle(map);
+    struct Obstacle *last = Map_retrieveLastObstacle(map);
+    struct Obstacle *middle = Map_retrieveMiddleObstacle(map, first, last);
+
+    cr_assert(Coordinates_haveTheSameValues(middle->coordinates, center_center_coordinates));
+}
+
+Test(Map, given_threeOverlappingOverlappingObstacle_when_askedToRetrieveTheFirstOne_then_theNorthernOneIsReturned
+     , .init = setup_NavigableMap
+     , .fini = teardown_NavigableMap)
+{
+    setObstacleCoordinates(map, 0, south_south_west_coordinates);
+    setObstacleCoordinates(map, 1, center_west_coordinates);
+    setObstacleCoordinates(map, 2, north_north_west_coordinates);
+
+    struct Obstacle *retrieved = Map_retrieveFirstOverlappingObstacle(map);
+
+    cr_assert(Coordinates_haveTheSameValues(retrieved->coordinates, north_north_west_coordinates));
+}
+
+Test(Map, given_threeOverlappingOverlappingObstacle_when_askedToRetrieveTheLastOne_then_theSouthernOneIsReturned
+     , .init = setup_NavigableMap
+     , .fini = teardown_NavigableMap)
+{
+    setObstacleCoordinates(map, 0, south_south_west_coordinates);
+    setObstacleCoordinates(map, 1, center_west_coordinates);
+    setObstacleCoordinates(map, 2, north_north_west_coordinates);
+
+    struct Obstacle *retrieved = Map_retrieveLastOverlappingObstacle(map);
+
+    cr_assert(Coordinates_haveTheSameValues(retrieved->coordinates, south_south_west_coordinates));
+}
+
+void setup_FreeMap(void)
+{
+    setup_Map();
+    struct Coordinates *south_western_table_corner = Coordinates_zero();
+    struct Coordinates *south_eastern_table_corner = Coordinates_new(THEORICAL_WORLD_LENGTH, 0);
+    struct Coordinates *north_western_table_corner = Coordinates_new(0, THEORICAL_WORLD_HEIGHT);
+    struct Coordinates *north_eastern_table_corner = Coordinates_new(THEORICAL_WORLD_LENGTH, THEORICAL_WORLD_HEIGHT);
+
+    Map_updateTableCorners(map, north_eastern_table_corner, south_eastern_table_corner, south_western_table_corner,
+                           north_western_table_corner);
+
+    Coordinates_delete(south_western_table_corner);
+    Coordinates_delete(south_eastern_table_corner);
+    Coordinates_delete(north_western_table_corner);
+    Coordinates_delete(north_eastern_table_corner);
+}
+
+Test(Map, given_coordinatesToTheNorthOfTheNorthernNavigableY_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_FreeMap
+     , .fini = teardown_Map)
+{
+    struct Coordinates *too_to_the_north = Coordinates_new(0, THEORICAL_WORLD_HEIGHT * 2);
+
+    int is_within_navigable_space = Map_isCoordinateFree(map, too_to_the_north);
+    cr_assert(!is_within_navigable_space);
+
+    Coordinates_delete(too_to_the_north);
+}
+
+Test(Map, given_coordinatesOnTheNorthernNavigableY_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_FreeMap
+     , .fini = teardown_Map)
+{
+    struct Coordinates *too_to_the_north = Coordinates_new(0, THEORICAL_WORLD_HEIGHT);
+
+    int is_within_navigable_space = Map_isCoordinateFree(map, too_to_the_north);
+    cr_assert(!is_within_navigable_space);
+
+    Coordinates_delete(too_to_the_north);
+}
+
+Test(Map, given_coordinatesToTheSouthOfTheSouthernNavigableY_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_FreeMap
+     , .fini = teardown_Map)
+{
+    struct Coordinates *too_to_the_south = Coordinates_new(0, -1 * THEORICAL_WORLD_HEIGHT);
+
+    int is_within_navigable_space = Map_isCoordinateFree(map, too_to_the_south);
+    cr_assert(!is_within_navigable_space);
+
+    Coordinates_delete(too_to_the_south);
+}
+
+Test(Map, given_coordinatesOnTheSouthernNavigableY_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_FreeMap
+     , .fini = teardown_Map)
+{
+    struct Coordinates *too_to_the_south = Coordinates_new(0, 0);
+
+    int is_within_navigable_space = Map_isCoordinateFree(map, too_to_the_south);
+    cr_assert(!is_within_navigable_space);
+
+    Coordinates_delete(too_to_the_south);
+}
+
+Test(Map, given_coordinatesToTheEastOfTheEasternNavigableY_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_FreeMap
+     , .fini = teardown_Map)
+{
+    struct Coordinates *too_to_the_east = Coordinates_new(THEORICAL_WORLD_LENGTH * 2, 0);
+
+    int is_within_navigable_space = Map_isCoordinateFree(map, too_to_the_east);
+    cr_assert(!is_within_navigable_space);
+
+    Coordinates_delete(too_to_the_east);
+}
+
+Test(Map, given_coordinatesOnTheEasternNavigableY_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_FreeMap
+     , .fini = teardown_Map)
+{
+    struct Coordinates *too_to_the_east = Coordinates_new(THEORICAL_WORLD_LENGTH, 0);
+
+    int is_within_navigable_space = Map_isCoordinateFree(map, too_to_the_east);
+    cr_assert(!is_within_navigable_space);
+
+    Coordinates_delete(too_to_the_east);
+}
+
+Test(Map, given_coordinatesToTheWestOfTheWesternNavigableY_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_FreeMap
+     , .fini = teardown_Map)
+{
+    struct Coordinates *too_to_the_west = Coordinates_new(-1 * THEORICAL_WORLD_HEIGHT, 0);
+
+    int is_within_navigable_space = Map_isCoordinateFree(map, too_to_the_west);
+    cr_assert(!is_within_navigable_space);
+
+    Coordinates_delete(too_to_the_west);
+}
+
+Test(Map, given_coordinatesOnTheWesternNavigableY_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_FreeMap
+     , .fini = teardown_Map)
+{
+    struct Coordinates *too_to_the_west = Coordinates_new(0, 0);
+
+    int is_within_navigable_space = Map_isCoordinateFree(map, too_to_the_west);
+    cr_assert(!is_within_navigable_space);
+
+    Coordinates_delete(too_to_the_west);
+}
+
+Test(Map, given_coordinatesNotFreeOfAnObstacle_when_askedIfItIsFree_then_itIsNot
+     , .init = setup_FreeMap
+     , .fini = teardown_Map)
+{
+    struct Coordinates *coordinates = Coordinates_new(THEORICAL_WORLD_LENGTH / 2, THEORICAL_WORLD_HEIGHT / 2);
+    setObstacleCoordinates(map, 1, coordinates);
+    int is_within_navigable_space = Map_isCoordinateFree(map, coordinates);
+    cr_assert(!is_within_navigable_space);
+
+    Coordinates_delete(coordinates);
+}
+
+Test(Map, given_coordinatesFreeOfTheWallsAndObstacles_when_askedIfItIsFree_then_itIs
+     , .init = setup_FreeMap
+     , .fini = teardown_Map)
+{
+    struct Coordinates *coordinates = Coordinates_new(THEORICAL_WORLD_LENGTH / 2, THEORICAL_WORLD_HEIGHT / 2);
+    int is_within_navigable_space = Map_isCoordinateFree(map, coordinates);
+    cr_assert(is_within_navigable_space);
+
+    Coordinates_delete(coordinates);
 }
