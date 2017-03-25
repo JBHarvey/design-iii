@@ -1,5 +1,6 @@
 #include <math.h>
 #include "OnboardCamera.h"
+#include "vision.h"
 
 #define CALIBRATION_FILE "camera_calibration.xml"
 #define CAMERA_INDEX 0
@@ -23,7 +24,7 @@ void OnboardCamera_init()
 
 /* NOTE: returned image is in yuv color space and must be freed.
  */
-IplImage *OnboardCamera_get_image()
+static IplImage *get_image()
 {
     IplImage *image = cvQueryFrame(cv_cap);
 
@@ -47,25 +48,38 @@ static int convertToCartesian(double coord)
     return round((coord - (SIZE_SIDE_IN / 2.0)) * (SIZE_SIDE_OUT / SIZE_SIDE_IN));
 }
 
-struct CoordinatesSequence *OnboardCamera_cvSeqToCoordinatesSequence(CvSeq *opencv_sequence)
+struct CoordinatesSequence *OnboardCamera_cvSeqToCoordinatesSequence(IplImage **image_yuv_in_green_square)
 {
+    CvMemStorage *opencv_storage = cvCreateMemStorage(0);
+    IplImage *image = get_image();
+    CvSeq *opencv_sequence = findFirstFigure(opencv_storage, image, image_yuv_in_green_square);
+
     struct CoordinatesSequence *sequence = 0;
 
-    unsigned int i;
+    if(opencv_sequence) {
+        unsigned int i;
 
-    for(i = 0; i < opencv_sequence->total; ++i) {
-        CvPoint *element_pointer = (CvPoint *)cvGetSeqElem(opencv_sequence, i);
-        struct Coordinates *coordinates = Coordinates_new(convertToCartesian(element_pointer->x),
-                                          convertToCartesian(element_pointer->y));
+        for(i = 0; i < opencv_sequence->total; ++i) {
+            CvPoint *element_pointer = (CvPoint *)cvGetSeqElem(opencv_sequence, i);
+            struct Coordinates *coordinates = Coordinates_new(convertToCartesian(element_pointer->x),
+                                              convertToCartesian(element_pointer->y) * (-1));
 
-        if(!i) {
-            sequence = CoordinatesSequence_new(coordinates);
-        } else {
-            CoordinatesSequence_append(sequence, coordinates);
+            if(!i) {
+                sequence = CoordinatesSequence_new(coordinates);
+            } else {
+                CoordinatesSequence_append(sequence, coordinates);
+            }
+
+            Coordinates_delete(coordinates);
         }
-
-        Coordinates_delete(coordinates);
     }
 
+    cvReleaseMemStorage(&opencv_storage);
     return sequence;
 }
+
+void OnboardCamera_deleteImage(IplImage *image)
+{
+    cvReleaseImage(&image);
+}
+
