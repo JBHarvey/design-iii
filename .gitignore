@@ -32,6 +32,9 @@
 *station-main
 *RobotLogs.log
 *updaterobot.sh
+robot/src/vision.c
+robot/src/vision.h
+
 
 # Automation-related files
 *ToCompile
