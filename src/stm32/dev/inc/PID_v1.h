@@ -133,7 +133,7 @@ FloatType calculatePosition(FloatType positionEdges);
  *******************************************************/
 void initAllPIDS();
 void computeAllPIDS();
-void computeCustomPIDS(uint8_t isRobotRotating);
+void computeCustomPIDS();
 
 #endif
 

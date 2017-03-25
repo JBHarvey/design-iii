@@ -49,6 +49,8 @@ volatile char manchesterOrientationVerification[ORIENTATION_LENGTH] = { ' ',
 		' ', ' ', ' ', ' ' };
 volatile uint8_t manchesterFactorVerification = 0;
 
+volatile uint8_t sendMeasureCounter = 0;
+
 extern void TIM5_IRQHandler() {
 	if (TIM_GetITStatus(TIM5, TIM_IT_Update) != RESET) {
 		TIM_ClearITPendingBit(TIM5, TIM_IT_Update);
@@ -105,6 +107,8 @@ void initAll(void) {
 
 // Extern LEDs initialization
 	InitializeLEDs();
+	InitializeTimer6();
+
 // initializations for manchester signal
 	// ADC antenne initialization
 	initAdcAntenne();
@@ -154,13 +158,11 @@ int main(void) {
 			tunningDeadZone();
 #endif
 			break;
-#ifdef ENABLE_ROTATION
-			case MAIN_TEST_ROTATION:
-			tunningRotation();
-			break;
-#endif
+
 		case MAIN_PID:
-			computeAllPIDS();
+			//computeAllPIDS();
+			setSpeedSetpoints();
+			computeCustomPIDS();
 
 			break;
 		case MAIN_MANCH:
@@ -169,14 +171,10 @@ int main(void) {
 					manchesterOrientationVerification,
 					&manchesterFactorVerification);
 
-			uint8_t dataToSend[4];
-			dataToSend[0] = COMMAND_DECODED_MANCHESTER;
-			dataToSend[1] = 1;
-			dataToSend[2] = 4;
-			dataToSend[3] = 'N';
+			sendManchesterCode(manchesterFigureVerification,
+					manchesterFactorVerification,
+					manchesterOrientationVerification);
 
-			VCP_DataTx(dataToSend, 5);
-			Delayms(10);
 			break;
 		case MAIN_PREHENSEUR:
 			initPrehensor();
@@ -200,7 +198,6 @@ extern void EXTI4_IRQHandler(void) {
 		EnableTimer5Interrupt();
 		disableExternalInterruptLine4();
 	}
-
 }
 
 extern void EXTI9_5_IRQHandler(void) {
@@ -442,6 +439,20 @@ extern void TIM2_IRQHandler() {
 		PID_SetMode(&PID_POSITION3, PID_Mode_Automatic);
 		PID_SetMode(&PID_POSITION4, PID_Mode_Automatic);
 
+		sendMeasureCounter++;
+
+		if (sendMeasureCounter == 5) {
+			/* envoyer les mesures captees, a remplacer par USART */
+			sendMoveMeasures(numberOfPositionEdges1, numberOfPositionEdges2,
+					numberOfPositionEdges3, numberOfPositionEdges4,
+					numberOfSpeedEdges1, numberOfSpeedEdges2,
+					numberOfSpeedEdges3, numberOfSpeedEdges4);
+
+			sendMeasureCounter = 0;
+		}
+
+		resetEncoderSpeedVariables();
+
 #ifdef ENABLE_ACQUIS
 		if (bufferWheelIndex1 < MAX_WHEEL_INDEX) {
 			bufferWheel1[bufferWheelIndex1++] = numberOfSpeedEdges1;
@@ -544,109 +555,39 @@ extern void TIM2_IRQHandler() {
 			bufferSpeedPI4[bufferSpeedPIIndex4++] = numberOfSpeedEdges4;
 		}
 #endif
-#ifdef ENABLE_ROTATION
-
-		// On met à jour les inputs des PI de vitesse
-		tunningRotationPI1.myInput = numberOfSpeedEdges1;
-		tunningRotationPI2.myInput = numberOfSpeedEdges2;
-		tunningRotationPI3.myInput = numberOfSpeedEdges3;
-		tunningRotationPI4.myInput = numberOfSpeedEdges4;
-
-		// On active les PI de vitesse
-		PID_SetMode(&tunningRotationPI1, PID_Mode_Automatic);
-		PID_SetMode(&tunningRotationPI2, PID_Mode_Automatic);
-		PID_SetMode(&tunningRotationPI3, PID_Mode_Automatic);
-		PID_SetMode(&tunningRotationPI4, PID_Mode_Automatic);
-
-		if (bufferRotationIndex < MAX_ROTATION_INDEX) {
-			bufferRotation[bufferRotationIndex++] =
-			calculatePosition((numberOfPositionEdges1)/ROTATION_RAYON);
-		}
-		if (bufferRotationPIIndex1 < MAX_ROTATION_INDEX) {
-			bufferRotationPI1[bufferRotationPIIndex1++] = numberOfSpeedEdges1;
-		}
-		if (bufferRotationPIIndex2 < MAX_ROTATION_INDEX) {
-			bufferRotationPI2[bufferRotationPIIndex2++] = numberOfSpeedEdges2;
-		}
-		if (bufferRotationPIIndex3 < MAX_ROTATION_INDEX) {
-			bufferRotationPI3[bufferRotationPIIndex3++] = numberOfSpeedEdges3;
-		}
-		if (bufferRotationPIIndex4 < MAX_ROTATION_INDEX) {
-			bufferRotationPI4[bufferRotationPIIndex4++] = numberOfSpeedEdges4;
-		}
-#endif
-		resetEncoderSpeedVariables();
 	}
 }
-/*
- void setPIDCoeficient(float xMove, float yMove) {
- float xMoveAbsolute;
- float yMoveAbsolute;
 
- if (xMove >= 0) {
- xMoveAbsolute = xMove;
- } else {
- xMoveAbsolute = -xMove;
- }
-
- if (yMove >= 0) {
- yMoveAbsolute = yMove;
- } else {
- yMoveAbsolute = -yMove;
- }
-
- float max;
- float min;
- uint8_t xAxisMax;
-
- if (xMoveAbsolute >= yMoveAbsolute) {
- xAxisMax = 1;
- max = xMoveAbsolute;
- min = yMoveAbsolute;
- } else {
- xAxisMax = 0;
- max = yMoveAbsolute;
- min = xMoveAbsolute;
- }
-
-
- float coef = 1 - ((max - min) / max);
-
- if (xAxisMax == 1) {
- PID_POSITION1.coef = coef;
- PID_POSITION3.coef = coef;
- PID_POSITION2.coef = 1;
- PID_POSITION4.coef = 1;
- } else {
- PID_POSITION1.coef = 1;
- PID_POSITION3.coef = 1;
- PID_POSITION2.coef = coef;
- PID_POSITION4.coef = coef;
- }
- }*/
+extern void TIM6_DAC_IRQHandler() {
+	turnOffLEDs();
+	disableTimer6Interrupt();
+}
 
 /* callback when data arrives on USB */
 extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 	switch (type) {
 	case COMMAND_MOVE:
 		if (len == 8 && type == 0) {
-			setMoveSettings(&PID_POSITION1, &PID_POSITION2, &PID_POSITION3,
-					&PID_POSITION4, &PID_SPEED1, &PID_SPEED2, &PID_SPEED3,
-					&PID_SPEED4, data);
+			// stop the robot before moving again
+			stopMove();
 
+			//setMoveSettings(data);
 			resetPositionEncoderVariables();
+
+			setCustomMoveSettings(data);
 
 			setState(&mainState, MAIN_PID);
 		}
 		break;
 	case COMMAND_ROTATE:
 		if (len == 4 && type == COMMAND_ROTATE) {
-
-			setRotateSettings(&PID_POSITION1, &PID_POSITION2, &PID_POSITION3,
-					&PID_POSITION4, &PID_SPEED1, &PID_SPEED2, &PID_SPEED3,
-					&PID_SPEED4, data);
+			// stop the robot before rotating
+			stopMove();
 
 			resetPositionEncoderVariables();
+
+			//setRotateSettings(data);
+			setCustomRotateSettings(data);
 
 			setState(&mainState, MAIN_PID);
 		}
@@ -681,25 +622,31 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 		bFlagTunningDeadZone = 1;
 		break;
 #endif
-#ifdef ENABLE_ROTATION
-		case COMMAND_START_ROTATION:
-		setState(&mainState, MAIN_TEST_ROTATION);
-		break;
-		case COMMAND_SEND_ROTATION:
-		bFlagTunningRotationDone = 1;
-		break;
-#endif
-	case COMMAND_PENCIL_UP:
+	case COMMAND_PREHENSOR_UP:
 		moveUpPrehensor();
+		sendPrehensorUpConfirmation();
 		break;
-	case COMMAND_PENCIL_DOWN:
+	case COMMAND_PREHENSOR_DOWN:
 		moveDownPrehensor();
+		sendPrehensorDownConfirmation();
 		break;
 	case COMMAND_DECODE_MANCHESTER:
 		setState(&mainState, MAIN_MANCH);
 		break;
 	case COMMAND_STOP_DECODE_MANCHESTER:
+		// stop reading and sending adc signal
 		setState(&mainState, MAIN_IDLE);
+		sendStopSendingManchesterSignalConfirmation();
+		break;
+	case COMMAND_RED_LED:
+		turnOnRedLED();
+		EnableTimer6Interrupt();
+		sendRedLightConfirmation();
+		break;
+	case COMMAND_GREEN_LED:
+		turnOnGreenLED();
+		EnableTimer6Interrupt();
+		sendGreenLightConfirmation();
 		break;
 	}
 }

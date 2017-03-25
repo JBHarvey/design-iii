@@ -66,3 +66,65 @@ void sendMoveMeasures(int numberOfPositionEdges1, int numberOfPositionEdges2,
 	VCP_DataTx(dataToSend, 34);
 }
 
+void sendRedLightConfirmation() {
+	uint8_t dataToSend[2];
+	dataToSend[0] = COMMAND_SEND_RED_LED_CONFIRMATION;
+	dataToSend[1] = 0;
+	VCP_DataTx(dataToSend, 2);
+}
+
+void sendGreenLightConfirmation() {
+	uint8_t dataToSend[2];
+	dataToSend[0] = COMMAND_SEND_GREEN_LED_CONFIRMATION;
+	dataToSend[1] = 0;
+	VCP_DataTx(dataToSend, 2);
+}
+
+void sendPrehensorUpConfirmation() {
+	uint8_t dataToSend[2];
+	dataToSend[0] = COMMAND_SEND_PREHENSOR_UP_CONFIRMATION;
+	dataToSend[1] = 0;
+	VCP_DataTx(dataToSend, 2);
+}
+
+void sendPrehensorDownConfirmation() {
+	uint8_t dataToSend[2];
+	dataToSend[0] = COMMAND_SEND_PREHENSOR_DOWN_CONFIRMATION;
+	dataToSend[1] = 0;
+	VCP_DataTx(dataToSend, 2);
+}
+
+void sendStopSendingManchesterSignalConfirmation() {
+	uint8_t dataToSend[2];
+	dataToSend[0] = COMMAND_SEND_PREHENSOR_DOWN_CONFIRMATION;
+	dataToSend[1] = 0;
+	VCP_DataTx(dataToSend, 2);
+}
+
+void sendManchesterCode(uint8_t figure, uint8_t factor, uint8_t *orientation) {
+	uint8_t dataToSend[5];
+	dataToSend[0] = COMMAND_DECODED_MANCHESTER;
+	dataToSend[1] = 3;
+	dataToSend[2] = 1;
+	dataToSend[3] = 4;
+
+	switch (orientation[3]) {
+	case 'o':
+		dataToSend[4] = 'N';
+		break;
+	case 'E':
+		dataToSend[4] = 'E';
+		break;
+	case 'S':
+		dataToSend[4] = 'S';
+		break;
+	case 'e':
+		dataToSend[4] = 'e';
+		break;
+	}
+
+	dataToSend[4] = 'N';
+
+	VCP_DataTx(dataToSend, 5);
+}
+

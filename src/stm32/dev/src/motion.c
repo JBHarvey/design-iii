@@ -138,7 +138,7 @@ void setCustomRotateSettings(uint8_t *data) {
 
 	/* get X Y distances */
 	float radianToRotate = getRadianMoveFromBuffer(data);
-	float move = getMoveFromRadian(radianToRotate);
+	rotateMoveSetpoint = getMoveFromRadian(radianToRotate);
 
 	// reset pid values
 	PID_SPEED1.ITerm = 0;
@@ -152,10 +152,10 @@ void setCustomRotateSettings(uint8_t *data) {
 	PID_SPEED4.lastInput = 0;
 
 	// On defini la direction des roues 1 et 3
-	if (move > 0) {
+	if (rotateMoveSetpoint > 0) {
 		MotorSetDirection(1, CLOCK);
 		MotorSetDirection(3, CLOCK);
-	} else if (move < 0) {
+	} else if (rotateMoveSetpoint < 0) {
 		MotorSetDirection(1, COUNTER_CLOCK);
 		MotorSetDirection(3, COUNTER_CLOCK);
 	} else {
@@ -163,14 +163,71 @@ void setCustomRotateSettings(uint8_t *data) {
 		MotorSetDirection(3, BRAKE_G);
 	}
 	// On defini la direction des roues 2 et 4
-	if (move > 0) {
+	if (rotateMoveSetpoint > 0) {
 		MotorSetDirection(2, CLOCK);
 		MotorSetDirection(4, CLOCK);
-	} else if (move < 0) {
+	} else if (rotateMoveSetpoint < 0) {
 		MotorSetDirection(2, COUNTER_CLOCK);
 		MotorSetDirection(4, COUNTER_CLOCK);
 	} else {
 		MotorSetDirection(2, BRAKE_G);
 		MotorSetDirection(4, BRAKE_G);
 	}
+}
+
+void setSpeedSetpoints() {
+	if (isRobotRotating) {
+
+		float deplacementY = calculatePosition(
+				(-numberOfPositionEdges2 + numberOfPositionEdges4) / 2);
+		float deplacementX = calculatePosition(
+				(-numberOfPositionEdges1 + numberOfPositionEdges3) / 2);
+
+		if ((rotateMoveSetpoint != 0 && deplacementY < (rotateMoveSetpoint / 2))
+				|| (rotateMoveSetpoint != 0
+						&& deplacementX < (rotateMoveSetpoint / 2))) {
+
+			PID_SPEED1.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+			PID_SPEED2.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+			PID_SPEED3.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+			PID_SPEED4.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+		} else {
+
+			PID_SPEED1.mySetpoint = 0;
+			PID_SPEED2.mySetpoint = 0;
+			PID_SPEED3.mySetpoint = 0;
+			PID_SPEED4.mySetpoint = 0;
+			isMoving = 1;
+		}
+
+	} else {
+
+		float deplacementY = calculatePosition(
+				(numberOfPositionEdges2 + numberOfPositionEdges4) / 2);
+		float deplacementX = calculatePosition(
+				(numberOfPositionEdges1 + numberOfPositionEdges3) / 2);
+
+		if ((yMoveSetpoint != 0 && deplacementY < (yMoveSetpoint / 2))
+				|| (xMoveSetpoint != 0 && deplacementX < (xMoveSetpoint / 2))) {
+
+			PID_SPEED1.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+			PID_SPEED2.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+			PID_SPEED3.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+			PID_SPEED4.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+		} else {
+
+			PID_SPEED1.mySetpoint = 0;
+			PID_SPEED2.mySetpoint = 0;
+			PID_SPEED3.mySetpoint = 0;
+			PID_SPEED4.mySetpoint = 0;
+			isMoving = 1;
+		}
+	}
+}
+
+void stopMove() {
+	MotorSetSpeed(1, 0);
+	MotorSetSpeed(2, 0);
+	MotorSetSpeed(3, 0);
+	MotorSetSpeed(4, 0);
 }

@@ -478,54 +478,8 @@ void computeAllPIDS() {
 	}
 }
 
-void computeCustomPIDS(uint8_t isRobotRotating) {
+void computeCustomPIDS() {
 	if (isMoveDone == 0) {
-
-		if (isRobotRotating) {
-
-			float deplacementY = calculatePosition(
-					(-numberOfPositionEdges2 + numberOfPositionEdges4) / 2);
-			float deplacementX = calculatePosition(
-					(-numberOfPositionEdges1 + numberOfPositionEdges3) / 2);
-
-			if ((rotateMoveSetpoint != 0
-					&& deplacementY < (rotateMoveSetpoint / 2))
-					|| (rotateMoveSetpoint != 0
-							&& deplacementX < (rotateMoveSetpoint / 2))) {
-
-				PID_SPEED1.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-				PID_SPEED2.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-				PID_SPEED3.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-				PID_SPEED4.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-			} else {
-				PID_SPEED1.mySetpoint = 0;
-				PID_SPEED2.mySetpoint = 0;
-				PID_SPEED3.mySetpoint = 0;
-				PID_SPEED4.mySetpoint = 0;
-				isMoving = 1;
-			}
-
-		} else {
-
-			float deplacementY = calculatePosition(
-					(numberOfPositionEdges2 + numberOfPositionEdges4) / 2);
-			float deplacementX = calculatePosition(
-					(numberOfPositionEdges1 + numberOfPositionEdges3) / 2);
-			if ((yMoveSetpoint != 0 && deplacementY < (yMoveSetpoint / 2))
-					|| (xMoveSetpoint != 0 && deplacementX < (xMoveSetpoint / 2))) {
-
-				PID_SPEED1.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-				PID_SPEED2.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-				PID_SPEED3.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-				PID_SPEED4.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-			} else {
-				PID_SPEED1.mySetpoint = 0;
-				PID_SPEED2.mySetpoint = 0;
-				PID_SPEED3.mySetpoint = 0;
-				PID_SPEED4.mySetpoint = 0;
-				isMoving = 1;
-			}
-		}
 
 		// Apply command for motor 1
 		if (PID_Compute_Speed(&PID_SPEED1)) {

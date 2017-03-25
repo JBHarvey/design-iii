@@ -30,4 +30,8 @@ void setRotateSettings(uint8_t *data);
 
 void setCustomRotateSettings(uint8_t *data);
 
+void setSpeedSetpoints();
+
+void stopMove();
+
 #endif /* MOTION_H_ */
