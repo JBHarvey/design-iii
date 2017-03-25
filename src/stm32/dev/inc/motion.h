@@ -12,6 +12,8 @@
 #include "defines.h"
 #include "PID_v1.h"
 
+extern uint8_t isRobotRotating;
+
 float getXMoveFromBuffer(uint8_t *data);
 
 float getYMoveFromBuffer(uint8_t *data);
@@ -25,5 +27,7 @@ void setMoveSettings(uint8_t *data);
 void setCustomMoveSettings(uint8_t *data);
 
 void setRotateSettings(uint8_t *data);
+
+void setCustomRotateSettings(uint8_t *data);
 
 #endif /* MOTION_H_ */

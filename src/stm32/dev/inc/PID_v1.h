@@ -67,6 +67,7 @@ extern PidType PID_POSITION4;
 
 extern float xMoveSetpoint;
 extern float yMoveSetpoint;
+extern float rotateMoveSetpoint;
 extern uint8_t isMoving;
 extern uint8_t isMoveDone;
 
@@ -132,7 +133,7 @@ FloatType calculatePosition(FloatType positionEdges);
  *******************************************************/
 void initAllPIDS();
 void computeAllPIDS();
-void computeCustomPIDS();
+void computeCustomPIDS(uint8_t isRobotRotating);
 
 #endif
 
