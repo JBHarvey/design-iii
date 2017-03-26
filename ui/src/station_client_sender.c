@@ -66,7 +66,7 @@ void StationClientSender_sendStartCycleCommand(void)
 
     g_mutex_lock(&network_mutex);
 
-    if(StationInterface_getRobotConnectionStatus() == CONNECTED) {
+    if(StationInterface_isConnectedToRobot) {
         addPacket(data, sizeof(data));
     }
 
@@ -219,7 +219,7 @@ void StationClientSender_sendWorldInformationsToRobot(struct Communication_Objec
 
     g_mutex_lock(&network_mutex);
 
-    if(StationInterface_getRobotConnectionStatus() == CONNECTED) {
+    if(StationInterface_isConnectedToRobot) {
         addPacket(data, sizeof(data));
     }
 
@@ -233,7 +233,7 @@ void StationClientSender_sendImageReceivedAck(void)
 
     g_mutex_lock(&network_mutex);
 
-    if(StationInterface_getRobotConnectionStatus() == CONNECTED) {
+    if(StationInterface_isConnectedToRobot) {
         addPacket(data, sizeof(data));
     }
 

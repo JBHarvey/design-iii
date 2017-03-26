@@ -102,7 +102,7 @@ void WorldVisionDetection_drawObstaclesAndRobot(IplImage *world_camera_back_fram
 
 static void cleanExitIfMainLoopTerminated(CvMemStorage *opencv_storage)
 {
-    if(StationInterface_getStatus() == TERMINATED) {
+    if(!StationInterface_isRunning()) {
         if(opencv_storage != NULL) {
             cvReleaseMemStorage(&opencv_storage);
         }

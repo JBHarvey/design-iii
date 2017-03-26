@@ -52,13 +52,13 @@ static gboolean timeHandler(GtkWidget *widget)
     return TRUE;
 }
 
-enum ThreadStatus StationInterface_getStatus(void)
+int StationInterface_isRunning(void)
 {
     g_mutex_lock(&main_loop_status_mutex);
     enum ThreadStatus status = main_loop_status;
     g_mutex_unlock(&main_loop_status_mutex);
 
-    return status;
+    return status == RUNNING;
 }
 
 void StationInterface_setRobotConnectionStatusOn(void)
@@ -68,13 +68,13 @@ void StationInterface_setRobotConnectionStatusOn(void)
     g_mutex_unlock(&robot_connection_status_mutex);
 }
 
-enum ConnectionStatus StationInterface_getRobotConnectionStatus(void)
+int StationInterface_isConnectedToRobot(void)
 {
     g_mutex_lock(&robot_connection_status_mutex);
     enum ConnectionStatus status = robot_connection_status;
     g_mutex_unlock(&robot_connection_status_mutex);
 
-    return status;
+    return status == CONNECTED;
 }
 
 /* Main thread */

@@ -98,10 +98,6 @@ gpointer StationClient_init(struct StationClient *station_client)
     while(!initTCPClient(station_client)) {
         Logger_startRobotConnectionHandlerSectionAndAppend("Connection to robot failed, trying again");
         usleep(FIVE_SECONDS_IN_MICROSECONDS);
-
-        if(StationInterface_getStatus() == TERMINATED) {
-            return (gpointer) FALSE;
-        }
     }
 
     StationInterface_setRobotConnectionStatusOn();

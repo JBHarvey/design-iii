@@ -146,7 +146,7 @@ static void releaseWorldCamera(void)
 
 static void cleanExitIfMainLoopTerminated(GThread *world_vision_detection_worker_thread)
 {
-    if(StationInterface_getStatus() == TERMINATED) {
+    if(!StationInterface_isRunning) {
         g_mutex_lock(&world_vision_pixbuf_mutex);
         g_object_unref(world_camera_pixbuf);
         g_mutex_unlock(&world_vision_pixbuf_mutex);
