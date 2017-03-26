@@ -161,8 +161,6 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
                     int y = coordinates[i].y;
                     double dx = (double) x;
                     double dy = (double) y;
-                    printf("INT_X: %d, INT_Y: %d", x, y);
-                    printf("DOUBLE_X: %f, DOUBLE_Y: %f", dx, dy);
                     PointTypes_addPointToPoint3DSet(point_set, PointTypes_createPoint3D(dx, dy, 0));
                 }
 

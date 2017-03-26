@@ -227,18 +227,12 @@ void WorldVision_createWorldCameraFrameSafeCopy(void)
 
 static void drawPlannedTrajectory(void)
 {
-    printf("\n TEST2:%d \n", PointTypes_getNumberOfPointStoredInPoint2DSet(current_planned_trajectory));
-
     for(int i = 0; i < PointTypes_getNumberOfPointStoredInPoint2DSet(current_planned_trajectory) - 1; i++) {
         struct Point2D origin = PointTypes_getPointFromPoint2DSet(current_planned_trajectory, i);
         struct Point2D end = PointTypes_getPointFromPoint2DSet(current_planned_trajectory, i + 1);
-        printf("\nx: %d, y: %d", (int) origin.x, (int) origin.y);
-        printf("\nx: %f, y: %f", origin.x, origin.y);
         cvLine(world_camera_frame, cvPoint((int) origin.x, (int) origin.y), cvPoint((int) end.x, (int) end.y),
                CV_RGB(29, 7, 173), SIZE_DRAW_LINES, 8, 0);
     }
-
-    printf("aaaaaaaaaaaaaaaaa");
 }
 
 void WorldVision_applyWorldCameraBackFrame(void)
@@ -302,7 +296,6 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data)
             g_mutex_lock(&world_vision_pixbuf_mutex);
             g_mutex_lock(&world_vision_frame_mutex);
 
-            printf("bbbbbbbbbbbbbbb");
             g_object_unref(world_camera_pixbuf);
             world_camera_pixbuf = gdk_pixbuf_new_from_data((guchar*) world_camera_frame->imageData,
                                   GDK_COLORSPACE_RGB, FALSE, world_camera_frame->depth, world_camera_frame->width,
@@ -344,8 +337,6 @@ void WorldVision_setPlannedTrajectory(struct Point3DSet *world_trajectory)
         WorldVisionCalibration_convertWorldCoordinatesSetToImageCoordinatesSet(world_trajectory, current_planned_trajectory,
                 world_camera);
     }
-
-    printf("\n TEST1:%d \n", PointTypes_getNumberOfPointStoredInPoint2DSet(current_planned_trajectory));
 
     g_mutex_unlock(&world_vision_planned_trajectory_mutex);
 }
