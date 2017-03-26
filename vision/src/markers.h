@@ -3,8 +3,8 @@
 
 struct Marker {
     bool valid;
-    int x;
-    int y;
+    double x;
+    double y;
     double angle;
 };
 

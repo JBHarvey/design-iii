@@ -138,14 +138,14 @@ Test(vision, sortObstacles)
 
 Test(vision, detectMarker)
 {
-    IplImage *image = cvLoadImage("obstacles_robot.jpg", CV_LOAD_IMAGE_COLOR);
+    IplImage *image = cvLoadImage("new_marker.jpg", CV_LOAD_IMAGE_COLOR);
 
     struct Marker marker = detectMarker(image);
 
     cr_assert(marker.valid);
-    cr_assert(in_range(marker.x, 1106, 0.02));
-    cr_assert(in_range(marker.y, 660, 0.02));
-    cr_assert(in_range(marker.angle, 1.46, 0.02));
+    cr_assert(in_range(marker.x, 877, 0.02));
+    cr_assert(in_range(marker.y, 290, 0.02));
+    cr_assert(in_range(marker.angle, -0.22, 0.02));
     cvReleaseImage(&image);
 }
 
