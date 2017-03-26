@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "Logger.h"
+#include "OnboardCamera.h"
 
 static struct Robot *robot;
 struct Logger *logger;
 struct RobotServer *robot_server;
 const int port = 35794;
-char *ttyACM = "/dev/null";
-//char *ttyACM = "/dev/ttyACM0";
+//char *ttyACM = "/dev/null";
+char *ttyACM = "/dev/ttyACM0";
 
 static void waitASecond()
 {
@@ -57,6 +58,22 @@ int main(int argc, char *argv[])
     // MANCHESTER ASK + LOG RETURN TEST
     RobotServer_fetchManchesterCodeCommand();
 
+    // Initialise the camera
+    OnboardCamera_init();
+    waitASecondAndAHalf();
+    waitASecondAndAHalf();
+    waitASecondAndAHalf();
+    waitASecondAndAHalf();
+    IplImage *test_image;
+    struct CoordinatesSequence *image_trajectory = OnboardCamera_extractTrajectoryFromImage(&test_image);
+    /*
+    struct ManchesterCode *code = ManchesterCode_new();
+    ManchesterCode_updateCodeValues(code, 0, TIMES_TWO, WEST);
+
+    */
+    RobotServer_sendImageToStation(test_image);
+    waitFifteenSeconds();
+    RobotServer_sendPlannedTrajectoryToStation(test_image);
 
     /*
     // HOUSE TEST

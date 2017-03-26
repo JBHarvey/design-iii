@@ -9,14 +9,18 @@ static CvCapture *cv_cap;
 CvMat *camera_matrix = 0;
 CvMat *distortion_coeffs = 0;
 
-void OnboardCamera_init()
+void OnboardCamera_init(void)
 {
     CvMemStorage *opencv_storage = cvCreateMemStorage(0);
     camera_matrix = (CvMat *)cvLoad(CALIBRATION_FILE, opencv_storage, "Camera_Matrix", 0);
     distortion_coeffs = (CvMat *)cvLoad(CALIBRATION_FILE, opencv_storage, "Distortion_Coefficients", 0);
 
     if(camera_matrix && distortion_coeffs) {
+        #if (CV_MINOR_VERSION > 1)
+        cv_cap = cvCreateCameraCapture(CAMERA_INDEX);
+        #else
         cv_cap = cvCaptureFromCAM(CAMERA_INDEX);
+        #endif
         cvSetCaptureProperty(cv_cap, CV_CAP_PROP_FRAME_WIDTH, 1600);
         cvSetCaptureProperty(cv_cap, CV_CAP_PROP_FRAME_HEIGHT, 1200);
     }
@@ -24,7 +28,7 @@ void OnboardCamera_init()
 
 /* NOTE: returned image is in yuv color space and must be freed.
  */
-static IplImage *get_image()
+static IplImage *getImage(void)
 {
     IplImage *image = cvQueryFrame(cv_cap);
 
@@ -36,7 +40,7 @@ static IplImage *get_image()
         cvReleaseImage(&image_temp);
         return image_yuv;
     } else {
-        return 0;
+        return NULL;
     }
 }
 
@@ -50,12 +54,13 @@ static int convertToCartesian(double coord)
 
 #define LINE_SIZE 3
 
-struct CoordinatesSequence *OnboardCamera_cvSeqToCoordinatesSequence(IplImage **image_yuv_in_green_square)
+struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **image_yuv_in_green_square)
 {
     CvMemStorage *opencv_storage = cvCreateMemStorage(0);
-    IplImage *image = get_image();
+    IplImage *image = getImage();
     CvSeq *opencv_sequence = findFirstFigure(opencv_storage, image, image_yuv_in_green_square);
-    cvDrawContours(*image_yuv_in_green_square, opencv_sequence, CV_RGB(255, 0, 0), CV_RGB(255, 0, 0), 0, LINE_SIZE, 8, cvPoint(0, 0));
+    cvDrawContours(*image_yuv_in_green_square, opencv_sequence, CV_RGB(255, 0, 0), CV_RGB(255, 0, 0), 0, LINE_SIZE, 8,
+                   cvPoint(0, 0));
 
     struct CoordinatesSequence *sequence = 0;
 
@@ -81,8 +86,8 @@ struct CoordinatesSequence *OnboardCamera_cvSeqToCoordinatesSequence(IplImage **
     return sequence;
 }
 
-void OnboardCamera_deleteImage(IplImage *image)
+void OnboardCamera_deleteImage(void)
 {
-    cvReleaseImage(&image);
+    cvReleaseCapture(&(cv_cap));
 }
 

@@ -8,12 +8,14 @@
 
 #include "CoordinatesSequence.h"
 
-void OnboardCamera_init();
+void OnboardCamera_init(void);
 
 /* NOTE: returned image is in yuv color space and must be freed.
  */
-IplImage *OnboardCamera_get_image();
+//IplImage *OnboardCamera_getImage(void);
 
-struct CoordinatesSequence *OnboardCamera_cvSeqToCoordinatesSequence(IplImage **image_yuv_in_green_square);
+struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **image_yuv_in_green_square);
 
-#endif
+void OnboardCamera_deleteImage(void);
+
+#endif //ONBOARDCAMERA_H
