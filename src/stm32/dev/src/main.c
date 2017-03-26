@@ -130,7 +130,7 @@ int main(void) {
 
 	moveUpPrehensor();
 	Delayms(1000);
-
+	TM_HD44780_Puts(0, 0, "Captain ready");
 	/* Test routine LEDs */
 	//startLEDsRoutine();
 	while (1) {

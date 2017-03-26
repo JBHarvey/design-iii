@@ -490,8 +490,7 @@ void computeCustomPIDS() {
 		// Apply command for motor 2
 		if (PID_Compute_Speed(&PID_SPEED2)) {
 			FloatType cmdMotor = PID_SPEED2.myOutput;
-			uint8_t cmdPWM = (uint8_t) cmdMotor;
-			MotorSetSpeed(2, (uint8_t) cmdPWM);
+			MotorSetSpeed(2, (uint8_t) cmdMotor);
 			PID_SetMode(&PID_SPEED2, PID_Mode_Manual);
 		}
 		// Apply command for motor 3

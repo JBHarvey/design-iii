@@ -216,29 +216,49 @@ void setSpeedSetpoints() {
 				(numberOfPositionEdges1 + numberOfPositionEdges3) / 2);
 
 		/* rendre condition plus lisible */
-		if ((yMoveSetpoint < 0 && (yMoveSetpoint / 2) < deplacementY)
-				|| (yMoveSetpoint > 0 && deplacementY < (yMoveSetpoint / 2))) {
+		/*if ((yMoveSetpoint < 0 && (yMoveSetpoint / 2) < deplacementY)
+		 || (yMoveSetpoint > 0 && deplacementY < (yMoveSetpoint / 2))) {
 
-			PID_SPEED2.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-			PID_SPEED4.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+		 PID_SPEED2.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+		 PID_SPEED4.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+		 } else {
+
+		 PID_SPEED2.mySetpoint = 0;
+		 PID_SPEED4.mySetpoint = 0;
+		 isMoving = 1;
+		 }*/
+
+		if (xMoveSetpoint < 0) {
+			if ((xMoveSetpoint / 2) < deplacementX) {
+				PID_SPEED1.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+				PID_SPEED3.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+			} else {
+				PID_SPEED1.mySetpoint = 0;
+				PID_SPEED3.mySetpoint = 0;
+				isMoving = 1;
+			}
 		} else {
-
-			PID_SPEED2.mySetpoint = 0;
-			PID_SPEED4.mySetpoint = 0;
-			isMoving = 1;
+			if (deplacementX < (xMoveSetpoint / 2)) {
+				PID_SPEED1.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+				PID_SPEED3.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+			} else {
+				PID_SPEED1.mySetpoint = 0;
+				PID_SPEED3.mySetpoint = 0;
+				isMoving = 1;
+			}
 		}
 
-		if ((xMoveSetpoint < 0 && (xMoveSetpoint / 2) < deplacementX)
-				|| (xMoveSetpoint > 0 && deplacementX < (xMoveSetpoint / 2))) {
+		/*if ((xMoveSetpoint < 0 && (xMoveSetpoint / 2) < deplacementX)
+		 || (xMoveSetpoint > 0 && deplacementX < (xMoveSetpoint / 2))) {
 
-			PID_SPEED1.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-			PID_SPEED3.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-		} else {
+		 PID_SPEED1.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+		 PID_SPEED3.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+		 } else {
 
-			PID_SPEED1.mySetpoint = 0;
-			PID_SPEED3.mySetpoint = 0;
-			isMoving = 1;
-		}
+		 PID_SPEED1.mySetpoint = 0;
+		 PID_SPEED3.mySetpoint = 0;
+		 isMoving = 1;
+		 }*/
 	}
 }
 
