@@ -46,10 +46,10 @@ static void sendRotate(int theta)
 
 int main(int argc, char *argv[])
 {
-    logger = Logger_new();
     robot = Robot_new();
     robot_server = RobotServer_new(robot, port, ttyACM);
 
+    logger = Logger_new();
 
     struct DataReceiver_Callbacks test_callbacks = DataReceiver_fetchCallbacks();
     test_callbacks = Logger_startLoggingDataReceiverAndReturnCallbacks(logger, test_callbacks);
