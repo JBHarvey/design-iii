@@ -56,6 +56,10 @@ int main(int argc, char *argv[])
     test_callbacks = Logger_startLoggingDataReceiverAndReturnCallbacks(logger, test_callbacks);
     RobotServer_updateDataReceiverCallbacks(test_callbacks);
 
+    waitFifteenSeconds();
+    waitFifteenSeconds();
+    waitFifteenSeconds();
+    waitFifteenSeconds();
     // MANCHESTER ASK + LOG RETURN TEST
     RobotServer_fetchManchesterCodeCommand();
 
