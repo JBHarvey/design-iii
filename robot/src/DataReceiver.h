@@ -15,6 +15,7 @@ struct DataReceiver_Callbacks {
     void (*updateManchesterCode)(struct ManchesterCode *, struct Communication_ManchesterCode);
     void (*updateFlagsStartCycle)(struct Flags *);
     void (*updateFlagsImageReceivedByStation)(struct Flags *);
+    void (*updateFlagsPlannedTrajectoryReceivedByStation)(struct Flags *);
 };
 
 struct DataReceiver_Callbacks DataReceiver_fetchCallbacks(void);
@@ -25,6 +26,7 @@ void DataReceiver_updateWheelsRotation(struct Wheels *wheels, struct Communicati
 void DataReceiver_updateManchesterCode(struct ManchesterCode *manchester_code, struct Communication_ManchesterCode new_manchester_code);
 void DataReceiver_updateFlagsStartCycle(struct Flags *flags);
 void DataReceiver_updateFlagsImageReceivedByStation(struct Flags *flags);
+void DataReceiver_updateFlagsPlannedTrajectoryReceivedByStation(struct Flags *flags);
 
 struct Mesurements DataReceiver_fetchInputs(struct Mesurements (*communication_callback)(void));
 // See bottom of InformationReceiver.c for why this is commented out.
