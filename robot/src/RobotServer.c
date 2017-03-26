@@ -226,6 +226,10 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             reception_callbacks.updateFlagsStartCycle(flags);
             break;
 
+        case ACK_IMAGE_RECEIVED:
+            reception_callbacks.updateFlagsImageReceivedByStation(flags);
+            break;
+
         case DATA_WORLD:
             if(length != (sizeof(struct Communication_World) + 1)) {
                 printf("wrong struct Communication_World length\n");
