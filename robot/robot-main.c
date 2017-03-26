@@ -70,10 +70,9 @@ int main(int argc, char *argv[])
     IplImage *test_image;
     struct CoordinatesSequence *image_trajectory;
 
-    /*
     do {
         image_trajectory = OnboardCamera_extractTrajectoryFromImage(&test_image);
-    } while(test_image != NULL);
+    } while(test_image == NULL);
 
     struct ManchesterCode *code = ManchesterCode_new();
     ManchesterCode_updateCodeValues(code, 0, TIMES_TWO, WEST);
@@ -81,7 +80,6 @@ int main(int argc, char *argv[])
     RobotServer_sendImageToStation(test_image);
     RobotServer_sendPlannedTrajectoryToStation(image_trajectory);
 
-    */
 
     /*
     // HOUSE TEST
