@@ -62,10 +62,6 @@ int main(int argc, char *argv[])
     // TEST OF CAMERA AND PATH
     // Initialise the camera
     OnboardCamera_init();
-    waitASecondAndAHalf();
-    waitASecondAndAHalf();
-    waitASecondAndAHalf();
-    waitASecondAndAHalf();
 
     IplImage *test_image;
     struct CoordinatesSequence *image_trajectory;
@@ -76,6 +72,7 @@ int main(int argc, char *argv[])
     ManchesterCode_updateCodeValues(code, 0, TIMES_TWO, WEST);
 
     RobotServer_sendImageToStation(test_image);
+    waitFifteenSeconds();
     RobotServer_sendPlannedTrajectoryToStation(image_trajectory);
 
 

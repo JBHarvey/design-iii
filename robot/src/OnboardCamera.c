@@ -39,7 +39,7 @@ static IplImage *getImage(void)
     do {
         image = cvQueryFrame(cv_cap);
         ++buffer;
-    } while(buffer != 100);
+    } while(buffer != 30);
 
     if(camera_matrix && distortion_coeffs) {
         IplImage *image_temp = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
@@ -61,7 +61,7 @@ static int convertToCartesian(double coord)
     return round((coord - (SIZE_SIDE_IN / 2.0)) * (SIZE_SIDE_OUT / SIZE_SIDE_IN));
 }
 
-#define LINE_SIZE 3
+#define LINE_SIZE  30
 
 struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **image_yuv_in_green_square)
 {
@@ -75,12 +75,13 @@ struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **
 
         CvSeq *opencv_sequence = findFirstFigure(opencv_storage, image, image_yuv_in_green_square);
 
-        assert(opencv_sequence != NULL);
-        assert(image != NULL);
-        assert(image_yuv_in_green_square != NULL);
-
         cvDrawContours(*image_yuv_in_green_square, opencv_sequence, CV_RGB(255, 0, 0), CV_RGB(255, 0, 0), 0, LINE_SIZE, 8,
                        cvPoint(0, 0));
+
+        IplImage *image_temp = cvCloneImage(*image_yuv_in_green_square);
+        cvCvtColor(*image_yuv_in_green_square, image_temp, CV_YCrCb2RGB);
+        cvCopy(image_temp, *image_yuv_in_green_square, NULL);
+        cvReleaseImage(&image_temp);
 
         if(opencv_sequence) {
             unsigned int i;
@@ -90,8 +91,6 @@ struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **
                 struct Coordinates *coordinates = Coordinates_new(convertToCartesian(element_pointer->x),
                                                   convertToCartesian(element_pointer->y) * (-1));
 
-                printf("\n Point: (%d,%d)", convertToCartesian(element_pointer->x), (convertToCartesian(element_pointer->y) * -1));
-
                 if(!i) {
                     sequence = CoordinatesSequence_new(coordinates);
                 } else {
@@ -100,6 +99,12 @@ struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **
 
                 Coordinates_delete(coordinates);
             }
+
+            // Loops the trajectory
+            struct Coordinates *first_coordinates = Coordinates_zero();
+            Coordinates_copyValuesFrom(first_coordinates, sequence->coordinates);
+            CoordinatesSequence_append(sequence, first_coordinates);
+            Coordinates_delete(first_coordinates);
         }
 
         cvReleaseMemStorage(&opencv_storage);
