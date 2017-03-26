@@ -8,7 +8,8 @@ struct DataReceiver_Callbacks DataReceiver_fetchCallbacks(void)
         .updateWheelsRotation = &DataReceiver_updateWheelsRotation,
         .updateManchesterCode = &DataReceiver_updateManchesterCode,
         .updateFlagsStartCycle = &DataReceiver_updateFlagsStartCycle,
-        .updateFlagsImageReceivedByStation = &DataReceiver_updateFlagsImageReceivedByStation
+        .updateFlagsImageReceivedByStation = &DataReceiver_updateFlagsImageReceivedByStation,
+        .updateFlagsPlannedTrajectoryReceivedByStation = &DataReceiver_updateFlagsPlannedTrajectoryReceivedByStation
     };
 
     return callbacks;
@@ -251,6 +252,11 @@ void DataReceiver_updateFlagsStartCycle(struct Flags *flags)
 void DataReceiver_updateFlagsImageReceivedByStation(struct Flags *flags)
 {
     Flags_setImageReceivedByStation(flags, 1);
+}
+
+void DataReceiver_updateFlagsPlannedTrajectoryReceivedByStation(struct Flags *flags)
+{
+    Flags_setPlannedTrajectoryReceivedByStation(flags, 1);
 }
 
 struct Mesurements DataReceiver_fetchInputs(struct Mesurements(*communication_callback)(void))

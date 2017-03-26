@@ -15,7 +15,8 @@ Test(DataReceiver, given_when_fetchDataReceiverCallbacks_then_theCorrectSturctur
                                  struct Communication_ManchesterCode) = &DataReceiver_updateManchesterCode;
     void (*updateFlagsStartCycle)(struct Flags *) = &DataReceiver_updateFlagsStartCycle;
     void (*updateFlagsImageReceivedByStation)(struct Flags *) = &DataReceiver_updateFlagsImageReceivedByStation;
-
+    void (*updateFlagsPlannedTrajectoryReceivedByStation)(struct Flags *) =
+        &DataReceiver_updateFlagsPlannedTrajectoryReceivedByStation;
 
     struct DataReceiver_Callbacks callbacks = DataReceiver_fetchCallbacks();
     cr_assert_eq(callbacks.updateWorld, updateWorld);
@@ -24,6 +25,7 @@ Test(DataReceiver, given_when_fetchDataReceiverCallbacks_then_theCorrectSturctur
     cr_assert_eq(callbacks.updateManchesterCode, updateManchesterCode);
     cr_assert_eq(callbacks.updateFlagsStartCycle, updateFlagsStartCycle);
     cr_assert_eq(callbacks.updateFlagsImageReceivedByStation, updateFlagsImageReceivedByStation);
+    cr_assert_eq(callbacks.updateFlagsPlannedTrajectoryReceivedByStation, updateFlagsPlannedTrajectoryReceivedByStation);
 }
 
 void setup_Flags(void)
@@ -53,6 +55,16 @@ Test(DataReceiver,
     DataReceiver_updateFlagsImageReceivedByStation(flags);
 
     cr_assert(flags->image_received_by_station);
+}
+
+Test(DataReceiver,
+     given_anAcknowledgementOfPlannedTrajectoryReceivedByStation_when_updateFlagsPlannedTrajectoryReceivedByStation_then_itsValueIsSetToOne,
+     .init = setup_Flags,
+     .fini = teardown_Flags)
+{
+    DataReceiver_updateFlagsPlannedTrajectoryReceivedByStation(flags);
+
+    cr_assert(flags->planned_trajectory_received_by_station);
 }
 
 // World data

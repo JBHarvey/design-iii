@@ -240,3 +240,18 @@ void StationClientSender_sendImageReceivedAck(void)
     g_mutex_unlock(&network_mutex);
 }
 
+void StationClientSender_sendPlannedTrajectoryAck(void)
+{
+    uint8_t data[1];
+    data[0] = ACK_PLANNED_TRAJECTORY_RECEIVED;
+
+    g_mutex_lock(&network_mutex);
+
+    if(StationInterface_isConnectedToRobot) {
+        addPacket(data, sizeof(data));
+    }
+
+    g_mutex_unlock(&network_mutex);
+
+}
+

@@ -230,6 +230,10 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             reception_callbacks.updateFlagsImageReceivedByStation(flags);
             break;
 
+        case ACK_PLANNED_TRAJECTORY_RECEIVED:
+            reception_callbacks.updateFlagsPlannedTrajectoryReceivedByStation(flags);
+            break;
+
         case DATA_WORLD:
             if(length != (sizeof(struct Communication_World) + 1)) {
                 printf("wrong struct Communication_World length\n");
@@ -413,6 +417,6 @@ void RobotServer_fetchManchesterCodeCommand(void)
 {
     writeTTYACMPacket(COMMAND_TYPE_FETCH_MANCHESTER, 0, ACTION_ONLY_COMMAND_LENGTH);
 }
-// all of these have the command type + the ACTION_ONLY_COMMAND_LENGHT
+// all of these have the command type + the ACTION_ONLY_COMMAND_LENGTH
 void RobotServer_sendStopSendingManchesterSignalCommand(void) {}
 
