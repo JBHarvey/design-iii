@@ -166,3 +166,15 @@ int Coordinates_computeMeanY(struct Coordinates *a, struct Coordinates *b)
     int mean_y = (a->y + b->y) / 2;
     return mean_y;
 }
+
+void Coordinates_translateOf(struct Coordinates *toTranslate, struct Coordinates *delta)
+{
+    toTranslate->x += delta->x;
+    toTranslate->y += delta->y;
+}
+
+void Coordinates_scaleOf(struct Coordinates *toScale, int scale_factor)
+{
+    toScale->x *= scale_factor;
+    toScale->y *= scale_factor;
+}

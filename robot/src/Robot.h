@@ -4,6 +4,7 @@
 #include "WorldCamera.h"
 #include "Wheels.h"
 #include "ManchesterCode.h"
+#include "OnboardCamera.h"
 
 struct Robot {
     struct Object *object;
