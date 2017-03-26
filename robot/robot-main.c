@@ -19,6 +19,16 @@ static void waitASecondAndAHalf()
     usleep(1500000);
 }
 
+static void waitFifteenSecond()
+{
+    usleep(15000000);
+}
+
+static void waitThirtySecond()
+{
+    usleep(30000000);
+}
+
 static void sendTranslate(int x, int y)
 {
     struct Command_Translate command = { .x = x, .y = y };
@@ -46,6 +56,29 @@ int main(int argc, char *argv[])
 
     // MANCHESTER ASK + LOG RETURN TEST
     RobotServer_fetchManchesterCodeCommand();
+
+
+    waitFifteenSecond();
+    waitFifteenSecond();
+    waitFifteenSecond();
+    waitFifteenSecond();
+
+    struct Coordinates *c1 = Coordinates_new(9000, 9000);
+    struct Coordinates *c2 = Coordinates_new(9000, 10000);
+    struct Coordinates *c3 = Coordinates_new(10000, 9000);
+    struct Coordinates *c4 = Coordinates_new(9000, 9000);
+    struct CoordinatesSequence *sequence = CoordinatesSequence_new(c1);
+    CoordinatesSequence_append(sequence, c2);
+    CoordinatesSequence_append(sequence, c3);
+    CoordinatesSequence_append(sequence, c4);
+
+    RobotServer_sendPlannedTrajectoryToStation(sequence);
+
+    CoordinatesSequence_delete(sequence);
+    Coordinates_delete(c1);
+    Coordinates_delete(c2);
+    Coordinates_delete(c3);
+    Coordinates_delete(c4);
 
     /*
     // HOUSE TEST

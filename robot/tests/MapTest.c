@@ -454,7 +454,6 @@ void setup_FreeMap(void)
     struct Coordinates *south_eastern_table_corner = Coordinates_new(THEORICAL_WORLD_LENGTH, 0);
     struct Coordinates *north_western_table_corner = Coordinates_new(0, THEORICAL_WORLD_HEIGHT);
     struct Coordinates *north_eastern_table_corner = Coordinates_new(THEORICAL_WORLD_LENGTH, THEORICAL_WORLD_HEIGHT);
-
     Map_updateTableCorners(map, north_eastern_table_corner, south_eastern_table_corner, south_western_table_corner,
                            north_western_table_corner);
 
@@ -581,4 +580,206 @@ Test(Map, given_coordinatesFreeOfTheWallsAndObstacles_when_askedIfItIsFree_then_
     cr_assert(is_within_navigable_space);
 
     Coordinates_delete(coordinates);
+}
+
+const int MAP_MANCHESTER_PAINTING_NUMBER = 0;
+struct ManchesterCode *manchester_code;
+const int DRAWING_SIZE = 666;
+struct Coordinates *upper_right;
+struct Coordinates *lower_right;
+struct Coordinates *lower_left;
+struct Coordinates *upper_left;
+struct CoordinatesSequence *sequence;
+
+void setup_DrawingMap(void)
+{
+    setup_Map();
+    upper_right = Coordinates_new(DRAWING_SIZE, DRAWING_SIZE);
+    lower_right = Coordinates_new(DRAWING_SIZE, -DRAWING_SIZE);
+    lower_left = Coordinates_new(-DRAWING_SIZE, -DRAWING_SIZE);
+    upper_left = Coordinates_new(-DRAWING_SIZE, DRAWING_SIZE);
+    sequence = CoordinatesSequence_new(upper_right);
+    CoordinatesSequence_append(sequence, lower_right);
+    CoordinatesSequence_append(sequence, lower_left);
+    CoordinatesSequence_append(sequence, upper_left);
+
+    manchester_code = ManchesterCode_new();
+    struct Coordinates *south_western_drawing_corner = Coordinates_new(THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_X -
+            THEORICAL_DRAWING_ZONE_SIDE, THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_Y);
+    struct Coordinates *south_eastern_drawing_corner = Coordinates_new(THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_X,
+            THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_Y);
+    struct Coordinates *north_western_drawing_corner = Coordinates_new(THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_X -
+            THEORICAL_DRAWING_ZONE_SIDE, THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_Y + THEORICAL_DRAWING_ZONE_SIDE);
+    struct Coordinates *north_eastern_drawing_corner = Coordinates_new(THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_X,
+            THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_Y + THEORICAL_DRAWING_ZONE_SIDE);
+
+    Map_updateDrawingCorners(map, north_eastern_drawing_corner, south_eastern_drawing_corner, south_western_drawing_corner,
+                             north_western_drawing_corner);
+    Coordinates_delete(south_western_drawing_corner);
+    Coordinates_delete(south_eastern_drawing_corner);
+    Coordinates_delete(north_western_drawing_corner);
+    Coordinates_delete(north_eastern_drawing_corner);
+}
+
+void teardown_DrawingMap(void)
+{
+    Coordinates_delete(upper_right);
+    Coordinates_delete(lower_right);
+    Coordinates_delete(lower_left);
+    Coordinates_delete(upper_left);
+    ManchesterCode_delete(manchester_code);
+    CoordinatesSequence_delete(sequence);
+    teardown_Map();
+}
+
+void assertCoordinatesHaveTheSameValuesWithTolerance(struct Coordinates *received_coordinates,
+        struct Coordinates *expected_coordinates, int tolerance)
+{
+    int expected_x = expected_coordinates->x;
+    int expected_y = expected_coordinates->y;
+    int received_x = received_coordinates->x;
+    int received_y = received_coordinates->y;
+    cr_assert((expected_x == received_x ||
+               expected_x == received_x + tolerance ||
+               expected_x == received_x - tolerance)
+              &&
+              (expected_y == received_y ||
+               expected_y == received_y + tolerance ||
+               expected_y == received_y - tolerance)
+              ,
+              "ManchesterCode transformation. \n Expected : (%d,%d) ± %d\nReceived : (%d,%d)\n",
+              expected_x, expected_y,
+              tolerance,
+              received_x, received_y
+             );
+}
+
+
+Test(Map, given_aCoordinatesSequenceAndAManchesterCodeWithEastOrientation_when_askedToCreateTheDrawingTrajectory_then_itIsRotatedToTheMinusHalfPi
+     , .init = setup_DrawingMap
+     , .fini = teardown_DrawingMap)
+{
+    struct Coordinates *zero = Coordinates_zero();
+    Map_updateDrawingCorners(map, zero, zero, zero, zero);
+    ManchesterCode_updateCodeValues(manchester_code, MAP_MANCHESTER_PAINTING_NUMBER, 1, EAST);
+    struct Angle *angle = ManchesterCode_retrieveOrientationAngle(manchester_code);
+    struct Coordinates *expected_coordinates_upper_right = Coordinates_zero();
+    struct Coordinates *expected_coordinates_upper_left = Coordinates_zero();
+    struct Coordinates *expected_coordinates_lower_right = Coordinates_zero();
+    struct Coordinates *expected_coordinates_lower_left = Coordinates_zero();
+
+    Coordinates_copyValuesFrom(expected_coordinates_upper_right, upper_right);
+    Coordinates_copyValuesFrom(expected_coordinates_upper_left, upper_left);
+    Coordinates_copyValuesFrom(expected_coordinates_lower_right, lower_right);
+    Coordinates_copyValuesFrom(expected_coordinates_lower_left, lower_left);
+
+    Map_createDrawingTrajectory(map, manchester_code, sequence);
+
+    struct CoordinatesSequence *sequence_head = sequence;
+
+    Coordinates_rotateOfAngle(expected_coordinates_lower_left, angle);
+    Coordinates_rotateOfAngle(expected_coordinates_upper_left, angle);
+    Coordinates_rotateOfAngle(expected_coordinates_upper_right, angle);
+    Coordinates_rotateOfAngle(expected_coordinates_lower_right, angle);
+
+    assertCoordinatesHaveTheSameValuesWithTolerance(sequence->coordinates, expected_coordinates_upper_right, 1);
+    sequence = sequence->next_element;
+    assertCoordinatesHaveTheSameValuesWithTolerance(sequence->coordinates, expected_coordinates_lower_right, 1);
+    sequence = sequence->next_element;
+    assertCoordinatesHaveTheSameValuesWithTolerance(sequence->coordinates, expected_coordinates_lower_left, 1);
+    sequence = sequence->next_element;
+    assertCoordinatesHaveTheSameValuesWithTolerance(sequence->coordinates, expected_coordinates_upper_left, 1);
+    sequence = sequence_head;
+
+    Angle_delete(angle);
+    Coordinates_delete(zero);
+    Coordinates_delete(expected_coordinates_upper_right);
+    Coordinates_delete(expected_coordinates_upper_left);
+    Coordinates_delete(expected_coordinates_lower_right);
+    Coordinates_delete(expected_coordinates_lower_left);
+}
+
+Test(Map, given_aCoordinatesSequenceAndAManchesterCodeWithTimesTwoScaleFactor_when_askedToCreateTheDrawingTrajectory_then_itScaleCorrectly
+     , .init = setup_DrawingMap
+     , .fini = teardown_DrawingMap)
+{
+    struct Coordinates *zero = Coordinates_zero();
+    Map_updateDrawingCorners(map, zero, zero, zero, zero);
+    ManchesterCode_updateCodeValues(manchester_code, MAP_MANCHESTER_PAINTING_NUMBER, TIMES_TWO, NORTH);
+    struct Coordinates *expected_coordinates_upper_right = Coordinates_zero();
+    struct Coordinates *expected_coordinates_upper_left = Coordinates_zero();
+    struct Coordinates *expected_coordinates_lower_right = Coordinates_zero();
+    struct Coordinates *expected_coordinates_lower_left = Coordinates_zero();
+
+    Coordinates_copyValuesFrom(expected_coordinates_upper_right, upper_right);
+    Coordinates_copyValuesFrom(expected_coordinates_upper_left, upper_left);
+    Coordinates_copyValuesFrom(expected_coordinates_lower_right, lower_right);
+    Coordinates_copyValuesFrom(expected_coordinates_lower_left, lower_left);
+
+    Map_createDrawingTrajectory(map, manchester_code, sequence);
+
+    struct CoordinatesSequence *sequence_head = sequence;
+
+    Coordinates_scaleOf(expected_coordinates_lower_left, TIMES_TWO);
+    Coordinates_scaleOf(expected_coordinates_upper_left, TIMES_TWO);
+    Coordinates_scaleOf(expected_coordinates_upper_right, TIMES_TWO);
+    Coordinates_scaleOf(expected_coordinates_lower_right, TIMES_TWO);
+
+    assertCoordinatesHaveTheSameValuesWithTolerance(sequence->coordinates, expected_coordinates_upper_right, 1);
+    sequence = sequence->next_element;
+    assertCoordinatesHaveTheSameValuesWithTolerance(sequence->coordinates, expected_coordinates_lower_right, 1);
+    sequence = sequence->next_element;
+    assertCoordinatesHaveTheSameValuesWithTolerance(sequence->coordinates, expected_coordinates_lower_left, 1);
+    sequence = sequence->next_element;
+    assertCoordinatesHaveTheSameValuesWithTolerance(sequence->coordinates, expected_coordinates_upper_left, 1);
+    sequence = sequence_head;
+
+    Coordinates_delete(zero);
+    Coordinates_delete(expected_coordinates_upper_right);
+    Coordinates_delete(expected_coordinates_upper_left);
+    Coordinates_delete(expected_coordinates_lower_right);
+    Coordinates_delete(expected_coordinates_lower_left);
+}
+
+Test(Map, given_aCoordinatesSequenceAndAManchesterCodeWithNoChangesInRotationAndScaling_when_askedToCreateTheDrawingTrajectory_then_itTranslatedCorrectlyToTheDrawingZone
+     , .init = setup_DrawingMap
+     , .fini = teardown_DrawingMap)
+{
+    int x = Coordinates_computeMeanX(map->south_western_drawing_corner, map->north_eastern_drawing_corner);
+    int y = Coordinates_computeMeanY(map->south_western_drawing_corner, map->north_eastern_drawing_corner);
+    struct Coordinates *new_center = Coordinates_new(x, y);
+    ManchesterCode_updateCodeValues(manchester_code, MAP_MANCHESTER_PAINTING_NUMBER, 1, NORTH);
+    struct Coordinates *expected_coordinates_upper_right = Coordinates_zero();
+    struct Coordinates *expected_coordinates_upper_left = Coordinates_zero();
+    struct Coordinates *expected_coordinates_lower_right = Coordinates_zero();
+    struct Coordinates *expected_coordinates_lower_left = Coordinates_zero();
+
+    Coordinates_copyValuesFrom(expected_coordinates_upper_right, upper_right);
+    Coordinates_copyValuesFrom(expected_coordinates_upper_left, upper_left);
+    Coordinates_copyValuesFrom(expected_coordinates_lower_right, lower_right);
+    Coordinates_copyValuesFrom(expected_coordinates_lower_left, lower_left);
+
+    Map_createDrawingTrajectory(map, manchester_code, sequence);
+
+    struct CoordinatesSequence *sequence_head = sequence;
+
+    Coordinates_translateOf(expected_coordinates_lower_left, new_center);
+    Coordinates_translateOf(expected_coordinates_upper_left, new_center);
+    Coordinates_translateOf(expected_coordinates_upper_right, new_center);
+    Coordinates_translateOf(expected_coordinates_lower_right, new_center);
+
+    assertCoordinatesHaveTheSameValuesWithTolerance(sequence->coordinates, expected_coordinates_upper_right, 1);
+    sequence = sequence->next_element;
+    assertCoordinatesHaveTheSameValuesWithTolerance(sequence->coordinates, expected_coordinates_lower_right, 1);
+    sequence = sequence->next_element;
+    assertCoordinatesHaveTheSameValuesWithTolerance(sequence->coordinates, expected_coordinates_lower_left, 1);
+    sequence = sequence->next_element;
+    assertCoordinatesHaveTheSameValuesWithTolerance(sequence->coordinates, expected_coordinates_upper_left, 1);
+    sequence = sequence_head;
+
+    Coordinates_delete(new_center);
+    Coordinates_delete(expected_coordinates_upper_right);
+    Coordinates_delete(expected_coordinates_upper_left);
+    Coordinates_delete(expected_coordinates_lower_right);
+    Coordinates_delete(expected_coordinates_lower_left);
 }

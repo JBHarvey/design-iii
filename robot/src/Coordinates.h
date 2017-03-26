@@ -47,6 +47,8 @@ int Coordinates_distanceFromOrigin(struct Coordinates *destination);
 
 void Coordinates_rotateOfAngleAround(struct Coordinates *toRotate, struct Angle *angle, struct Coordinates *rotationOrigin);
 void Coordinates_rotateOfAngle(struct Coordinates *toRotate, struct Angle *angle);
+void Coordinates_translateOf(struct Coordinates *toTranslate, struct Coordinates *delta);
+void Coordinates_scaleOf(struct Coordinates *toScale, int scale_factor);
 
 int Coordinates_computeMeanX(struct Coordinates *a, struct Coordinates *b);
 int Coordinates_computeMeanY(struct Coordinates *a, struct Coordinates *b);

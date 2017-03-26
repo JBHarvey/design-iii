@@ -3,6 +3,8 @@
 
 #include "Obstacle.h"
 #include "State.h"
+#include "ManchesterCode.h"
+#include "CoordinatesSequence.h"
 
 struct Map {
     struct Object *object;
@@ -44,4 +46,5 @@ struct Obstacle *Map_retrieveFirstOverlappingObstacle(struct Map *map);
 struct Obstacle *Map_retrieveLastOverlappingObstacle(struct Map *map);
 
 int Map_isCoordinateFree(struct Map *map, struct Coordinates *coordinates);
+void Map_createDrawingTrajectory(struct Map *map, struct ManchesterCode *manchester_code, struct CoordinatesSequence *coordinates_sequence);
 #endif // MAP_H_
