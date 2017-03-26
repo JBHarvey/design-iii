@@ -57,27 +57,30 @@ const int TEST_PAINTING_7_X = 4060;
 const int TEST_PAINTING_7_Y = 8500;
 const int TEST_PAINTING_7_ORIENTATION = HALF_PI;
 
-static GMutex network_mutex;
+GMutex add_packet_mutex;
+GMutex communicate_mutex;
+
+static void addPacketToQueue(uint8_t *data, uint32_t length)
+{
+    if(StationInterface_isConnectedToRobot) {
+        g_mutex_lock(&add_packet_mutex);
+        addPacket(data, length);
+        g_mutex_unlock(&add_packet_mutex);
+    }
+}
 
 void StationClientSender_sendStartCycleCommand(void)
 {
     uint8_t data[1];
     data[0] = COMMAND_START_CYCLE;
-
-    g_mutex_lock(&network_mutex);
-
-    if(StationInterface_isConnectedToRobot) {
-        addPacket(data, sizeof(data));
-    }
-
-    g_mutex_unlock(&network_mutex);
+    addPacketToQueue(data, sizeof(data));
 }
 
 void StationClientSender_sendReceiveData(struct StationClient *station_client)
 {
-    g_mutex_lock(&network_mutex);
+    g_mutex_lock(&communicate_mutex);
     StationClient_communicate(station_client);
-    g_mutex_unlock(&network_mutex);
+    g_mutex_unlock(&communicate_mutex);
 }
 
 void StationClientSender_sendWorldInformationsToRobot(struct Communication_Object *obstacles,
@@ -217,13 +220,7 @@ void StationClientSender_sendWorldInformationsToRobot(struct Communication_Objec
     memcpy(communication_world.environment.obstacles, obstacles, num_obstacles * sizeof(struct Communication_Object));
     memcpy(data + 1, &communication_world, sizeof(struct Communication_World));
 
-    g_mutex_lock(&network_mutex);
-
-    if(StationInterface_isConnectedToRobot) {
-        addPacket(data, sizeof(data));
-    }
-
-    g_mutex_unlock(&network_mutex);
+    addPacketToQueue(data, sizeof(data));
 }
 
 void StationClientSender_sendImageReceivedAck(void)
@@ -231,13 +228,7 @@ void StationClientSender_sendImageReceivedAck(void)
     uint8_t data[1];
     data[0] = ACK_IMAGE_RECEIVED;
 
-    g_mutex_lock(&network_mutex);
-
-    if(StationInterface_isConnectedToRobot) {
-        addPacket(data, sizeof(data));
-    }
-
-    g_mutex_unlock(&network_mutex);
+    addPacketToQueue(data, sizeof(data));
 }
 
 void StationClientSender_sendPlannedTrajectoryAck(void)
@@ -245,13 +236,6 @@ void StationClientSender_sendPlannedTrajectoryAck(void)
     uint8_t data[1];
     data[0] = ACK_PLANNED_TRAJECTORY_RECEIVED;
 
-    g_mutex_lock(&network_mutex);
-
-    if(StationInterface_isConnectedToRobot) {
-        addPacket(data, sizeof(data));
-    }
-
-    g_mutex_unlock(&network_mutex);
-
+    addPacketToQueue(data, sizeof(data));
 }
 
