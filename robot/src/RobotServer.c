@@ -10,8 +10,6 @@
 #include <termios.h>
 #include "opencv2/imgcodecs/imgcodecs_c.h"
 
-#include "Logger.h"
-#include <unistd.h>
 #include "RobotServer.h"
 #include "CommunicationStructures.h"
 

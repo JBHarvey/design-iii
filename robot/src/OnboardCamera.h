@@ -10,10 +10,6 @@
 
 void OnboardCamera_init(void);
 
-/* NOTE: returned image is in yuv color space and must be freed.
- */
-//IplImage *OnboardCamera_getImage(void);
-
 struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **image_yuv_in_green_square);
 
 void OnboardCamera_deleteImageAndFreeCamera(IplImage **image);
