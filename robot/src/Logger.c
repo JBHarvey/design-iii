@@ -264,32 +264,53 @@ void Logger_sendRotateCommand(struct Command_Rotate rotate_command)
     (*(file_logger->original_command_sender_callbacks.sendRotateCommand))(rotate_command);
 }
 
+static const char *PARAMETERLESS_COMMAND = "Sending ";
+static const char *LIGHT_RED_LED_COMMAND = "Light Red LED:";
+static const char *LIGHT_GREEN_LED_COMMAND = "Light Green LED:";
+static const char *RISE_PEN_COMMAND = "Rise Pen:";
+static const char *LOWER_PEN_COMMAND = "Lower Pen:";
+static const char *FETCH_MANCHESTER_CODE_COMMAND = "Fetch Manchester Code:";
+static const char *STOP_SENDING_MANCHESTER_SIGNAL_COMMAND = "Stop Sending Manchester Signal:";
+
+static void logCommand(const char *command_type)
+{
+    fprintf(file_logger->log_file,
+            "\n%s%s%s \n",
+            ITEM, PARAMETERLESS_COMMAND, command_type);
+}
+
 void Logger_sendLightRedLEDCommand(void)
 {
+    logCommand(LIGHT_RED_LED_COMMAND);
     (*(file_logger->original_command_sender_callbacks.sendLightRedLEDCommand))();
 }
 
 void Logger_sendLightGreenLEDCommand(void)
 {
+    logCommand(LIGHT_GREEN_LED_COMMAND);
     (*(file_logger->original_command_sender_callbacks.sendLightGreenLEDCommand))();
 }
 
 void Logger_sendRisePenCommand(void)
 {
+    logCommand(RISE_PEN_COMMAND);
     (*(file_logger->original_command_sender_callbacks.sendRisePenCommand))();
 }
 
 void Logger_sendLowerPenCommand(void)
 {
+    logCommand(LOWER_PEN_COMMAND);
     (*(file_logger->original_command_sender_callbacks.sendLowerPenCommand))();
 }
 
 void Logger_sendFetchManchesterCode(void)
 {
+    logCommand(FETCH_MANCHESTER_CODE_COMMAND);
     (*(file_logger->original_command_sender_callbacks.sendFetchManchesterCodeCommand))();
 }
 
 void Logger_sendStopSendingManchesterSignal(void)
 {
+    logCommand(STOP_SENDING_MANCHESTER_SIGNAL_COMMAND);
     (*(file_logger->original_command_sender_callbacks.sendStopSendingManchesterSignalCommand))();
 }
