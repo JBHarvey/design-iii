@@ -10,6 +10,8 @@
 #include <termios.h>
 #include "opencv2/imgcodecs/imgcodecs_c.h"
 
+#include "Logger.h"
+#include <unistd.h>
 #include "RobotServer.h"
 #include "CommunicationStructures.h"
 
@@ -208,6 +210,8 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
     struct Flags *flags = robot_server->robot->current_state->flags;
     struct WorldCamera *world_camera = robot_server->robot->world_camera;
 
+    FILE *test_file = fopen("Test.log", "+a");
+
     switch(data[0]) {
         /*
         case DATA_TRANSLATION:
@@ -223,9 +227,7 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             */
 
         case COMMAND_START_CYCLE:
-            FILE *test_file = fopen("Test.log", "+a");
             fprintf(test_file, "Reception of start cycle packet");
-            fclose(test_file);
             Logger_debugLog("Reception of start cycle packet");
             reception_callbacks.updateFlagsStartCycle(flags);
             break;
@@ -252,6 +254,8 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 
             break;
     }
+
+    fclose(test_file);
 }
 
 
