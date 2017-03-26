@@ -15,6 +15,7 @@ void Logger_updateWorld(struct WorldCamera *world_camera, struct Communication_W
 void Logger_updateWheelsTranslation(struct Wheels *wheels, struct Communication_Translation translation);
 void Logger_updateWheelsRotation(struct Wheels *wheels, struct Communication_Rotation rotation);
 void Logger_updateManchesterCode(struct ManchesterCode *manchester_code, struct Communication_ManchesterCode code_informations);
-void Logger_updateFlagsStartCycle(struct Flags *flags, int new_value);
+void Logger_updateFlagsStartCycle(struct Flags *flags);
+void Logger_updateFlagsImageReceivedByStation(struct Flags *flags);
 
 #endif // LOGGER_H_
