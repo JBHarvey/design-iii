@@ -128,6 +128,7 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
                 cvReleaseMat(&image_data);
                 RobotVision_setImage(image);
                 cvReleaseImage(&image);
+                Logger_startRobotConnectionHandlerSectionAndAppend("Image received.");
                 StationClientSender_sendImageReceivedAck();
                 break;
             }
@@ -151,6 +152,7 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 
                 WorldVision_setPlannedTrajectory(point_set);
                 PointTypes_releasePoint3DSet(point_set);
+                Logger_startRobotConnectionHandlerSectionAndAppend("Planned trajectory received.");
                 StationClientSender_sendPlannedTrajectoryAck();
                 break;
             }
