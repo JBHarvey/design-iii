@@ -76,7 +76,6 @@ int main(int argc, char *argv[])
     ManchesterCode_updateCodeValues(code, 0, TIMES_TWO, WEST);
 
     RobotServer_sendImageToStation(test_image);
-    waitFifteenSeconds();
     RobotServer_sendPlannedTrajectoryToStation(image_trajectory);
 
 
