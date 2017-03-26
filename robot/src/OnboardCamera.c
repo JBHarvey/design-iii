@@ -65,10 +65,19 @@ struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **
 
 
     if(image != NULL) {
+        assert(image_yuv_in_green_square != NULL);
+        assert(image != NULL);
+
         CvSeq *opencv_sequence = findFirstFigure(opencv_storage, image, image_yuv_in_green_square);
         assert(opencv_sequence != NULL);
+        assert(image_yuv_in_green_square != NULL);
+        assert(image != NULL);
+
         cvDrawContours(*image_yuv_in_green_square, opencv_sequence, CV_RGB(255, 0, 0), CV_RGB(255, 0, 0), 0, LINE_SIZE, 8,
                        cvPoint(0, 0));
+        assert(opencv_sequence != NULL);
+        assert(image_yuv_in_green_square != NULL);
+        assert(image != NULL);
 
         if(opencv_sequence) {
             unsigned int i;
