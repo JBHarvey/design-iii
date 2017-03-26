@@ -128,6 +128,9 @@ int main(void) {
 
 	initPrehensor();
 
+	moveUpPrehensor();
+	Delayms(1000);
+
 	/* Test routine LEDs */
 	//startLEDsRoutine();
 	while (1) {
@@ -136,7 +139,7 @@ int main(void) {
 		case MAIN_IDLE:
 			break;
 		case MAIN_MOVE:
-			motorRoutine();
+			//motorRoutine();
 			break;
 		case MAIN_ACQUIS_ALL:
 #ifdef ENABLE_ACQUIS
@@ -160,10 +163,8 @@ int main(void) {
 			break;
 
 		case MAIN_PID:
-			//computeAllPIDS();
 			setSpeedSetpoints();
 			computeCustomPIDS();
-
 			break;
 		case MAIN_MANCH:
 
@@ -447,10 +448,10 @@ extern void TIM2_IRQHandler() {
 
 		if (sendMeasureCounter == 5) {
 			/* envoyer les mesures captees, a remplacer par USART */
-			sendMoveMeasures(numberOfPositionEdges1, numberOfPositionEdges2,
-					numberOfPositionEdges3, numberOfPositionEdges4,
-					numberOfSpeedEdges1, numberOfSpeedEdges2,
-					numberOfSpeedEdges3, numberOfSpeedEdges4);
+			/*sendMoveMeasures(numberOfPositionEdges1, numberOfPositionEdges2,
+			 numberOfPositionEdges3, numberOfPositionEdges4,
+			 numberOfSpeedEdges1, numberOfSpeedEdges2,
+			 numberOfSpeedEdges3, numberOfSpeedEdges4);*/
 
 			sendMeasureCounter = 0;
 		}
@@ -572,6 +573,7 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 	switch (type) {
 	case COMMAND_MOVE:
 		if (len == 8 && type == 0) {
+
 			// stop the robot before moving again
 			stopMove();
 

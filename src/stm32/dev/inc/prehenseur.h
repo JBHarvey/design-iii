@@ -12,7 +12,7 @@
 #define PREHENSOR_PRESCALER 28
 
 #define PREHENSOR_UP_PWM 9
-#define PREHENSOR_DOWN_PWM 6
+#define PREHENSOR_DOWN_PWM 7
 
 void initPrehensor();
 void initPrehensorTIM(void);

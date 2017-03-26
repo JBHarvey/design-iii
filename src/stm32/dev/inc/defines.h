@@ -54,7 +54,7 @@
 #define MSG_ERR "Etat invalide"
 
 /* PID positiob tolerance */
-#define PID_POSITION_TOLERANCE 0.0005
+#define PID_POSITION_TOLERANCE 0.005
 #define DEPLACEMENT_TOLERANCE 0.005
 /* PID1 */
 // Parametres en vitesse

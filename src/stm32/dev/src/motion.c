@@ -183,20 +183,28 @@ void setSpeedSetpoints() {
 		float deplacementX = calculatePosition(
 				(-numberOfPositionEdges1 + numberOfPositionEdges3) / 2);
 
-		if ((rotateMoveSetpoint != 0 && deplacementY < (rotateMoveSetpoint / 2))
-				|| (rotateMoveSetpoint != 0
+		if ((rotateMoveSetpoint < 0 && (rotateMoveSetpoint / 2) < deplacementY)
+				|| (rotateMoveSetpoint > 0
+						&& deplacementY < (rotateMoveSetpoint / 2))) {
+			PID_SPEED2.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+			PID_SPEED4.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+
+		} else {
+			PID_SPEED2.mySetpoint = 0;
+			PID_SPEED4.mySetpoint = 0;
+			isMoving = 1;
+		}
+
+		if ((rotateMoveSetpoint < 0 && (rotateMoveSetpoint / 2) < deplacementX)
+				|| (rotateMoveSetpoint > 0
 						&& deplacementX < (rotateMoveSetpoint / 2))) {
 
 			PID_SPEED1.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-			PID_SPEED2.mySetpoint = CONSIGNE_SPEED_MEDIUM;
 			PID_SPEED3.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-			PID_SPEED4.mySetpoint = CONSIGNE_SPEED_MEDIUM;
 		} else {
 
 			PID_SPEED1.mySetpoint = 0;
-			PID_SPEED2.mySetpoint = 0;
 			PID_SPEED3.mySetpoint = 0;
-			PID_SPEED4.mySetpoint = 0;
 			isMoving = 1;
 		}
 
@@ -207,19 +215,28 @@ void setSpeedSetpoints() {
 		float deplacementX = calculatePosition(
 				(numberOfPositionEdges1 + numberOfPositionEdges3) / 2);
 
-		if ((yMoveSetpoint != 0 && deplacementY < (yMoveSetpoint / 2))
-				|| (xMoveSetpoint != 0 && deplacementX < (xMoveSetpoint / 2))) {
+		/* rendre condition plus lisible */
+		if ((yMoveSetpoint < 0 && (yMoveSetpoint / 2) < deplacementY)
+				|| (yMoveSetpoint > 0 && deplacementY < (yMoveSetpoint / 2))) {
 
-			PID_SPEED1.mySetpoint = CONSIGNE_SPEED_MEDIUM;
 			PID_SPEED2.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-			PID_SPEED3.mySetpoint = CONSIGNE_SPEED_MEDIUM;
 			PID_SPEED4.mySetpoint = CONSIGNE_SPEED_MEDIUM;
 		} else {
 
-			PID_SPEED1.mySetpoint = 0;
 			PID_SPEED2.mySetpoint = 0;
-			PID_SPEED3.mySetpoint = 0;
 			PID_SPEED4.mySetpoint = 0;
+			isMoving = 1;
+		}
+
+		if ((xMoveSetpoint < 0 && (xMoveSetpoint / 2) < deplacementX)
+				|| (xMoveSetpoint > 0 && deplacementX < (xMoveSetpoint / 2))) {
+
+			PID_SPEED1.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+			PID_SPEED3.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+		} else {
+
+			PID_SPEED1.mySetpoint = 0;
+			PID_SPEED3.mySetpoint = 0;
 			isMoving = 1;
 		}
 	}
@@ -230,4 +247,6 @@ void stopMove() {
 	MotorSetSpeed(2, 0);
 	MotorSetSpeed(3, 0);
 	MotorSetSpeed(4, 0);
+
+	isMoveDone = 0;
 }
