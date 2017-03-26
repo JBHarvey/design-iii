@@ -51,3 +51,9 @@ void Flags_setPictureTaken(struct Flags *flags, int new_value)
 {
     flags->picture_taken = new_value;
 }
+
+void Flags_setImageReceivedByStation(struct Flags *flags, int new_value)
+{
+    flags->image_received_by_station = new_value;
+}
+

@@ -46,9 +46,12 @@ static int convertMMToRobot(double length)
 
 static void drawMarkerLocationOnImage(IplImage *image_BGR, struct Marker marker)
 {
-    cvLine(image_BGR, cvPoint(marker.x, marker.y), cvPoint(marker.x + RADIUS_DRAW_CIRCLE * cos(marker.angle),
-            marker.y + RADIUS_DRAW_CIRCLE * sin(marker.angle)), CV_RGB(255, 0, 255), SIZE_DRAW_LINES, 8, 0);
-    cvCircle(image_BGR, cvPoint(marker.x, marker.y), RADIUS_DRAW_CIRCLE, CV_RGB(255, 0, 255), SIZE_DRAW_LINES, 8, 0);
+    if(marker.valid) {
+
+        cvLine(image_BGR, cvPoint(marker.x, marker.y), cvPoint(marker.x + RADIUS_DRAW_CIRCLE * cos(marker.angle),
+                marker.y + RADIUS_DRAW_CIRCLE * sin(marker.angle)), CV_RGB(255, 0, 255), SIZE_DRAW_LINES, 8, 0);
+        cvCircle(image_BGR, cvPoint(marker.x, marker.y), RADIUS_DRAW_CIRCLE, CV_RGB(255, 0, 255), SIZE_DRAW_LINES, 8, 0);
+    }
 }
 
 static void drawObstacleOnImage(IplImage *image_BGR, struct Obstacle obstacle)
@@ -99,7 +102,7 @@ void WorldVisionDetection_drawObstaclesAndRobot(IplImage *world_camera_back_fram
 
 static void cleanExitIfMainLoopTerminated(CvMemStorage *opencv_storage)
 {
-    if(StationInterface_getStatus() == TERMINATED) {
+    if(!StationInterface_isRunning()) {
         if(opencv_storage != NULL) {
             cvReleaseMemStorage(&opencv_storage);
         }

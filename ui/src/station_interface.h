@@ -9,6 +9,10 @@ enum ConnectionStatus {DISCONNECTED, CONNECTED};
 
 void StationInterface_launch(int argc, char *argv[]);
 
-enum ThreadStatus StationInterface_getStatus(void);
+int StationInterface_isRunning(void);
+
+int StationInterface_isConnectedToRobot(void);
+
+void StationInterface_setRobotConnectionStatusOn(void);
 
 #endif // STATION_INTERFACE_H_

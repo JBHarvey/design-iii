@@ -23,7 +23,8 @@ Test(Logger, given_aLogger_when_startsLoggingDataReceiver_then_decoratedDataRece
     void (*updateWheelsRotation)(struct Wheels *, struct Communication_Rotation) = &Logger_updateWheelsRotation;
     void (*updateManchesterCode)(struct ManchesterCode *,
                                  struct Communication_ManchesterCode) = &Logger_updateManchesterCode;
-    void (*updateFlagsStartCycle)(struct Flags *, int new_value) = &Logger_updateFlagsStartCycle;
+    void (*updateFlagsStartCycle)(struct Flags *) = &Logger_updateFlagsStartCycle;
+    void (*updateFlagsImageReceivedByStation)(struct Flags *) = &Logger_updateFlagsImageReceivedByStation;
 
     struct DataReceiver_Callbacks data_receiver_callbacks = DataReceiver_fetchCallbacks();
 
@@ -35,6 +36,8 @@ Test(Logger, given_aLogger_when_startsLoggingDataReceiver_then_decoratedDataRece
     cr_assert_eq(from_logger.updateWheelsRotation, updateWheelsRotation);
     cr_assert_eq(from_logger.updateManchesterCode, updateManchesterCode);
     cr_assert_eq(from_logger.updateFlagsStartCycle, updateFlagsStartCycle);
+    cr_assert_eq(from_logger.updateFlagsImageReceivedByStation, updateFlagsImageReceivedByStation);
+
 }
 
 Test(Logger, given_aLogger_when_stopsLoggingDataReceiver_then_originalDataReceiverCallbacksAreReturned
@@ -51,4 +54,5 @@ Test(Logger, given_aLogger_when_stopsLoggingDataReceiver_then_originalDataReceiv
     cr_assert_eq(from_logger.updateWheelsRotation, data_receiver_callbacks.updateWheelsRotation);
     cr_assert_eq(from_logger.updateManchesterCode, data_receiver_callbacks.updateManchesterCode);
     cr_assert_eq(from_logger.updateFlagsStartCycle, data_receiver_callbacks.updateFlagsStartCycle);
+    cr_assert_eq(from_logger.updateFlagsImageReceivedByStation, data_receiver_callbacks.updateFlagsImageReceivedByStation);
 }

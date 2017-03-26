@@ -45,7 +45,7 @@ struct Camera {
     enum CameraStatus camera_status;
 };
 
-gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data);
+gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient *station_client);
 
 void WorldVision_applyWorldCameraBackFrame(void);
 

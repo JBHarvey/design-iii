@@ -13,7 +13,9 @@ Test(DataReceiver, given_when_fetchDataReceiverCallbacks_then_theCorrectSturctur
     void (*updateWheelsRotation)(struct Wheels *, struct Communication_Rotation) = &DataReceiver_updateWheelsRotation;
     void (*updateManchesterCode)(struct ManchesterCode *,
                                  struct Communication_ManchesterCode) = &DataReceiver_updateManchesterCode;
-    void (*updateFlagsStartCycle)(struct Flags *, int new_value) = &DataReceiver_updateFlagsStartCycle;
+    void (*updateFlagsStartCycle)(struct Flags *) = &DataReceiver_updateFlagsStartCycle;
+    void (*updateFlagsImageReceivedByStation)(struct Flags *) = &DataReceiver_updateFlagsImageReceivedByStation;
+
 
     struct DataReceiver_Callbacks callbacks = DataReceiver_fetchCallbacks();
     cr_assert_eq(callbacks.updateWorld, updateWorld);
@@ -21,6 +23,7 @@ Test(DataReceiver, given_when_fetchDataReceiverCallbacks_then_theCorrectSturctur
     cr_assert_eq(callbacks.updateWheelsRotation, updateWheelsRotation);
     cr_assert_eq(callbacks.updateManchesterCode, updateManchesterCode);
     cr_assert_eq(callbacks.updateFlagsStartCycle, updateFlagsStartCycle);
+    cr_assert_eq(callbacks.updateFlagsImageReceivedByStation, updateFlagsImageReceivedByStation);
 }
 
 void setup_Flags(void)
@@ -33,27 +36,23 @@ void teardown_Flags(void)
     Flags_delete(flags);
 }
 
-Test(DataReceiver, given_aCommandStartCyclePacket_when_updateFlagsStartCycleToTrue_then_itsValueIsUpdatedAccordingly,
+Test(DataReceiver, given_aCommandStartCyclePacket_when_updateFlagsStartCycle_then_itsValueIsSetToOne,
      .init = setup_Flags,
      .fini = teardown_Flags)
 {
-    int new_value = TRUE;
+    DataReceiver_updateFlagsStartCycle(flags);
 
-    DataReceiver_updateFlagsStartCycle(flags, new_value);
-
-    cr_assert_eq(flags->start_cycle_signal_received, TRUE);
+    cr_assert(flags->start_cycle_signal_received);
 }
 
-Test(DataReceiver, given_aCommandStartCyclePacket_when_updateFlagsStartCycleToFalse_then_itsValueIsUpdatedAccordingly,
+Test(DataReceiver,
+     given_anAcknowledgementOfImageReceivedByStation_when_updateFlagsImageReceivedByStation_then_itsValueIsSetToOne,
      .init = setup_Flags,
      .fini = teardown_Flags)
-
 {
-    int new_value = FALSE;
+    DataReceiver_updateFlagsImageReceivedByStation(flags);
 
-    DataReceiver_updateFlagsStartCycle(flags, new_value);
-
-    cr_assert_eq(flags->start_cycle_signal_received, FALSE);
+    cr_assert(flags->image_received_by_station);
 }
 
 // World data

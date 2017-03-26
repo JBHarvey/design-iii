@@ -64,7 +64,8 @@ struct DataReceiver_Callbacks Logger_startLoggingDataReceiverAndReturnCallbacks(
         .updateWheelsTranslation = &Logger_updateWheelsTranslation,
         .updateWheelsRotation = &Logger_updateWheelsRotation,
         .updateManchesterCode = &Logger_updateManchesterCode,
-        .updateFlagsStartCycle = &Logger_updateFlagsStartCycle
+        .updateFlagsStartCycle = &Logger_updateFlagsStartCycle,
+        .updateFlagsImageReceivedByStation = &Logger_updateFlagsImageReceivedByStation
     };
     return data_receiver_callbacks_with_logging;
 }
@@ -169,19 +170,25 @@ void Logger_updateManchesterCode(struct ManchesterCode *manchester_code,
 }
 
 static const char *FLAG_UPDATE = "New Flag Value:";
-static void logFlags(const char *flag_name, int new_value)
+static void logFlags(const char *flag_name)
 {
     fprintf(file_logger->log_file,
             "\n%s%s \n%sName:  %s\n%sNew value:  %d\n",
             ITEM, FLAG_UPDATE,
             SUB, flag_name,
-            SUB, new_value);
+            SUB, 1);
 }
 
 static const char *FLAG_START_CYCLE = "Start Cycle";
-void Logger_updateFlagsStartCycle(struct Flags *flags, int new_value)
+void Logger_updateFlagsStartCycle(struct Flags *flags)
 {
-    logFlags(FLAG_START_CYCLE, new_value);
-    (*(file_logger->original_data_receiver_callbacks.updateFlagsStartCycle))(flags, new_value);
+    logFlags(FLAG_START_CYCLE);
+    (*(file_logger->original_data_receiver_callbacks.updateFlagsStartCycle))(flags);
 }
 
+static const char *FLAG_IMAGE_RECEIVED_BY_STATION = "Image Received By Station";
+void Logger_updateFlagsImageReceivedByStation(struct Flags *flags)
+{
+    logFlags(FLAG_IMAGE_RECEIVED_BY_STATION);
+    (*(file_logger->original_data_receiver_callbacks.updateFlagsImageReceivedByStation))(flags);
+}

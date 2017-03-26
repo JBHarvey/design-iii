@@ -33,8 +33,6 @@ GMutex world_vision_camera_frame_mutex;
 GMutex world_vision_camera_intrinsics_mutex;
 GMutex world_vision_planned_trajectory_mutex;
 
-extern struct StationClient *station_client;
-
 enum TooltipStatus world_camera_coordinates_tooltip_status = PRINT;
 enum FrameStatus world_camera_frame_status = NOT_READY;
 struct Camera *world_camera = NULL;
@@ -148,7 +146,7 @@ static void releaseWorldCamera(void)
 
 static void cleanExitIfMainLoopTerminated(GThread *world_vision_detection_worker_thread)
 {
-    if(StationInterface_getStatus() == TERMINATED) {
+    if(!StationInterface_isRunning) {
         g_mutex_lock(&world_vision_pixbuf_mutex);
         g_object_unref(world_camera_pixbuf);
         g_mutex_unlock(&world_vision_pixbuf_mutex);
@@ -255,7 +253,7 @@ void WorldVision_applyWorldCameraBackFrame(void)
 
 /* Worker thread */
 
-gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data)
+gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient *station_client)
 {
     GThread *world_vision_detection_worker_thread = NULL;
 
@@ -317,7 +315,7 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(gpointer data)
 void WorldVision_sendWorldInformationToRobot(struct Communication_Object robot,
         struct Communication_Object obstacles[MAXIMUM_OBSTACLE_NUMBER])
 {
-    StationClientSender_sendWorldInformationsToRobot(station_client, obstacles, MAXIMUM_OBSTACLE_NUMBER, robot);
+    StationClientSender_sendWorldInformationsToRobot(obstacles, MAXIMUM_OBSTACLE_NUMBER, robot);
 }
 
 void WorldVision_setPlannedTrajectory(struct Point3DSet *world_trajectory)

@@ -223,7 +223,11 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             */
 
         case COMMAND_START_CYCLE:
-            reception_callbacks.updateFlagsStartCycle(flags, 1);
+            reception_callbacks.updateFlagsStartCycle(flags);
+            break;
+
+        case ACK_IMAGE_RECEIVED:
+            reception_callbacks.updateFlagsImageReceivedByStation(flags);
             break;
 
         case DATA_WORLD:
