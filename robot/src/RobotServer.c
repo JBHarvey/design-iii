@@ -223,6 +223,10 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             */
 
         case COMMAND_START_CYCLE:
+            FILE *test_file = fopen("Test.log", "+a");
+            fprintf(test_file, "Reception of start cycle packet");
+            fclose(test_file);
+            Logger_debugLog("Reception of start cycle packet");
             reception_callbacks.updateFlagsStartCycle(flags);
             break;
 
