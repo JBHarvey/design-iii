@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "Logger.h"
+#include "OnboardCamera.h"
 
 static struct Robot *robot;
 struct Logger *logger;
@@ -45,6 +46,7 @@ static void sendRotate(int theta)
 
 int main(int argc, char *argv[])
 {
+
     robot = Robot_new();
     robot_server = RobotServer_new(robot, port, ttyACM);
 
@@ -54,8 +56,27 @@ int main(int argc, char *argv[])
     test_callbacks = Logger_startLoggingDataReceiverAndReturnCallbacks(logger, test_callbacks);
     RobotServer_updateDataReceiverCallbacks(test_callbacks);
 
+    waitFifteenSeconds();
+    waitFifteenSeconds();
+    waitFifteenSeconds();
+    waitFifteenSeconds();
     // MANCHESTER ASK + LOG RETURN TEST
     RobotServer_fetchManchesterCodeCommand();
+
+    // TEST OF CAMERA AND PATH
+    // Initialise the camera
+    OnboardCamera_init();
+
+    IplImage *test_image;
+    struct CoordinatesSequence *image_trajectory;
+
+    image_trajectory = OnboardCamera_extractTrajectoryFromImage(&test_image);
+
+    struct ManchesterCode *code = ManchesterCode_new();
+    ManchesterCode_updateCodeValues(code, 0, TIMES_TWO, WEST);
+
+    RobotServer_sendImageToStation(test_image);
+    RobotServer_sendPlannedTrajectoryToStation(image_trajectory);
 
 
     /*
@@ -118,6 +139,9 @@ int main(int argc, char *argv[])
     while(1) {
         RobotServer_communicate(robot_server);
     }
+
+    // Releases Camera
+    OnboardCamera_deleteImageAndFreeCamera(&test_image);
 
     test_callbacks = Logger_stopLoggingDataReceiverAndReturnCallbacks(logger);
 

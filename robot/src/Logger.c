@@ -45,7 +45,7 @@ void Logger_delete(struct Logger *logger)
 
 static struct Logger *file_logger;
 
-static void log(const char *text)
+static void robotLog(const char *text)
 {
     fprintf(file_logger->log_file, "\n%s%s%s %s", ITEM, ITEM, LOGGER_EVENT, text);
 }
@@ -55,7 +55,7 @@ struct DataReceiver_Callbacks Logger_startLoggingDataReceiverAndReturnCallbacks(
 {
     file_logger = logger;
 
-    log("Start of DataReceiver callbacks logging.\n");
+    robotLog("Start of DataReceiver callbacks logging.\n");
 
     logger->original_data_receiver_callbacks = callbacks_to_log;
 
@@ -73,7 +73,7 @@ struct DataReceiver_Callbacks Logger_startLoggingDataReceiverAndReturnCallbacks(
 
 struct DataReceiver_Callbacks Logger_stopLoggingDataReceiverAndReturnCallbacks(struct Logger *logger)
 {
-    log("End of DataReceiver callbacks logging.\n");
+    robotLog("End of DataReceiver callbacks logging.\n");
     return logger->original_data_receiver_callbacks;
 }
 

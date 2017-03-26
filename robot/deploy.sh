@@ -9,6 +9,7 @@ cp -u --preserve=all ../shared/CommunicationStructures.h src/.
 cp -u --preserve=all ../shared/Defines.h src/.
 cp -u --preserve=all ../vision/src/vision.c src/.
 cp -u --preserve=all ../vision/src/vision.h src/.
+cp -u --preserve=all ../vision/acceptation-tests/camera_calibration.xml utils/.
 
 #Prepares compilation files
 find src -type f -regex '.*\.\(c\|\h\)' -exec cp -u --preserve=all \{\} build/deploy \;
