@@ -12,6 +12,8 @@ struct Flags *Flags_new(void)
 
     pointer->start_cycle_signal_received = FALSE;
     pointer->picture_taken = FALSE;
+    pointer->image_received_by_station = FALSE;
+    pointer->planned_trajectory_received_by_station = FALSE;
 
     return pointer;
 }
@@ -57,3 +59,7 @@ void Flags_setImageReceivedByStation(struct Flags *flags, int new_value)
     flags->image_received_by_station = new_value;
 }
 
+void Flags_setPlannedTrajectoryReceivedByStation(struct Flags *flags, int new_value)
+{
+    flags->planned_trajectory_received_by_station = new_value;
+}
