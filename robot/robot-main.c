@@ -58,6 +58,7 @@ int main(int argc, char *argv[])
     // MANCHESTER ASK + LOG RETURN TEST
     RobotServer_fetchManchesterCodeCommand();
 
+    // TEST OF CAMERA AND PATH
     // Initialise the camera
     OnboardCamera_init();
     waitASecondAndAHalf();
@@ -73,7 +74,9 @@ int main(int argc, char *argv[])
     */
     RobotServer_sendImageToStation(test_image);
     waitFifteenSeconds();
-    RobotServer_sendPlannedTrajectoryToStation(test_image);
+    RobotServer_sendPlannedTrajectoryToStation(image_trajectory);
+
+    OnboardCamera_deleteImage(test_image);
 
     /*
     // HOUSE TEST

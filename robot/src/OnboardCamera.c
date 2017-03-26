@@ -86,8 +86,9 @@ struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **
     return sequence;
 }
 
-void OnboardCamera_deleteImage(void)
+void OnboardCamera_deleteImageAndFreeCamera(IplImage **image)
 {
+    cvReleaseImage(image);
     cvReleaseCapture(&(cv_cap));
 }
 
