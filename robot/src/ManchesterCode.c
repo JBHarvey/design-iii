@@ -35,3 +35,34 @@ void ManchesterCode_updateCodeValues(struct ManchesterCode *manchester_code, int
     manchester_code->scale_factor = new_scale_factor;
     manchester_code->orientation = new_orientation;
 }
+
+struct Angle *ManchesterCode_retrieveOrientationAngle(struct ManchesterCode *manchester_code)
+{
+    int angle_value;
+
+    switch(manchester_code->orientation) {
+        case NORTH:
+            angle_value = 0;
+            break;
+
+        case EAST:
+            angle_value = MINUS_HALF_PI;
+            break;
+
+        case SOUTH:
+            angle_value = PI;
+            break;
+
+        case WEST:
+            angle_value = HALF_PI;
+            break;
+
+        default :
+            angle_value = 0;
+            break;
+    }
+
+    struct Angle *angle = Angle_new(angle_value);
+
+    return angle;
+}

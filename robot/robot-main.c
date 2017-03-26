@@ -19,6 +19,16 @@ static void waitASecondAndAHalf()
     usleep(1500000);
 }
 
+static void waitFifteenSeconds()
+{
+    usleep(15000000);
+}
+
+static void waitThirtySeconds()
+{
+    usleep(30000000);
+}
+
 static void sendTranslate(int x, int y)
 {
     struct Command_Translate command = { .x = x, .y = y };
@@ -46,6 +56,7 @@ int main(int argc, char *argv[])
 
     // MANCHESTER ASK + LOG RETURN TEST
     RobotServer_fetchManchesterCodeCommand();
+
 
     /*
     // HOUSE TEST

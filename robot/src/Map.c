@@ -320,3 +320,25 @@ int Map_isCoordinateFree(struct Map *map, struct Coordinates *coordinates)
 
     return is_free;
 }
+
+void Map_createDrawingTrajectory(struct Map *map, struct ManchesterCode *manchester_code,
+                                 struct CoordinatesSequence *coordinates_sequence)
+{
+    struct CoordinatesSequence *sequence_element = coordinates_sequence;
+    int scale_factor = manchester_code->scale_factor;
+    int size = CoordinatesSequence_size(coordinates_sequence);
+    struct Angle *manchester_angle = ManchesterCode_retrieveOrientationAngle(manchester_code);
+    int x = Coordinates_computeMeanX(map->south_western_drawing_corner, map->north_eastern_drawing_corner);
+    int y = Coordinates_computeMeanY(map->south_western_drawing_corner, map->north_eastern_drawing_corner);
+    struct Coordinates *drawing_zone_center = Coordinates_new(x, y);
+
+    for(int i = 0; i < size; ++i) {
+        Coordinates_scaleOf(sequence_element->coordinates, scale_factor);
+        Coordinates_rotateOfAngle(sequence_element->coordinates, manchester_angle);
+        Coordinates_translateOf(sequence_element->coordinates, drawing_zone_center);
+        sequence_element = sequence_element->next_element;
+    }
+
+    Angle_delete(manchester_angle);
+    Coordinates_delete(drawing_zone_center);
+}

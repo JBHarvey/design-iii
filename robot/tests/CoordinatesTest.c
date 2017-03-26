@@ -313,3 +313,36 @@ Test(Coordinates, given_twoCoordinates_when_askedToComputeTheirMeanY_then_theMea
     int expected_mean = (COORDINATES_Y + COORDINATES_Y + COORDINATES_DELTA) / 2;
     cr_assert_eq(computed_mean, expected_mean);
 }
+
+Test(Coordinates,
+     given_coordinates_when_askedToTranslate_then_theOriginalCoordinatesValuesAreChangedByTheValuesOfThePassedOne
+     , .init = setup_coordinates
+     , .fini = teardown_coordinates)
+{
+    other_coordinates->x = COORDINATES_DELTA;
+    other_coordinates->y = COORDINATES_DELTA;
+    Coordinates_translateOf(coordinates, other_coordinates);
+
+    int expected_x = COORDINATES_X + COORDINATES_DELTA;
+    int expected_y = COORDINATES_Y + COORDINATES_DELTA;
+
+    struct Coordinates *expected_coordinates = Coordinates_new(expected_x, expected_y);
+    cr_assert(Coordinates_haveTheSameValues(coordinates, expected_coordinates));
+    Coordinates_delete(expected_coordinates);
+}
+
+const int TEST_COORDINATES_SCALE = 10;
+Test(Coordinates,
+     given_aScaleFactor_when_askedToScale_then_theOriginalCoordinatesValuesAreMultipliedByTheScaleFactor
+     , .init = setup_coordinates
+     , .fini = teardown_coordinates)
+{
+    Coordinates_scaleOf(coordinates, TEST_COORDINATES_SCALE);
+
+    int expected_x = COORDINATES_X * TEST_COORDINATES_SCALE;
+    int expected_y = COORDINATES_Y * TEST_COORDINATES_SCALE;
+
+    struct Coordinates *expected_coordinates = Coordinates_new(expected_x, expected_y);
+    cr_assert(Coordinates_haveTheSameValues(coordinates, expected_coordinates));
+    Coordinates_delete(expected_coordinates);
+}

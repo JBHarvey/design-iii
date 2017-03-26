@@ -174,7 +174,8 @@ void RobotServer_sendImageToStation(IplImage *image)
     cvReleaseMat(&image_data);
 }
 
-static void sendCoordinatesToStation(uint8_t packet_id, struct CoordinatesSequence *coordinates_sequence)
+#define BASE_UNIT_TO_MILLIMETERS 10
+void RobotServer_sendPlannedTrajectoryToStation(struct CoordinatesSequence *coordinates_sequence)
 {
     unsigned int size = CoordinatesSequence_size(coordinates_sequence);
 
@@ -185,20 +186,15 @@ static void sendCoordinatesToStation(uint8_t packet_id, struct CoordinatesSequen
     unsigned int i;
 
     for(i = 0; i < size; ++i) {
-        coordinates[i].x = coordinates_sequence_current->coordinates->x;
-        coordinates[i].y = coordinates_sequence_current->coordinates->y;
+        coordinates[i].x = (int)(coordinates_sequence_current->coordinates->x / BASE_UNIT_TO_MILLIMETERS);
+        coordinates[i].y = (int)(coordinates_sequence_current->coordinates->y / BASE_UNIT_TO_MILLIMETERS);
         coordinates_sequence_current = coordinates_sequence_current->next_element;
     }
 
     uint8_t data[1 + sizeof(coordinates)];
-    data[0] = packet_id;
+    data[0] = DATA_PLANNED_TRAJECTORY;
     memcpy(data + 1, coordinates, sizeof(coordinates));
     addPacket(data, sizeof(data));
-}
-
-void RobotServer_sendPlannedTrajectoryToStation(struct CoordinatesSequence *coordinates_sequence)
-{
-    sendCoordinatesToStation(DATA_PLANNED_TRAJECTORY, coordinates_sequence);
 }
 
 void handleReceivedPacket(uint8_t *data, uint32_t length)
