@@ -16,6 +16,6 @@ void OnboardCamera_init(void);
 
 struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **image_yuv_in_green_square);
 
-void OnboardCamera_deleteImage(IplImage **image);
+void OnboardCamera_deleteImageAndFreeCamera(IplImage **image);
 
 #endif //ONBOARDCAMERA_H

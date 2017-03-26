@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
     waitFifteenSeconds();
     RobotServer_sendPlannedTrajectoryToStation(image_trajectory);
 
-    OnboardCamera_deleteImage(&test_image);
+    OnboardCamera_deleteImageAndFreeCamera(&test_image);
 
     /*
     // HOUSE TEST
