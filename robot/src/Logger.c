@@ -20,7 +20,7 @@ struct Logger *Logger_new(void)
     struct DataReceiver_Callbacks new_data_receiver_callbacks = DataReceiver_fetchCallbacks();
     FILE *new_log_file = fopen("RobotLogs.log", "a+"); // a+ (create + append)
     fprintf(new_log_file, "\n\n\n%s%s------------ NEW EXECUTION ------------\n", TAB, TAB);
-    setbuf(new_log_file, NULL);
+    //setbuf(new_log_file, NULL);
 
     struct Logger *pointer = malloc(sizeof(struct Logger));
 
