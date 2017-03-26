@@ -100,7 +100,7 @@ void initAll(void) {
 	initBtn();
 
 // Initialisation des variables
-	mainState = MAIN_IDLE;
+	mainState = MAIN_MANCH;
 //setState(&mainState, MAIN_MOVE);
 
 	int state = IDLE;
