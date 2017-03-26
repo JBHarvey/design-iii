@@ -13,4 +13,7 @@ gboolean WorldVisionCalibration_calibrate(struct Camera *input_camera);
 struct Point3D WorldVisionCalibration_convertImageCoordinatesToWorldCoordinates(struct Point2D image_coordinates,
         struct Camera *input_camera);
 
+void WorldVisionCalibration_convertWorldCoordinatesSetToImageCoordinatesSet(struct Point3DSet *world_coordinates_set,
+        struct Point2DSet *output_images_coordinates_set,  struct Camera *input_camera);
+
 #endif // __WORLD_VISION_CALIBRATION
