@@ -75,14 +75,13 @@ int main(int argc, char *argv[])
         image_trajectory = OnboardCamera_extractTrajectoryFromImage(&test_image);
     } while(test_image != NULL);
 
-    */
     struct ManchesterCode *code = ManchesterCode_new();
     ManchesterCode_updateCodeValues(code, 0, TIMES_TWO, WEST);
 
     RobotServer_sendImageToStation(test_image);
     RobotServer_sendPlannedTrajectoryToStation(image_trajectory);
 
-    * /
+    */
 
     /*
     // HOUSE TEST
