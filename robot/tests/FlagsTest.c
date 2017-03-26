@@ -7,6 +7,7 @@ static struct Flags *other_flags;
 const int ZERO = 0;
 const int START_CYCLE = 1;
 const int PICTURE_TAKEN = 1;
+const int IMAGE_RECEIVED_BY_STATION = 1;
 const int MINUS_ONE = -1;
 
 Test(Flags, creation_destruction)
@@ -86,5 +87,13 @@ Test(Flags_flag, given_defaultFlags_when_triesToSetPictureTakenToOne_then_pictur
 {
     Flags_setPictureTaken(flags, PICTURE_TAKEN);
     cr_assert(flags->picture_taken == PICTURE_TAKEN);
+}
+
+Test(Flags_flag, given_defaultFlags_when_triesToSetImageReceivedByStationToOne_then_imageReceivedByStationIsOne
+     , .init = setup_flags
+     , .fini = teardown_flags)
+{
+    Flags_setImageReceivedByStation(flags, IMAGE_RECEIVED_BY_STATION);
+    cr_assert(flags->image_received_by_station == IMAGE_RECEIVED_BY_STATION);
 }
 
