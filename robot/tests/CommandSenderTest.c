@@ -3,6 +3,29 @@
 #include "CommandSender.h"
 
 
+Test(CommandSender, given_when_fetchCommandSenderCallbacksForRobot_then_theCorrectSturctureIsReturned)
+{
+    void (*sendTranslateCommand)(struct Command_Translate) = &RobotServer_sendTranslateCommand;
+    void (*sendRotateCommand)(struct Command_Rotate) = &RobotServer_sendRotateCommand;
+    void (*sendLightRedLEDCommand)(void) = &RobotServer_sendLightRedLEDCommand;
+    void (*sendLightGreenLEDCommand)(void) = &RobotServer_sendLightGreenLEDCommand;
+    void (*sendRisePenCommand)(void) = &RobotServer_sendRisePenCommand;
+    void (*sendLowerPenCommand)(void) = &RobotServer_sendLowerPenCommand;
+    void (*sendFetchManchesterCodeCommand)(void) = &RobotServer_fetchManchesterCodeCommand;
+    void (*sendStopSendingManchesterSignalCommand)(void) = &RobotServer_sendStopSendingManchesterSignalCommand;
+
+    struct CommandSender_Callbacks callbacks = CommandSender_fetchCallbacksForRobot();
+
+    cr_assert_eq(callbacks.sendTranslateCommand, sendTranslateCommand);
+    cr_assert_eq(callbacks.sendRotateCommand, sendRotateCommand);
+    cr_assert_eq(callbacks.sendLightRedLEDCommand, sendLightRedLEDCommand);
+    cr_assert_eq(callbacks.sendLightGreenLEDCommand, sendLightGreenLEDCommand);
+    cr_assert_eq(callbacks.sendRisePenCommand, sendRisePenCommand);
+    cr_assert_eq(callbacks.sendLowerPenCommand, sendLowerPenCommand);
+    cr_assert_eq(callbacks.sendFetchManchesterCodeCommand, sendFetchManchesterCodeCommand);
+    cr_assert_eq(callbacks.sendStopSendingManchesterSignalCommand, sendStopSendingManchesterSignalCommand);
+}
+
 int translate_validator;
 int rotate_validator;
 int light_red_led_validator;

@@ -11,6 +11,7 @@ static const char *SUBITEM = " |---|- ";
 struct Logger {
     struct Object *object;
     struct DataReceiver_Callbacks original_data_receiver_callbacks;
+    struct CommandSender_Callbacks original_command_sender_callbacks;
     FILE *log_file;
 };
 
@@ -75,6 +76,34 @@ struct DataReceiver_Callbacks Logger_stopLoggingDataReceiverAndReturnCallbacks(s
 {
     robotLog("End of DataReceiver callbacks logging.\n");
     return logger->original_data_receiver_callbacks;
+}
+
+struct CommandSender_Callbacks Logger_startLoggingCommandSenderAndReturnCallbacks(struct Logger *logger,
+        struct CommandSender_Callbacks callbacks_to_log)
+{
+    file_logger = logger;
+
+    robotLog("Start of CommandSender callbacks logging.\n");
+
+    logger->original_command_sender_callbacks = callbacks_to_log;
+
+    struct CommandSender_Callbacks command_sender_callbacks_with_logging = {
+        .sendTranslateCommand = &Logger_sendTranslateCommand,
+        .sendRotateCommand = &Logger_sendRotateCommand,
+        .sendLightRedLEDCommand = &Logger_sendLightRedLEDCommand,
+        .sendLightGreenLEDCommand = &Logger_sendLightGreenLEDCommand,
+        .sendRisePenCommand = &Logger_sendRisePenCommand,
+        .sendLowerPenCommand = &Logger_sendLowerPenCommand,
+        .sendFetchManchesterCodeCommand = &Logger_sendFetchManchesterCode,
+        .sendStopSendingManchesterSignalCommand = &Logger_sendStopSendingManchesterSignal
+    };
+    return command_sender_callbacks_with_logging;
+}
+
+struct CommandSender_Callbacks Logger_stopLoggingCommandSenderAndReturnCallbacks(struct Logger *logger)
+{
+    robotLog("End of CommandSender callbacks logging.\n");
+    return logger->original_command_sender_callbacks;
 }
 
 static const char *ROBOT_UPDATE = "Robot Update: ";
@@ -199,4 +228,68 @@ void Logger_updateFlagsPlannedTrajectoryReceivedByStation(struct Flags *flags)
 {
     logFlags(FLAG_PLANNED_TRAJECTORY_RECEIVED_BY_STATION);
     (*(file_logger->original_data_receiver_callbacks.updateFlagsPlannedTrajectoryReceivedByStation))(flags);
+}
+// START OF COMMAND SENDER CALLBACK
+
+
+static const char *TRANSLATION_COMMAND = "Sending Translation Command:";
+static void logTranslationCommand(struct Command_Translate translation)
+{
+    int x_movement = translation.x;
+    int y_movement = translation.y;
+    fprintf(file_logger->log_file,
+            "\n%s%s \n%s%sx:  %d\n%s%sy:  %d\n",
+            ITEM, TRANSLATION_COMMAND,
+            TAB, SUB, x_movement,
+            TAB, SUB, y_movement);
+}
+
+static const char *ROTATION_COMMAND = "Sending Rotation Command:";
+static void logRotationCommand(struct Command_Rotate rotation)
+{
+    int theta = rotation.theta;
+    fprintf(file_logger->log_file,
+            "\n%s%s \n%sTheta:  %d\n",
+            ITEM, ROTATION_COMMAND,
+            SUB, theta);
+}
+
+void Logger_sendTranslateCommand(struct Command_Translate translate_command)
+{
+    (*(file_logger->original_command_sender_callbacks.sendTranslateCommand))(translate_command);
+}
+
+void Logger_sendRotateCommand(struct Command_Rotate rotate_command)
+{
+    (*(file_logger->original_command_sender_callbacks.sendRotateCommand))(rotate_command);
+}
+
+void Logger_sendLightRedLEDCommand(void)
+{
+    (*(file_logger->original_command_sender_callbacks.sendLightRedLEDCommand))();
+}
+
+void Logger_sendLightGreenLEDCommand(void)
+{
+    (*(file_logger->original_command_sender_callbacks.sendLightGreenLEDCommand))();
+}
+
+void Logger_sendRisePenCommand(void)
+{
+    (*(file_logger->original_command_sender_callbacks.sendRisePenCommand))();
+}
+
+void Logger_sendLowerPenCommand(void)
+{
+    (*(file_logger->original_command_sender_callbacks.sendLowerPenCommand))();
+}
+
+void Logger_sendFetchManchesterCode(void)
+{
+    (*(file_logger->original_command_sender_callbacks.sendFetchManchesterCodeCommand))();
+}
+
+void Logger_sendStopSendingManchesterSignal(void)
+{
+    (*(file_logger->original_command_sender_callbacks.sendStopSendingManchesterSignalCommand))();
 }
