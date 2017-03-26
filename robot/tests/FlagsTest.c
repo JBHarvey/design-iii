@@ -8,6 +8,7 @@ const int ZERO = 0;
 const int START_CYCLE = 1;
 const int PICTURE_TAKEN = 1;
 const int IMAGE_RECEIVED_BY_STATION = 1;
+const int PLANNED_TRAJECTORY_RECEIVED_BY_STATION = 1;
 const int MINUS_ONE = -1;
 
 Test(Flags, creation_destruction)
@@ -15,6 +16,8 @@ Test(Flags, creation_destruction)
     struct Flags *flags = Flags_new();
     cr_assert(flags->start_cycle_signal_received == ZERO);
     cr_assert(flags->picture_taken == ZERO);
+    cr_assert(flags->image_received_by_station == ZERO);
+    cr_assert(flags->planned_trajectory_received_by_station == ZERO);
     Flags_delete(flags);
 }
 
@@ -23,7 +26,11 @@ void setup_flags(void)
     flags = Flags_new();
     other_flags = Flags_new();
     Flags_setStartCycleSignalReceived(flags, START_CYCLE);
+    Flags_setImageReceivedByStation(flags, IMAGE_RECEIVED_BY_STATION);
+    Flags_setPlannedTrajectoryReceivedByStation(flags, PLANNED_TRAJECTORY_RECEIVED_BY_STATION);
     Flags_setStartCycleSignalReceived(other_flags, START_CYCLE);
+    Flags_setImageReceivedByStation(other_flags, IMAGE_RECEIVED_BY_STATION);
+    Flags_setPlannedTrajectoryReceivedByStation(other_flags, PLANNED_TRAJECTORY_RECEIVED_BY_STATION);
 
 }
 
@@ -95,5 +102,14 @@ Test(Flags_flag, given_defaultFlags_when_triesToSetImageReceivedByStationToOne_t
 {
     Flags_setImageReceivedByStation(flags, IMAGE_RECEIVED_BY_STATION);
     cr_assert(flags->image_received_by_station == IMAGE_RECEIVED_BY_STATION);
+}
+
+Test(Flags_flag,
+     given_defaultFlags_when_triesToSetPlannedTrajectoryReceivedByStationToOne_then_plannedTrajectoryReceivedByStationIsOne
+     , .init = setup_flags
+     , .fini = teardown_flags)
+{
+    Flags_setImageReceivedByStation(flags, PLANNED_TRAJECTORY_RECEIVED_BY_STATION);
+    cr_assert(flags->image_received_by_station == PLANNED_TRAJECTORY_RECEIVED_BY_STATION);
 }
 
