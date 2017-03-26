@@ -26,7 +26,6 @@ void RobotVision_setImage(IplImage *image)
 
 void RobotVision_finalize(void)
 {
-    g_object_unref(robot_vision_pixbuf);
     cvReleaseImage(&robot_vision_image);
 }
 

@@ -6,6 +6,7 @@
 #include "opencv2/videoio/videoio_c.h"
 #include "CommunicationStructures.h"
 #include "station_client.h"
+#include "point_types.h"
 #include "markers.h"
 #include "vision.h"
 #include "Defines.h"
@@ -52,5 +53,7 @@ void WorldVision_createWorldCameraFrameSafeCopy(void);
 
 void WorldVision_sendWorldInformationToRobot(struct Communication_Object robot,
         struct Communication_Object obstacles[MAXIMUM_OBSTACLE_NUMBER]);
+
+void WorldVision_setPlannedTrajectory(struct Point3DSet *world_trajectory);
 
 #endif // __WORLD_VISION

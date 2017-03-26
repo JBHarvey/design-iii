@@ -147,29 +147,25 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
                 break;
             }
 
-        case DATA_PLANNED_TRAJECTORY:
-        case DATA_CONTOURS: {
+        case DATA_PLANNED_TRAJECTORY: {
                 unsigned int number_points = (length - 1) / sizeof(struct Communication_Coordinates);
                 struct Communication_Coordinates coordinates[number_points];
 
                 memcpy(coordinates, data + 1, sizeof(coordinates));
 
-                struct Point2DSet *point_set = PointTypes_initializePoint2DSet(number_points);
+                struct Point3DSet *point_set = PointTypes_initializePoint3DSet(number_points);
                 unsigned int i;
 
                 for(i = 0; i < number_points; ++i) {
-                    PointTypes_addPointToPoint2DSet(point_set, PointTypes_createPoint2D(coordinates[i].x, coordinates[i].y));
+                    int x = coordinates[i].x;
+                    int y = coordinates[i].y;
+                    double dx = (double) x;
+                    double dy = (double) y;
+                    PointTypes_addPointToPoint3DSet(point_set, PointTypes_createPoint3D(dx, dy, 0));
                 }
 
-                if(data[0] == DATA_PLANNED_TRAJECTORY) {
-                    printf("Planned trajectory %u\n", point_set->number_of_points);
-                    //TODO
-                } else {
-                    printf("Contours %u\n", point_set->number_of_points);
-                    //TODO
-                }
-
-                PointTypes_releasePoint2DSet(point_set);
+                WorldVision_setPlannedTrajectory(point_set);
+                PointTypes_releasePoint3DSet(point_set);
                 break;
             }
 
