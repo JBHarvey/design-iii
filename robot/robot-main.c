@@ -61,10 +61,13 @@ int main(int argc, char *argv[])
     // TEST OF CAMERA AND PATH
     // Initialise the camera
     OnboardCamera_init();
+    /*
     waitASecondAndAHalf();
     waitASecondAndAHalf();
     waitASecondAndAHalf();
     waitASecondAndAHalf();
+    */
+
     IplImage *test_image;
     struct CoordinatesSequence *image_trajectory = OnboardCamera_extractTrajectoryFromImage(&test_image);
     /*
@@ -73,7 +76,6 @@ int main(int argc, char *argv[])
 
     */
     RobotServer_sendImageToStation(test_image);
-    waitFifteenSeconds();
     RobotServer_sendPlannedTrajectoryToStation(image_trajectory);
 
 
