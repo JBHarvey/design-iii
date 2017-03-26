@@ -107,7 +107,6 @@ void Logger_debugLog(char *text)
     fprintf(file_logger->log_file, "\n%s%s \n%s\n",
             ITEM, DEBUG_EVENT,
             text);
-    logRobot(world.robot);
 }
 
 void Logger_updateWorld(struct WorldCamera *world_camera, struct Communication_World world)
