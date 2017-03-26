@@ -145,6 +145,7 @@ struct RobotServer *RobotServer_new(struct Robot *new_robot, int new_port, char 
 
     Object_addOneReference(new_robot->object);
 
+    Logger_debugLog("Server up and running");
     return pointer;
 }
 
