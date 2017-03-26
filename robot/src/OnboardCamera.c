@@ -31,19 +31,17 @@ void OnboardCamera_init(void)
 static IplImage *getImage(void)
 {
     IplImage *image = cvQueryFrame(cv_cap);
-    /*
-        if(camera_matrix && distortion_coeffs) {
-            IplImage *image_temp = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
-            cvUndistort2(image, image_temp, camera_matrix, distortion_coeffs, 0);
-            IplImage *image_yuv = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
-            cvCvtColor(image_temp, image_yuv, CV_BGR2YCrCb);
-            cvReleaseImage(&image_temp);
-            return image_yuv;
-        } else {
-            return image;
-        }
-        */
-    return image;
+
+    if(camera_matrix && distortion_coeffs) {
+        IplImage *image_temp = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
+        cvUndistort2(image, image_temp, camera_matrix, distortion_coeffs, 0);
+        IplImage *image_yuv = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
+        cvCvtColor(image_temp, image_yuv, CV_BGR2YCrCb);
+        cvReleaseImage(&image_temp);
+        return image_yuv;
+    } else {
+        return image;
+    }
 }
 
 #define SIZE_SIDE_IN 1000.0
@@ -65,19 +63,11 @@ struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **
 
 
     if(image != NULL) {
-        assert(image_yuv_in_green_square != NULL);
-        assert(image != NULL);
 
         CvSeq *opencv_sequence = findFirstFigure(opencv_storage, image, image_yuv_in_green_square);
-        assert(opencv_sequence != NULL);
-        assert(image_yuv_in_green_square != NULL);
-        assert(image != NULL);
 
         cvDrawContours(*image_yuv_in_green_square, opencv_sequence, CV_RGB(255, 0, 0), CV_RGB(255, 0, 0), 0, LINE_SIZE, 8,
                        cvPoint(0, 0));
-        assert(opencv_sequence != NULL);
-        assert(image_yuv_in_green_square != NULL);
-        assert(image != NULL);
 
         if(opencv_sequence) {
             unsigned int i;
