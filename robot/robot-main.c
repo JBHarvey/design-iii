@@ -7,8 +7,8 @@ static struct Robot *robot;
 struct Logger *logger;
 struct RobotServer *robot_server;
 const int port = 35794;
-//char *ttyACM = "/dev/null";
-char *ttyACM = "/dev/ttyACM0";
+char *ttyACM = "/dev/null";
+//char *ttyACM = "/dev/ttyACM0";
 
 static void waitASecond()
 {
@@ -70,9 +70,7 @@ int main(int argc, char *argv[])
     IplImage *test_image;
     struct CoordinatesSequence *image_trajectory;
 
-    do {
-        image_trajectory = OnboardCamera_extractTrajectoryFromImage(&test_image);
-    } while(test_image == NULL);
+    image_trajectory = OnboardCamera_extractTrajectoryFromImage(&test_image);
 
     struct ManchesterCode *code = ManchesterCode_new();
     ManchesterCode_updateCodeValues(code, 0, TIMES_TWO, WEST);

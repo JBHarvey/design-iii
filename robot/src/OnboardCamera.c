@@ -1,4 +1,6 @@
 #include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include "OnboardCamera.h"
 #include "vision.h"
 
@@ -30,7 +32,14 @@ void OnboardCamera_init(void)
  */
 static IplImage *getImage(void)
 {
-    IplImage *image = cvQueryFrame(cv_cap);
+
+    int buffer = 0;
+    IplImage *image;
+
+    do {
+        image = cvQueryFrame(cv_cap);
+        ++buffer;
+    } while(buffer != 100);
 
     if(camera_matrix && distortion_coeffs) {
         IplImage *image_temp = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
@@ -66,6 +75,10 @@ struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **
 
         CvSeq *opencv_sequence = findFirstFigure(opencv_storage, image, image_yuv_in_green_square);
 
+        assert(opencv_sequence != NULL);
+        assert(image != NULL);
+        assert(image_yuv_in_green_square != NULL);
+
         cvDrawContours(*image_yuv_in_green_square, opencv_sequence, CV_RGB(255, 0, 0), CV_RGB(255, 0, 0), 0, LINE_SIZE, 8,
                        cvPoint(0, 0));
 
@@ -76,6 +89,8 @@ struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **
                 CvPoint *element_pointer = (CvPoint *)cvGetSeqElem(opencv_sequence, i);
                 struct Coordinates *coordinates = Coordinates_new(convertToCartesian(element_pointer->x),
                                                   convertToCartesian(element_pointer->y) * (-1));
+
+                printf("\n Point: (%d,%d)", convertToCartesian(element_pointer->x), (convertToCartesian(element_pointer->y) * -1));
 
                 if(!i) {
                     sequence = CoordinatesSequence_new(coordinates);
