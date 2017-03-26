@@ -65,7 +65,8 @@ struct DataReceiver_Callbacks Logger_startLoggingDataReceiverAndReturnCallbacks(
         .updateWheelsRotation = &Logger_updateWheelsRotation,
         .updateManchesterCode = &Logger_updateManchesterCode,
         .updateFlagsStartCycle = &Logger_updateFlagsStartCycle,
-        .updateFlagsImageReceivedByStation = &Logger_updateFlagsImageReceivedByStation
+        .updateFlagsImageReceivedByStation = &Logger_updateFlagsImageReceivedByStation,
+        .updateFlagsPlannedTrajectoryReceivedByStation = &Logger_updateFlagsPlannedTrajectoryReceivedByStation
     };
     return data_receiver_callbacks_with_logging;
 }
@@ -186,9 +187,16 @@ void Logger_updateFlagsStartCycle(struct Flags *flags)
     (*(file_logger->original_data_receiver_callbacks.updateFlagsStartCycle))(flags);
 }
 
-static const char *FLAG_IMAGE_RECEIVED_BY_STATION = "Image Received By Station";
+static const char *FLAG_IMAGE_RECEIVED_BY_STATION = "Image Received By Station - (Ack)";
 void Logger_updateFlagsImageReceivedByStation(struct Flags *flags)
 {
     logFlags(FLAG_IMAGE_RECEIVED_BY_STATION);
     (*(file_logger->original_data_receiver_callbacks.updateFlagsImageReceivedByStation))(flags);
+}
+
+static const char *FLAG_PLANNED_TRAJECTORY_RECEIVED_BY_STATION = "Planned Trajectory Received By Station - (Ack)";
+void Logger_updateFlagsPlannedTrajectoryReceivedByStation(struct Flags *flags)
+{
+    logFlags(FLAG_PLANNED_TRAJECTORY_RECEIVED_BY_STATION);
+    (*(file_logger->original_data_receiver_callbacks.updateFlagsPlannedTrajectoryReceivedByStation))(flags);
 }

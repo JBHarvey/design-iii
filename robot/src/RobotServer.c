@@ -417,6 +417,6 @@ void RobotServer_fetchManchesterCodeCommand(void)
 {
     writeTTYACMPacket(COMMAND_TYPE_FETCH_MANCHESTER, 0, ACTION_ONLY_COMMAND_LENGTH);
 }
-// all of these have the command type + the ACTION_ONLY_COMMAND_LENGHT
+// all of these have the command type + the ACTION_ONLY_COMMAND_LENGTH
 void RobotServer_sendStopSendingManchesterSignalCommand(void) {}
 
