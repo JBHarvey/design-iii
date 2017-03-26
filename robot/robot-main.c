@@ -76,7 +76,6 @@ int main(int argc, char *argv[])
     waitFifteenSeconds();
     RobotServer_sendPlannedTrajectoryToStation(image_trajectory);
 
-    OnboardCamera_deleteImageAndFreeCamera(&test_image);
 
     /*
     // HOUSE TEST
@@ -139,6 +138,10 @@ int main(int argc, char *argv[])
         RobotServer_communicate(robot_server);
     }
 
+    // Releases Camera
+    OnboardCamera_deleteImageAndFreeCamera(&test_image);
+
+    // Deletes logger
     test_callbacks = Logger_stopLoggingDataReceiverAndReturnCallbacks(logger);
 
     Logger_delete(logger);
