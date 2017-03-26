@@ -15,11 +15,13 @@ const gchar *UI_RESOURCE_PATH = "/d3/station-resources/station.ui";
 const int VIDEO_FEED_REFRESH_RATE_IN_MS = 50; // 20 FPS
 const int ROBOT_SERVER_PORT = 35794;
 //const char *ROBOT_SERVER_IP = "10.42.0.1";
-const char *ROBOT_SERVER_IP = "10.248.223.248";//"127.0.0.1"; //"10.248.223.248";//
+const char *ROBOT_SERVER_IP = "127.0.0.1"; //"10.248.223.248";//
 
 /* Global variables */
 
 GMutex main_loop_status_mutex;
+GMutex robot_connection_status_mutex;
+
 enum ThreadStatus main_loop_status;
 enum ConnectionStatus robot_connection_status;
 gint timer_tag;
@@ -37,7 +39,7 @@ void uiWindowDestroyEventCallback(GtkWidget *widget, gpointer data)
 
 void startCycleClickedEventCallback(GtkWidget *widget, gpointer data)
 {
-    StationClientSender_sendStartCycleCommand(station_client);
+    StationClientSender_sendStartCycleCommand();
     Logger_startMessageSectionAndAppend("Cycle started!");
     Timer_start();
 }
@@ -47,7 +49,7 @@ static gboolean timeHandler(GtkWidget *widget)
     gtk_widget_queue_draw(GTK_WIDGET(widget));
     Timer_redraw();
 
-    return  TRUE;
+    return TRUE;
 }
 
 enum ThreadStatus StationInterface_getStatus(void)
@@ -59,11 +61,26 @@ enum ThreadStatus StationInterface_getStatus(void)
     return status;
 }
 
+void StationInterface_setRobotConnectionStatusOn(void)
+{
+    g_mutex_lock(&robot_connection_status_mutex);
+    robot_connection_status = CONNECTED;
+    g_mutex_unlock(&robot_connection_status_mutex);
+}
+
+enum ConnectionStatus StationInterface_getRobotConnectionStatus(void)
+{
+    g_mutex_lock(&robot_connection_status_mutex);
+    enum ConnectionStatus status = robot_connection_status;
+    g_mutex_unlock(&robot_connection_status_mutex);
+
+    return status;
+}
+
 /* Main thread */
 
 void StationInterface_launch(int argc, char *argv[])
 {
-
     GThread *world_vision_worker_thread = NULL;
     GtkWidget *ui_window = NULL;
 
@@ -85,7 +102,7 @@ void StationInterface_launch(int argc, char *argv[])
     /* Starts worker thread */
     world_vision_worker_thread = g_thread_new("world_camera_feeder",
                                  (GThreadFunc) WorldVision_prepareImageFromWorldCameraForDrawing,
-                                 NULL);
+                                 (gpointer) station_client);
 
     gtk_window_fullscreen(GTK_WINDOW(ui_window));
     gtk_widget_show_all(GTK_WIDGET(ui_window));

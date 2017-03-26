@@ -22,8 +22,6 @@ const int FIVE_SECONDS_IN_MICROSECONDS = 5000000;
 
 /* Flag definitions */
 
-extern enum ConnectionStatus robot_connection_status;
-
 static struct ev_io *watcher;
 
 struct StationClient *StationClient_new(int new_port, const char *server_ip)
@@ -106,7 +104,7 @@ gpointer StationClient_init(struct StationClient *station_client)
         }
     }
 
-    robot_connection_status = CONNECTED;
+    StationInterface_setRobotConnectionStatusOn();
     Logger_startRobotConnectionHandlerSectionAndAppend("Connected !");
     return (gpointer) TRUE;
 }
@@ -115,15 +113,6 @@ gboolean StationClient_communicate(struct StationClient *station_client)
 {
     ev_run(station_client->loop, EVRUN_NOWAIT);
     return FALSE;
-}
-
-
-static void startPacketCallback()
-{
-}
-
-static void continuePacketCallback()
-{
 }
 
 void handleReceivedPacket(uint8_t *data, uint32_t length)
@@ -141,9 +130,9 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
                 memcpy(image_data->data.ptr, data + 1, length - 1);
                 IplImage *image = cvDecodeImage(image_data, CV_LOAD_IMAGE_COLOR);
                 cvReleaseMat(&image_data);
-                printf("got image of size: %u %u\n", cvGetSize(image).width, cvGetSize(image).height);
                 RobotVision_setImage(image);
                 cvReleaseImage(&image);
+                StationClientSender_sendImageReceivedAck();
                 break;
             }
 
