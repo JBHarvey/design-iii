@@ -20,7 +20,7 @@ struct Logger *Logger_new(void)
     struct DataReceiver_Callbacks new_data_receiver_callbacks = DataReceiver_fetchCallbacks();
     FILE *new_log_file = fopen("RobotLogs.log", "a+"); // a+ (create + append)
     fprintf(new_log_file, "\n\n\n%s%s------------ NEW EXECUTION ------------\n", TAB, TAB);
-    //setbuf(new_log_file, NULL);
+    setbuf(new_log_file, NULL);
 
     struct Logger *pointer = malloc(sizeof(struct Logger));
 
@@ -98,15 +98,6 @@ static void logWorld(struct Communication_World world)
     struct Communication_Object robot = world.robot;
     fprintf(file_logger->log_file, "%s", WORLD_CAMERA_UPDATE);
     logRobot(world.robot);
-}
-
-
-static const char *DEBUG_EVENT = "DEBUG: ";
-void Logger_debugLog(char *text)
-{
-    fprintf(file_logger->log_file, "\n%s%s \n%s\n",
-            ITEM, DEBUG_EVENT,
-            text);
 }
 
 void Logger_updateWorld(struct WorldCamera *world_camera, struct Communication_World world)

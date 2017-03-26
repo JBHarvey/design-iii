@@ -7,8 +7,8 @@ static struct Robot *robot;
 struct Logger *logger;
 struct RobotServer *robot_server;
 const int port = 35794;
-//char *ttyACM = "/dev/null";
-char *ttyACM = "/dev/ttyACM0";
+char *ttyACM = "/dev/null";
+//char *ttyACM = "/dev/ttyACM0";
 
 static void waitASecond()
 {
@@ -46,6 +46,7 @@ static void sendRotate(int theta)
 
 int main(int argc, char *argv[])
 {
+
     robot = Robot_new();
     robot_server = RobotServer_new(robot, port, ttyACM);
 
@@ -61,23 +62,28 @@ int main(int argc, char *argv[])
     // TEST OF CAMERA AND PATH
     // Initialise the camera
     OnboardCamera_init();
-    /*
     waitASecondAndAHalf();
     waitASecondAndAHalf();
     waitASecondAndAHalf();
     waitASecondAndAHalf();
-    */
 
     IplImage *test_image;
-    struct CoordinatesSequence *image_trajectory = OnboardCamera_extractTrajectoryFromImage(&test_image);
+    struct CoordinatesSequence *image_trajectory;
+
+    do {
+        image_trajectory = OnboardCamera_extractTrajectoryFromImage(&test_image);
+    } while(test_image != NULL);
+
     /*
+    */
     struct ManchesterCode *code = ManchesterCode_new();
     ManchesterCode_updateCodeValues(code, 0, TIMES_TWO, WEST);
 
-    */
     RobotServer_sendImageToStation(test_image);
+    /*
     RobotServer_sendPlannedTrajectoryToStation(image_trajectory);
 
+    */
 
     /*
     // HOUSE TEST
@@ -143,7 +149,6 @@ int main(int argc, char *argv[])
     // Releases Camera
     OnboardCamera_deleteImageAndFreeCamera(&test_image);
 
-    // Deletes logger
     test_callbacks = Logger_stopLoggingDataReceiverAndReturnCallbacks(logger);
 
     Logger_delete(logger);

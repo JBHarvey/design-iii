@@ -145,7 +145,6 @@ struct RobotServer *RobotServer_new(struct Robot *new_robot, int new_port, char 
 
     Object_addOneReference(new_robot->object);
 
-    Logger_debugLog("Server up and running");
     return pointer;
 }
 
@@ -211,8 +210,6 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
     struct Flags *flags = robot_server->robot->current_state->flags;
     struct WorldCamera *world_camera = robot_server->robot->world_camera;
 
-    FILE *test_file = fopen("Test.log", "+a");
-
     switch(data[0]) {
         /*
         case DATA_TRANSLATION:
@@ -228,8 +225,6 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             */
 
         case COMMAND_START_CYCLE:
-            fprintf(test_file, "Reception of start cycle packet");
-            Logger_debugLog("Reception of start cycle packet");
             reception_callbacks.updateFlagsStartCycle(flags);
             break;
 
@@ -256,7 +251,6 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             break;
     }
 
-    fclose(test_file);
 }
 
 

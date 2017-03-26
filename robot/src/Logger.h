@@ -19,5 +19,4 @@ void Logger_updateFlagsStartCycle(struct Flags *flags);
 void Logger_updateFlagsImageReceivedByStation(struct Flags *flags);
 void Logger_updateFlagsPlannedTrajectoryReceivedByStation(struct Flags *flags);
 
-void Logger_debugLog(char *text);
 #endif // LOGGER_H_

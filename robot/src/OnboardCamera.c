@@ -2,7 +2,7 @@
 #include "OnboardCamera.h"
 #include "vision.h"
 
-#define CALIBRATION_FILE "camera_calibration.xml"
+#define CALIBRATION_FILE "utils/camera_calibration.xml"
 #define CAMERA_INDEX 0
 
 static CvCapture *cv_cap;
@@ -40,7 +40,7 @@ static IplImage *getImage(void)
         cvReleaseImage(&image_temp);
         return image_yuv;
     } else {
-        return NULL;
+        return image;
     }
 }
 
@@ -58,31 +58,38 @@ struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **
 {
     CvMemStorage *opencv_storage = cvCreateMemStorage(0);
     IplImage *image = getImage();
-    CvSeq *opencv_sequence = findFirstFigure(opencv_storage, image, image_yuv_in_green_square);
-    cvDrawContours(*image_yuv_in_green_square, opencv_sequence, CV_RGB(255, 0, 0), CV_RGB(255, 0, 0), 0, LINE_SIZE, 8,
-                   cvPoint(0, 0));
 
-    struct CoordinatesSequence *sequence = 0;
+    struct CoordinatesSequence *sequence = NULL;
 
-    if(opencv_sequence) {
-        unsigned int i;
 
-        for(i = 0; i < opencv_sequence->total; ++i) {
-            CvPoint *element_pointer = (CvPoint *)cvGetSeqElem(opencv_sequence, i);
-            struct Coordinates *coordinates = Coordinates_new(convertToCartesian(element_pointer->x),
-                                              convertToCartesian(element_pointer->y) * (-1));
+    if(image != NULL) {
+        CvSeq *opencv_sequence = findFirstFigure(opencv_storage, image, image_yuv_in_green_square);
+        assert(opencv_sequence != NULL);
+        cvDrawContours(*image_yuv_in_green_square, opencv_sequence, CV_RGB(255, 0, 0), CV_RGB(255, 0, 0), 0, LINE_SIZE, 8,
+                       cvPoint(0, 0));
 
-            if(!i) {
-                sequence = CoordinatesSequence_new(coordinates);
-            } else {
-                CoordinatesSequence_append(sequence, coordinates);
+        if(opencv_sequence) {
+            unsigned int i;
+
+            for(i = 0; i < opencv_sequence->total; ++i) {
+                CvPoint *element_pointer = (CvPoint *)cvGetSeqElem(opencv_sequence, i);
+                struct Coordinates *coordinates = Coordinates_new(convertToCartesian(element_pointer->x),
+                                                  convertToCartesian(element_pointer->y) * (-1));
+
+                if(!i) {
+                    sequence = CoordinatesSequence_new(coordinates);
+                } else {
+                    CoordinatesSequence_append(sequence, coordinates);
+                }
+
+                Coordinates_delete(coordinates);
             }
-
-            Coordinates_delete(coordinates);
         }
+
+        cvReleaseMemStorage(&opencv_storage);
     }
 
-    cvReleaseMemStorage(&opencv_storage);
+
     return sequence;
 }
 
