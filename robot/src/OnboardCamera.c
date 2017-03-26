@@ -31,17 +31,19 @@ void OnboardCamera_init(void)
 static IplImage *getImage(void)
 {
     IplImage *image = cvQueryFrame(cv_cap);
-
-    if(camera_matrix && distortion_coeffs) {
-        IplImage *image_temp = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
-        cvUndistort2(image, image_temp, camera_matrix, distortion_coeffs, 0);
-        IplImage *image_yuv = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
-        cvCvtColor(image_temp, image_yuv, CV_BGR2YCrCb);
-        cvReleaseImage(&image_temp);
-        return image_yuv;
-    } else {
-        return image;
-    }
+    /*
+        if(camera_matrix && distortion_coeffs) {
+            IplImage *image_temp = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
+            cvUndistort2(image, image_temp, camera_matrix, distortion_coeffs, 0);
+            IplImage *image_yuv = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
+            cvCvtColor(image_temp, image_yuv, CV_BGR2YCrCb);
+            cvReleaseImage(&image_temp);
+            return image_yuv;
+        } else {
+            return image;
+        }
+        */
+    return image;
 }
 
 #define SIZE_SIDE_IN 1000.0
