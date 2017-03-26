@@ -5,7 +5,7 @@
 #include "tm_stm32f4_delay.h"
 
 #define LED_PRESCALER 8400-1
-#define LED_PERIOD 5000
+#define LED_PERIOD 50000
 
 void InitializeLEDs();
 void initLEDsSignals();

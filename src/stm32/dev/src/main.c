@@ -100,14 +100,13 @@ void initAll(void) {
 	initBtn();
 
 // Initialisation des variables
-	mainState = MAIN_MANCH;
+	mainState = MAIN_IDLE;
 //setState(&mainState, MAIN_MOVE);
 
 	int state = IDLE;
 
 // Extern LEDs initialization
 	InitializeLEDs();
-	InitializeTimer6();
 
 // initializations for manchester signal
 	// ADC antenne initialization
@@ -128,8 +127,6 @@ int main(void) {
 
 	initPrehensor();
 
-	moveUpPrehensor();
-	Delayms(1000);
 	TM_HD44780_Puts(0, 0, "Captain ready");
 	/* Test routine LEDs */
 	//startLEDsRoutine();
@@ -187,6 +184,33 @@ int main(void) {
 			Delayms(1000);
 			moveDownPrehensor();
 			Delayms(1000);
+			break;
+		case MAIN_MOVE_UP_PREHENSOR:
+			moveUpPrehensor();
+			sendPrehensorUpConfirmation();
+			setState(&mainState, MAIN_IDLE);
+			break;
+		case MAIN_MOVE_DOWN_PREHENSOR:
+			moveDownPrehensor();
+			sendPrehensorDownConfirmation();
+			setState(&mainState, MAIN_IDLE);
+			break;
+		case MAIN_STOP_SENDING_MANCHESTER_SIGNAL:
+			sendStopSendingManchesterSignalConfirmation();
+			setState(&mainState, MAIN_IDLE);
+			break;
+		case MAIN_TURN_ON_RED_LED:
+			turnOnRedLED();
+			Delayms(1000);
+			turnOffLEDs();
+			//sendRedLightConfirmation();
+			setState(&mainState, MAIN_IDLE);
+			break;
+		case MAIN_TURN_GREEN_LED:
+			turnOnGreenLED();
+			Delayms(1000);
+			turnOffLEDs();
+			setState(&mainState, MAIN_IDLE);
 			break;
 		default:
 			setState(&mainState, MAIN_IDLE);
@@ -399,27 +423,32 @@ extern void TIM2_IRQHandler() {
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
 
 		/* update Speed pids inputs */
-		if (speedDirection1 == SPEED_DIRECTION_FORWARD) {
-			PID_SPEED1.myInput = numberOfSpeedEdges1;
-		} else if (speedDirection1 == SPEED_DIRECTION_BACKWARD) {
-			PID_SPEED1.myInput = -numberOfSpeedEdges1;
-		}
-		if (speedDirection2 == SPEED_DIRECTION_FORWARD) {
-			PID_SPEED2.myInput = numberOfSpeedEdges2;
-		} else if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
-			PID_SPEED2.myInput = -numberOfSpeedEdges2;
-		}
-		if (speedDirection3 == SPEED_DIRECTION_FORWARD) {
-			PID_SPEED3.myInput = numberOfSpeedEdges3; // slave
-		} else if (speedDirection3 == SPEED_DIRECTION_BACKWARD) {
-			PID_SPEED3.myInput = -numberOfSpeedEdges3; // slave
+		/*if (speedDirection1 == SPEED_DIRECTION_FORWARD) {
+		 PID_SPEED1.myInput = numberOfSpeedEdges1;
+		 } else if (speedDirection1 == SPEED_DIRECTION_BACKWARD) {
+		 PID_SPEED1.myInput = -numberOfSpeedEdges1;
+		 }
+		 if (speedDirection2 == SPEED_DIRECTION_FORWARD) {
+		 PID_SPEED2.myInput = numberOfSpeedEdges2;
+		 } else if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
+		 PID_SPEED2.myInput = -numberOfSpeedEdges2;
+		 }
+		 if (speedDirection3 == SPEED_DIRECTION_FORWARD) {
+		 PID_SPEED3.myInput = numberOfSpeedEdges3; // slave
+		 } else if (speedDirection3 == SPEED_DIRECTION_BACKWARD) {
+		 PID_SPEED3.myInput = -numberOfSpeedEdges3; // slave
 
-		}
-		if (speedDirection4 == SPEED_DIRECTION_FORWARD) {
-			PID_SPEED4.myInput = numberOfSpeedEdges4; // slave
-		} else if (speedDirection4 == SPEED_DIRECTION_BACKWARD) {
-			PID_SPEED4.myInput = -numberOfSpeedEdges4; // slave
-		}
+		 }
+		 if (speedDirection4 == SPEED_DIRECTION_FORWARD) {
+		 PID_SPEED4.myInput = numberOfSpeedEdges4; // slave
+		 } else if (speedDirection4 == SPEED_DIRECTION_BACKWARD) {
+		 PID_SPEED4.myInput = -numberOfSpeedEdges4; // slave
+		 }*/
+
+		PID_SPEED1.myInput = numberOfSpeedEdges1;
+		PID_SPEED2.myInput = numberOfSpeedEdges2;
+		PID_SPEED3.myInput = numberOfSpeedEdges3;
+		PID_SPEED4.myInput = numberOfSpeedEdges4;
 
 		ticksBuffer4[ticksIndex4] = numberOfSpeedEdges2;
 		ticksIndex4++;
@@ -563,11 +592,6 @@ extern void TIM2_IRQHandler() {
 	}
 }
 
-extern void TIM6_DAC_IRQHandler() {
-	turnOffLEDs();
-	disableTimer6Interrupt();
-}
-
 /* callback when data arrives on USB */
 extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 	switch (type) {
@@ -629,30 +653,23 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 		break;
 #endif
 	case COMMAND_PREHENSOR_UP:
-		moveUpPrehensor();
-		sendPrehensorUpConfirmation();
+		setState(&mainState, MAIN_MOVE_UP_PREHENSOR);
 		break;
 	case COMMAND_PREHENSOR_DOWN:
-		moveDownPrehensor();
-		sendPrehensorDownConfirmation();
+		setState(&mainState, MAIN_MOVE_DOWN_PREHENSOR);
 		break;
 	case COMMAND_DECODE_MANCHESTER:
 		setState(&mainState, MAIN_MANCH);
 		break;
 	case COMMAND_STOP_DECODE_MANCHESTER:
 		// stop reading and sending adc signal
-		setState(&mainState, MAIN_IDLE);
-		sendStopSendingManchesterSignalConfirmation();
+		setState(&mainState, MAIN_STOP_SENDING_MANCHESTER_SIGNAL);
 		break;
 	case COMMAND_RED_LED:
-		turnOnRedLED();
-		EnableTimer6Interrupt();
-		sendRedLightConfirmation();
+		setState(&mainState, MAIN_TURN_ON_RED_LED);
 		break;
 	case COMMAND_GREEN_LED:
-		turnOnGreenLED();
-		EnableTimer6Interrupt();
-		sendGreenLightConfirmation();
+		setState(&mainState, MAIN_TURN_GREEN_LED);
 		break;
 	}
 }
