@@ -12,6 +12,7 @@ enum CameraCalibrationProcessMode {NONE, GET_USER_MOUSE_CLICKS_FOR_CAMERA_POSE_C
 /* Constants */
 
 const int NUMBER_OF_CORNERS_OF_GREEN_SQUARE = 4;
+const int NUMBER_OF_CORNERS_OF_THE_TABLE = 4;
 const int TWO_DIMENSIONS = 2;
 const int TRHEE_DIMENSIONS = 3;
 const int WIDTH_OF_THE_TABLE_IN_MM = 1109;
@@ -28,8 +29,8 @@ struct Point3DSet *object_point_set_defining_the_corners_of_the_table;
 
 static void initializePointsArraysForCameraPoseComputation(void)
 {
-    image_point_set_defining_the_corners_of_the_table = PointTypes_initializePoint2DSet(NUMBER_OF_CORNERS_OF_GREEN_SQUARE);
-    object_point_set_defining_the_corners_of_the_table = PointTypes_initializePoint3DSet(NUMBER_OF_CORNERS_OF_GREEN_SQUARE);
+    image_point_set_defining_the_corners_of_the_table = PointTypes_initializePoint2DSet(NUMBER_OF_CORNERS_OF_THE_TABLE);
+    object_point_set_defining_the_corners_of_the_table = PointTypes_initializePoint3DSet(NUMBER_OF_CORNERS_OF_THE_TABLE);
 
 
     PointTypes_addPointToPoint3DSet(object_point_set_defining_the_corners_of_the_table, PointTypes_createPoint3D(0, 0, 0));
@@ -180,7 +181,7 @@ static double checkReprojectionErrorOnCameraPose(struct Camera *input_camera)
 {
     double reprojection_error = 0.0;
     struct Point2DSet *projected_points = NULL;
-    projected_points = PointTypes_initializePoint2DSet(NUMBER_OF_CORNERS_OF_GREEN_SQUARE);
+    projected_points = PointTypes_initializePoint2DSet(NUMBER_OF_CORNERS_OF_THE_TABLE);
     cvProjectPoints2(object_point_set_defining_the_corners_of_the_table->vector_of_points,
                      input_camera->camera_extrinsics->rotation_vector,
                      input_camera->camera_extrinsics->translation_vector, input_camera->camera_intrinsics->camera_matrix,
@@ -311,4 +312,14 @@ struct Point3D WorldVisionCalibration_convertImageCoordinatesToWorldCoordinates(
                             input_camera->camera_extrinsics->translation_vector);
 
     return result;
+}
+
+void WorldVisionCalibration_convertWorldCoordinatesSetToImageCoordinatesSet(
+    struct Point3DSet *world_coordinates_set, struct Point2DSet *output_images_coordinates_set, struct Camera *input_camera)
+{
+    cvProjectPoints2(world_coordinates_set->vector_of_points,
+                     input_camera->camera_extrinsics->rotation_vector,
+                     input_camera->camera_extrinsics->translation_vector, input_camera->camera_intrinsics->camera_matrix,
+                     input_camera->camera_intrinsics->distortion_coefficients, output_images_coordinates_set->vector_of_points, NULL,
+                     NULL, NULL, NULL, NULL, 0);
 }

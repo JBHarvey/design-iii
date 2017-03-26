@@ -201,12 +201,6 @@ void RobotServer_sendPlannedTrajectoryToStation(struct CoordinatesSequence *coor
     sendCoordinatesToStation(DATA_PLANNED_TRAJECTORY, coordinates_sequence);
 }
 
-void RobotServer_sendContoursToStation(struct CoordinatesSequence *coordinates_sequence)
-{
-    sendCoordinatesToStation(DATA_CONTOURS, coordinates_sequence);
-}
-
-
 void handleReceivedPacket(uint8_t *data, uint32_t length)
 {
     if(length == 0) {

@@ -7,6 +7,8 @@
 #include "logger.h"
 #include "station_client_sender.h"
 
+#define SIZE_DRAW_LINES 3
+
 /* Flags definitions */
 
 enum TooltipStatus {PRINT, PASS};
@@ -29,6 +31,7 @@ GMutex world_vision_pixbuf_mutex;
 GMutex world_vision_frame_mutex;
 GMutex world_vision_camera_frame_mutex;
 GMutex world_vision_camera_intrinsics_mutex;
+GMutex world_vision_planned_trajectory_mutex;
 
 extern struct StationClient *station_client;
 
@@ -38,6 +41,8 @@ struct Camera *world_camera = NULL;
 IplImage *world_camera_frame = NULL;
 IplImage *world_camera_back_frame = NULL;
 GdkPixbuf *world_camera_pixbuf = NULL;
+
+struct Point2DSet *current_planned_trajectory = NULL;
 
 gboolean worldCameraDrawEventCallback(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
@@ -153,6 +158,12 @@ static void cleanExitIfMainLoopTerminated(GThread *world_vision_detection_worker
             g_thread_join(world_vision_detection_worker_thread);
         }
 
+        if(current_planned_trajectory != NULL) {
+
+            PointTypes_releasePoint2DSet(current_planned_trajectory);
+            current_planned_trajectory = NULL;
+        }
+
         releaseWorldCamera();
         cvReleaseImage(&world_camera_frame);
         cvReleaseImage(&world_camera_back_frame);
@@ -214,10 +225,30 @@ void WorldVision_createWorldCameraFrameSafeCopy(void)
     g_mutex_unlock(&world_vision_camera_frame_mutex);
 }
 
+static void drawPlannedTrajectory(void)
+{
+    for(int i = 0; i < PointTypes_getNumberOfPointStoredInPoint2DSet(current_planned_trajectory) - 1; i++) {
+        struct Point2D origin = PointTypes_getPointFromPoint2DSet(current_planned_trajectory, i);
+        struct Point2D end = PointTypes_getPointFromPoint2DSet(current_planned_trajectory, i + 1);
+        cvLine(world_camera_frame, cvPoint((int) origin.x, (int) origin.y), cvPoint((int) end.x, (int) end.y),
+               CV_RGB(29, 7, 173), SIZE_DRAW_LINES, 8, 0);
+    }
+}
+
 void WorldVision_applyWorldCameraBackFrame(void)
 {
     g_mutex_lock(&world_vision_frame_mutex);
     cvCopy(world_camera_back_frame, world_camera_frame, NULL);
+
+    g_mutex_lock(&world_vision_planned_trajectory_mutex);
+
+    if(current_planned_trajectory != NULL) {
+
+        drawPlannedTrajectory();
+    }
+
+    g_mutex_unlock(&world_vision_planned_trajectory_mutex);
+
     world_camera_frame_status = READY;
     g_mutex_unlock(&world_vision_frame_mutex);
 }
@@ -289,3 +320,20 @@ void WorldVision_sendWorldInformationToRobot(struct Communication_Object robot,
     StationClientSender_sendWorldInformationsToRobot(station_client, obstacles, MAXIMUM_OBSTACLE_NUMBER, robot);
 }
 
+void WorldVision_setPlannedTrajectory(struct Point3DSet *world_trajectory)
+{
+    g_mutex_lock(&world_vision_planned_trajectory_mutex);
+
+    if(current_planned_trajectory != NULL) {
+
+        PointTypes_releasePoint2DSet(current_planned_trajectory);
+        current_planned_trajectory = NULL;
+    }
+
+    current_planned_trajectory = PointTypes_initializePoint2DSet(PointTypes_getNumberOfPointStoredInPoint3DSet(
+                                     world_trajectory));
+
+    WorldVisionCalibration_convertWorldCoordinatesSetToImageCoordinatesSet(world_trajectory, current_planned_trajectory,
+            world_camera);
+    g_mutex_unlock(&world_vision_planned_trajectory_mutex);
+}
