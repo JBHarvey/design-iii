@@ -61,3 +61,50 @@ Test(Logger, given_aLogger_when_stopsLoggingDataReceiver_then_originalDataReceiv
     cr_assert_eq(from_logger.updateFlagsPlannedTrajectoryReceivedByStation,
                  data_receiver_callbacks.updateFlagsPlannedTrajectoryReceivedByStation);
 }
+
+Test(Logger, given_aLogger_when_startsLoggingCommandSender_then_decoratedCommandSenderCallbacksAreReturned
+     , .init = setup_logger
+     , .fini = teardown_logger)
+{
+    void (*sendTranslateCommand)(struct Command_Translate) = &Logger_sendTranslateCommand;
+    void (*sendRotateCommand)(struct Command_Rotate) = &Logger_sendRotateCommand;
+    void (*sendLightRedLEDCommand)(void) = &Logger_sendLightRedLEDCommand;
+    void (*sendLightGreenLEDCommand)(void) = &Logger_sendLightGreenLEDCommand;
+    void (*sendRisePenCommand)(void) = &Logger_sendRisePenCommand;
+    void (*sendLowerPenCommand)(void) = &Logger_sendLowerPenCommand;
+    void (*sendFetchManchesterCodeCommand)(void) = &Logger_sendFetchManchesterCode;
+    void (*sendStopSendingManchesterSignalCommand)(void) = &Logger_sendStopSendingManchesterSignal;
+
+    struct CommandSender_Callbacks callbacks = CommandSender_fetchCallbacksForRobot();
+    struct CommandSender_Callbacks from_logger = Logger_startLoggingCommandSenderAndReturnCallbacks(logger, callbacks);
+
+    cr_assert_eq(from_logger.sendTranslateCommand, sendTranslateCommand);
+    cr_assert_eq(from_logger.sendRotateCommand, sendRotateCommand);
+    cr_assert_eq(from_logger.sendLightRedLEDCommand, sendLightRedLEDCommand);
+    cr_assert_eq(from_logger.sendLightGreenLEDCommand, sendLightGreenLEDCommand);
+    cr_assert_eq(from_logger.sendRisePenCommand, sendRisePenCommand);
+    cr_assert_eq(from_logger.sendLowerPenCommand, sendLowerPenCommand);
+    cr_assert_eq(from_logger.sendFetchManchesterCodeCommand, sendFetchManchesterCodeCommand);
+    cr_assert_eq(from_logger.sendStopSendingManchesterSignalCommand, sendStopSendingManchesterSignalCommand);
+
+}
+
+Test(Logger, given_aLogger_when_stopsLoggingCommandSender_then_originalCommandSenderCallbacksAreReturned
+     , .init = setup_logger
+     , .fini = teardown_logger)
+{
+    struct CommandSender_Callbacks command_sender_callbacks = CommandSender_fetchCallbacksForRobot();
+    Logger_startLoggingCommandSenderAndReturnCallbacks(logger, command_sender_callbacks);
+
+    struct CommandSender_Callbacks from_logger = Logger_stopLoggingCommandSenderAndReturnCallbacks(logger);
+
+    cr_assert_eq(from_logger.sendTranslateCommand, command_sender_callbacks.sendTranslateCommand);
+    cr_assert_eq(from_logger.sendRotateCommand, command_sender_callbacks.sendRotateCommand);
+    cr_assert_eq(from_logger.sendLightRedLEDCommand, command_sender_callbacks.sendLightRedLEDCommand);
+    cr_assert_eq(from_logger.sendLightGreenLEDCommand, command_sender_callbacks.sendLightGreenLEDCommand);
+    cr_assert_eq(from_logger.sendRisePenCommand, command_sender_callbacks.sendRisePenCommand);
+    cr_assert_eq(from_logger.sendLowerPenCommand, command_sender_callbacks.sendLowerPenCommand);
+    cr_assert_eq(from_logger.sendFetchManchesterCodeCommand, command_sender_callbacks.sendFetchManchesterCodeCommand);
+    cr_assert_eq(from_logger.sendStopSendingManchesterSignalCommand,
+                 command_sender_callbacks.sendStopSendingManchesterSignalCommand);
+}

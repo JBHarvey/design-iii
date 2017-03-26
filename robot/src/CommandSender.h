@@ -22,6 +22,8 @@ struct CommandSender {
 struct CommandSender *CommandSender_new(void);
 void CommandSender_delete(struct CommandSender *command_sender);
 
+struct CommandSender_Callbacks CommandSender_fetchCallbacksForRobot(void);
+
 void CommandSender_changeTarget(struct CommandSender *command_sender, struct CommandSender_Callbacks new_callbacks);
 
 void CommandSender_sendTranslateCommand(struct CommandSender *command_sender, struct Command_Translate translate_command);

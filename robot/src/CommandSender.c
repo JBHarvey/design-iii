@@ -1,6 +1,6 @@
 #include "CommandSender.h"
 
-static struct CommandSender_Callbacks getCallbacksTargetingRobot(void)
+struct CommandSender_Callbacks CommandSender_fetchCallbacksForRobot(void)
 {
     struct CommandSender_Callbacks commands = {
         .sendTranslateCommand = &RobotServer_sendTranslateCommand,
@@ -18,7 +18,7 @@ static struct CommandSender_Callbacks getCallbacksTargetingRobot(void)
 struct CommandSender *CommandSender_new(void)
 {
     struct Object *new_object = Object_new();
-    struct CommandSender_Callbacks new_command_callbacks = getCallbacksTargetingRobot();
+    struct CommandSender_Callbacks new_command_callbacks = CommandSender_fetchCallbacksForRobot();
 
     struct CommandSender *pointer = malloc(sizeof(struct CommandSender));
 
@@ -79,6 +79,7 @@ void CommandSender_sendFetchManchesterCode(struct CommandSender *command_sender)
 {
     (*(command_sender->command_callbacks.sendFetchManchesterCodeCommand))();
 }
+
 void CommandSender_sendStopSendingManchesterSignal(struct CommandSender *command_sender)
 {
     (*(command_sender->command_callbacks.sendStopSendingManchesterSignalCommand))();
