@@ -322,4 +322,7 @@ void WorldVisionCalibration_convertWorldCoordinatesSetToImageCoordinatesSet(
                      input_camera->camera_extrinsics->translation_vector, input_camera->camera_intrinsics->camera_matrix,
                      input_camera->camera_intrinsics->distortion_coefficients, output_images_coordinates_set->vector_of_points, NULL,
                      NULL, NULL, NULL, NULL, 0);
+    int number_of_points = PointTypes_getNumberOfPointStoredInPoint3DSet(world_coordinates_set);
+    output_images_coordinates_set->number_of_points = number_of_points;
+    output_images_coordinates_set->filled_up_to_index = number_of_points * 2;
 }

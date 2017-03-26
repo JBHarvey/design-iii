@@ -157,8 +157,13 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
                 unsigned int i;
 
                 for(i = 0; i < number_points; ++i) {
-
-                    PointTypes_addPointToPoint3DSet(point_set, PointTypes_createPoint3D(coordinates[i].x, coordinates[i].y, 0));
+                    int x = coordinates[i].x;
+                    int y = coordinates[i].y;
+                    double dx = (double) x;
+                    double dy = (double) y;
+                    printf("INT_X: %d, INT_Y: %d", x, y);
+                    printf("DOUBLE_X: %f, DOUBLE_Y: %f", dx, dy);
+                    PointTypes_addPointToPoint3DSet(point_set, PointTypes_createPoint3D(dx, dy, 0));
                 }
 
                 WorldVision_setPlannedTrajectory(point_set);
