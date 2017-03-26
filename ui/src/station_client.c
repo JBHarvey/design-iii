@@ -151,6 +151,7 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 
                 WorldVision_setPlannedTrajectory(point_set);
                 PointTypes_releasePoint3DSet(point_set);
+                StationClientSender_sendPlannedTrajectoryAck();
                 break;
             }
 
