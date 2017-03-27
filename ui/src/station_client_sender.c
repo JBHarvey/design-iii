@@ -231,11 +231,20 @@ void StationClientSender_sendImageReceivedAck(void)
     addPacketToQueue(data, sizeof(data));
 }
 
-void StationClientSender_sendPlannedTrajectoryAck(void)
+void StationClientSender_sendPlannedTrajectoryReceivedAck(void)
 {
     uint8_t data[1];
     data[0] = ACK_PLANNED_TRAJECTORY_RECEIVED;
 
     addPacketToQueue(data, sizeof(data));
+}
+
+void StationClientSender_sendReadyToStartSignalReceivedAck(void)
+{
+    uint8_t data[1];
+    data[0] = ACK_READY_TO_START_RECEIVED;
+
+    addPacketToQueue(data, sizeof(data));
+
 }
 

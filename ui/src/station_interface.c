@@ -1,4 +1,3 @@
-#include <gtk/gtk.h>
 #include <pthread.h>
 #include "station_interface.h"
 #include "ui_builder.h"
@@ -23,11 +22,11 @@ const char *ROBOT_SERVER_IP = "127.0.0.1";
 GMutex main_loop_status_mutex;
 GMutex robot_connection_status_mutex;
 
-
 enum ThreadStatus main_loop_status;
 enum ConnectionStatus robot_connection_status;
 gint timer_tag;
 struct StationClient *station_client = NULL;
+GtkWidget *start_cycle_button_widget = NULL;
 
 void uiWindowDestroyEventCallback(GtkWidget *widget, gpointer data)
 {
@@ -77,6 +76,16 @@ int StationInterface_isConnectedToRobot(void)
     g_mutex_unlock(&robot_connection_status_mutex);
 
     return status == CONNECTED;
+}
+
+void StationInterface_initializeStartCycleButton(GtkWidget* widget)
+{
+    start_cycle_button_widget = widget;
+}
+
+void StationInterface_activateStartCycleButton(void)
+{
+    gtk_widget_set_sensitive(start_cycle_button_widget, TRUE);
 }
 
 /* Main thread */

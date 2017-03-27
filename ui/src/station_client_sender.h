@@ -12,6 +12,8 @@ void StationClientSender_sendReceiveData(struct StationClient *station_client);
 
 void StationClientSender_sendImageReceivedAck(void);
 
-void StationClientSender_sendPlannedTrajectoryAck(void);
+void StationClientSender_sendPlannedTrajectoryReceivedAck(void);
+
+void StationClientSender_sendReadyToStartSignalReceivedAck(void);
 
 #endif // STATION_CLIENT_SENDER_H_
