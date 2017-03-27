@@ -42,6 +42,7 @@ void startCycleClickedEventCallback(GtkWidget *widget, gpointer data)
 {
     StationClientSender_sendStartCycleCommand();
     Logger_startMessageSectionAndAppend("Cycle started!");
+    StationInterface_deactivateStartCycleButton();
     Timer_start();
 }
 
@@ -86,6 +87,11 @@ void StationInterface_initializeStartCycleButton(GtkWidget* widget)
 void StationInterface_activateStartCycleButton(void)
 {
     gtk_widget_set_sensitive(start_cycle_button_widget, TRUE);
+}
+
+void StationInterface_deactivateStartCycleButton(void)
+{
+    gtk_widget_set_sensitive(start_cycle_button_widget, FALSE);
 }
 
 /* Main thread */

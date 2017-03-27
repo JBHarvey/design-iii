@@ -254,3 +254,11 @@ void StationClientSender_sendReadyToDrawSignalReceivedAck(void)
 
     addPacketToQueue(data, sizeof(data));
 }
+
+void StationClientSender_sendEndOfCycleSignalReceivedAck(void)
+{
+    uint8_t data[1];
+    data[0] = ACK_END_OF_CYCLE_RECEIVED;
+
+    addPacketToQueue(data, sizeof(data));
+}

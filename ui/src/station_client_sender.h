@@ -18,4 +18,6 @@ void StationClientSender_sendReadyToStartSignalReceivedAck(void);
 
 void StationClientSender_sendReadyToDrawSignalReceivedAck(void);
 
+void StationClientSender_sendEndOfCycleSignalReceivedAck(void);
+
 #endif // STATION_CLIENT_SENDER_H_

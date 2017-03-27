@@ -59,7 +59,7 @@ gboolean worldCameraCalibrationClickedEventCallback(GtkWidget *widget, gpointer 
 {
     if(WorldVisionCalibration_initializeCameraMatrixAndDistortionCoefficientsFromFile(widget,
             world_camera)) {
-        gtk_widget_hide(GTK_WIDGET(data));
+        gtk_widget_set_sensitive(GTK_WIDGET(data), FALSE);
         WorldVisionCalibration_calibrate(world_camera);
     }
 

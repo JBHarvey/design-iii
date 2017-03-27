@@ -21,4 +21,6 @@ void StationInterface_initializeStartCycleButton(GtkWidget* widget);
 
 void StationInterface_activateStartCycleButton(void);
 
+void StationInterface_deactivateStartCycleButton(void);
+
 #endif // STATION_INTERFACE_H_

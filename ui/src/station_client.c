@@ -14,6 +14,7 @@
 #include "station_client_sender.h"
 #include "logger.h"
 #include "robot_vision.h"
+#include "timer.h"
 
 /* Constants */
 
@@ -158,21 +159,33 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             }
 
 
-        case DATA_ESTIMATED_ROBOT_POSITION:
-            break;
+        case DATA_ESTIMATED_ROBOT_POSITION: {
 
-        case SIGNAL_READY_TO_START:
-            Logger_startRobotConnectionHandlerSectionAndAppendandlerSectionAndAppend("Robot signaled that he is ready to start a cycle.");
-            StationInterface_activateStartCycleButton();
-            StationClientSender_sendReadyToStartSignalReceivedAck();
-            break;
+                break;
+            }
 
-        case SIGNAL_READY_TO_DRAW:
-            Logger_startRobotConnectionHandlerSectionAndAppendandlerSectionAndAppend("Robot signaled that he is ready to draw.");
+        case SIGNAL_READY_TO_START: {
+                Logger_startRobotConnectionHandlerSectionAndAppend("Robot signaled that he is ready to start a cycle.");
+                StationInterface_activateStartCycleButton();
+                StationClientSender_sendReadyToStartSignalReceivedAck();
+                break;
+            }
 
-            //TODO Recalibration with the green square.
+        case SIGNAL_READY_TO_DRAW: {
+                Logger_startRobotConnectionHandlerSectionAndAppend("Robot signaled that he is ready to draw.");
 
-            StationClientSender_sendReadyToDrawSignalReceivedAck();
-            break;
+                //TODO Recalibration with the green square.
+
+                StationClientSender_sendReadyToDrawSignalReceivedAck();
+                break;
+            }
+
+        case SIGNAL_END_OF_CYCLE: {
+                Logger_startRobotConnectionHandlerSectionAndAppend("Robot signaled that the cycle is completed.");
+                Timer_stop();
+                StationInterface_activateStartCycleButton();
+                StationClientSender_sendEndOfCycleSignalReceivedAck();
+                break;
+            }
     }
 }
