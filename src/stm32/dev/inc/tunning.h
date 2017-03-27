@@ -10,7 +10,7 @@
 #include "prehenseur.h"
 
 /***************************************************
- * Les buffers qui suivent servent à l'acquisition pour
+ * Les buffers qui suivent servent ï¿½ l'acquisition pour
  * bien faire l'asservissement des roues
  ***************************************************/
 //#define ENABLE_ACQUIS
@@ -76,10 +76,10 @@ extern uint16_t bufferDeadZone2[MAX_DEAD_ZONE];
 extern uint16_t bufferDeadZone3[MAX_DEAD_ZONE];
 extern uint16_t bufferDeadZone4[MAX_DEAD_ZONE];
 
-// Flag levé par la com
+// Flag levï¿½ par la com
 extern uint8_t bFlagTunningDeadZone;
 
-// Détermine le buffer qui doit être rempli
+// Dï¿½termine le buffer qui doit ï¿½tre rempli
 extern uint8_t bufferDeadZoneToFill;
 
 #endif
@@ -87,7 +87,7 @@ extern uint8_t bufferDeadZoneToFill;
 /*********************************************************
  * Variables pour tester le PID de position
  *********************************************************/
-//#define ENABLE_POSITION_PID
+#define ENABLE_POSITION_PID
 #ifdef ENABLE_POSITION_PID
 
 #define MAX_POSITION_INDEX 1400
@@ -137,60 +137,25 @@ extern uint8_t wheelsStartedY2;
 /*************** VARIABLES POUR ROTATION*****************/
 #define ENABLE_ROTATION
 #ifdef ENABLE_ROTATION
-#define MAX_ROTATION_INDEX 1400
-#define CONSIGNE_ANGLE 30
-#define ROTATION_RAYON 10
 
-#define CONSIGNE_SPEED_MEDIUM 0.08
-#define CONSIGNE_SPEED_LOW 0.02
-
-extern uint16_t bufferRotationIndex;
-extern float bufferRotation[MAX_ROTATION_INDEX];
-
-extern uint16_t bufferRotationPI1[MAX_ROTATION_INDEX];
-extern uint16_t bufferRotationPI2[MAX_ROTATION_INDEX];
-extern uint16_t bufferRotationPI3[MAX_ROTATION_INDEX];
-extern uint16_t bufferRotationPI4[MAX_ROTATION_INDEX];
-
-extern uint16_t bufferRotationPIIndex1;
-extern uint16_t bufferRotationPIIndex2;
-extern uint16_t bufferRotationPIIndex3;
-extern uint16_t bufferRotationPIIndex4;
-
-extern PidType tunningRotationPI1;
-extern PidType tunningRotationPI2;
-extern PidType tunningRotationPI3;
-extern PidType tunningRotationPI4;
-
-extern PidType tunningRotationPID1;
-extern PidType tunningRotationPID2;
-extern PidType tunningRotationPID3;
-extern PidType tunningRotationPID4;
-
-extern uint8_t bSendDataRotation;
-extern uint8_t bFlagSendDataRotation;
-extern uint8_t bTunningRotationDone;
-extern uint8_t bFlagTunningRotationDone;
-extern uint8_t bFlagStartTunningRotation;
-
-#endif
+#endif ENABLE_ROTATION
 
 /******************** IDENTIFICATION ****************************/
-// Méthode pour effetuer l'identifications des roues à partir de deux échelons de consigne
+// Mï¿½thode pour effetuer l'identifications des roues ï¿½ partir de deux ï¿½chelons de consigne
 void tunningIdentificationWheels();
 void tunningSendIdenWheels();
 
 /******************** PI VITESSE ********************************/
-// Permet de comparer la consigne avec la réponse d'un système à une consigne
+// Permet de comparer la consigne avec la rï¿½ponse d'un systï¿½me ï¿½ une consigne
 void tunningSpeedPI();
-// PErmet d'Envoyer les données relatives à l'analyse de la réponse du PID
+// PErmet d'Envoyer les donnï¿½es relatives ï¿½ l'analyse de la rï¿½ponse du PID
 void tunningSendSpeedPI();
 
 /******************** PID POSITION ******************************/
 #ifdef ENABLE_POSITION_PID
 // Permet de tester le PID de position
 void tunningPositionPID();
-// Permet d'envoyer les données du test de PID de position
+// Permet d'envoyer les donnï¿½es du test de PID de position
 void tunningSendPositionPID();
 #endif
 

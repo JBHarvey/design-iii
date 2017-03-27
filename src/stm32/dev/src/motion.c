@@ -154,23 +154,18 @@ void setCustomRotateSettings(uint8_t *data) {
 	// On defini la direction des roues 1 et 3
 	if (rotateMoveSetpoint > 0) {
 		MotorSetDirection(1, CLOCK);
-		MotorSetDirection(3, CLOCK);
-	} else if (rotateMoveSetpoint < 0) {
-		MotorSetDirection(1, COUNTER_CLOCK);
-		MotorSetDirection(3, COUNTER_CLOCK);
-	} else {
-		MotorSetDirection(1, BRAKE_G);
-		MotorSetDirection(3, BRAKE_G);
-	}
-	// On defini la direction des roues 2 et 4
-	if (rotateMoveSetpoint > 0) {
 		MotorSetDirection(2, CLOCK);
+		MotorSetDirection(3, CLOCK);
 		MotorSetDirection(4, CLOCK);
 	} else if (rotateMoveSetpoint < 0) {
+		MotorSetDirection(1, COUNTER_CLOCK);
 		MotorSetDirection(2, COUNTER_CLOCK);
+		MotorSetDirection(3, COUNTER_CLOCK);
 		MotorSetDirection(4, COUNTER_CLOCK);
 	} else {
+		MotorSetDirection(1, BRAKE_G);
 		MotorSetDirection(2, BRAKE_G);
+		MotorSetDirection(3, BRAKE_G);
 		MotorSetDirection(4, BRAKE_G);
 	}
 }
@@ -178,42 +173,45 @@ void setCustomRotateSettings(uint8_t *data) {
 void setSpeedSetpoints() {
 	if (isRobotRotating) {
 
-		float deplacementY = calculatePosition(
-				(-numberOfPositionEdges2 + numberOfPositionEdges4) / 2);
-		float deplacementX = calculatePosition(
-				(-numberOfPositionEdges1 + numberOfPositionEdges3) / 2);
+		float deplacementCirculaire = calculatePosition(
+				(-numberOfPositionEdges2 + numberOfPositionEdges4));
 
-		if ((rotateMoveSetpoint < 0 && (rotateMoveSetpoint / 2) < deplacementY)
-				|| (rotateMoveSetpoint > 0
-						&& deplacementY < (rotateMoveSetpoint / 2))) {
-			PID_SPEED2.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-			PID_SPEED4.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+		if ((rotateMoveSetpoint < 0)) {
+
+			if ((rotateMoveSetpoint / 2) < deplacementCirculaire) {
+				PID_SPEED1.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+				PID_SPEED2.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+				PID_SPEED3.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+				PID_SPEED4.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+			} else {
+				PID_SPEED1.mySetpoint = 0;
+				PID_SPEED2.mySetpoint = 0;
+				PID_SPEED3.mySetpoint = 0;
+				PID_SPEED4.mySetpoint = 0;
+				isMoving = 1;
+			}
 
 		} else {
-			PID_SPEED2.mySetpoint = 0;
-			PID_SPEED4.mySetpoint = 0;
-			isMoving = 1;
-		}
-
-		if ((rotateMoveSetpoint < 0 && (rotateMoveSetpoint / 2) < deplacementX)
-				|| (rotateMoveSetpoint > 0
-						&& deplacementX < (rotateMoveSetpoint / 2))) {
-
-			PID_SPEED1.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-			PID_SPEED3.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-		} else {
-
-			PID_SPEED1.mySetpoint = 0;
-			PID_SPEED3.mySetpoint = 0;
-			isMoving = 1;
+			if (deplacementCirculaire < (rotateMoveSetpoint / 2)) {
+				PID_SPEED1.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+				PID_SPEED2.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+				PID_SPEED3.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+				PID_SPEED4.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+			} else {
+				PID_SPEED1.mySetpoint = 0;
+				PID_SPEED2.mySetpoint = 0;
+				PID_SPEED3.mySetpoint = 0;
+				PID_SPEED4.mySetpoint = 0;
+				isMoving = 1;
+			}
 		}
 
 	} else {
 
 		float deplacementY = calculatePosition(
-				(numberOfPositionEdges2 + numberOfPositionEdges4) / 2);
+				(numberOfPositionEdges2 + numberOfPositionEdges4));
 		float deplacementX = calculatePosition(
-				(numberOfPositionEdges1 + numberOfPositionEdges3) / 2);
+				(numberOfPositionEdges1 + numberOfPositionEdges3));
 
 		/* rendre condition plus lisible */
 		/*if ((yMoveSetpoint < 0 && (yMoveSetpoint / 2) < deplacementY)
@@ -227,6 +225,27 @@ void setSpeedSetpoints() {
 		 PID_SPEED4.mySetpoint = 0;
 		 isMoving = 1;
 		 }*/
+
+		if (yMoveSetpoint < 0) {
+			if ((yMoveSetpoint / 2) < deplacementY) {
+				PID_SPEED2.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+				PID_SPEED4.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+			} else {
+				PID_SPEED2.mySetpoint = 0;
+				PID_SPEED4.mySetpoint = 0;
+				isMoving = 1;
+			}
+		} else {
+			if (deplacementY < (yMoveSetpoint / 2)) {
+				PID_SPEED2.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+				PID_SPEED4.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+			} else {
+				PID_SPEED2.mySetpoint = 0;
+				PID_SPEED4.mySetpoint = 0;
+				isMoving = 1;
+				turnOnGreenLED();
+			}
+		}
 
 		if (xMoveSetpoint < 0) {
 			if ((xMoveSetpoint / 2) < deplacementX) {
@@ -245,6 +264,7 @@ void setSpeedSetpoints() {
 				PID_SPEED1.mySetpoint = 0;
 				PID_SPEED3.mySetpoint = 0;
 				isMoving = 1;
+				turnOnGreenLED();
 			}
 		}
 

@@ -107,46 +107,6 @@ uint8_t wheelsStartedY2 = 0;
 
 #endif
 
-/*************** VARIABLES POUR ROTATION*****************/
-#define ENABLE_ROTATION
-#ifdef ENABLE_ROTATION
-#define MAX_ROTATION_INDEX 1400
-#define CONSIGNE_ANGLE 30
-#define ROTATION_RAYON 10
-
-#define CONSIGNE_SPEED_MEDIUM 0.08
-#define CONSIGNE_SPEED_LOW 0.02
-
-uint16_t bufferRotationIndex = 0;
-float bufferRotation[MAX_ROTATION_INDEX];
-
-uint16_t bufferRotationPI1[MAX_ROTATION_INDEX];
-uint16_t bufferRotationPI2[MAX_ROTATION_INDEX];
-uint16_t bufferRotationPI3[MAX_ROTATION_INDEX];
-uint16_t bufferRotationPI4[MAX_ROTATION_INDEX];
-
-uint16_t bufferRotationPIIndex1 = 0;
-uint16_t bufferRotationPIIndex2 = 0;
-uint16_t bufferRotationPIIndex3 = 0;
-uint16_t bufferRotationPIIndex4 = 0;
-
-PidType tunningRotationPI1;
-PidType tunningRotationPI2;
-PidType tunningRotationPI3;
-PidType tunningRotationPI4;
-
-PidType tunningRotationPID1;
-PidType tunningRotationPID2;
-PidType tunningRotationPID3;
-PidType tunningRotationPID4;
-
-uint8_t bSendDataRotation = 0;
-uint8_t bFlagSendDataRotation = 0;
-uint8_t bTunningRotationDone = 0;
-uint8_t bFlagTunningRotationDone = 0;
-uint8_t bFlagStartTunningRotation = 0;
-#endif
-
 #ifdef ENABLE_ACQUIS
 void tunningIdentificationWheels() {
 	/***** Motor 1 *****/
@@ -641,121 +601,114 @@ void tunningRotation() {
 	Delayms(2500);
 	/*************** Initialisation des PI de vitesse *******************/
 	// Initialization of wheel 1 PIDs
-	PID_init(&tunningRotationPI1, PID_SPEED1_KP, PID_SPEED1_KI, 0,
+	PID_init(&tunningSpeedPI1, PID_SPEED1_KP, PID_SPEED1_KI, 0,
 			PID_Direction_Direct, PID_SPEED1_N);
-	PID_SetOutputLimits(&tunningRotationPI1, MIN_SPEED_COMMAND,
-			MAX_SPEED_COMMAND);
+	PID_SetOutputLimits(&tunningSpeedPI1, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
 
 	// Initialization of wheel 2 PIDs
-	PID_init(&tunningRotationPI2, PID_SPEED2_KP, PID_SPEED2_KI, 0,
+	PID_init(&tunningSpeedPI2, PID_SPEED2_KP, PID_SPEED2_KI, 0,
 			PID_Direction_Direct, PID_SPEED2_N);
-	PID_SetOutputLimits(&tunningRotationPI2, MIN_SPEED_COMMAND,
-			MAX_SPEED_COMMAND);
+	PID_SetOutputLimits(&tunningSpeedPI2, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
 
 	// Initialization of wheel 3 PIDs
-	PID_init(&tunningRotationPI3, PID_SPEED3_KP, PID_SPEED3_KI, 0,
+	PID_init(&tunningSpeedPI3, PID_SPEED3_KP, PID_SPEED3_KI, 0,
 			PID_Direction_Direct, PID_SPEED3_N);
-	PID_SetOutputLimits(&tunningRotationPI3, MIN_SPEED_COMMAND,
-			MAX_SPEED_COMMAND);
+	PID_SetOutputLimits(&tunningSpeedPI3, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
 
 	// Initialization of wheel 4 PIDs
-	PID_init(&tunningRotationPI4, PID_SPEED4_KP, PID_SPEED4_KI, 0,
+	PID_init(&tunningSpeedPI4, PID_SPEED4_KP, PID_SPEED4_KI, 0,
 			PID_Direction_Direct, PID_SPEED4_N);
-	PID_SetOutputLimits(&tunningRotationPI4, MIN_SPEED_COMMAND,
-			MAX_SPEED_COMMAND);
+	PID_SetOutputLimits(&tunningSpeedPI4, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
 
 	// On défini la direction des roues
-	if (CONSIGNE_ANGLE > 0) {
+	if(CONSIGNE_ANGLE > 0) {
 		MotorSetDirection(1, COUNTER_CLOCK);
-		MotorSetDirection(2, COUNTER_CLOCK);
-		MotorSetDirection(3, COUNTER_CLOCK);
-		MotorSetDirection(4, COUNTER_CLOCK);
-	} else if (CONSIGNE_ANGLE < 0) {
-		MotorSetDirection(1, CLOCK);
-		MotorSetDirection(2, CLOCK);
 		MotorSetDirection(3, CLOCK);
-		MotorSetDirection(4, CLOCK);
-	} else {
+	}
+	else if(CONSIGNE_POSITION_X < 0) {
+		MotorSetDirection(1, CLOCK);
+		MotorSetDirection(3, COUNTER_CLOCK);
+	}
+	else {
 		MotorSetDirection(1, BRAKE_G);
-		MotorSetDirection(2, BRAKE_G);
 		MotorSetDirection(3, BRAKE_G);
+	}
+	//
+	if(CONSIGNE_POSITION_Y > 0) {
+		MotorSetDirection(2, COUNTER_CLOCK);
+		MotorSetDirection(4, CLOCK);
+	}
+	else if(CONSIGNE_POSITION_Y < 0) {
+		MotorSetDirection(2, CLOCK);
+		MotorSetDirection(4, COUNTER_CLOCK);
+	}
+	else {
+		MotorSetDirection(2, BRAKE_G);
 		MotorSetDirection(4, BRAKE_G);
 	}
 
 	// Redémarre les buffers
-	bufferRotationIndex = 0;
+	bufferPositionPIDIndex1 = 0;
 
 	// Initialise l'état
-	bTunningRotationDone = 0;
-	bFlagTunningRotationDone = 0;
-	bFlagStartTunningRotation = 1;
-	bufferRotationPIIndex1 = 0;
-	bufferRotationPIIndex2 = 0;
-	bufferRotationPIIndex3 = 0;
-	bufferRotationPIIndex4 = 0;
+	bTunningPositionDone = 0;
+	bFlagTunningPositionDone = 0;
+	bFlagStartTunningPosition = 1;
+	bufferPositionPIDIndex1 = 0;
+	bufferSpeedPIIndex1 = 0;
+	bufferSpeedPIIndex2 = 0;
+	bufferSpeedPIIndex3 = 0;
+	bufferSpeedPIIndex4 = 0;
 	// On boucle tant qu'on a pas fini
-	while (bTunningRotationDone == 0) {
-		float deplacementAngulaire = calculatePosition(
-				numberOfPositionEdges1)/ROTATION_RAYON;
-		if ((CONSIGNE_ANGLE != 0 && deplacementAngulaire)) {
-			tunningRotationPI1.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-			tunningRotationPI2.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-			tunningRotationPI3.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-			tunningRotationPI4.mySetpoint = CONSIGNE_SPEED_MEDIUM;
-		} else {
-			tunningRotationPI1.mySetpoint = 0;
-			tunningRotationPI2.mySetpoint = 0;
-			tunningRotationPI3.mySetpoint = 0;
-			tunningRotationPI4.mySetpoint = 0;
+	while (bTunningPositionDone == 0) {
+		float deplacementY = calculatePosition((numberOfPositionEdges2+numberOfPositionEdges4)/2);
+		float deplacementX = calculatePosition((numberOfPositionEdges1+numberOfPositionEdges3)/2);
+		if ((CONSIGNE_POSITION_Y != 0 && deplacementY < (CONSIGNE_POSITION_Y/2))
+				|| (CONSIGNE_POSITION_X != 0 && deplacementX < (CONSIGNE_POSITION_X/2))) {
+			tunningSpeedPI1.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+			tunningSpeedPI2.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+			tunningSpeedPI3.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+			tunningSpeedPI4.mySetpoint = CONSIGNE_SPEED_MEDIUM;
+		}
+		else {
+			tunningSpeedPI1.mySetpoint = 0;
+			tunningSpeedPI2.mySetpoint = 0;
+			tunningSpeedPI3.mySetpoint = 0;
+			tunningSpeedPI4.mySetpoint = 0;
 		}
 
 		// Apply command for motor 1
-		if (PID_Compute_Speed(&tunningRotationPI1)) {
-			FloatType cmdMotor = tunningRotationPI1.myOutput;
+		if (PID_Compute_Speed(&tunningSpeedPI1)) {
+			FloatType cmdMotor = tunningSpeedPI1.myOutput;
 			MotorSetSpeed(1, (uint8_t) cmdMotor);
-			PID_SetMode(&tunningRotationPI1, PID_Mode_Manual);
+			PID_SetMode(&tunningSpeedPI1, PID_Mode_Manual);
 		}
 		// Apply command for motor 2
-		if (PID_Compute_Speed(&tunningRotationPI2)) {
-			FloatType cmdMotor = tunningRotationPI2.myOutput;
+		if (PID_Compute_Speed(&tunningSpeedPI2)) {
+			FloatType cmdMotor = tunningSpeedPI2.myOutput;
 			uint8_t cmdPWM = (uint8_t) cmdMotor;
 			MotorSetSpeed(2, (uint8_t) cmdPWM);
-			PID_SetMode(&tunningRotationPI2, PID_Mode_Manual);
+			PID_SetMode(&tunningSpeedPI2, PID_Mode_Manual);
 		}
 		// Apply command for motor 3
-		if (PID_Compute_Speed(&tunningRotationPI3)) {
-			FloatType cmdMotor = tunningRotationPI3.myOutput;
+		if (PID_Compute_Speed(&tunningSpeedPI3)) {
+			FloatType cmdMotor = tunningSpeedPI3.myOutput;
 			MotorSetSpeed(3, (uint8_t) cmdMotor);
-			PID_SetMode(&tunningRotationPI3, PID_Mode_Manual);
+			PID_SetMode(&tunningSpeedPI3, PID_Mode_Manual);
 		}
 		// Apply command for motor 4
-		if (PID_Compute_Speed(&tunningRotationPI4)) {
-			FloatType cmdMotor = tunningRotationPI4.myOutput;
+		if (PID_Compute_Speed(&tunningSpeedPI4)) {
+			FloatType cmdMotor = tunningSpeedPI4.myOutput;
 			MotorSetSpeed(4, (uint8_t) cmdMotor);
-			PID_SetMode(&tunningRotationPI4, PID_Mode_Manual);
+			PID_SetMode(&tunningSpeedPI4, PID_Mode_Manual);
 		}
 
-		bTunningRotationDone = bFlagTunningRotationDone;
+		bTunningPositionDone = bFlagTunningPositionDone;
 	}
 	moveUpPrehensor();
-	tunningSendRotation();
+	tunningSendPositionPID();
 	while (1) {
 
 	}
-}
-
-// Permet d'envoyé les données relatives à l'identification de la zone morte
-void tunningSendRotation() {
-	/****** ENVOIE DES DONNÉES ******/
-	VCP_DataTx((uint8_t*) bufferRotation, MAX_ROTATION_INDEX * 4);
-	Delayms(1000);
-	VCP_DataTx((uint8_t*) bufferRotationPI1, MAX_ROTATION_INDEX * 2);
-	Delayms(1000);
-	VCP_DataTx((uint8_t*) bufferRotationPI2, MAX_ROTATION_INDEX * 2);
-	Delayms(1000);
-	VCP_DataTx((uint8_t*) bufferRotationPI3, MAX_ROTATION_INDEX * 2);
-	Delayms(1000);
-	VCP_DataTx((uint8_t*) bufferRotationPI4, MAX_ROTATION_INDEX * 2);
-	Delayms(1000);
 }
 #endif

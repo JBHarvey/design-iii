@@ -7,6 +7,7 @@
  **********************************************************************************************/
 
 #include "PID_v1.h"
+#include "motion.h"
 
 void PID_Initialize(PidType* pid);
 
@@ -510,6 +511,8 @@ void computeCustomPIDS() {
 				&& PID_SPEED3.myInput == 0 && PID_SPEED4.myInput == 0) {
 			isMoving = 0;
 			isMoveDone = 1;
+			stopMove();
+			//setState(&mainState, MAIN_IDLE);
 		}
 	}
 }

@@ -127,6 +127,8 @@ int main(void) {
 
 	initPrehensor();
 
+	turnOffLEDs();
+
 	moveDownPrehensor();
 	Delayms(800);
 
