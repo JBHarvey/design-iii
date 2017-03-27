@@ -164,7 +164,20 @@ void RobotServer_communicate(struct RobotServer *robot_server)
     ev_run(robot_server->loop, EVRUN_NOWAIT);
 }
 
-void RobotServer_sendRobotPoseEstimate(struct Pose *pose) {}
+#define BASE_UNIT_TO_MILLIMETERS 10
+void RobotServer_sendRobotPoseEstimate(struct Pose *pose)
+{
+    struct Communication_Pose communication_pose = {.coordinates = {
+            .x = (pose->coordinates->x) / BASE_UNIT_TO_MILLIMETERS,
+            .y = (pose->coordinates->y) / BASE_UNIT_TO_MILLIMETERS
+        },
+        .theta = (pose->angle->theta) * ANGLE_BASE_UNIT
+    };
+    uint8_t data[1 + sizeof(communication_pose)];
+    data[0] = DATA_ESTIMATED_ROBOT_POSITION;
+    memcpy(data + 1, &communication_pose, sizeof(communication_pose));
+    addPacket(data, sizeof(data));
+}
 
 void RobotServer_sendImageToStation(IplImage *image)
 {
@@ -176,7 +189,7 @@ void RobotServer_sendImageToStation(IplImage *image)
     cvReleaseMat(&image_data);
 }
 
-#define BASE_UNIT_TO_MILLIMETERS 10
+
 void RobotServer_sendPlannedTrajectoryToStation(struct CoordinatesSequence *coordinates_sequence)
 {
     unsigned int size = CoordinatesSequence_size(coordinates_sequence);
@@ -199,9 +212,26 @@ void RobotServer_sendPlannedTrajectoryToStation(struct CoordinatesSequence *coor
     addPacket(data, sizeof(data));
 }
 
-void RobotServer_sendSignalReadyToStart(void) {}
-void RobotServer_sendSignalReadyToDraw(void) {}
-void RobotServer_sendSignalEndOfCycle(void) {}
+void RobotServer_sendSignalReadyToStart(void)
+{
+    uint8_t data[1];
+    data[0] = SIGNAL_READY_TO_START;
+    addPacket(data, sizeof(data));
+}
+
+void RobotServer_sendSignalReadyToDraw(void)
+{
+    uint8_t data[1];
+    data[0] = SIGNAL_READY_TO_DRAW;
+    addPacket(data, sizeof(data));
+}
+
+void RobotServer_sendSignalEndOfCycle(void)
+{
+    uint8_t data[1];
+    data[0] = SIGNAL_END_OF_CYCLE;
+    addPacket(data, sizeof(data));
+}
 
 void handleReceivedPacket(uint8_t *data, uint32_t length)
 {
