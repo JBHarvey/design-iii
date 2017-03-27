@@ -27,6 +27,8 @@ Test(Logger, given_aLogger_when_startsLoggingDataReceiver_then_decoratedDataRece
     void (*updateFlagsImageReceivedByStation)(struct Flags *) = &Logger_updateFlagsImageReceivedByStation;
     void (*updateFlagsPlannedTrajectoryReceivedByStation)(struct Flags *) =
         &Logger_updateFlagsPlannedTrajectoryReceivedByStation;
+    void (*updateFlagsReadyToStartSignalReceivedByStation)(struct Flags *) =
+        &Logger_updateFlagsReadyToStartSignalReceivedByStation;
 
     struct DataReceiver_Callbacks data_receiver_callbacks = DataReceiver_fetchCallbacks();
 
@@ -40,7 +42,8 @@ Test(Logger, given_aLogger_when_startsLoggingDataReceiver_then_decoratedDataRece
     cr_assert_eq(from_logger.updateFlagsStartCycle, updateFlagsStartCycle);
     cr_assert_eq(from_logger.updateFlagsImageReceivedByStation, updateFlagsImageReceivedByStation);
     cr_assert_eq(from_logger.updateFlagsPlannedTrajectoryReceivedByStation, updateFlagsPlannedTrajectoryReceivedByStation);
-
+    cr_assert_eq(from_logger.updateFlagsReadyToStartSignalReceivedByStation,
+                 updateFlagsReadyToStartSignalReceivedByStation);
 }
 
 Test(Logger, given_aLogger_when_stopsLoggingDataReceiver_then_originalDataReceiverCallbacksAreReturned
@@ -60,6 +63,9 @@ Test(Logger, given_aLogger_when_stopsLoggingDataReceiver_then_originalDataReceiv
     cr_assert_eq(from_logger.updateFlagsImageReceivedByStation, data_receiver_callbacks.updateFlagsImageReceivedByStation);
     cr_assert_eq(from_logger.updateFlagsPlannedTrajectoryReceivedByStation,
                  data_receiver_callbacks.updateFlagsPlannedTrajectoryReceivedByStation);
+    cr_assert_eq(from_logger.updateFlagsReadyToStartSignalReceivedByStation,
+                 data_receiver_callbacks.updateFlagsReadyToStartSignalReceivedByStation);
+
 }
 
 Test(Logger, given_aLogger_when_startsLoggingCommandSender_then_decoratedCommandSenderCallbacksAreReturned

@@ -67,7 +67,8 @@ struct DataReceiver_Callbacks Logger_startLoggingDataReceiverAndReturnCallbacks(
         .updateManchesterCode = &Logger_updateManchesterCode,
         .updateFlagsStartCycle = &Logger_updateFlagsStartCycle,
         .updateFlagsImageReceivedByStation = &Logger_updateFlagsImageReceivedByStation,
-        .updateFlagsPlannedTrajectoryReceivedByStation = &Logger_updateFlagsPlannedTrajectoryReceivedByStation
+        .updateFlagsPlannedTrajectoryReceivedByStation = &Logger_updateFlagsPlannedTrajectoryReceivedByStation,
+        .updateFlagsReadyToStartSignalReceivedByStation = &Logger_updateFlagsReadyToStartSignalReceivedByStation
     };
     return data_receiver_callbacks_with_logging;
 }
@@ -229,6 +230,14 @@ void Logger_updateFlagsPlannedTrajectoryReceivedByStation(struct Flags *flags)
     logFlags(FLAG_PLANNED_TRAJECTORY_RECEIVED_BY_STATION);
     (*(file_logger->original_data_receiver_callbacks.updateFlagsPlannedTrajectoryReceivedByStation))(flags);
 }
+
+static const char *FLAG_READY_TO_START_RECEIVED_BY_STATION = "Ready To Start Signal Received By Station - (Ack)";
+void Logger_updateFlagsReadyToStartSignalReceivedByStation(struct Flags *flags)
+{
+    logFlags(FLAG_READY_TO_START_RECEIVED_BY_STATION);
+    (*(file_logger->original_data_receiver_callbacks.updateFlagsReadyToStartSignalReceivedByStation))(flags);
+}
+
 // START OF COMMAND SENDER CALLBACK
 
 
