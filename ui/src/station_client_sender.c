@@ -245,6 +245,12 @@ void StationClientSender_sendReadyToStartSignalReceivedAck(void)
     data[0] = ACK_READY_TO_START_RECEIVED;
 
     addPacketToQueue(data, sizeof(data));
-
 }
 
+void StationClientSender_sendReadyToDrawSignalReceivedAck(void)
+{
+    uint8_t data[1];
+    data[0] = ACK_READY_TO_DRAW_RECEIVED;
+
+    addPacketToQueue(data, sizeof(data));
+}

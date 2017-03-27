@@ -16,4 +16,6 @@ void StationClientSender_sendPlannedTrajectoryReceivedAck(void);
 
 void StationClientSender_sendReadyToStartSignalReceivedAck(void);
 
+void StationClientSender_sendReadyToDrawSignalReceivedAck(void);
+
 #endif // STATION_CLIENT_SENDER_H_

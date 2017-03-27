@@ -162,8 +162,17 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             break;
 
         case SIGNAL_READY_TO_START:
+            Logger_startRobotConnectionHandlerSectionAndAppendandlerSectionAndAppend("Robot signaled that he is ready to start a cycle.");
             StationInterface_activateStartCycleButton();
             StationClientSender_sendReadyToStartSignalReceivedAck();
+            break;
+
+        case SIGNAL_READY_TO_DRAW:
+            Logger_startRobotConnectionHandlerSectionAndAppendandlerSectionAndAppend("Robot signaled that he is ready to draw.");
+
+            //TODO Recalibration with the green square.
+
+            StationClientSender_sendReadyToDrawSignalReceivedAck();
             break;
     }
 }
