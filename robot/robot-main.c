@@ -29,14 +29,14 @@ static void waitFifteenSeconds()
 static void sendTranslate(int x, int y)
 {
     struct Command_Translate translate = { .x = x, .y = y };
-    CommandSender_sendTranslateCommand(sender, translate);
+    CommandSender_sendTranslateCommand(command_sender, translate);
     waitASecondAndAHalf();
 }
 
 static void sendRotate(int theta)
 {
     struct Command_Rotate rotate = { .theta = theta};
-    CommandSender_sendRotateCommand(sender, rotate);
+    CommandSender_sendRotateCommand(command_sender, rotate);
     waitASecondAndAHalf();
 }
 
