@@ -9,6 +9,7 @@ find build/deploy/ -type f ! \( -name "*.d" -o -name "*.o" \) -delete
 
 #[SRC] Updates shared code
 cp -u --preserve=all ../shared/CommunicationStructures.h src
+cp -u --preserve=all ../shared/Defines.h src
 cp -u --preserve=all ../vision/src/{vision.c,vision.h} src/
 
 #[BUILD] Moves all compilation files to build dir

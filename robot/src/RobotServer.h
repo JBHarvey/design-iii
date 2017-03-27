@@ -20,8 +20,6 @@ _Bool writeTTYACMPacket(uint8_t type, uint8_t *data, unsigned int length);
 
 void RobotServer_sendTranslateCommand(struct Command_Translate command_translate);
 
-// THESE FUNCTIONS ARE NEITHER TESTED NOR WORKING YET.
-// THIS WILL COME WITH INTEGRATION TESTS
 void RobotServer_sendRotateCommand(struct Command_Rotate command_rotate);
 void RobotServer_sendLightRedLEDCommand(void);
 void RobotServer_sendLightGreenLEDCommand(void);
@@ -30,7 +28,12 @@ void RobotServer_sendLowerPenCommand(void);
 void RobotServer_fetchManchesterCodeCommand(void);
 void RobotServer_sendStopSendingManchesterSignalCommand(void);
 
+// TODO: THE ACTUAL IMPLEMENTATION OF THESE FUNCTIONS:
+void RobotServer_sendRobotPoseEstimate(struct Pose *pose);
 void RobotServer_sendImageToStation(IplImage *image);
 void RobotServer_sendPlannedTrajectoryToStation(struct CoordinatesSequence *coordinates_sequence);
+void RobotServer_sendSignalReadyToStart(void);
+void RobotServer_sendSignalReadyToDraw(void);
+void RobotServer_sendSignalEndOfCycle(void);
 
 #endif // ROBOTSERVER_H_
