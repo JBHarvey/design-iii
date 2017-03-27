@@ -386,22 +386,30 @@ static void logRobotPoseEstimate(struct Pose *pose)
             SUB, y,
             SUB, theta);
 }
-/*
-static const char *ROBOT_UPDATE = "Robot Update: ";
-static void logRobot(struct Communication_Object robot)
+
+static const char *SENDING_PLANNED_TRAJECTORY = "Sending Planned Trajectory: ";
+static void logCoordinatesSequence(const char *sequence_type, struct CoordinatesSequence *sequence)
 {
-    int radius = robot.radius;
-    int x = robot.zone.pose.coordinates.x;
-    int y = robot.zone.pose.coordinates.y;
-    int theta = robot.zone.pose.theta;
-    fprintf(file_logger->log_file, "\n%s%s \n%sradius:  %d\n%sx:  %d\n%sy:  %d\n%stheta:  %d",
-            ITEM, ROBOT_UPDATE,
-            SUB, radius,
-            SUB, x,
-            SUB, y,
-            SUB, theta);
+    int x;
+    int y;
+    struct CoordinatesSequence *current_element = sequence;
+    x = current_element->coordinates->x;
+    y = current_element->coordinates->y;
+    fprintf(file_logger->log_file,
+            "\n%s%s \n%s (%d,%d)\n",
+            ITEM, sequence_type,
+            SUBITEM, x, y);
+
+    do {
+        current_element = current_element->next_element;
+        x = current_element->coordinates->x;
+        y = current_element->coordinates->y;
+
+        fprintf(file_logger->log_file,
+                "%s (%d,%d)\n",
+                SUBITEM, x, y);
+    } while(!CoordinatesSequence_isLast(current_element));
 }
-*/
 
 static const char *SIGNAL_DATA = "Sending ";
 static const char *IMAGE_SIGNAL = "Image with Detected Borders";
@@ -429,7 +437,7 @@ void Logger_sendImage(IplImage *image)
 
 void Logger_sendPlannedTrajectory(struct CoordinatesSequence *coordinates_sequence)
 {
-    //TODO: CREATE FUNCTION TO PRINT THE SEQUENCE
+    logCoordinatesSequence(SENDING_PLANNED_TRAJECTORY, coordinates_sequence);
     (*(file_logger->original_data_sender_callbacks.sendPlannedTrajectory))(coordinates_sequence);
 }
 
