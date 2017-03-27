@@ -20,6 +20,28 @@ static double distance_points(double x1, double y1, double x2, double y2)
     return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
 
+static struct Marker calculateMarker(std::vector<cv::Point2f> corners, unsigned int corner_number)
+{
+    struct Marker marker;
+    marker.angle = atan2(corners[0].y - corners[2].y, corners[0].x - corners[2].x);
+    double distance = distance_points(corners[0].x, corners[0].y, corners[2].x, corners[2].y);
+    distance += distance_points(corners[1].x, corners[1].y, corners[3].x, corners[3].y);
+    distance /= 2.0;
+    distance *= MARKER_DISTANCE_RATIO;
+
+    double x = corners[corner_number].x;
+    x += distance * cos(marker.angle + ((double)corner_number) * (M_PI /  2.0));
+
+    double y = corners[corner_number].y;
+    y += distance * sin(marker.angle + ((double)corner_number) * (M_PI /  2.0));
+
+    marker.angle += (M_PI / 4.0);
+    marker.valid = 1;
+    marker.x = x;
+    marker.y = y;
+    return marker;
+}
+
 struct Marker detectMarker(CvArr *image)
 {
     cv::Mat src = cv::cvarrToMat(image);
@@ -44,79 +66,19 @@ struct Marker detectMarker(CvArr *image)
         marker.valid = 0;
 
         if(ids[i] == MARKER_ID_TOP_RIGHT) {
-            marker.angle = atan2(corners[i][0].y - corners[i][2].y, corners[i][0].x - corners[i][2].x);
-            double distance = distance_points(corners[i][0].x, corners[i][0].y, corners[i][2].x, corners[i][2].y);
-            distance += distance_points(corners[i][1].x, corners[i][1].y, corners[i][3].x, corners[i][3].y);
-            distance /= 2.0;
-            distance *= MARKER_DISTANCE_RATIO;
-
-            double x = corners[i][2].x;
-            x += distance * cos(marker.angle + (M_PI));
-
-            double y = corners[i][2].y;
-            y += distance * sin(marker.angle + (M_PI));
-
-            marker.angle += (M_PI / 4.0);
-            marker.valid = 1;
-            marker.x = round(x);
-            marker.y = round(y);
+            marker = calculateMarker(corners[i], 2);
         }
 
         if(ids[i] == MARKER_ID_TOP_LEFT) {
-            marker.angle = atan2(corners[i][0].y - corners[i][2].y, corners[i][0].x - corners[i][2].x);
-            double distance = distance_points(corners[i][0].x, corners[i][0].y, corners[i][2].x, corners[i][2].y);
-            distance += distance_points(corners[i][1].x, corners[i][1].y, corners[i][3].x, corners[i][3].y);
-            distance /= 2.0;
-            distance *= MARKER_DISTANCE_RATIO;
-
-            double x = corners[i][3].x;
-            x += distance * cos(marker.angle - (M_PI / 2.0));
-
-            double y = corners[i][3].y;
-            y += distance * sin(marker.angle - (M_PI / 2.0));
-
-            marker.angle += (M_PI / 4.0);
-            marker.valid = 1;
-            marker.x = round(x);
-            marker.y = round(y);
+            marker = calculateMarker(corners[i], 3);
         }
 
         if(ids[i] == MARKER_ID_BOTTOM_RIGHT) {
-            marker.angle = atan2(corners[i][0].y - corners[i][2].y, corners[i][0].x - corners[i][2].x);
-            double distance = distance_points(corners[i][0].x, corners[i][0].y, corners[i][2].x, corners[i][2].y);
-            distance += distance_points(corners[i][1].x, corners[i][1].y, corners[i][3].x, corners[i][3].y);
-            distance /= 2.0;
-            distance *= MARKER_DISTANCE_RATIO;
-
-            double x = corners[i][1].x;
-            x += distance * cos(marker.angle + (M_PI / 2.0));
-
-            double y = corners[i][1].y;
-            y += distance * sin(marker.angle + (M_PI / 2.0));
-
-            marker.angle += (M_PI / 4.0);
-            marker.valid = 1;
-            marker.x = round(x);
-            marker.y = round(y);
+            marker = calculateMarker(corners[i], 1);
         }
 
         if(ids[i] == MARKER_ID_BOTTOM_LEFT) {
-            marker.angle = atan2(corners[i][0].y - corners[i][2].y, corners[i][0].x - corners[i][2].x);
-            double distance = distance_points(corners[i][0].x, corners[i][0].y, corners[i][2].x, corners[i][2].y);
-            distance += distance_points(corners[i][1].x, corners[i][1].y, corners[i][3].x, corners[i][3].y);
-            distance /= 2.0;
-            distance *= MARKER_DISTANCE_RATIO;
-
-            double x = corners[i][0].x;
-            x += distance * cos(marker.angle);
-
-            double y = corners[i][0].y;
-            y += distance * sin(marker.angle);
-
-            marker.angle += (M_PI / 4.0);
-            marker.valid = 1;
-            marker.x = round(x);
-            marker.y = round(y);
+            marker = calculateMarker(corners[i], 0);
         }
 
         if(marker.valid) {
