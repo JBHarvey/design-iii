@@ -27,6 +27,12 @@ Test(Logger, given_aLogger_when_startsLoggingDataReceiver_then_decoratedDataRece
     void (*updateFlagsImageReceivedByStation)(struct Flags *) = &Logger_updateFlagsImageReceivedByStation;
     void (*updateFlagsPlannedTrajectoryReceivedByStation)(struct Flags *) =
         &Logger_updateFlagsPlannedTrajectoryReceivedByStation;
+    void (*updateFlagsReadyToStartSignalReceivedByStation)(struct Flags *) =
+        &Logger_updateFlagsReadyToStartSignalReceivedByStation;
+    void (*updateFlagsReadyToDrawSignalReceivedByStation)(struct Flags *) =
+        &Logger_updateFlagsReadyToDrawSignalReceivedByStation;
+    void (*updateFlagsEndOfCycleSignalReceivedByStation)(struct Flags *) =
+        &Logger_updateFlagsEndOfCycleSignalReceivedByStation;
 
     struct DataReceiver_Callbacks data_receiver_callbacks = DataReceiver_fetchCallbacks();
 
@@ -40,7 +46,12 @@ Test(Logger, given_aLogger_when_startsLoggingDataReceiver_then_decoratedDataRece
     cr_assert_eq(from_logger.updateFlagsStartCycle, updateFlagsStartCycle);
     cr_assert_eq(from_logger.updateFlagsImageReceivedByStation, updateFlagsImageReceivedByStation);
     cr_assert_eq(from_logger.updateFlagsPlannedTrajectoryReceivedByStation, updateFlagsPlannedTrajectoryReceivedByStation);
-
+    cr_assert_eq(from_logger.updateFlagsReadyToStartSignalReceivedByStation,
+                 updateFlagsReadyToStartSignalReceivedByStation);
+    cr_assert_eq(from_logger.updateFlagsReadyToDrawSignalReceivedByStation,
+                 updateFlagsReadyToDrawSignalReceivedByStation);
+    cr_assert_eq(from_logger.updateFlagsEndOfCycleSignalReceivedByStation,
+                 updateFlagsEndOfCycleSignalReceivedByStation);
 }
 
 Test(Logger, given_aLogger_when_stopsLoggingDataReceiver_then_originalDataReceiverCallbacksAreReturned
@@ -60,6 +71,12 @@ Test(Logger, given_aLogger_when_stopsLoggingDataReceiver_then_originalDataReceiv
     cr_assert_eq(from_logger.updateFlagsImageReceivedByStation, data_receiver_callbacks.updateFlagsImageReceivedByStation);
     cr_assert_eq(from_logger.updateFlagsPlannedTrajectoryReceivedByStation,
                  data_receiver_callbacks.updateFlagsPlannedTrajectoryReceivedByStation);
+    cr_assert_eq(from_logger.updateFlagsReadyToStartSignalReceivedByStation,
+                 data_receiver_callbacks.updateFlagsReadyToStartSignalReceivedByStation);
+    cr_assert_eq(from_logger.updateFlagsReadyToDrawSignalReceivedByStation,
+                 data_receiver_callbacks.updateFlagsReadyToDrawSignalReceivedByStation);
+    cr_assert_eq(from_logger.updateFlagsEndOfCycleSignalReceivedByStation,
+                 data_receiver_callbacks.updateFlagsEndOfCycleSignalReceivedByStation);
 }
 
 Test(Logger, given_aLogger_when_startsLoggingCommandSender_then_decoratedCommandSenderCallbacksAreReturned

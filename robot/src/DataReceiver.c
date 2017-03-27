@@ -9,7 +9,10 @@ struct DataReceiver_Callbacks DataReceiver_fetchCallbacks(void)
         .updateManchesterCode = &DataReceiver_updateManchesterCode,
         .updateFlagsStartCycle = &DataReceiver_updateFlagsStartCycle,
         .updateFlagsImageReceivedByStation = &DataReceiver_updateFlagsImageReceivedByStation,
-        .updateFlagsPlannedTrajectoryReceivedByStation = &DataReceiver_updateFlagsPlannedTrajectoryReceivedByStation
+        .updateFlagsPlannedTrajectoryReceivedByStation = &DataReceiver_updateFlagsPlannedTrajectoryReceivedByStation,
+        .updateFlagsReadyToStartSignalReceivedByStation = &DataReceiver_updateFlagsReadyToStartSignalReceivedByStation,
+        .updateFlagsReadyToDrawSignalReceivedByStation = &DataReceiver_updateFlagsReadyToDrawSignalReceivedByStation,
+        .updateFlagsEndOfCycleSignalReceivedByStation = &DataReceiver_updateFlagsEndOfCycleSignalReceivedByStation
     };
 
     return callbacks;
@@ -245,6 +248,21 @@ void DataReceiver_updateFlagsImageReceivedByStation(struct Flags *flags)
 void DataReceiver_updateFlagsPlannedTrajectoryReceivedByStation(struct Flags *flags)
 {
     Flags_setPlannedTrajectoryReceivedByStation(flags, 1);
+}
+
+void DataReceiver_updateFlagsReadyToStartSignalReceivedByStation(struct Flags *flags)
+{
+    Flags_setReadyToStartReceivedByStation(flags, 1);
+}
+
+void DataReceiver_updateFlagsReadyToDrawSignalReceivedByStation(struct Flags *flags)
+{
+    Flags_setReadyToDrawReceivedByStation(flags, 1);
+}
+
+void DataReceiver_updateFlagsEndOfCycleSignalReceivedByStation(struct Flags *flags)
+{
+    Flags_setEndOfCycleReceivedByStation(flags, 1);
 }
 
 struct Mesurements DataReceiver_fetchInputs(struct Mesurements(*communication_callback)(void))

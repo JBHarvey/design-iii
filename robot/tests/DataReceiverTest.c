@@ -17,6 +17,12 @@ Test(DataReceiver, given_when_fetchDataReceiverCallbacks_then_theCorrectSturctur
     void (*updateFlagsImageReceivedByStation)(struct Flags *) = &DataReceiver_updateFlagsImageReceivedByStation;
     void (*updateFlagsPlannedTrajectoryReceivedByStation)(struct Flags *) =
         &DataReceiver_updateFlagsPlannedTrajectoryReceivedByStation;
+    void (*updateFlagsReadyToStartSignalReceivedByStation)(struct Flags *) =
+        &DataReceiver_updateFlagsReadyToStartSignalReceivedByStation;
+    void (*updateFlagsReadyToDrawSignalReceivedByStation)(struct Flags *) =
+        &DataReceiver_updateFlagsReadyToDrawSignalReceivedByStation;
+    void (*updateFlagsEndOfCycleSignalReceivedByStation)(struct Flags *) =
+        &DataReceiver_updateFlagsEndOfCycleSignalReceivedByStation;
 
     struct DataReceiver_Callbacks callbacks = DataReceiver_fetchCallbacks();
     cr_assert_eq(callbacks.updateWorld, updateWorld);
@@ -26,6 +32,9 @@ Test(DataReceiver, given_when_fetchDataReceiverCallbacks_then_theCorrectSturctur
     cr_assert_eq(callbacks.updateFlagsStartCycle, updateFlagsStartCycle);
     cr_assert_eq(callbacks.updateFlagsImageReceivedByStation, updateFlagsImageReceivedByStation);
     cr_assert_eq(callbacks.updateFlagsPlannedTrajectoryReceivedByStation, updateFlagsPlannedTrajectoryReceivedByStation);
+    cr_assert_eq(callbacks.updateFlagsReadyToStartSignalReceivedByStation, updateFlagsReadyToStartSignalReceivedByStation);
+    cr_assert_eq(callbacks.updateFlagsReadyToDrawSignalReceivedByStation, updateFlagsReadyToDrawSignalReceivedByStation);
+    cr_assert_eq(callbacks.updateFlagsEndOfCycleSignalReceivedByStation, updateFlagsEndOfCycleSignalReceivedByStation);
 }
 
 void setup_Flags(void)
@@ -65,6 +74,36 @@ Test(DataReceiver,
     DataReceiver_updateFlagsPlannedTrajectoryReceivedByStation(flags);
 
     cr_assert(flags->planned_trajectory_received_by_station);
+}
+
+Test(DataReceiver,
+     given_anAcknowledgementOfReadyToStartSignalReceivedByStation_when_updateFlagsReadyToStartSignalReceivedByStation_then_itsValueIsSetToOne,
+     .init = setup_Flags,
+     .fini = teardown_Flags)
+{
+    DataReceiver_updateFlagsReadyToStartSignalReceivedByStation(flags);
+
+    cr_assert(flags->ready_to_start_received_by_station);
+}
+
+Test(DataReceiver,
+     given_anAcknowledgementOfReadyToDrawSignalReceivedByStation_when_updateFlagsReadyToDrawSignalReceivedByStation_then_itsValueIsSetToOne,
+     .init = setup_Flags,
+     .fini = teardown_Flags)
+{
+    DataReceiver_updateFlagsReadyToDrawSignalReceivedByStation(flags);
+
+    cr_assert(flags->ready_to_draw_received_by_station);
+}
+
+Test(DataReceiver,
+     given_anAcknowledgementOfEndOfCycleSignalReceivedByStation_when_updateFlagsEndOfCycleSignalReceivedByStation_then_itsValueIsSetToOne,
+     .init = setup_Flags,
+     .fini = teardown_Flags)
+{
+    DataReceiver_updateFlagsEndOfCycleSignalReceivedByStation(flags);
+
+    cr_assert(flags->end_of_cycle_received_by_station);
 }
 
 // World data

@@ -25,6 +25,9 @@ void Logger_updateManchesterCode(struct ManchesterCode *manchester_code, struct 
 void Logger_updateFlagsStartCycle(struct Flags *flags);
 void Logger_updateFlagsImageReceivedByStation(struct Flags *flags);
 void Logger_updateFlagsPlannedTrajectoryReceivedByStation(struct Flags *flags);
+void Logger_updateFlagsReadyToStartSignalReceivedByStation(struct Flags *flags);
+void Logger_updateFlagsReadyToDrawSignalReceivedByStation(struct Flags *flags);
+void Logger_updateFlagsEndOfCycleSignalReceivedByStation(struct Flags *flags);
 
 // CommandSender Calls
 void Logger_sendTranslateCommand(struct Command_Translate translate_command);
