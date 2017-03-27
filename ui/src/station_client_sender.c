@@ -4,7 +4,6 @@
 #include "Defines.h"
 
 // Fake data
-const int MAP_DRAWING_SIDE = 6600;
 const int TEST_PAINTING_0_X = 4060;
 const int TEST_PAINTING_0_Y = 2500;
 const int TEST_PAINTING_0_ORIENTATION = MINUS_HALF_PI;
@@ -68,10 +67,22 @@ void StationClientSender_sendWorldInformationsToRobot(struct Communication_Objec
             .north_western_table_corner = {.x = 0, .y = THEORICAL_WORLD_HEIGHT},
             .south_eastern_table_corner = {.x = THEORICAL_WORLD_LENGTH, .y = 0},
             .south_western_table_corner = {.x = 0, .y = 0},
-            .north_eastern_drawing_corner = {.x = MAP_DRAWING_SIDE, .y = MAP_DRAWING_SIDE},
-            .north_western_drawing_corner = {.x = 0, .y = MAP_DRAWING_SIDE},
-            .south_eastern_drawing_corner = {.x = MAP_DRAWING_SIDE, .y = 0},
-            .south_western_drawing_corner = {.x = 0, .y = 0},
+            .north_eastern_drawing_corner = {
+                .x = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_X,
+                .y = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_Y + THEORICAL_DRAWING_ZONE_SIDE
+            },
+            .north_western_drawing_corner = {
+                .x = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_X - THEORICAL_DRAWING_ZONE_SIDE,
+                .y = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_Y + THEORICAL_DRAWING_ZONE_SIDE
+            },
+            .south_eastern_drawing_corner = {
+                .x = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_X,
+                .y = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_Y
+            },
+            .south_western_drawing_corner = {
+                .x = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_X - THEORICAL_DRAWING_ZONE_SIDE,
+                .y = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_Y
+            },
             .antenna_zone_start = {.x = THEORICAL_ANTENNA_ZONE_START_X, .y = THEORICAL_ANTENNA_ZONE_Y},
             .antenna_zone_stop = {.x = THEORICAL_ANTENNA_ZONE_STOP_X, .y = THEORICAL_ANTENNA_ZONE_Y},
             .painting_zone = {
