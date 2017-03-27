@@ -127,6 +127,9 @@ int main(void) {
 
 	initPrehensor();
 
+	moveDownPrehensor();
+	Delayms(800);
+
 	TM_HD44780_Puts(0, 0, "Captain ready");
 	/* Test routine LEDs */
 	//startLEDsRoutine();
