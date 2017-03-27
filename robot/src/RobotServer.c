@@ -164,6 +164,8 @@ void RobotServer_communicate(struct RobotServer *robot_server)
     ev_run(robot_server->loop, EVRUN_NOWAIT);
 }
 
+void RobotServer_sendRobotPoseEstimate(struct Pose *pose) {}
+
 void RobotServer_sendImageToStation(IplImage *image)
 {
     CvMat *image_data = cvEncodeImage(".jpg", image, 0);
@@ -196,6 +198,10 @@ void RobotServer_sendPlannedTrajectoryToStation(struct CoordinatesSequence *coor
     memcpy(data + 1, coordinates, sizeof(coordinates));
     addPacket(data, sizeof(data));
 }
+
+void RobotServer_sendSignalReadyToStart(void) {}
+void RobotServer_sendSignalReadyToDraw(void) {}
+void RobotServer_sendSignalEndOfCycle(void) {}
 
 void handleReceivedPacket(uint8_t *data, uint32_t length)
 {
