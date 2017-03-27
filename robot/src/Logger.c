@@ -69,7 +69,8 @@ struct DataReceiver_Callbacks Logger_startLoggingDataReceiverAndReturnCallbacks(
         .updateFlagsImageReceivedByStation = &Logger_updateFlagsImageReceivedByStation,
         .updateFlagsPlannedTrajectoryReceivedByStation = &Logger_updateFlagsPlannedTrajectoryReceivedByStation,
         .updateFlagsReadyToStartSignalReceivedByStation = &Logger_updateFlagsReadyToStartSignalReceivedByStation,
-        .updateFlagsReadyToDrawSignalReceivedByStation = &Logger_updateFlagsReadyToDrawSignalReceivedByStation
+        .updateFlagsReadyToDrawSignalReceivedByStation = &Logger_updateFlagsReadyToDrawSignalReceivedByStation,
+        .updateFlagsEndOfCycleSignalReceivedByStation = &Logger_updateFlagsEndOfCycleSignalReceivedByStation
     };
     return data_receiver_callbacks_with_logging;
 }
@@ -244,6 +245,13 @@ void Logger_updateFlagsReadyToDrawSignalReceivedByStation(struct Flags *flags)
 {
     logFlags(FLAG_READY_TO_DRAW_RECEIVED_BY_STATION);
     (*(file_logger->original_data_receiver_callbacks.updateFlagsReadyToDrawSignalReceivedByStation))(flags);
+}
+
+static const char *FLAG_END_OF_CYCLE_RECEIVED_BY_STATION = "End Of Cycle Signal Received By Station - (Ack)";
+void Logger_updateFlagsEndOfCycleSignalReceivedByStation(struct Flags *flags)
+{
+    logFlags(FLAG_END_OF_CYCLE_RECEIVED_BY_STATION);
+    (*(file_logger->original_data_receiver_callbacks.updateFlagsEndOfCycleSignalReceivedByStation))(flags);
 }
 
 // START OF COMMAND SENDER CALLBACK
