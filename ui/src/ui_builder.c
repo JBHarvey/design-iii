@@ -3,6 +3,7 @@
 #include "logger.h"
 #include "timer.h"
 #include "robot_vision.h"
+#include "station_interface.h"
 
 
 GtkWidget* buildUiAndReturnTopLevelWindow(const gchar* resource_path)
@@ -19,6 +20,7 @@ GtkWidget* buildUiAndReturnTopLevelWindow(const gchar* resource_path)
     Logger_initialize(GTK_WIDGET(gtk_builder_get_object(builder, "logger")));
     Timer_initialize(GTK_LABEL(gtk_builder_get_object(builder, "timer")));
     RobotVision_initialize(GTK_WIDGET(gtk_builder_get_object(builder, "robot_vision")));
+    StationInterface_initializeStartCycleButton(GTK_WIDGET(gtk_builder_get_object(builder, "start_cycle")));
     g_object_unref(builder);
 
     return GTK_WIDGET(ui_window);
