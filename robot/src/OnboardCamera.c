@@ -75,15 +75,17 @@ struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **
 
         CvSeq *opencv_sequence = findFirstFigure(opencv_storage, image, image_yuv_in_green_square);
 
-        cvDrawContours(*image_yuv_in_green_square, opencv_sequence, CV_RGB(255, 0, 0), CV_RGB(255, 0, 0), 0, LINE_SIZE, 8,
-                       cvPoint(0, 0));
-
-        IplImage *image_temp = cvCloneImage(*image_yuv_in_green_square);
-        cvCvtColor(*image_yuv_in_green_square, image_temp, CV_YCrCb2RGB);
-        cvCopy(image_temp, *image_yuv_in_green_square, NULL);
-        cvReleaseImage(&image_temp);
-
         if(opencv_sequence) {
+            if(image_yuv_in_green_square && *image_yuv_in_green_square) {
+                cvDrawContours(*image_yuv_in_green_square, opencv_sequence, CV_RGB(255, 0, 0), CV_RGB(255, 0, 0), 0, LINE_SIZE, 8,
+                               cvPoint(0, 0));
+
+                IplImage *image_temp = cvCloneImage(*image_yuv_in_green_square);
+                cvCvtColor(*image_yuv_in_green_square, image_temp, CV_YCrCb2RGB);
+                cvCopy(image_temp, *image_yuv_in_green_square, NULL);
+                cvReleaseImage(&image_temp);
+            }
+
             unsigned int i;
 
             for(i = 0; i < opencv_sequence->total; ++i) {
