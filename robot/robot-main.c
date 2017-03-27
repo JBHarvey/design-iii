@@ -60,9 +60,9 @@ int main(int argc, char *argv[])
     RobotServer_updateDataReceiverCallbacks(data_receiver_callbacks);
 
     waitFifteenSeconds();
-    CammandSender_sendLightRedLEDCommand(command_sender);
+    CommandSender_sendLightRedLEDCommand(command_sender);
     waitFifteenSeconds();
-    CammandSender_sendLightGreenLEDCommand(command_sender);
+    CommandSender_sendLightGreenLEDCommand(command_sender);
     waitFifteenSeconds();
 
     // MANCHESTER ASK + LOG RETURN TEST
