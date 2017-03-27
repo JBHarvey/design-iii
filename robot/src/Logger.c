@@ -12,6 +12,7 @@ struct Logger {
     struct Object *object;
     struct DataReceiver_Callbacks original_data_receiver_callbacks;
     struct CommandSender_Callbacks original_command_sender_callbacks;
+    struct DataSender_Callbacks original_data_sender_callbacks;
     FILE *log_file;
 };
 
@@ -19,6 +20,9 @@ struct Logger *Logger_new(void)
 {
     struct Object *new_object = Object_new();
     struct DataReceiver_Callbacks new_data_receiver_callbacks = DataReceiver_fetchCallbacks();
+    struct CommandSender_Callbacks new_command_sender_callbacks = CommandSender_fetchCallbacksForRobot();
+    struct DataSender_Callbacks new_data_sender_callbacks = DataSender_fetchCallbacksForRobot();
+
     FILE *new_log_file = fopen("RobotLogs.log", "a+"); // a+ (create + append)
     fprintf(new_log_file, "\n\n\n%s%s------------ NEW EXECUTION ------------\n", TAB, TAB);
     setbuf(new_log_file, NULL);
@@ -27,6 +31,8 @@ struct Logger *Logger_new(void)
 
     pointer->object = new_object;
     pointer->original_data_receiver_callbacks = new_data_receiver_callbacks;
+    pointer->original_command_sender_callbacks = new_command_sender_callbacks;
+    pointer->original_data_sender_callbacks = new_data_sender_callbacks;
     pointer->log_file = new_log_file;
 
     return pointer;
@@ -106,6 +112,32 @@ struct CommandSender_Callbacks Logger_stopLoggingCommandSenderAndReturnCallbacks
     return logger->original_command_sender_callbacks;
 }
 
+struct DataSender_Callbacks Logger_startLoggingDataSenderAndReturnCallbacks(struct Logger *logger,
+        struct DataSender_Callbacks callbacks_to_log)
+{
+    file_logger = logger;
+
+    robotLog("Start of DataSender callbacks logging.\n");
+
+    logger->original_data_sender_callbacks = callbacks_to_log;
+
+    struct DataSender_Callbacks data_sender_callbacks_with_logging = {
+        .sendRobotPoseEstimate = &Logger_sendRobotPoseEstimate,
+        .sendImage = &Logger_sendImage,
+        .sendPlannedTrajectory = &Logger_sendPlannedTrajectory,
+        .sendSignalReadyToStart = &Logger_sendSignalReadyToStart,
+        .sendSignalReadyToDraw = &Logger_sendSignalReadyToDraw,
+        .sendSignalEndOfCycle = &Logger_sendSignalEndOfCycle,
+    };
+    return data_sender_callbacks_with_logging;
+}
+
+struct DataSender_Callbacks Logger_stopLoggingDataSenderAndReturnCallbacks(struct Logger *logger)
+{
+    robotLog("End of DataSender callbacks logging.\n");
+    return logger->original_data_sender_callbacks;
+}
+
 static const char *ROBOT_UPDATE = "Robot Update: ";
 static void logRobot(struct Communication_Object robot)
 {
@@ -120,6 +152,7 @@ static void logRobot(struct Communication_Object robot)
             SUB, y,
             SUB, theta);
 }
+
 
 static const char *WORLD_CAMERA_UPDATE = "WorldCamera Update: ";
 static void logWorld(struct Communication_World world)
@@ -229,9 +262,9 @@ void Logger_updateFlagsPlannedTrajectoryReceivedByStation(struct Flags *flags)
     logFlags(FLAG_PLANNED_TRAJECTORY_RECEIVED_BY_STATION);
     (*(file_logger->original_data_receiver_callbacks.updateFlagsPlannedTrajectoryReceivedByStation))(flags);
 }
+
+
 // START OF COMMAND SENDER CALLBACK
-
-
 static const char *TRANSLATION_COMMAND = "Sending Translation Command:";
 static void logTranslationCommand(struct Command_Translate translation)
 {
@@ -265,12 +298,12 @@ void Logger_sendRotateCommand(struct Command_Rotate rotate_command)
 }
 
 static const char *PARAMETERLESS_COMMAND = "Sending ";
-static const char *LIGHT_RED_LED_COMMAND = "Light Red LED:";
-static const char *LIGHT_GREEN_LED_COMMAND = "Light Green LED:";
-static const char *RISE_PEN_COMMAND = "Rise Pen:";
-static const char *LOWER_PEN_COMMAND = "Lower Pen:";
-static const char *FETCH_MANCHESTER_CODE_COMMAND = "Fetch Manchester Code:";
-static const char *STOP_SENDING_MANCHESTER_SIGNAL_COMMAND = "Stop Sending Manchester Signal:";
+static const char *LIGHT_RED_LED_COMMAND = "Light Red LED";
+static const char *LIGHT_GREEN_LED_COMMAND = "Light Green LED";
+static const char *RISE_PEN_COMMAND = "Rise Pen";
+static const char *LOWER_PEN_COMMAND = "Lower Pen";
+static const char *FETCH_MANCHESTER_CODE_COMMAND = "Fetch Manchester Code";
+static const char *STOP_SENDING_MANCHESTER_SIGNAL_COMMAND = "Stop Sending Manchester Signal";
 
 static void logCommand(const char *command_type)
 {
@@ -314,3 +347,83 @@ void Logger_sendStopSendingManchesterSignal(void)
     logCommand(STOP_SENDING_MANCHESTER_SIGNAL_COMMAND);
     (*(file_logger->original_command_sender_callbacks.sendStopSendingManchesterSignalCommand))();
 }
+
+
+// START OF DATA SENDER CALLBACKS
+static const char *SENDING_ROBOT_ESTIMATE = "Sending Robot Estimated Pose: ";
+static void logRobotPoseEstimate(struct Pose *pose)
+{
+    int x = pose->coordinates->x;
+    int y = pose->coordinates->y;
+    int theta = pose->angle->theta;
+    fprintf(file_logger->log_file, "\n%s%s \n%sx:  %d\n%sy:  %d\n%stheta:  %d",
+            ITEM, SENDING_ROBOT_ESTIMATE,
+            SUB, x,
+            SUB, y,
+            SUB, theta);
+}
+/*
+static const char *ROBOT_UPDATE = "Robot Update: ";
+static void logRobot(struct Communication_Object robot)
+{
+    int radius = robot.radius;
+    int x = robot.zone.pose.coordinates.x;
+    int y = robot.zone.pose.coordinates.y;
+    int theta = robot.zone.pose.theta;
+    fprintf(file_logger->log_file, "\n%s%s \n%sradius:  %d\n%sx:  %d\n%sy:  %d\n%stheta:  %d",
+            ITEM, ROBOT_UPDATE,
+            SUB, radius,
+            SUB, x,
+            SUB, y,
+            SUB, theta);
+}
+*/
+
+static const char *SIGNAL_DATA = "Sending ";
+static const char *IMAGE_SIGNAL = "Image with Detected Borders";
+static const char *READY_TO_START_SIGNAL = "Ready To Start";
+static const char *READY_TO_DRAW_SIGNAL = "Ready To Draw";
+static const char *END_OF_CYCLE_SIGNAL = "End of Cycle";
+
+static void logSignal(const char *signal_type)
+{
+    fprintf(file_logger->log_file,
+            "\n%s%s%s \n",
+            ITEM, SIGNAL_DATA, signal_type);
+}
+void Logger_sendRobotPoseEstimate(struct Pose *pose)
+{
+    logRobotPoseEstimate(pose);
+    (*(file_logger->original_data_sender_callbacks.sendRobotPoseEstimate))(pose);
+}
+
+void Logger_sendImage(IplImage *image)
+{
+    logSignal(IMAGE_SIGNAL);
+    (*(file_logger->original_data_sender_callbacks.sendImage))(image);
+}
+
+void Logger_sendPlannedTrajectory(struct CoordinatesSequence *coordinates_sequence)
+{
+    //TODO: CREATE FUNCTION TO PRINT THE SEQUENCE
+    (*(file_logger->original_data_sender_callbacks.sendPlannedTrajectory))(coordinates_sequence);
+}
+
+void Logger_sendSignalReadyToStart(void)
+{
+    logSignal(READY_TO_START_SIGNAL);
+    (*(file_logger->original_data_sender_callbacks.sendSignalReadyToStart))();
+}
+
+void Logger_sendSignalReadyToDraw(void)
+{
+    logSignal(READY_TO_DRAW_SIGNAL);
+    (*(file_logger->original_data_sender_callbacks.sendSignalReadyToDraw))();
+}
+
+void Logger_sendSignalEndOfCycle(void)
+{
+    logSignal(END_OF_CYCLE_SIGNAL);
+    (*(file_logger->original_data_sender_callbacks.sendSignalEndOfCycle))();
+}
+

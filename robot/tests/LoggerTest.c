@@ -108,3 +108,43 @@ Test(Logger, given_aLogger_when_stopsLoggingCommandSender_then_originalCommandSe
     cr_assert_eq(from_logger.sendStopSendingManchesterSignalCommand,
                  command_sender_callbacks.sendStopSendingManchesterSignalCommand);
 }
+
+Test(Logger, given_aLogger_when_startsLoggingDataSender_then_decoratedDataSenderCallbacksAreReturned
+     , .init = setup_logger
+     , .fini = teardown_logger)
+{
+    void (*sendRobotPoseEstimate)(struct Pose *) = &Logger_sendRobotPoseEstimate;
+    void (*sendImage)(IplImage *) = &Logger_sendImage;
+    void (*sendPlannedTrajectory)(struct CoordinatesSequence *) = &Logger_sendPlannedTrajectory;
+    void (*sendSignalReadyToStart)(void) = &Logger_sendSignalReadyToStart;
+    void (*sendSignalReadyToDraw)(void) = &Logger_sendSignalReadyToDraw;
+    void (*sendSignalEndOfCycle)(void) = &Logger_sendSignalEndOfCycle;
+
+    struct DataSender_Callbacks callbacks = DataSender_fetchCallbacksForRobot();
+    struct DataSender_Callbacks from_logger = Logger_startLoggingDataSenderAndReturnCallbacks(logger, callbacks);
+
+    cr_assert_eq(from_logger.sendRobotPoseEstimate, sendRobotPoseEstimate);
+    cr_assert_eq(from_logger.sendImage, sendImage);
+    cr_assert_eq(from_logger.sendPlannedTrajectory, sendPlannedTrajectory);
+    cr_assert_eq(from_logger.sendSignalReadyToStart, sendSignalReadyToStart);
+    cr_assert_eq(from_logger.sendSignalReadyToDraw, sendSignalReadyToDraw);
+    cr_assert_eq(from_logger.sendSignalEndOfCycle, sendSignalEndOfCycle);
+
+}
+
+Test(Logger, given_aLogger_when_stopsLoggingDataSender_then_originalDataSenderCallbacksAreReturned
+     , .init = setup_logger
+     , .fini = teardown_logger)
+{
+    struct DataSender_Callbacks data_sender_callbacks = DataSender_fetchCallbacksForRobot();
+    Logger_startLoggingDataSenderAndReturnCallbacks(logger, data_sender_callbacks);
+
+    struct DataSender_Callbacks from_logger = Logger_stopLoggingDataSenderAndReturnCallbacks(logger);
+
+    cr_assert_eq(from_logger.sendRobotPoseEstimate, data_sender_callbacks.sendRobotPoseEstimate);
+    cr_assert_eq(from_logger.sendImage, data_sender_callbacks.sendImage);
+    cr_assert_eq(from_logger.sendPlannedTrajectory, data_sender_callbacks.sendPlannedTrajectory);
+    cr_assert_eq(from_logger.sendSignalReadyToStart, data_sender_callbacks.sendSignalReadyToStart);
+    cr_assert_eq(from_logger.sendSignalEndOfCycle, data_sender_callbacks.sendSignalEndOfCycle);
+    cr_assert_eq(from_logger.sendSignalReadyToDraw, data_sender_callbacks.sendSignalReadyToDraw);
+}

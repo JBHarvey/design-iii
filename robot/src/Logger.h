@@ -3,6 +3,7 @@
 
 #include "RobotServer.h"
 #include "CommandSender.h"
+#include "DataSender.h"
 
 struct Logger;
 
@@ -13,6 +14,8 @@ struct DataReceiver_Callbacks Logger_startLoggingDataReceiverAndReturnCallbacks(
 struct DataReceiver_Callbacks Logger_stopLoggingDataReceiverAndReturnCallbacks(struct Logger *logger);
 struct CommandSender_Callbacks Logger_startLoggingCommandSenderAndReturnCallbacks(struct Logger *logger, struct CommandSender_Callbacks callbacks_to_log);
 struct CommandSender_Callbacks Logger_stopLoggingCommandSenderAndReturnCallbacks(struct Logger *logger);
+struct DataSender_Callbacks Logger_startLoggingDataSenderAndReturnCallbacks(struct Logger *logger, struct DataSender_Callbacks callbacks_to_log);
+struct DataSender_Callbacks Logger_stopLoggingDataSenderAndReturnCallbacks(struct Logger *logger);
 
 // DataSender Calls
 void Logger_updateWorld(struct WorldCamera *world_camera, struct Communication_World world);
@@ -32,5 +35,13 @@ void Logger_sendRisePenCommand(void);
 void Logger_sendLowerPenCommand(void);
 void Logger_sendFetchManchesterCode(void);
 void Logger_sendStopSendingManchesterSignal(void);
+
+// DataSender Calls
+void Logger_sendRobotPoseEstimate(struct Pose *pose);
+void Logger_sendImage(IplImage *image);
+void Logger_sendPlannedTrajectory(struct CoordinatesSequence *coordinates_sequence);
+void Logger_sendSignalReadyToStart(void);
+void Logger_sendSignalReadyToDraw(void);
+void Logger_sendSignalEndOfCycle(void);
 
 #endif // LOGGER_H_
