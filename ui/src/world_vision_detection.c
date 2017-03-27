@@ -85,6 +85,9 @@ static void drawSquareOnImage(IplImage *image_BGR, struct Square square, CvScala
 
 void WorldVisionDetection_drawObstaclesAndRobot(IplImage *world_camera_back_frame)
 {
+    drawSquareOnImage(world_camera_back_frame, detected->table, CV_RGB(255, 255, 0));
+    drawSquareOnImage(world_camera_back_frame, detected->green_square, CV_RGB(0, 255, 255));
+
     if(first_detection_happened && detected != NULL) {
 
         drawMarkerLocationOnImage(world_camera_back_frame, detected->robot);
@@ -152,10 +155,228 @@ static void packageWorldInformationsAndSendToRobot(struct Camera *input_camera)
     WorldVision_sendWorldInformationToRobot(robot, obstacles);
 }
 
-gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camera)
+void WorldVisionDetection_initialize(void)
 {
     detected = malloc(sizeof(struct DetectedThings));
     detected->has_changed = 0;
+}
+
+struct Point2DSet *WorldVisionDetection_getDetectedTableCorners(void)
+{
+    if(detected->table_detected) {
+
+        struct Point2DSet *point_set = PointTypes_initializePoint2DSet(4);
+
+        CvPoint2D32f *point_sort_x[4] = {};
+        CvPoint2D32f *point_sort_y[4] = {};
+        CvPoint2D32f *point_sort[4] = {};
+
+        for(int i = 0; i < 4; i++) {
+
+            point_sort_x[i] = (detected->table.corner + i);
+            point_sort_y[i] = (detected->table.corner + i);
+        }
+
+        CvPoint2D32f *temporary_pointer_x;
+        CvPoint2D32f *temporary_pointer_y;
+
+        for(int j = 0; j < 4; j++) {
+            for(int k = j + 1; k < 4; k++) {
+                if(point_sort_x[k]->x < point_sort_x[j]->x) {
+
+                    temporary_pointer_x = point_sort_x[j];
+                    point_sort_x[j] = point_sort_x[k];
+                    point_sort_x[k] = temporary_pointer_x;
+                }
+
+                if(point_sort_y[k]->y < point_sort_y[j]->y) {
+
+                    temporary_pointer_y = point_sort_y[j];
+                    point_sort_y[j] = point_sort_y[k];
+                    point_sort_y[k] = temporary_pointer_y;
+                }
+
+            }
+        }
+
+        if(point_sort_x[2] == point_sort_y[0] || point_sort_x[2] == point_sort_y[1]) {
+
+            point_sort[0] = point_sort_x[2];
+        } else if(point_sort_x[3] == point_sort_y[0] || point_sort_x[3] == point_sort_y[1]) {
+
+            point_sort[0] = point_sort_x[3];
+        }
+
+        if(point_sort_x[2] == point_sort_y[2] || point_sort_x[2] == point_sort_y[3]) {
+
+            point_sort[1] = point_sort_x[2];
+        } else if(point_sort_x[3] == point_sort_y[2] || point_sort_x[3] == point_sort_y[3]) {
+
+            point_sort[1] = point_sort_x[3];
+        }
+
+        if(point_sort_x[0] == point_sort_y[2] || point_sort_x[0] == point_sort_y[3]) {
+
+            point_sort[2] = point_sort_x[0];
+        } else if(point_sort_x[1] == point_sort_y[2] || point_sort_x[1] == point_sort_y[3]) {
+
+            point_sort[2] = point_sort_x[1];
+        }
+
+        if(point_sort_x[0] == point_sort_y[0] || point_sort_x[0] == point_sort_y[1]) {
+
+            point_sort[3] = point_sort_x[0];
+        } else if(point_sort_x[1] == point_sort_y[0] || point_sort_x[1] == point_sort_y[1]) {
+
+            point_sort[3] = point_sort_x[1];
+        }
+
+        for(int l = 0; l < 4; l++) {
+
+            printf("\nX: %f", point_sort_x[l]->x);
+            printf("\nY: %f", point_sort_y[l]->y);
+            PointTypes_addPointToPoint2DSet(point_set, PointTypes_createPoint2D(point_sort[l]->x,
+                                            point_sort[l]->y));
+        }
+
+        return point_set;
+    } else {
+
+        return NULL;
+    }
+}
+
+struct Point2DSet *WorldVisionDetection_getDetectedGreenSquareCorners(void)
+{
+    if(detected->green_square_detected) {
+
+        struct Point2DSet *point_set = PointTypes_initializePoint2DSet(4);
+
+        CvPoint2D32f *point_sort_x[4] = {};
+        CvPoint2D32f *point_sort_y[4] = {};
+        CvPoint2D32f *point_sort[4] = {};
+
+        for(int i = 0; i < 4; i++) {
+
+            point_sort_x[i] = (detected->green_square.corner + i);
+            point_sort_y[i] = (detected->green_square.corner + i);
+        }
+
+        CvPoint2D32f *temporary_pointer_x;
+        CvPoint2D32f *temporary_pointer_y;
+
+        for(int j = 0; j < 4; j++) {
+            for(int k = j + 1; k < 4; k++) {
+                if(point_sort_x[k]->x < point_sort_x[j]->x) {
+
+                    temporary_pointer_x = point_sort_x[j];
+                    point_sort_x[j] = point_sort_x[k];
+                    point_sort_x[k] = temporary_pointer_x;
+                }
+
+                if(point_sort_x[k]->y < point_sort_x[j]->y) {
+
+                    temporary_pointer_y = point_sort_y[j];
+                    point_sort_y[j] = point_sort_y[k];
+                    point_sort_y[k] = temporary_pointer_y;
+                }
+
+            }
+        }
+
+        if(point_sort_x[2] == point_sort_y[0] || point_sort_x[2] == point_sort_y[1]) {
+
+            point_sort[0] = point_sort_x[2];
+        } else if(point_sort_x[3] == point_sort_y[0] || point_sort_x[3] == point_sort_y[1]) {
+
+            point_sort[0] = point_sort_x[3];
+        }
+
+        if(point_sort_x[2] == point_sort_y[2] || point_sort_x[2] == point_sort_y[3]) {
+
+            point_sort[1] = point_sort_x[2];
+        } else if(point_sort_x[3] == point_sort_y[2] || point_sort_x[3] == point_sort_y[3]) {
+
+            point_sort[1] = point_sort_x[3];
+        }
+
+        if(point_sort_x[0] == point_sort_y[2] || point_sort_x[0] == point_sort_y[3]) {
+
+            point_sort[2] = point_sort_x[0];
+        } else if(point_sort_x[1] == point_sort_y[2] || point_sort_x[1] == point_sort_y[3]) {
+
+            point_sort[2] = point_sort_x[1];
+        }
+
+        if(point_sort_x[0] == point_sort_y[0] || point_sort_x[0] == point_sort_y[1]) {
+
+            point_sort[3] = point_sort_x[0];
+        } else if(point_sort_x[1] == point_sort_y[0] || point_sort_x[1] == point_sort_y[1]) {
+
+            point_sort[3] = point_sort_x[1];
+        }
+
+        for(int l = 0; l < 4; l++) {
+
+            PointTypes_addPointToPoint2DSet(point_set, PointTypes_createPoint2D(point_sort[l]->x,
+                                            point_sort[l]->y));
+        }
+
+        return point_set;
+
+    } else {
+
+        return NULL;
+    }
+}
+
+int WorldVisionDetection_detectTableCorners(struct Camera *input_camera)
+{
+    WorldVision_createWorldCameraFrameSafeCopy();
+    IplImage *image_yuv = cvCreateImage(cvGetSize(input_camera->camera_capture->current_safe_copy_frame), IPL_DEPTH_8U, 3);
+    cvCvtColor(input_camera->camera_capture->current_safe_copy_frame, image_yuv, CV_RGB2YCrCb);
+    cvSmooth(image_yuv, image_yuv, CV_GAUSSIAN, 3, 0, 0, 0);
+    struct Square table_corners;
+    _Bool table_detected = findTableCorners(image_yuv, &table_corners);
+
+    if(table_detected) {
+
+        detected->table_detected = 1;
+        detected->table = table_corners;
+    }
+
+    cvReleaseImage(&image_yuv);
+
+    return table_detected;
+}
+
+int WorldVisionDetection_detectGreenSquareCorners(struct Camera *input_camera)
+{
+    WorldVision_createWorldCameraFrameSafeCopy();
+    IplImage *image_yuv = cvCreateImage(cvGetSize(input_camera->camera_capture->current_safe_copy_frame), IPL_DEPTH_8U, 3);
+    cvCvtColor(input_camera->camera_capture->current_safe_copy_frame, image_yuv, CV_RGB2YCrCb);
+    cvSmooth(image_yuv, image_yuv, CV_GAUSSIAN, 3, 0, 0, 0);
+    CvMemStorage *opencv_storage = cvCreateMemStorage(0);
+
+    struct Square green_square;
+    _Bool green_square_detected = findFirstGreenSquare(opencv_storage, image_yuv, &green_square);
+
+    if(green_square_detected) {
+
+        detected->green_square_detected = 1;
+        detected->green_square = green_square;
+    }
+
+    cvReleaseImage(&image_yuv);
+    cvReleaseMemStorage(&opencv_storage);
+
+    return green_square_detected;
+}
+
+gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camera)
+{
+    //detected = malloc(sizeof(struct DetectedThings));
+    //detected->has_changed = 0;
     CvMemStorage *opencv_storage = NULL;
 
     while(TRUE) {
@@ -169,21 +390,21 @@ gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camer
         cvCvtColor(input_camera->camera_capture->current_safe_copy_frame, image_yuv, CV_RGB2YCrCb);
         cvSmooth(image_yuv, image_yuv, CV_GAUSSIAN, 3, 0, 0, 0);
 
-        struct Square table_corners;
-        _Bool table_detected = findTableCorners(image_yuv, &table_corners);
+        //struct Square table_corners;
+        //_Bool table_detected = findTableCorners(image_yuv, &table_corners);
 
-        struct Square green_square;
-        _Bool green_square_detected = findFirstGreenSquare(opencv_storage, image_yuv, &green_square);
+        //struct Square green_square;
+        //_Bool green_square_detected = findFirstGreenSquare(opencv_storage, image_yuv, &green_square);
 
-        if(table_detected) {
-            detected->table_detected = 1;
-            detected->table = table_corners;
-        }
+        //if(table_detected) {
+        //    detected->table_detected = 1;
+        //    detected->table = table_corners;
+        //}
 
-        if(green_square_detected) {
-            detected->green_square_detected = 1;
-            detected->green_square = green_square;
-        }
+        //if(green_square_detected) {
+        //    detected->green_square_detected = 1;
+        //    detected->green_square = green_square;
+        //}
 
         struct Obstacle obstacles[MAXIMUM_OBSTACLE_NUMBER];
 
@@ -191,7 +412,7 @@ gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camer
 
         struct Marker marker = detectMarker(input_camera->camera_capture->current_safe_copy_frame);
 
-        if(detected->has_changed == 0 && detected->number_of_obstacles != number_of_obstacles) {
+        if(detected->number_of_obstacles != number_of_obstacles) {
 
             detected->has_changed = 1;
         }
@@ -207,9 +428,8 @@ gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camer
             obstacles[i].x = obstacle_point.x;
             obstacles[i].y = obstacle_point.y;
 
-            if(detected->has_changed == 0 && (detected->obstacles[i].x != obstacles[i].x ||
-                                              detected->obstacles[i].y != obstacles[i].y ||
-                                              detected->obstacles[i].angle != obstacles[i].angle)) {
+            if((detected->obstacles[i].x != obstacles[i].x || detected->obstacles[i].y != obstacles[i].y ||
+                detected->obstacles[i].angle != obstacles[i].angle)) {
 
                 detected->has_changed = 1;
             }
@@ -225,8 +445,8 @@ gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camer
             marker.x = robot_point.x;
             marker.y = robot_point.y;
 
-            if(detected->has_changed == 0 && (detected->robot.x != marker.x || detected->robot.y != marker.y ||
-                                              detected->robot.angle != detected->robot.angle)) {
+            if((detected->robot.x != marker.x || detected->robot.y != marker.y ||
+                detected->robot.angle != detected->robot.angle)) {
 
                 detected->has_changed = 1;
             }
@@ -234,7 +454,8 @@ gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camer
             detected->robot = marker;
         }
 
-        if(!first_detection_happened && (number_of_obstacles > 0 || marker.valid || table_detected || green_square_detected)) {
+        if(!first_detection_happened && (number_of_obstacles > 0
+                                         || marker.valid)) { //|| table_detected || green_square_detected
             first_detection_happened = 1;
         }
 
