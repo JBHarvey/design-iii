@@ -37,6 +37,11 @@ void DataSender_delete(struct DataSender *data_sender)
     }
 }
 
+void DataSender_changeTarget(struct DataSender *data_sender, struct DataSender_Callbacks new_callbacks)
+{
+    data_sender->data_callbacks = new_callbacks;
+}
+
 void DataSender_sendRobotPoseEstimate(struct DataSender *data_sender, struct Pose *pose)
 {
     (*(data_sender->data_callbacks.sendRobotPoseEstimate))(pose);

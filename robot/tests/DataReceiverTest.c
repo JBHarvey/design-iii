@@ -237,7 +237,6 @@ void setup_DataReceiver(void)
                     }
                 }
             },
-            .environment_has_changed = 1,
             .robot = {
                 .zone = {
                     .pose = {
@@ -298,66 +297,6 @@ Test(DataReceiver, given_environmentChanges_when_updatesWorld_then_theMapSenorHa
     DataReceiver_updateWorld(world_camera, mesurements_mock.world);
 
     cr_assert(world_camera->map_sensor->has_received_new_data);
-    WorldCamera_delete(world_camera);
-}
-
-Test(DataReceiver, given_noEnvironmentChanges_when_updatesWorld_then_theMapSensorHasNoNewData
-     , .init = setup_DataReceiver)
-{
-    struct WorldCamera *world_camera = WorldCamera_new();
-    mesurements_mock.world.environment_has_changed = 0;
-    DataReceiver_updateWorld(world_camera, mesurements_mock.world);
-
-    cr_assert(world_camera->map_sensor->has_received_new_data == 0);
-    WorldCamera_delete(world_camera);
-}
-
-Test(DataReceiver, given_noEnvironmentChanges_when_updatesWorld_then_onlyTheWorldCameraMapIsntChanged
-     , .init = setup_DataReceiver)
-{
-    struct WorldCamera *world_camera = WorldCamera_new();
-    mesurements_mock.world.environment_has_changed = 0;
-    DataReceiver_updateWorld(world_camera, mesurements_mock.world);
-
-    cr_assert(world_camera->map_sensor->has_received_new_data == 0);
-
-    struct Map *map = world_camera->map;
-
-    struct Coordinates *coordinates_zero = Coordinates_zero();
-    struct Pose *pose_zero = Pose_zero();
-    cr_assert(Coordinates_haveTheSameValues(map->north_eastern_table_corner, coordinates_zero));
-    cr_assert(Coordinates_haveTheSameValues(map->north_western_table_corner, coordinates_zero));
-    cr_assert(Coordinates_haveTheSameValues(map->south_eastern_table_corner, coordinates_zero));
-    cr_assert(Coordinates_haveTheSameValues(map->south_western_table_corner, coordinates_zero));
-
-    cr_assert(Coordinates_haveTheSameValues(map->north_eastern_drawing_corner, coordinates_zero));
-    cr_assert(Coordinates_haveTheSameValues(map->north_western_drawing_corner, coordinates_zero));
-    cr_assert(Coordinates_haveTheSameValues(map->south_eastern_drawing_corner, coordinates_zero));
-    cr_assert(Coordinates_haveTheSameValues(map->south_western_drawing_corner, coordinates_zero));
-
-    cr_assert(Coordinates_haveTheSameValues(map->antenna_zone_start, coordinates_zero));
-    cr_assert(Coordinates_haveTheSameValues(map->antenna_zone_stop, coordinates_zero));
-
-    cr_assert(Coordinates_haveTheSameValues(map->obstacles[0]->coordinates, coordinates_zero));
-    cr_assert(Coordinates_haveTheSameValues(map->obstacles[1]->coordinates, coordinates_zero));
-    cr_assert(Coordinates_haveTheSameValues(map->obstacles[2]->coordinates, coordinates_zero));
-    cr_assert_eq(map->obstacles[0]->radius, THEORICAL_OBSTACLE_RADIUS);
-    cr_assert_eq(map->obstacles[1]->radius, THEORICAL_OBSTACLE_RADIUS);
-    cr_assert_eq(map->obstacles[2]->radius, THEORICAL_OBSTACLE_RADIUS);
-    cr_assert_eq(map->obstacles[0]->orientation, CENTER);
-    cr_assert_eq(map->obstacles[1]->orientation, CENTER);
-    cr_assert_eq(map->obstacles[2]->orientation, CENTER);
-
-    cr_assert(Pose_haveTheSameValues(map->painting_zones[0], pose_zero));
-    cr_assert(Pose_haveTheSameValues(map->painting_zones[1], pose_zero));
-    cr_assert(Pose_haveTheSameValues(map->painting_zones[2], pose_zero));
-    cr_assert(Pose_haveTheSameValues(map->painting_zones[3], pose_zero));
-    cr_assert(Pose_haveTheSameValues(map->painting_zones[4], pose_zero));
-    cr_assert(Pose_haveTheSameValues(map->painting_zones[5], pose_zero));
-    cr_assert(Pose_haveTheSameValues(map->painting_zones[6], pose_zero));
-    cr_assert(Pose_haveTheSameValues(map->painting_zones[7], pose_zero));
-    Coordinates_delete(coordinates_zero);
-    Pose_delete(pose_zero);
     WorldCamera_delete(world_camera);
 }
 

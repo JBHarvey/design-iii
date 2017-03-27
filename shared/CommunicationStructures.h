@@ -87,7 +87,6 @@ struct __attribute__((__packed__)) Communication_Environment {
 
 struct __attribute__((__packed__)) Communication_World {
     struct Communication_Environment environment;
-    int environment_has_changed;
     struct Communication_Object robot;
 };
 

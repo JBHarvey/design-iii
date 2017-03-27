@@ -84,14 +84,6 @@ static void updateAntennaZone(struct Map *map, struct Communication_Environment 
     Coordinates_delete(stop);
 }
 
-enum CardinalDirection orient_angle(int theta)
-{
-    enum CardinalDirection orientation;
-
-
-    return orientation;
-}
-
 static void updateObstacles(struct Map *map, struct Communication_Environment environment)
 {
     int x;
@@ -170,19 +162,15 @@ static void updateWorldCameraRobot(struct WorldCamera *world_camera, struct Comm
 
 void DataReceiver_updateWorld(struct WorldCamera *world_camera, struct Communication_World world)
 {
-    if(world.environment_has_changed) {
-        Sensor_receivesData(world_camera->map_sensor);
-        struct Map *map = world_camera->map;
-        updateTableCorners(map, world.environment);
-        updateDrawingCorners(map, world.environment);
-        updateAntennaZone(map, world.environment);
-        updateObstacles(map, world.environment);
-        updatePaintingZone(map, world.environment);
-    }
+    Sensor_receivesData(world_camera->map_sensor);
+    struct Map *map = world_camera->map;
+    updateTableCorners(map, world.environment);
+    updateDrawingCorners(map, world.environment);
+    updateAntennaZone(map, world.environment);
+    updateObstacles(map, world.environment);
+    updatePaintingZone(map, world.environment);
 
     updateWorldCameraRobot(world_camera, world.robot);
-
-
 }
 
 void DataReceiver_updateWheelsTranslation(struct Wheels *wheels, struct Communication_Translation translation)
