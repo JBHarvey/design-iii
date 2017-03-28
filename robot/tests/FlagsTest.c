@@ -43,7 +43,7 @@ void setup_flags(void)
     Flags_setReadyToDrawReceivedByStation(flags, READY_TO_DRAW_RECEIVED_BY_STATION);
     Flags_setEndOfCycleReceivedByStation(flags, END_OF_CYCLE_RECEIVED_BY_STATION);
 
-    Flags_setNavigableMapIsReady(flags, NAVIGABLE_MAP_IS_READY);
+    Flags_setNavigableMapIsReady(other_flags, NAVIGABLE_MAP_IS_READY);
     Flags_setReadyToStartReceivedByStation(other_flags, READY_TO_START_RECEIVED_BY_STATION);
     Flags_setStartCycleSignalReceived(other_flags, START_CYCLE);
     Flags_setPlannedTrajectoryReceivedByStation(other_flags, PLANNED_TRAJECTORY_RECEIVED_BY_STATION);

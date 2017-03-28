@@ -34,11 +34,12 @@ void Flags_delete(struct Flags *flags)
 
 void Flags_copyValuesFrom(struct Flags *recipient, struct Flags *source)
 {
+    recipient->navigable_map_is_ready = source->navigable_map_is_ready;
+    recipient->ready_to_start_received_by_station = source->ready_to_start_received_by_station;
     recipient->start_cycle_signal_received = source->start_cycle_signal_received;
+    recipient->planned_trajectory_received_by_station = source->planned_trajectory_received_by_station;
     recipient->picture_taken = source->picture_taken;
     recipient->image_received_by_station = source->image_received_by_station;
-    recipient->planned_trajectory_received_by_station = source->planned_trajectory_received_by_station;
-    recipient->ready_to_start_received_by_station = source->ready_to_start_received_by_station;
     recipient->ready_to_draw_received_by_station = source->ready_to_draw_received_by_station;
     recipient->end_of_cycle_received_by_station = source->end_of_cycle_received_by_station;
 }
@@ -47,8 +48,8 @@ void Flags_copyValuesFrom(struct Flags *recipient, struct Flags *source)
 int Flags_haveTheSameValues(struct Flags *flags, struct Flags *other_flags)
 {
     return
-        (flags->navigable_map_is_ready == other_flags->navigable_map_is_ready
-         || flags->navigable_map_is_ready == IRRELEVANT || other_flags->navigable_map_is_ready == IRRELEVANT)
+        (flags->navigable_map_is_ready == other_flags->navigable_map_is_ready || flags->navigable_map_is_ready == IRRELEVANT
+         || other_flags->navigable_map_is_ready == IRRELEVANT)
         && (flags->ready_to_start_received_by_station == other_flags->ready_to_start_received_by_station
             || flags->ready_to_start_received_by_station == IRRELEVANT
             || other_flags->ready_to_start_received_by_station == IRRELEVANT)
@@ -57,8 +58,8 @@ int Flags_haveTheSameValues(struct Flags *flags, struct Flags *other_flags)
         && (flags->planned_trajectory_received_by_station == other_flags->planned_trajectory_received_by_station
             || flags->planned_trajectory_received_by_station == IRRELEVANT
             || other_flags->planned_trajectory_received_by_station == IRRELEVANT)
-        && (flags->picture_taken == other_flags->picture_taken
-            || flags->picture_taken == IRRELEVANT || other_flags->picture_taken == IRRELEVANT)
+        && (flags->picture_taken == other_flags->picture_taken || flags->picture_taken == IRRELEVANT
+            || other_flags->picture_taken == IRRELEVANT)
         && (flags->image_received_by_station == other_flags->image_received_by_station
             || flags->image_received_by_station == IRRELEVANT || other_flags->image_received_by_station == IRRELEVANT)
         && (flags->ready_to_draw_received_by_station == other_flags->ready_to_draw_received_by_station

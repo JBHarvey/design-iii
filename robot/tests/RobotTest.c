@@ -10,9 +10,9 @@ Test(Robot, creation_destruction)
     struct Pose *zero = Pose_zero();
     struct State *default_state = State_new(zero);
     struct ManchesterCode *manchester_code = ManchesterCode_new();
-    struct Flags *flags = Flags_new();
+    struct Flags *objective_flags = Flags_new();
     struct Behavior *behavior = BehaviorBuilder_build(
-                                    BehaviorBuilder_withFlags(flags,
+                                    BehaviorBuilder_withFlags(objective_flags,
                                             BehaviorBuilder_end()));
 
     cr_assert(Pose_haveTheSameValues(robot->current_state->pose, zero));
@@ -21,9 +21,8 @@ Test(Robot, creation_destruction)
     cr_assert_eq(robot->manchester_code->scale_factor, manchester_code->scale_factor);
     cr_assert_eq(robot->manchester_code->orientation, manchester_code->orientation);
 
-
     Behavior_delete(behavior);
-    Flags_delete(flags);
+    Flags_delete(objective_flags);
     ManchesterCode_delete(manchester_code);
     Robot_delete(robot);
     Pose_delete(zero);

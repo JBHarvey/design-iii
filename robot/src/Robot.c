@@ -4,7 +4,8 @@
 struct DefaultValues {
     struct Pose *pose;
 };
-struct Robot *Robot_new()
+
+struct Robot *Robot_new(void)
 {
     struct DefaultValues *default_values = malloc(sizeof(struct DefaultValues));
     default_values->pose = Pose_zero();

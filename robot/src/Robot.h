@@ -11,6 +11,10 @@ struct Robot {
     struct Wheels *wheels;
     struct WorldCamera *world_camera;
     struct Behavior *behavior;
+    struct Navigator *navigator;
+    struct CommandSender *command_sender;
+    struct DataSender *data_sender;
+    struct Logger *logger;
 };
 
 struct Robot *Robot_new();
