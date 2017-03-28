@@ -24,13 +24,17 @@ float getMoveFromRadian(float radian);
 
 void setMoveSettings(uint8_t *data);
 
-void setCustomMoveSettings(uint8_t *data);
+void setWheelMoveDirections();
 
 void setRotateSettings(uint8_t *data);
 
 void setCustomRotateSettings(uint8_t *data);
 
+void resetPIDValues();
+
 void setSpeedSetpoints();
+
+void setMoveSetpoints(uint8_t *data);
 
 void stopMove();
 

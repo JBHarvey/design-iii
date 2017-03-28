@@ -26,7 +26,9 @@ PidType PID_POSITION4;
 float xMoveSetpoint = 0;
 float yMoveSetpoint = 0;
 float rotateMoveSetpoint = 0;
-uint8_t isMoving = 0;
+uint8_t isMovingX = 0;
+uint8_t isMovingY = 0;
+uint8_t isMovingRotate = 0;
 uint8_t isMoveDone = 0;
 
 volatile int ticksIndex5 = 0;
@@ -479,7 +481,7 @@ void computeAllPIDS() {
 	}
 }
 
-void computeCustomPIDS() {
+void computeCustomPIDS(uint8_t *mainState) {
 	if (isMoveDone == 0) {
 
 		// Apply command for motor 1
@@ -507,12 +509,51 @@ void computeCustomPIDS() {
 			PID_SetMode(&PID_SPEED4, PID_Mode_Manual);
 		}
 
-		if (isMoving && PID_SPEED1.myInput == 0 && PID_SPEED2.myInput == 0
-				&& PID_SPEED3.myInput == 0 && PID_SPEED4.myInput == 0) {
-			isMoving = 0;
+		FloatType xTravelledDistance = calculatePosition(
+				(numberOfPositionEdges1 + numberOfPositionEdges3) / 2);
+
+		if (isMovingX
+				&& (isSetpointReached(xMoveSetpoint, xTravelledDistance)
+						|| areWheelsStopped())) {
+			isMovingX = 0;
 			isMoveDone = 1;
 			stopMove();
-			//setState(&mainState, MAIN_IDLE);
+			setState(mainState, MAIN_IDLE);
+		}
+
+		FloatType yTravelledDistance = calculatePosition(
+				(numberOfPositionEdges2 + numberOfPositionEdges4) / 2);
+
+		if (isMovingY
+				&& (isSetpointReached(yMoveSetpoint, yTravelledDistance)
+						|| areWheelsStopped())) {
+			isMovingY = 0;
+			isMoveDone = 1;
+			stopMove();
+			setState(mainState, MAIN_IDLE);
+		}
+
+		FloatType rotateTravelledDistance = calculatePosition(
+				(-numberOfPositionEdges1 - numberOfPositionEdges2
+						+ numberOfPositionEdges3 + numberOfPositionEdges4) / 4);
+
+		if (isMovingRotate
+				&& (isSetpointReached(rotateMoveSetpoint,
+						rotateTravelledDistance) || areWheelsStopped())) {
+			isMovingRotate = 0;
+			isMoveDone = 1;
+			stopMove();
+			setState(mainState, MAIN_IDLE);
 		}
 	}
+}
+
+uint8_t isSetpointReached(float setPoint, FloatType travelledDistance) {
+	return setPoint - travelledDistance < 0.001
+			|| travelledDistance - setPoint < 0.001;
+}
+
+uint8_t areWheelsStopped() {
+	return ((PID_SPEED1.myInput == 0 && PID_SPEED2.myInput == 0)
+			&& (PID_SPEED3.myInput == 0 && PID_SPEED4.myInput == 0));
 }

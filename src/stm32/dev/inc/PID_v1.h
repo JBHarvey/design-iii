@@ -68,7 +68,9 @@ extern PidType PID_POSITION4;
 extern float xMoveSetpoint;
 extern float yMoveSetpoint;
 extern float rotateMoveSetpoint;
-extern uint8_t isMoving;
+extern uint8_t isMovingX;
+extern uint8_t isMovingY;
+extern uint8_t isMovingRotate;
 extern uint8_t isMoveDone;
 
 //commonly used functions **************************************************************************
@@ -133,7 +135,9 @@ FloatType calculatePosition(FloatType positionEdges);
  *******************************************************/
 void initAllPIDS();
 void computeAllPIDS();
-void computeCustomPIDS();
+void computeCustomPIDS(uint8_t *mainState);
+uint8_t isSetpointReached(float setPoint, FloatType travelledDistance);
+uint8_t areWheelsStopped();
 
 #endif
 
