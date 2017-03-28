@@ -98,16 +98,39 @@ void sendRotateCommandValidator(struct Command_Rotate rotate)
     ++rotation_validator;
 }
 
-/*
+void updateRobotGoalCoordinatesTo(struct Coordinates *coordinates)
+{
+    Coordinates_copyValuesFrom(robot->behavior->first_child->entry_conditions->goal_state->pose->coordinates,
+                               coordinates);
+}
+
+const int NAVIGATOR_ROBOT_X = 12460;
+const int NAVIGATOR_ROBOT_Y = 6800;
+const int TARGET_DELTA_X = 4200;
+const int TARGET_DELTA_Y = 700;
 Test(Navigator,
-     given_aRobotWithStatePerfectlyAlignedToTheEastWithItsMovementTarget_when_askedToMoveTowardTheCoordinates_then_aTranslationCommandIsSent
+     given_aRobotWithStatePerfectlyAlignedToTheEastWithItsMovementTarget_when_askedToNavigateTowardsGoal_then_aTranslationCommandIsSent
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
 
+    callbacks.sendTranslateCommand = &sendTranslateCommandValidator;
+    callbacks.sendRotateCommand = &sendRotateCommandValidator;
+    CommandSender_changeTarget(robot->command_sender, callbacks);
+    struct Pose *robot_pose = Pose_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y, 0);
+    Pose_copyValuesFrom(robot->current_state->pose, robot_pose);
+
+    struct Coordinates *target_coordinates = Coordinates_new(NAVIGATOR_ROBOT_X + TARGET_DELTA_X, NAVIGATOR_ROBOT_Y);
+    updateRobotGoalCoordinatesTo(target_coordinates);
+
+    Navigator_navigateRobotTowardsGoal(robot);
+
     cr_assert(translation_validator == COMMAND_SENT);
+    cr_assert(rotation_validator != COMMAND_SENT);
+
+    Coordinates_delete(target_coordinates);
+    Pose_delete(robot_pose);
 }
-*/
 
 void assertEqualityWithTolerance(int expected_value, int received_value, int tolerance)
 {

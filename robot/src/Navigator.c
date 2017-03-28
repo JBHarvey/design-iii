@@ -46,6 +46,15 @@ void Navigator_updateNavigableMap(struct Robot *robot)
     }
 }
 
+void Navigator_navigateRobotTowardsGoal(struct Robot *robot)
+{
+    struct Command_Translate translate_command = {
+        .x = 0,
+        .y = 0
+    };
+    CommandSender_sendTranslateCommand(robot->command_sender, translate_command);
+}
+
 int Navigator_computeRotationToleranceForPrecisionMovement(int planned_distance)
 {
     int value = (int)(planned_distance * THEORICAL_DISTANCE_OVER_ROTATION_TOLERANCE_RATIO) +
