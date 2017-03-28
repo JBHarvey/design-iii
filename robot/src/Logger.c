@@ -313,11 +313,13 @@ static void logRotationCommand(struct Command_Rotate rotation)
 
 void Logger_sendTranslateCommand(struct Command_Translate translate_command)
 {
+    logTranslationCommand(translate_command);
     (*(file_logger->original_command_sender_callbacks.sendTranslateCommand))(translate_command);
 }
 
 void Logger_sendRotateCommand(struct Command_Rotate rotate_command)
 {
+    logRotationCommand(rotate_command);
     (*(file_logger->original_command_sender_callbacks.sendRotateCommand))(rotate_command);
 }
 

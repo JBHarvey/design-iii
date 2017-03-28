@@ -69,8 +69,6 @@ int main(int argc, char *argv[])
         waitASecond();
     }
     */
-    // MANCHESTER ASK + LOG RETURN TEST
-    CommandSender_sendFetchManchesterCode(command_sender);
 
     // ROTATION TESTS
 
@@ -82,6 +80,8 @@ int main(int argc, char *argv[])
     sendRotate(MINUS_HALF_PI);
     sendTranslate(0, 2000);
     sendRotate(MINUS_HALF_PI);
+    // MANCHESTER ASK + LOG RETURN TEST
+    CommandSender_sendFetchManchesterCode(command_sender);
 
     // TEST OF CAMERA AND PATH
     // Initialise the camera
