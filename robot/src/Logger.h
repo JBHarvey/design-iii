@@ -29,6 +29,7 @@ void Logger_updateFlagsEndOfCycleSignalReceivedByStation(struct Flags *flags);
 
 // CommandSender Calls
 void Logger_sendTranslateCommand(struct Command_Translate translate_command);
+void Logger_sendSpeedsCommand(struct Command_Speeds speeds_command);
 void Logger_sendRotateCommand(struct Command_Rotate rotate_command);
 void Logger_sendLightRedLEDCommand(void);
 void Logger_sendLightGreenLEDCommand(void);

@@ -35,5 +35,6 @@ void RobotServer_sendPlannedTrajectoryToStation(struct CoordinatesSequence *coor
 void RobotServer_sendSignalReadyToStart(void);
 void RobotServer_sendSignalReadyToDraw(void);
 void RobotServer_sendSignalEndOfCycle(void);
+void RobotServer_sendSpeedsCommand(struct Command_Speeds command_speeds);
 
 #endif // ROBOTSERVER_H_

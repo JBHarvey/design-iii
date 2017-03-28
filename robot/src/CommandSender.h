@@ -5,6 +5,7 @@
 
 struct CommandSender_Callbacks {
     void (*sendTranslateCommand)(struct Command_Translate);
+    void (*sendSpeedsCommand)(struct Command_Speeds);
     void (*sendRotateCommand)(struct Command_Rotate);
     void (*sendLightRedLEDCommand)(void);
     void (*sendLightGreenLEDCommand)(void);
@@ -27,6 +28,7 @@ struct CommandSender_Callbacks CommandSender_fetchCallbacksForRobot(void);
 void CommandSender_changeTarget(struct CommandSender *command_sender, struct CommandSender_Callbacks new_callbacks);
 
 void CommandSender_sendTranslateCommand(struct CommandSender *command_sender, struct Command_Translate translate_command);
+void CommandSender_sendSpeedsCommand(struct CommandSender *command_sender, struct Command_Speeds speeds_command);
 void CommandSender_sendRotateCommand(struct CommandSender *command_sender, struct Command_Rotate rotate_command);
 void CommandSender_sendLightRedLEDCommand(struct CommandSender *command_sender);
 void CommandSender_sendLightGreenLEDCommand(struct CommandSender *command_sender);

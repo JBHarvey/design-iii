@@ -413,6 +413,7 @@ void TTYACMCallback(struct ev_loop *loop, struct ev_io *watcher, int revents)
 #define COMMAND_TYPE_LOWER_PEN 5
 #define COMMAND_TYPE_FETCH_MANCHESTER 6
 #define COMMAND_TYPE_STOP_SIGNAL 7
+#define COMMAND_TYPE_SPEEDS 8
 
 #define DISTANCE_UNIT_IN_METERS_FACTOR 0.0001
 
@@ -469,3 +470,21 @@ void RobotServer_fetchManchesterCodeCommand(void)
 // all of these have the command type + the ACTION_ONLY_COMMAND_LENGTH
 void RobotServer_sendStopSendingManchesterSignalCommand(void) {}
 
+void RobotServer_sendSpeedsCommand(struct Command_Speeds command_speeds)
+{
+    /* TO FIX WITH ACTUAL VALUES
+     *
+    float x = command_speeds.x * DISTANCE_UNIT_IN_METERS_FACTOR;
+    float y = command_speeds.y * DISTANCE_UNIT_IN_METERS_FACTOR;
+     *
+    */
+    float x = command_speeds.x * DISTANCE_UNIT_IN_METERS_FACTOR;
+    float y = command_speeds.y * DISTANCE_UNIT_IN_METERS_FACTOR;
+
+    uint8_t data[sizeof(float) * 2];
+
+    memcpy(data, &x, sizeof(float));
+    memcpy(data + sizeof(float), &y, sizeof(float));
+
+    writeTTYACMPacket(COMMAND_TYPE_SPEEDS, data, sizeof(data));
+}

@@ -7,7 +7,7 @@ struct CommandSender_Callbacks callbacks;
 struct Navigator *navigator;
 struct Robot *robot;
 const int COMMAND_SENT = 1;
-int translation_validator;
+int speeds_validator;
 int rotation_validator;
 
 void setup_Navigator(void)
@@ -17,7 +17,7 @@ void setup_Navigator(void)
     navigator = robot->navigator;
     command_sender = CommandSender_new();
     callbacks = CommandSender_fetchCallbacksForRobot();
-    translation_validator = 0;
+    speeds_validator = 0;
     rotation_validator = 0;
 }
 
@@ -88,9 +88,9 @@ Test(Navigator,
     cr_assert(!has_new_data);
 }
 
-void sendTranslateCommandValidator(struct Command_Translate translate)
+void sendSpeedsCommandValidator(struct Command_Speeds speeds)
 {
-    ++translation_validator;
+    ++speeds_validator;
 }
 
 void sendRotateCommandValidator(struct Command_Rotate rotate)
@@ -108,13 +108,14 @@ const int NAVIGATOR_ROBOT_X = 12460;
 const int NAVIGATOR_ROBOT_Y = 6800;
 const int TARGET_DELTA_X = 4200;
 const int TARGET_DELTA_Y = 700;
+
 Test(Navigator,
-     given_aRobotWithStatePerfectlyAlignedToTheEastWithItsMovementTarget_when_askedToNavigateTowardsGoal_then_aTranslationCommandIsSent
+     given_aRobotWithStatePerfectlyAlignedToTheEastWithItsMovementTarget_when_askedToNavigateTowardsGoal_then_aSpeedsCommandIsSent
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
 
-    callbacks.sendTranslateCommand = &sendTranslateCommandValidator;
+    callbacks.sendSpeedsCommand = &sendSpeedsCommandValidator;
     callbacks.sendRotateCommand = &sendRotateCommandValidator;
     CommandSender_changeTarget(robot->command_sender, callbacks);
     struct Pose *robot_pose = Pose_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y, 0);
@@ -125,12 +126,46 @@ Test(Navigator,
 
     Navigator_navigateRobotTowardsGoal(robot);
 
-    cr_assert(translation_validator == COMMAND_SENT);
+    cr_assert(speeds_validator == COMMAND_SENT);
     cr_assert(rotation_validator != COMMAND_SENT);
 
     Coordinates_delete(target_coordinates);
     Pose_delete(robot_pose);
 }
+
+/*
+Test(Navigator,
+     given_aRobotWithAnOrientationAngleOutsideTheDefaultThetaToleranceToItsTargetToTheEast_when_askedToNavigateTowardsGoal_then_aRotationCommandIsSent
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+    callbacks.sendSpeedsCommand = &sendSpeedsCommandValidator;
+    callbacks.sendRotateCommand = &sendRotateCommandValidator;
+    CommandSender_changeTarget(robot->command_sender, callbacks);
+    struct Pose *robot_pose = Pose_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y, 0);
+    Pose_copyValuesFrom(robot->current_state->pose, robot_pose);
+
+    struct Coordinates *target_coordinates = Coordinates_new(NAVIGATOR_ROBOT_X + TARGET_DELTA_X,
+            NAVIGATOR_ROBOT_Y + TARGET_DELTA_X - MINIMAL_GAP);
+    updateRobotGoalCoordinatesTo(target_coordinates);
+
+    Navigator_navigateRobotTowardsGoal(robot);
+
+    //TODO: cr_assert(Coordinates_angleBetween(robot_pose->coordinates, target_coordinates) > THETA_TOLERANCE_DEFAULT);
+    cr_assert(speeds_validator != COMMAND_SENT);
+    cr_assert(rotation_validator == COMMAND_SENT);
+
+    Coordinates_delete(target_coordinates);
+    Pose_delete(robot_pose);
+}
+
+Test(Navigator,
+     given_aRobotWithAnOrientationAngleWithinTheDefaultThetaToleranceToItsTargetToTheEast_when_askedToNavigateTowardsGoal_then_aTheSpeedsCommandSendIsTheDistanceBetweenTheTwoInPositiveXAndZeroInY
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+}
+*/
 
 void assertEqualityWithTolerance(int expected_value, int received_value, int tolerance)
 {

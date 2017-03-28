@@ -48,11 +48,11 @@ void Navigator_updateNavigableMap(struct Robot *robot)
 
 void Navigator_navigateRobotTowardsGoal(struct Robot *robot)
 {
-    struct Command_Translate translate_command = {
+    struct Command_Speeds speeds_command = {
         .x = 0,
         .y = 0
     };
-    CommandSender_sendTranslateCommand(robot->command_sender, translate_command);
+    CommandSender_sendSpeedsCommand(robot->command_sender, speeds_command);
 }
 
 int Navigator_computeRotationToleranceForPrecisionMovement(int planned_distance)

@@ -4,8 +4,6 @@
 enum {
     INVALID_PACKET,
     COMMAND_START_CYCLE,
-    COMMAND_TRANSLATION,
-    COMMAND_ROTATION,
     DATA_TRANSLATION,
     DATA_ROTATION,
     DATA_MANCHESTER_CODE,
@@ -96,6 +94,11 @@ struct __attribute__((__packed__)) Communication_Flags {
 };
 
 struct Command_Translate {
+    int x;
+    int y;
+};
+
+struct Command_Speeds {
     int x;
     int y;
 };
