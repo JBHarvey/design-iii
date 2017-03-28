@@ -577,7 +577,7 @@ extern void TIM2_IRQHandler() {
 
 		if (bufferPositionPIDIndex1 < MAX_POSITION_INDEX) {
 			bufferPositionPID1[bufferPositionPIDIndex1++] =
-			calculatePosition((numberOfPositionEdges1 + numberOfPositionEdges3)/2);
+			calculatePosition((numberOfPositionEdges1 + numberOfPositionEdges3));
 		}
 		if (bufferSpeedPIIndex1 < MAX_POSITION_INDEX) {
 			bufferSpeedPI1[bufferSpeedPIIndex1++] = numberOfSpeedEdges1;

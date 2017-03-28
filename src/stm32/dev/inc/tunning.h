@@ -87,11 +87,11 @@ extern uint8_t bufferDeadZoneToFill;
 /*********************************************************
  * Variables pour tester le PID de position
  *********************************************************/
-//#define ENABLE_POSITION_PID
+#define ENABLE_POSITION_PID
 #ifdef ENABLE_POSITION_PID
 
-#define MAX_POSITION_INDEX 1400
-#define CONSIGNE_POSITION_X 0.30
+#define MAX_POSITION_INDEX 3000
+#define CONSIGNE_POSITION_X 0.15
 #define CONSIGNE_POSITION_Y 0.00
 #define CONSIGNE_ANGLE 30
 
@@ -135,7 +135,7 @@ extern uint8_t wheelsStartedY2;
 #endif
 
 /*************** VARIABLES POUR ROTATION*****************/
-#define ENABLE_ROTATION
+//#define ENABLE_ROTATION
 #ifdef ENABLE_ROTATION
 #define MAX_ROTATION_INDEX 1400
 #define CONSIGNE_ANGLE 30

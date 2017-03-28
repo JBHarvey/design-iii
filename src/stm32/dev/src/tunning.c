@@ -108,7 +108,6 @@ uint8_t wheelsStartedY2 = 0;
 #endif
 
 /*************** VARIABLES POUR ROTATION*****************/
-#define ENABLE_ROTATION
 #ifdef ENABLE_ROTATION
 #define MAX_ROTATION_INDEX 1400
 #define CONSIGNE_ANGLE 30
@@ -517,8 +516,8 @@ void tunningPositionPID() {
 	bufferSpeedPIIndex4 = 0;
 	// On boucle tant qu'on a pas fini
 	while (bTunningPositionDone == 0) {
-		float deplacementY = calculatePosition((numberOfPositionEdges2+numberOfPositionEdges4)/2);
-		float deplacementX = calculatePosition((numberOfPositionEdges1+numberOfPositionEdges3)/2);
+		float deplacementY = calculatePosition((numberOfPositionEdges2+numberOfPositionEdges4));
+		float deplacementX = calculatePosition((numberOfPositionEdges1+numberOfPositionEdges3));
 		if ((CONSIGNE_POSITION_Y != 0 && deplacementY < (CONSIGNE_POSITION_Y/2))
 				|| (CONSIGNE_POSITION_X != 0 && deplacementX < (CONSIGNE_POSITION_X/2))) {
 			tunningSpeedPI1.mySetpoint = CONSIGNE_SPEED_MEDIUM;
@@ -527,10 +526,15 @@ void tunningPositionPID() {
 			tunningSpeedPI4.mySetpoint = CONSIGNE_SPEED_MEDIUM;
 		}
 		else {
-			tunningSpeedPI1.mySetpoint = 0;
-			tunningSpeedPI2.mySetpoint = 0;
-			tunningSpeedPI3.mySetpoint = 0;
-			tunningSpeedPI4.mySetpoint = 0;
+			tunningSpeedPI1.mySetpoint = CONSIGNE_SPEED_LOW;
+			tunningSpeedPI2.mySetpoint = CONSIGNE_SPEED_LOW;
+			tunningSpeedPI3.mySetpoint = CONSIGNE_SPEED_LOW;
+			tunningSpeedPI4.mySetpoint = CONSIGNE_SPEED_LOW;
+		}
+
+		if((deplacementX+0.001 >= CONSIGNE_POSITION_X && CONSIGNE_POSITION_X != 0)
+				|| (deplacementY+0.001 >= CONSIGNE_POSITION_Y && CONSIGNE_POSITION_Y != 0)) {
+			motorStopAll();
 		}
 
 		// Apply command for motor 1

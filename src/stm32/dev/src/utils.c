@@ -42,9 +42,6 @@ void setState(int* state, int newState) {
 	case MAIN_TEST_DEAD_ZONE:
 		*state = MAIN_TEST_DEAD_ZONE;
 		break;
-	case MAIN_TEST_ROTATION:
-		*state = MAIN_TEST_ROTATION;
-		break;
 	case MAIN_MOVE:
 		*state = MAIN_MOVE;
 		TM_HD44780_Puts(0, 0, "MOVE");

@@ -300,3 +300,15 @@ void motorRoutine() {
 
 }
 
+// Permet d'arrêter toutes les roues avec les deux méthodes
+void motorStopAll() {
+	MotorSetDirection(1, BRAKE_G);
+	MotorSetDirection(2, BRAKE_G);
+	MotorSetDirection(3, BRAKE_G);
+	MotorSetDirection(4, BRAKE_G);
+
+	MotorSetSpeed(1, 0);
+	MotorSetSpeed(2, 0);
+	MotorSetSpeed(3, 0);
+	MotorSetSpeed(4, 0);
+}
