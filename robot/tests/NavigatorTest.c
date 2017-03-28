@@ -4,6 +4,7 @@
 
 struct CommandSender *command_sender;
 struct CommandSender_Callbacks callbacks;
+struct Navigator *navigator;
 struct Robot *robot;
 const int COMMAND_SENT = 1;
 int translation_validator;
@@ -13,6 +14,7 @@ void setup_Navigator(void)
 {
 
     robot = Robot_new();
+    navigator = robot->navigator;
     command_sender = CommandSender_new();
     callbacks = CommandSender_fetchCallbacksForRobot();
     translation_validator = 0;
@@ -26,9 +28,22 @@ void teardown_Navigator(void)
     Robot_delete(robot);
 }
 
-Test(Navigator, creation_destruction)
+Test(Navigator, creation_destruction
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+    cr_assert(navigator->navigable_map == NULL);
+}
+
+
+Test(Navigator,
+     given_aRobotWithNoNewDataInItsWorldCamera_when_askedToUpdateNavigableWorld_then_theNavigableMapPointerIsStillNull
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
 {
 
+    Navigator_updateNavigableMap(robot);
+    cr_assert(navigator->navigable_map == NULL);
 }
 
 void sendTranslateCommandValidator(struct Command_Translate translate)

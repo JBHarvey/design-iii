@@ -15,6 +15,7 @@ struct Robot *Robot_new(void)
     struct ManchesterCode *new_manchester_code = ManchesterCode_new();
     struct Wheels *new_wheels = Wheels_new();
     struct WorldCamera *new_world_camera = WorldCamera_new();
+    struct Navigator *new_navigator = Navigator_new();
     struct Robot *pointer =  malloc(sizeof(struct Robot));
 
     pointer->object = new_object;
@@ -23,6 +24,7 @@ struct Robot *Robot_new(void)
     pointer->manchester_code = new_manchester_code;
     pointer->wheels = new_wheels;
     pointer->world_camera = new_world_camera;
+    pointer->navigator = new_navigator;
 
     prepareInitialBehavior(pointer);
 
@@ -40,6 +42,7 @@ void Robot_delete(struct Robot *robot)
         Wheels_delete(robot->wheels);
         WorldCamera_delete(robot->world_camera);
         Behavior_delete(robot->behavior);
+        Navigator_delete(robot->navigator);
 
         /* DefaultValues destruction */
         Pose_delete(robot->default_values->pose);

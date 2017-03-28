@@ -21,11 +21,20 @@ void Navigator_delete(struct Navigator *navigator)
 
     if(Object_canBeDeleted(navigator->object)) {
         Object_delete(navigator->object);
-        Map_delete(navigator->navigable_map);
+
+        if(navigator->navigable_map != NULL) {
+            Map_delete(navigator->navigable_map);
+        }
+
         Graph_delete(navigator->graph);
 
         free(navigator);
     }
+}
+
+void Navigator_updateNavigableMap(struct Robot *robot)
+{
+
 }
 
 int Navigator_computeRotationToleranceForPrecisionMovement(int planned_distance)
