@@ -4,7 +4,6 @@
 struct DefaultValues {
     struct Pose *pose;
 };
-
 struct Robot *Robot_new()
 {
     struct DefaultValues *default_values = malloc(sizeof(struct DefaultValues));
@@ -12,17 +11,19 @@ struct Robot *Robot_new()
 
     struct Object *new_object = Object_new();
     struct State *new_state = State_new(default_values->pose);
-    struct WorldCamera *new_world_camera = WorldCamera_new();
-    struct Wheels *new_wheels = Wheels_new();
     struct ManchesterCode *new_manchester_code = ManchesterCode_new();
+    struct Wheels *new_wheels = Wheels_new();
+    struct WorldCamera *new_world_camera = WorldCamera_new();
     struct Robot *pointer =  malloc(sizeof(struct Robot));
 
     pointer->object = new_object;
     pointer->default_values = default_values;
     pointer->current_state = new_state;
-    pointer->world_camera = new_world_camera;
-    pointer->wheels = new_wheels;
     pointer->manchester_code = new_manchester_code;
+    pointer->wheels = new_wheels;
+    pointer->world_camera = new_world_camera;
+
+    prepareInitialBehavior(pointer);
 
     return pointer;
 }
@@ -34,9 +35,10 @@ void Robot_delete(struct Robot *robot)
     if(Object_canBeDeleted(robot->object)) {
         Object_delete(robot->object);
         State_delete(robot->current_state);
-        WorldCamera_delete(robot->world_camera);
-        Wheels_delete(robot->wheels);
         ManchesterCode_delete(robot->manchester_code);
+        Wheels_delete(robot->wheels);
+        WorldCamera_delete(robot->world_camera);
+        Behavior_delete(robot->behavior);
 
         /* DefaultValues destruction */
         Pose_delete(robot->default_values->pose);

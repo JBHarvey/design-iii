@@ -34,6 +34,7 @@
 // Units and mesurements related
 
 #define ANGLE_BASE_UNIT 0.00001
+#define TWENTIETH_PI 15708
 #define FIFTH_PI 62832
 #define QUARTER_PI 78540
 #define HALF_PI 157080
@@ -44,6 +45,7 @@
 #define MINUS_HALF_PI -157080
 #define MINUS_FIFTH_PI 62832
 #define MINUS_QUARTER_PI -78540
+#define MINUS_TWENTIETH_PI -15708
 
 // Manchester related
 #define TIMES_TWO 2
@@ -66,7 +68,7 @@
 #define Y_TOLERANCE_MAX 50000               // 5 m
 
 #define THETA_TOLERANCE_MIN 0               // 0 rad
-#define THETA_TOLERANCE_DEFAULT 31416       // Pi/10 rad
+#define THETA_TOLERANCE_DEFAULT 15708       // Pi/20 rad
 #define THETA_TOLERANCE_MAX 314160          // Pi rad
 
 

@@ -3,7 +3,7 @@
 
 #include "network.h"
 #include "DataReceiver.h"
-#include "CoordinatesSequence.h"
+#include "Robot.h"
 
 struct RobotServer {
     struct Object *object;

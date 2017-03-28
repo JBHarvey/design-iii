@@ -1,18 +1,16 @@
 #ifndef ROBOT_H_
 #define ROBOT_H_
 
-#include "WorldCamera.h"
-#include "Wheels.h"
-#include "ManchesterCode.h"
-#include "OnboardCamera.h"
+#include "RobotBehaviors.h"
 
 struct Robot {
     struct Object *object;
     struct DefaultValues *default_values;
     struct State *current_state;
-    struct WorldCamera *world_camera;
-    struct Wheels *wheels;
     struct ManchesterCode *manchester_code;
+    struct Wheels *wheels;
+    struct WorldCamera *world_camera;
+    struct Behavior *behavior;
 };
 
 struct Robot *Robot_new();

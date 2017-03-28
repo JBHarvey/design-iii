@@ -13,7 +13,7 @@ struct BehaviorBuilder *BehaviorBuilder_end(void)
     pointer->tolerancesY = Y_TOLERANCE_DEFAULT;
     pointer->tolerances_theta = THETA_TOLERANCE_DEFAULT;
     pointer->flags = default_flags;
-    pointer->action = &Behavior_dummyAction;
+    pointer->action = &Behavior_idle;
 
     return pointer;
 }
@@ -21,19 +21,19 @@ struct BehaviorBuilder *BehaviorBuilder_end(void)
 struct Behavior* BehaviorBuilder_build(struct BehaviorBuilder *behavior_builder)
 {
     struct Pose *chosen_pose = Pose_new(
-                                  behavior_builder->goalX,
-                                  behavior_builder->goalY,
-                                  behavior_builder->goal_theta
-                              );
+                                   behavior_builder->goalX,
+                                   behavior_builder->goalY,
+                                   behavior_builder->goal_theta
+                               );
     struct State *chosen_goal_state = State_new(chosen_pose);
 
     Flags_copyValuesFrom(chosen_goal_state->flags, behavior_builder->flags);
 
     struct Pose *chosen_pose_tolerances = Pose_new(
-                                            behavior_builder->tolerancesX,
-                                            behavior_builder->tolerancesY,
-                                            behavior_builder->tolerances_theta
-                                        );
+            behavior_builder->tolerancesX,
+            behavior_builder->tolerancesY,
+            behavior_builder->tolerances_theta
+                                          );
     struct State *chosen_tolerances = State_new(chosen_pose_tolerances);
 
     struct Objective *objective = Objective_new(chosen_goal_state, chosen_tolerances);
@@ -108,7 +108,8 @@ struct BehaviorBuilder* BehaviorBuilder_withAction(void (*new_action)(struct Rob
     return behavior_builder;
 }
 
-struct BehaviorBuilder* BehaviorBuilder_fromExisting(struct Behavior *existing, struct BehaviorBuilder *behavior_builder)
+struct BehaviorBuilder* BehaviorBuilder_fromExisting(struct Behavior *existing,
+        struct BehaviorBuilder *behavior_builder)
 {
     struct Objective *objective = existing->entry_conditions;
 

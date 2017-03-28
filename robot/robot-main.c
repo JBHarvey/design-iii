@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "Logger.h"
-#include "OnboardCamera.h"
 
 static struct Robot *robot;
 struct Logger *logger;
@@ -74,6 +73,7 @@ int main(int argc, char *argv[])
 
     // TEST OF CAMERA AND PATH
     // Initialise the camera
+    // The camera will have to be initialized and freed in the main
     OnboardCamera_init();
 
     IplImage *test_image;
@@ -150,7 +150,8 @@ int main(int argc, char *argv[])
     }
 
     // Releases Camera
-    OnboardCamera_deleteImageAndFreeCamera(&test_image);
+    OnboardCamera_deleteImage(&test_image);
+    OnboardCamera_freeCamera();
 
     CommandSender_delete(command_sender);
     Logger_delete(logger);

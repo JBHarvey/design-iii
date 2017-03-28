@@ -1,8 +1,6 @@
 #ifndef LOGGER_H_
 #define LOGGER_H_
 
-#include "RobotServer.h"
-#include "CommandSender.h"
 #include "DataSender.h"
 
 struct Logger;

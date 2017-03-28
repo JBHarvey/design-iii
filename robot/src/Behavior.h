@@ -1,9 +1,9 @@
 #ifndef BEHAVIOR_H_
 #define BEHAVIOR_H_
 
-#include "Robot.h"
 #include "Objective.h"
 
+struct Robot;
 struct Behavior {
     struct Object *object;
     struct Objective *entry_conditions;
@@ -21,6 +21,6 @@ void Behavior_addChild(struct Behavior *behavior, struct Behavior *new_child);
 void Behavior_changeAction(struct Behavior *behavior, void (*new_action)(struct Robot *));
 void Behavior_act(struct Behavior *behavior, struct Robot *robot);
 
-void Behavior_dummyAction(struct Robot *robot);
+void Behavior_idle(struct Robot *robot);
 
 #endif // BEHAVIOR_H_
