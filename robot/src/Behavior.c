@@ -105,7 +105,9 @@ void Behavior_addChild(struct Behavior *behavior, struct Behavior *new_child)
 /* This here is present for safety & waiting times purposes.
  * It prevents action of doing anything.
  * */
-void Behavior_idle(struct Robot *robot) {}
+void Behavior_idle(struct Robot *robot)
+{
+}
 
 void Behavior_changeAction(struct Behavior *behavior, void (*new_action)(struct Robot *))
 {

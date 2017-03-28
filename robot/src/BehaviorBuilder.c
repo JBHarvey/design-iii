@@ -58,6 +58,7 @@ struct Behavior* BehaviorBuilder_default(void)
 {
     return BehaviorBuilder_build(BehaviorBuilder_end());
 }
+
 struct BehaviorBuilder* BehaviorBuilder_withGoalX(int goalX, struct BehaviorBuilder *behavior_builder)
 {
     behavior_builder->goalX = goalX;
