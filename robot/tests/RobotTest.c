@@ -23,15 +23,28 @@ Test(Robot, creation_destruction)
     cr_assert_eq(robot->manchester_code->orientation, manchester_code->orientation);
     cr_assert_eq(robot->behavior->action, initial_behavior_action);
 
+
+    struct Behavior *second_behavior = robot->behavior->first_child;
+    void (*second_behavior_action)(struct Robot *) = &Robot_sendReadyToStartSignal;
+    struct Flags *second_flags = second_behavior->entry_conditions->goal_state->flags;
     struct Flags *map_is_ready_flags = Flags_new();
     Flags_setNavigableMapIsReady(map_is_ready_flags, 1);
-    void (*second_behavior_action)(struct Robot *) = &Robot_sendReadyToStartSignal;
-    struct Behavior *second_behavior = robot->behavior->first_child;
 
     cr_assert_eq(second_behavior->action, second_behavior_action);
-    cr_assert(Flags_haveTheSameValues(second_behavior->entry_conditions->goal_state->flags, map_is_ready_flags));
+    cr_assert(Flags_haveTheSameValues(second_flags, map_is_ready_flags));
+
+
+    struct Behavior *third_behavior = second_behavior->first_child;
+    void (*idle_action)(struct Robot*) = &Behavior_idle;
+    struct Flags *third_flags = third_behavior->entry_conditions->goal_state->flags;
+    struct Flags *ready_to_start_received_flags = Flags_new();
+    Flags_setReadyToStartReceivedByStation(ready_to_start_received_flags, 1);
+
+    cr_assert_eq(third_behavior->action, idle_action);
+    cr_assert(Flags_haveTheSameValues(third_flags, ready_to_start_received_flags));
 
     Flags_delete(map_is_ready_flags);
+    Flags_delete(ready_to_start_received_flags);
     ManchesterCode_delete(manchester_code);
     Robot_delete(robot);
     Pose_delete(zero);

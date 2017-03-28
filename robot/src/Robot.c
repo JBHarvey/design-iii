@@ -28,7 +28,7 @@ struct Robot *Robot_new(void)
     pointer->navigator = new_navigator;
     pointer->data_sender = new_data_sender;
 
-    prepareInitialBehavior(pointer);
+    prepareInitialBehaviors(pointer);
 
     return pointer;
 }
