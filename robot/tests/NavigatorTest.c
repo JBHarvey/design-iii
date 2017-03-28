@@ -46,6 +46,48 @@ Test(Navigator,
     cr_assert(navigator->navigable_map == NULL);
 }
 
+Test(Navigator,
+     given_aRobotWithNewDataInItsWorldCamera_when_askedToUpdateNavigableWorld_then_theNavigableMapPointerIsNoLongerNull
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    cr_assert(navigator->navigable_map != NULL);
+}
+
+Test(Navigator,
+     given_aRobotWithNoNewDataInItsWorldCamera_when_askedToUpdateNavigableWorld_then_theGraphTypeIsNone
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+    Navigator_updateNavigableMap(robot);
+    cr_assert(navigator->graph->type == NONE);
+}
+
+Test(Navigator,
+     given_aRobotWithNewDataInItsWorldCamera_when_askedToUpdateNavigableWorld_then_theGraphTypeBecomesTrio
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    cr_assert(navigator->graph->type == TRIO);
+}
+
+Test(Navigator,
+     given_aRobotWithNewDataInItsWorldCamera_when_askedToUpdateNavigableWorld_then_theWorldCameraNoLongerHasNewData
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    int has_new_data = robot->world_camera->map_sensor->has_received_new_data;
+    cr_assert(!has_new_data);
+}
+
 void sendTranslateCommandValidator(struct Command_Translate translate)
 {
     ++translation_validator;

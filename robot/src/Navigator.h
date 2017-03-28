@@ -3,6 +3,7 @@
 
 #include "BehaviorBuilder.h"
 #include "Graph.h"
+#include "Robot.h"
 
 #define THEORICAL_DISTANCE_OVER_ROTATION_TOLERANCE_RATIO -2.48597814232
 #define THEORICAL_DISTANCE_OVER_ROTATION_TOLERANCE_BASE 13430

@@ -34,7 +34,16 @@ void Navigator_delete(struct Navigator *navigator)
 
 void Navigator_updateNavigableMap(struct Robot *robot)
 {
+    int map_has_been_updated = robot->world_camera->map_sensor->has_received_new_data;
 
+    if(map_has_been_updated) {
+        struct Map *base_map = robot->world_camera->map;
+        int robot_radius = robot->world_camera->robot_radius;
+        robot->navigator->navigable_map = Map_fetchNavigableMap(base_map, robot_radius);
+        Graph_updateForMap(robot->navigator->graph, robot->navigator->navigable_map);
+        Sensor_readsData(robot->world_camera->map_sensor);
+        // TODO: add validation that map is navigable && robot can go through the obstacles
+    }
 }
 
 int Navigator_computeRotationToleranceForPrecisionMovement(int planned_distance)

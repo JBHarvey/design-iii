@@ -2,6 +2,7 @@
 #define ROBOTBEHAVIORS_H_
 
 #include "CommandSender.h"
+#include "DataSender.h"
 #include "Navigator.h"
 
 void prepareInitialBehavior(struct Robot *robot);

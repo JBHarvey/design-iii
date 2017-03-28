@@ -2,7 +2,11 @@
 #include <stdio.h>
 #include "Robot.h"
 
-static struct Robot *robot;
+struct Robot *robot;
+struct DataSender_Callbacks validation_callbacks;
+int validation_ready_to_start_is_sent;
+const int SIGNAL_SENT = 1;
+const int SIGNAL_NOT_SENT = 0;
 
 Test(Robot, creation_destruction)
 {
@@ -10,33 +14,54 @@ Test(Robot, creation_destruction)
     struct Pose *zero = Pose_zero();
     struct State *default_state = State_new(zero);
     struct ManchesterCode *manchester_code = ManchesterCode_new();
-    struct Flags *objective_flags = Flags_new();
-    struct Behavior *behavior = BehaviorBuilder_build(
-                                    BehaviorBuilder_withFlags(objective_flags,
-                                            BehaviorBuilder_end()));
+    void (*initial_behavior_action)(struct Robot *) = &Navigator_updateNavigableMap;
 
     cr_assert(Pose_haveTheSameValues(robot->current_state->pose, zero));
     cr_assert(Flags_haveTheSameValues(robot->current_state->flags, default_state->flags));
     cr_assert_eq(robot->manchester_code->painting_number, manchester_code->painting_number);
     cr_assert_eq(robot->manchester_code->scale_factor, manchester_code->scale_factor);
     cr_assert_eq(robot->manchester_code->orientation, manchester_code->orientation);
+    cr_assert_eq(robot->behavior->action, initial_behavior_action);
 
-    Behavior_delete(behavior);
-    Flags_delete(objective_flags);
+    struct Flags *map_is_ready_flags = Flags_new();
+    Flags_setNavigableMapIsReady(map_is_ready_flags, 1);
+    void (*second_behavior_action)(struct Robot *) = &Robot_sendReadyToStartSignal;
+    struct Behavior *second_behavior = robot->behavior->first_child;
+
+    cr_assert_eq(second_behavior->action, second_behavior_action);
+    cr_assert(Flags_haveTheSameValues(second_behavior->entry_conditions->goal_state->flags, map_is_ready_flags));
+
+    Flags_delete(map_is_ready_flags);
     ManchesterCode_delete(manchester_code);
     Robot_delete(robot);
     Pose_delete(zero);
     State_delete(default_state);
 }
 
+void validateReadyToStartIsSent(void)
+{
+    validation_ready_to_start_is_sent = SIGNAL_SENT;
+}
+
 void setup_robot(void)
 {
     robot = Robot_new();
+    validation_ready_to_start_is_sent = SIGNAL_NOT_SENT;
+    validation_callbacks.sendSignalReadyToStart = &validateReadyToStartIsSent;
+    DataSender_changeTarget(robot->data_sender, validation_callbacks);
 }
 
 void teardown_robot(void)
 {
     Robot_delete(robot);
+}
+
+Test(Robot, given_aRobot_when_askedToSendAReadyToStartSignal_then_theSignalIsSent
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Robot_sendReadyToStartSignal(robot);
+    cr_assert(validation_ready_to_start_is_sent);
 }
 
 Test(Robot, given_initialRobot_when_takesAPicture_then_thePicureTakenFlagValueIsOne

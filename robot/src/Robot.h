@@ -12,14 +12,15 @@ struct Robot {
     struct WorldCamera *world_camera;
     struct Behavior *behavior;
     struct Navigator *navigator;
-    struct CommandSender *command_sender;
     struct DataSender *data_sender;
+    struct CommandSender *command_sender;
     struct Logger *logger;
 };
 
 struct Robot *Robot_new();
 void Robot_delete(struct Robot *robot);
 
+void Robot_sendReadyToStartSignal(struct Robot *robot);
 void Robot_takePicture(struct Robot *robot);
 
 #endif // ROBOT_H_

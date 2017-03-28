@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 
     logger = Logger_new();
 
-    struct CommandSender *command_sender = CommandSender_new();
+    command_sender = CommandSender_new();
 
     struct DataReceiver_Callbacks data_receiver_callbacks = DataReceiver_fetchCallbacks();
     struct CommandSender_Callbacks command_sender_callbacks = CommandSender_fetchCallbacksForRobot();
