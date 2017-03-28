@@ -5,7 +5,6 @@ void prepareInitialBehavior(struct Robot *robot)
 {
     void (*initial_action)(struct Robot*) = &Navigator_updateNavigableMap;
     robot->behavior = BehaviorBuilder_build(
-                          //BehaviorBuilder_withFlags(initial_flags,
                           BehaviorBuilder_withAction(initial_action,
                                   BehaviorBuilder_end()));
 
