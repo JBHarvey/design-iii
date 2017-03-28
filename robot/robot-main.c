@@ -15,9 +15,9 @@ static void waitASecond()
     usleep(1000000);
 }
 
-static void waitASecondAndAHalf()
+static void waitFiveSeconds()
 {
-    usleep(1500000);
+    usleep(5000000);
 }
 
 static void waitFifteenSeconds()
@@ -29,14 +29,14 @@ static void sendTranslate(int x, int y)
 {
     struct Command_Translate translate = { .x = x, .y = y };
     CommandSender_sendTranslateCommand(command_sender, translate);
-    waitASecondAndAHalf();
+    waitFiveSeconds();
 }
 
 static void sendRotate(int theta)
 {
     struct Command_Rotate rotate = { .theta = theta};
     CommandSender_sendRotateCommand(command_sender, rotate);
-    waitASecondAndAHalf();
+    waitFiveSeconds();
 }
 
 int main(int argc, char *argv[])
@@ -58,6 +58,7 @@ int main(int argc, char *argv[])
     CommandSender_changeTarget(command_sender, command_sender_callbacks);
     RobotServer_updateDataReceiverCallbacks(data_receiver_callbacks);
 
+    /*
     waitFifteenSeconds();
     waitFifteenSeconds();
 
@@ -67,9 +68,20 @@ int main(int argc, char *argv[])
         CommandSender_sendLightGreenLEDCommand(command_sender);
         waitASecond();
     }
-
+    */
     // MANCHESTER ASK + LOG RETURN TEST
     CommandSender_sendFetchManchesterCode(command_sender);
+
+    // ROTATION TESTS
+
+    sendTranslate(0, 2000);
+    sendRotate(MINUS_HALF_PI);
+    sendTranslate(0, 2000);
+    sendRotate(MINUS_HALF_PI);
+    sendTranslate(0, 2000);
+    sendRotate(MINUS_HALF_PI);
+    sendTranslate(0, 2000);
+    sendRotate(MINUS_HALF_PI);
 
     // TEST OF CAMERA AND PATH
     // Initialise the camera
