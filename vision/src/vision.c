@@ -710,15 +710,20 @@ CvPoint coordinateToTableCoordinate(CvPoint point, double height_cm, CvPoint cam
 #define TABLE_HEIGHT_RIGHT 723
 #define TABLE_HEIGHT_LEFT 740
 #define BLACK_BORDER_SIZE 4
+#define TABLE_ANGLE_RIGHT_BORDER (M_PI / 2.0)
+
+#define ANGLE_ERROR_CONSTANT (M_PI / 32.0)
+#define DISTANCE_ERROR_CONTSTANT (100.0)
 
 #define DISTANCE_ALLOWED_ERROR 0.1
-#define MAX_DETECTED_CORNERS 20
+#define MAX_DETECTED_CORNERS 10
 #define CORNER_IMPROVEMENT_RADIUS_TABLE_CORNERS 5
 
-static void findCornersWithDistance(CvPoint2D32f *corners, unsigned int num_corners, double target_distance)
+static void findCornersWithDistanceAngle(CvPoint2D32f *corners, unsigned int num_corners, double target_distance,
+        double target_angle)
 {
     unsigned int corner1 = num_corners, corner2 = num_corners;
-    double current_distance = 1000000000;
+    double current_percent = 1000000000;
 
     unsigned int i, j;
 
@@ -726,11 +731,15 @@ static void findCornersWithDistance(CvPoint2D32f *corners, unsigned int num_corn
         for(j = (i + 1); j < num_corners; ++j) {
             double distance_temp = fabs(target_distance - distancePoints(fixedCvPointFrom32f(corners[i]),
                                         fixedCvPointFrom32f(corners[j])));
+            double angle_temp = atan2(corners[0].y - corners[1].y, corners[0].x - corners[1].x);
 
-            if(distance_temp < current_distance) {
+            double percent_temp = distance_temp / DISTANCE_ERROR_CONTSTANT;
+            percent_temp += fabs(angle_temp - target_angle) / ANGLE_ERROR_CONSTANT;
+
+            if(percent_temp < current_percent) {
                 corner1 = i;
                 corner2 = j;
-                current_distance = distance_temp;
+                current_percent = percent_temp;
             }
         }
     }
@@ -759,7 +768,7 @@ _Bool findTableCorners(IplImage *image_yuv, struct Square *square)
 
     if(max_corners >= 2) {
         improveCorners(image_yuv, corners, max_corners, CORNER_IMPROVEMENT_RADIUS_TABLE_CORNERS);
-        findCornersWithDistance(corners, max_corners, TABLE_HEIGHT_RIGHT);
+        findCornersWithDistanceAngle(corners, max_corners, TABLE_HEIGHT_RIGHT, TABLE_ANGLE_RIGHT_BORDER);
 
         if(corners[0].y > corners[1].y) {
             CvPoint2D32f temp = corners[0];
