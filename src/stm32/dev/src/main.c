@@ -51,6 +51,8 @@ volatile uint8_t manchesterFactorVerification = 0;
 
 volatile uint8_t sendMeasureCounter = 0;
 
+volatile newMoveCommand = 0;
+
 extern void TIM5_IRQHandler() {
 	if (TIM_GetITStatus(TIM5, TIM_IT_Update) != RESET) {
 		TIM_ClearITPendingBit(TIM5, TIM_IT_Update);
@@ -127,8 +129,10 @@ int main(void) {
 
 	initPrehensor();
 
-	moveDownPrehensor();
-	Delayms(800);
+	turnOffLEDs();
+
+	//moveDownPrehensor();
+	//Delayms(800);
 
 	TM_HD44780_Puts(0, 0, "Captain ready");
 	/* Test routine LEDs */
@@ -163,8 +167,19 @@ int main(void) {
 			break;
 
 		case MAIN_PID:
-			setSpeedSetpoints();
-			computeCustomPIDS();
+			if (newMoveCommand) {
+
+				resetPositionEncoderVariables();
+
+				resetPIDValues();
+
+				setWheelMoveDirections();
+
+				newMoveCommand = 0;
+			} else {
+				setSpeedSetpoints();
+				computeCustomPIDS(&mainState);
+			}
 			break;
 		case MAIN_MANCH:
 
@@ -173,12 +188,12 @@ int main(void) {
 					manchesterOrientationVerification,
 					&manchesterFactorVerification);
 
-			if (manchesterFactorVerification != 0
-					&& manchesterOrientationVerification[2] != ' ') {
-				sendManchesterCode(manchesterFigureVerification,
-						manchesterFactorVerification,
-						manchesterOrientationVerification);
-			}
+			//if (manchesterFactorVerification != 0
+			//		&& manchesterOrientationVerification[2] != ' ') {
+			//sendManchesterCode(manchesterFigureVerification,
+			//manchesterFactorVerification,
+			//manchesterOrientationVerification);
+			//}
 
 			break;
 		case MAIN_PREHENSEUR:
@@ -600,14 +615,14 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 	switch (type) {
 	case COMMAND_MOVE:
 		if (len == 8 && type == 0) {
-
 			// stop the robot before moving again
 			stopMove();
 
-			//setMoveSettings(data);
-			resetPositionEncoderVariables();
+			newMoveCommand = 1;
 
-			setCustomMoveSettings(data);
+			isRobotRotating = 0;
+
+			setMoveSetpoints(data);
 
 			setState(&mainState, MAIN_PID);
 		}
@@ -617,7 +632,11 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 			// stop the robot before rotating
 			stopMove();
 
-			resetPositionEncoderVariables();
+			newMoveCommand = 1;
+
+			isRobotRotating = 1;
+
+			setRotateSetpoints(data);
 
 			//setRotateSettings(data);
 			setCustomRotateSettings(data);
