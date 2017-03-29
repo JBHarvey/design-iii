@@ -325,7 +325,7 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
 
         case MANCHESTER_CODE_DECODED:
 
-            if(length != (sizeof(struct TransitionManchester) + 1)) {
+            if(length != (sizeof(struct TransitionManchester))) {
                 printf("wrong struct TransitionManchester length\n");
                 break;
             }
