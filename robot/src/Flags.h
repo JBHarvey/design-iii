@@ -16,6 +16,7 @@ struct Flags {
 
 struct Flags *Flags_new(void);
 void Flags_delete(struct Flags  *flags);
+struct Flags *Flags_irrelevant(void);
 
 void Flags_copyValuesFrom(struct Flags *recipient, struct Flags *source);
 int Flags_haveTheSameValues(struct Flags *flags, struct Flags *other_flags);

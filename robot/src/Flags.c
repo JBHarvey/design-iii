@@ -32,6 +32,20 @@ void Flags_delete(struct Flags *flags)
     }
 }
 
+struct Flags *Flags_irrelevant(void)
+{
+    struct Flags *irrelevant = Flags_new();
+    Flags_setNavigableMapIsReady(irrelevant, IRRELEVANT);
+    Flags_setReadyToStartReceivedByStation(irrelevant, IRRELEVANT);
+    Flags_setStartCycleSignalReceived(irrelevant, IRRELEVANT);
+    Flags_setPlannedTrajectoryReceivedByStation(irrelevant, IRRELEVANT);
+    Flags_setPictureTaken(irrelevant, IRRELEVANT);
+    Flags_setImageReceivedByStation(irrelevant, IRRELEVANT);
+    Flags_setReadyToDrawReceivedByStation(irrelevant, IRRELEVANT);
+    Flags_setEndOfCycleReceivedByStation(irrelevant, IRRELEVANT);
+    return irrelevant;
+}
+
 void Flags_copyValuesFrom(struct Flags *recipient, struct Flags *source)
 {
     recipient->navigable_map_is_ready = source->navigable_map_is_ready;

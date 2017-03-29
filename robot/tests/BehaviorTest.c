@@ -202,7 +202,7 @@ Test(Behavior_WithTwoChildren,
     Behavior_delete(unreachable_child);
 }
 
-Test(Behavior, given_aDefaultBehavior_when__then_itsActionIsDummyAction
+Test(Behavior, given_aDefaultBehavior_when__then_itsActionIsIdleAction
      , .init = setup_behavior
      , .fini = teardown_behavior)
 {

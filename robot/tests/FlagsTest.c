@@ -29,6 +29,20 @@ Test(Flags, creation_destruction)
     Flags_delete(flags);
 }
 
+Test(Flags, given__when_createIrrelevantFlags_then_flagsWithAllMinusOnesIsReturned)
+{
+    struct Flags *flags = Flags_irrelevant();
+    cr_assert(flags->navigable_map_is_ready == MINUS_ONE);
+    cr_assert(flags->ready_to_start_received_by_station == MINUS_ONE);
+    cr_assert(flags->start_cycle_signal_received == MINUS_ONE);
+    cr_assert(flags->planned_trajectory_received_by_station == MINUS_ONE);
+    cr_assert(flags->picture_taken == MINUS_ONE);
+    cr_assert(flags->image_received_by_station == MINUS_ONE);
+    cr_assert(flags->ready_to_draw_received_by_station == MINUS_ONE);
+    cr_assert(flags->end_of_cycle_received_by_station == MINUS_ONE);
+    Flags_delete(flags);
+}
+
 void setup_flags(void)
 {
     flags = Flags_new();
@@ -88,17 +102,13 @@ Test(Flags, given_twoFlagsWithDifferentValues_when_oneHasMinusOnesInItsValuesAnd
      , .init = setup_flags
      , .fini = teardown_flags)
 {
-    Flags_setNavigableMapIsReady(flags, MINUS_ONE);
-    Flags_setReadyToStartReceivedByStation(flags, MINUS_ONE);
-    Flags_setStartCycleSignalReceived(flags, MINUS_ONE);
-    Flags_setPlannedTrajectoryReceivedByStation(flags, MINUS_ONE);
-    Flags_setPictureTaken(flags, MINUS_ONE);
-    Flags_setImageReceivedByStation(flags, MINUS_ONE);
-    Flags_setReadyToDrawReceivedByStation(flags, MINUS_ONE);
-    Flags_setEndOfCycleReceivedByStation(flags, MINUS_ONE);
+    struct Flags *irrelevant = Flags_irrelevant();
 
-    int comparison = Flags_haveTheSameValues(flags, other_flags);
+    int comparison = Flags_haveTheSameValues(irrelevant, other_flags);
     cr_assert(comparison == 1);
+
+    Flags_delete(irrelevant);
+
 }
 
 Test(Flags, given_twoFlagsWithDifferentValues_when_copied_then_theFlagsHaveTheSameValues

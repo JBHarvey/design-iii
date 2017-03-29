@@ -59,6 +59,17 @@ struct Behavior* BehaviorBuilder_default(void)
     return BehaviorBuilder_build(BehaviorBuilder_end());
 }
 
+struct BehaviorBuilder* BehaviorBuilder_withFreeEntry(struct BehaviorBuilder *behavior_builder)
+{
+    struct Flags *irrelevant = Flags_irrelevant();
+    behavior_builder = BehaviorBuilder_withTolerancesX(X_TOLERANCE_MAX, behavior_builder);
+    behavior_builder = BehaviorBuilder_withTolerancesY(Y_TOLERANCE_MAX, behavior_builder);
+    behavior_builder = BehaviorBuilder_withTolerancesTheta(THETA_TOLERANCE_MAX, behavior_builder);
+    behavior_builder = BehaviorBuilder_withFlags(irrelevant, behavior_builder);
+    Flags_delete(irrelevant);
+    return behavior_builder;
+}
+
 struct BehaviorBuilder* BehaviorBuilder_withGoalX(int goalX, struct BehaviorBuilder *behavior_builder)
 {
     behavior_builder->goalX = goalX;
