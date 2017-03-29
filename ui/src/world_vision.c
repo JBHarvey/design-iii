@@ -8,6 +8,7 @@
 #include "station_client_sender.h"
 
 #define SIZE_DRAW_LINES 3
+#define BURGUNDY CV_RGB(29, 7, 173)
 
 /* Flags definitions */
 
@@ -42,6 +43,8 @@ GdkPixbuf *world_camera_pixbuf = NULL;
 
 struct Point2DSet *current_planned_trajectory = NULL;
 
+GThread *world_vision_detection_worker_thread = NULL;
+
 gboolean worldCameraDrawEventCallback(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
     gboolean status = FALSE;
@@ -60,7 +63,9 @@ gboolean worldCameraCalibrationClickedEventCallback(GtkWidget *widget, gpointer 
     if(WorldVisionCalibration_initializeCameraMatrixAndDistortionCoefficientsFromFile(widget,
             world_camera)) {
         gtk_widget_set_sensitive(GTK_WIDGET(data), FALSE);
-        WorldVisionCalibration_calibrate(world_camera);
+        WorldVisionDetection_initialize();
+        world_vision_detection_worker_thread = g_thread_new("world_camera_detector",
+                                               (GThreadFunc) WorldVisionDetection_detectObstaclesAndRobot, (gpointer) world_camera);
     }
 
     return TRUE;
@@ -125,8 +130,7 @@ static void initializeWorldCamera(void)
 
 static void releaseWorldCamera(void)
 {
-    if(world_camera->camera_status == INTRINSICALLY_AND_EXTRINSICALLY_CALIBRATED ||
-       world_camera->camera_status == FULLY_CALIBRATED) {
+    if(world_camera->camera_status == FULLY_CALIBRATED) {
         cvReleaseMat(&(world_camera->camera_intrinsics->camera_matrix));
         cvReleaseMat(&(world_camera->camera_intrinsics->distortion_coefficients));
         cvReleaseMat(&(world_camera->camera_extrinsics->rotation_vector));
@@ -144,7 +148,7 @@ static void releaseWorldCamera(void)
     free(world_camera);
 }
 
-static void cleanExitIfMainLoopTerminated(GThread *world_vision_detection_worker_thread)
+static void cleanExitIfMainLoopTerminated(void)
 {
     if(!StationInterface_isRunning()) {
         g_mutex_lock(&world_vision_pixbuf_mutex);
@@ -229,7 +233,7 @@ static void drawPlannedTrajectory(void)
         struct Point2D origin = PointTypes_getPointFromPoint2DSet(current_planned_trajectory, i);
         struct Point2D end = PointTypes_getPointFromPoint2DSet(current_planned_trajectory, i + 1);
         cvLine(world_camera_frame, cvPoint((int) origin.x, (int) origin.y), cvPoint((int) end.x, (int) end.y),
-               CV_RGB(29, 7, 173), SIZE_DRAW_LINES, 8, 0);
+               BURGUNDY, SIZE_DRAW_LINES, 8, 0);
     }
 }
 
@@ -255,8 +259,6 @@ void WorldVision_applyWorldCameraBackFrame(void)
 
 gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient *station_client)
 {
-    GThread *world_vision_detection_worker_thread = NULL;
-
     initializeWorldCamera();
 
     world_camera_frame = cvCloneImage(world_camera->camera_capture->current_raw_frame);
@@ -269,19 +271,18 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient 
 
     while(TRUE) {
 
-        cleanExitIfMainLoopTerminated(world_vision_detection_worker_thread);
+        cleanExitIfMainLoopTerminated();
 
         worldCameraQueryNextFrame();
 
         if(world_camera->camera_status == FULLY_CALIBRATED) {
 
-            if(world_vision_detection_worker_thread == NULL) {
-                world_vision_detection_worker_thread = g_thread_new("world_camera_detector",
-                                                       (GThreadFunc) WorldVisionDetection_detectObstaclesAndRobot, (gpointer) world_camera);
-            }
-
             cvCopy(world_camera->camera_capture->current_raw_frame, world_camera_back_frame, NULL);
-            WorldVisionDetection_drawObstaclesAndRobot(world_camera_back_frame);
+
+            if(StationInterface_isRunning()) {
+
+                WorldVisionDetection_drawObstaclesAndRobot(world_camera_back_frame);
+            }
         }
 
         if(world_camera->camera_status != FULLY_CALIBRATED) {
@@ -313,9 +314,10 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient 
 }
 
 void WorldVision_sendWorldInformationToRobot(struct Communication_Object robot,
-        struct Communication_Object obstacles[MAXIMUM_OBSTACLE_NUMBER])
+        struct Communication_Object obstacles[MAXIMUM_OBSTACLE_NUMBER], int environment_has_changed)
 {
-    StationClientSender_sendWorldInformationsToRobot(obstacles, MAXIMUM_OBSTACLE_NUMBER, robot);
+    StationClientSender_sendWorldInformationsToRobot(obstacles, MAXIMUM_OBSTACLE_NUMBER, robot,
+            environment_has_changed);
 }
 
 void WorldVision_setPlannedTrajectory(struct Point3DSet *world_trajectory)
@@ -338,3 +340,16 @@ void WorldVision_setPlannedTrajectory(struct Point3DSet *world_trajectory)
 
     g_mutex_unlock(&world_vision_planned_trajectory_mutex);
 }
+
+void WorldVision_recalibrateForDrawing(void)
+{
+    WorldVisionDetection_setRobotStateToDrawing();
+    WorldVisionCalibration_calibrateWithGreenSquareCorners(world_camera);
+}
+
+void WorldVision_recalibrateForMoving(void)
+{
+    WorldVisionCalibration_calibrateWithTableCorners(world_camera);
+    WorldVisionDetection_setRobotStateToMoving();
+}
+

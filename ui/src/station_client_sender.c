@@ -57,7 +57,7 @@ void StationClientSender_sendReceiveData(struct StationClient *station_client)
 }
 
 void StationClientSender_sendWorldInformationsToRobot(struct Communication_Object *obstacles,
-        unsigned num_obstacles, struct Communication_Object robot)
+        unsigned int num_obstacles, struct Communication_Object robot, int environment_has_changed)
 {
     uint8_t data[1 + sizeof(struct Communication_World)];
     data[0] = DATA_WORLD;
@@ -155,7 +155,7 @@ void StationClientSender_sendWorldInformationsToRobot(struct Communication_Objec
         },
     };
 
-    communication_world.environment_has_changed = 1;
+    communication_world.environment_has_changed = environment_has_changed;
     communication_world.robot = robot;
     memcpy(communication_world.environment.obstacles, obstacles, num_obstacles * sizeof(struct Communication_Object));
     memcpy(data + 1, &communication_world, sizeof(struct Communication_World));

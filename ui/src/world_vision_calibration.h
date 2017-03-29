@@ -8,7 +8,9 @@
 gboolean WorldVisionCalibration_initializeCameraMatrixAndDistortionCoefficientsFromFile(GtkWidget *widget,
         struct Camera *output_camera);
 
-gboolean WorldVisionCalibration_calibrate(struct Camera *input_camera);
+gboolean WorldVisionCalibration_calibrateWithTableCorners(struct Camera * input_camera);
+
+gboolean WorldVisionCalibration_calibrateWithGreenSquareCorners(struct Camera * input_camera);
 
 struct Point3D WorldVisionCalibration_convertImageCoordinatesToWorldCoordinates(struct Point2D image_coordinates,
         struct Camera *input_camera);
