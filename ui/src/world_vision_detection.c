@@ -176,7 +176,7 @@ void WorldVisionDetection_initialize(void)
     detected->has_changed = 0;
 }
 
-static struct Point2DSet *sortCvPoint2D32fSquareCorners(CvPoint2D32f corners[NUM_SQUARE_CORNERS])
+static struct Point2DSet *sortSquareCorners(CvPoint2D32f corners[NUM_SQUARE_CORNERS])
 {
     struct Point2DSet *point_set = PointTypes_initializePoint2DSet(4);
 
