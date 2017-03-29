@@ -59,7 +59,25 @@ void Navigator_navigateRobotTowardsGoal(struct Robot *robot)
 
 int Navigator_isAngleWithinRotationTolerance(int angle)
 {
-    return 1;
+
+    if(angle > HALF_PI) {
+        angle -= HALF_PI;
+    }
+
+    while(angle < 0) {
+        angle += HALF_PI;
+    }
+
+    int is_within = 1;
+    int lower_border = THETA_TOLERANCE_DEFAULT;
+    int upper_border = HALF_PI - THETA_TOLERANCE_DEFAULT;
+
+    if((angle >= lower_border)
+       && (angle <= upper_border)) {
+        is_within = 0;
+    }
+
+    return is_within;
 }
 
 int Navigator_computeRotationToleranceForPrecisionMovement(int planned_distance)
