@@ -12,6 +12,7 @@ struct Navigator {
     struct Object *object;
     struct Map *navigable_map;
     struct Graph *graph;
+    struct CoordinatesSequence *planned_trajectory;
     int was_oriented_before_last_command;
 };
 

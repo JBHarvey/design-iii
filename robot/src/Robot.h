@@ -22,6 +22,7 @@ struct Robot *Robot_new();
 void Robot_delete(struct Robot *robot);
 
 void Robot_sendReadyToStartSignal(struct Robot *robot);
+void Robot_sendPlannedTrajectory(struct Robot *robot);
 void Robot_takePicture(struct Robot *robot);
 
 #endif // ROBOT_H_

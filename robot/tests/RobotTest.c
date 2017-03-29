@@ -5,6 +5,7 @@
 struct Robot *robot;
 struct DataSender_Callbacks validation_callbacks;
 int validation_ready_to_start_is_sent;
+int validation_planned_trajectory_is_sent;
 const int SIGNAL_SENT = 1;
 const int SIGNAL_NOT_SENT = 0;
 
@@ -67,11 +68,18 @@ void validateReadyToStartIsSent(void)
     validation_ready_to_start_is_sent = SIGNAL_SENT;
 }
 
+void validatePlannedTrajectoryIsSent(struct CoordinatesSequence *sequence)
+{
+    validation_planned_trajectory_is_sent = SIGNAL_SENT;
+}
+
 void setup_robot(void)
 {
     robot = Robot_new();
     validation_ready_to_start_is_sent = SIGNAL_NOT_SENT;
+    validation_planned_trajectory_is_sent = SIGNAL_NOT_SENT;
     validation_callbacks.sendSignalReadyToStart = &validateReadyToStartIsSent;
+    validation_callbacks.sendPlannedTrajectory = &validatePlannedTrajectoryIsSent;
     DataSender_changeTarget(robot->data_sender, validation_callbacks);
 }
 
@@ -86,6 +94,14 @@ Test(Robot, given_aRobot_when_askedToSendAReadyToStartSignal_then_theSignalIsSen
 {
     Robot_sendReadyToStartSignal(robot);
     cr_assert(validation_ready_to_start_is_sent);
+}
+
+Test(Robot, given_aRobot_when_askedToSendAPlannedTrajectory_then_theSignalIsSent
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Robot_sendPlannedTrajectory(robot);
+    cr_assert(validation_planned_trajectory_is_sent);
 }
 
 Test(Robot, given_initialRobot_when_takesAPicture_then_thePicureTakenFlagValueIsOne

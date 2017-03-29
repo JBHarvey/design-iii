@@ -64,6 +64,11 @@ void Robot_sendReadyToStartSignal(struct Robot *robot)
     DataSender_sendSignalReadyToStart(robot->data_sender);
 }
 
+void Robot_sendPlannedTrajectory(struct Robot *robot)
+{
+    DataSender_sendPlannedTrajectory(robot->data_sender, robot->navigator->planned_trajectory);
+}
+
 void Robot_takePicture(struct Robot *robot)
 {
     //TODO : Take the actual picture with the on-board camera;
