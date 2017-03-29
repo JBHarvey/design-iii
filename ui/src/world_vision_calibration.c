@@ -184,13 +184,7 @@ static void computePlaneEquation(struct Camera *input_camera)
                                            transformed_origin_point.z) / normal_vector_norm;
 }
 
-static void releaseTablePointsUsedForCalibration(struct Camera *input_camera)
-{
-    PointTypes_releasePoint2DSet(image_point_set);
-    PointTypes_releasePoint3DSet(object_point_set);
-}
-
-static void releaseGreenSquarePointsUsedForCalibration(struct Camera *input_camera)
+static void releasePointsUsedForCalibration(struct Camera *input_camera)
 {
     PointTypes_releasePoint2DSet(image_point_set);
     PointTypes_releasePoint3DSet(object_point_set);
@@ -206,7 +200,7 @@ gboolean WorldVisionCalibration_calibrateWithTableCorners(struct Camera * input_
     computeCameraPose(input_camera);
     reprojection_error = checkReprojectionErrorOnCameraPose(input_camera);
     computePlaneEquation(input_camera);
-    releaseTablePointsUsedForCalibration(input_camera);
+    releasePointsUsedForCalibration(input_camera);
     input_camera->camera_status = FULLY_CALIBRATED;
     Logger_startMessageSectionAndAppend("Camera pose computation completed.");
     Logger_append("\nReprojection error on camera pose: ");
@@ -227,7 +221,7 @@ gboolean WorldVisionCalibration_calibrateWithGreenSquareCorners(struct Camera * 
     computeCameraPose(input_camera);
     reprojection_error = checkReprojectionErrorOnCameraPose(input_camera);
     computePlaneEquation(input_camera);
-    releaseGreenSquarePointsUsedForCalibration(input_camera);
+    releasePointsUsedForCalibration(input_camera);
     input_camera->camera_status = FULLY_CALIBRATED;
     Logger_startMessageSectionAndAppend("Camera pose computation completed.");
     Logger_append("\nReprojection error on camera pose: ");
