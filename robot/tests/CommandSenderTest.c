@@ -6,6 +6,7 @@
 Test(CommandSender, given_when_fetchCommandSenderCallbacksForRobot_then_theCorrectSturctureIsReturned)
 {
     void (*sendTranslateCommand)(struct Command_Translate) = &RobotServer_sendTranslateCommand;
+    void (*sendSpeedsCommand)(struct Command_Speeds) = &RobotServer_sendSpeedsCommand;
     void (*sendRotateCommand)(struct Command_Rotate) = &RobotServer_sendRotateCommand;
     void (*sendLightRedLEDCommand)(void) = &RobotServer_sendLightRedLEDCommand;
     void (*sendLightGreenLEDCommand)(void) = &RobotServer_sendLightGreenLEDCommand;
@@ -17,6 +18,7 @@ Test(CommandSender, given_when_fetchCommandSenderCallbacksForRobot_then_theCorre
     struct CommandSender_Callbacks callbacks = CommandSender_fetchCallbacksForRobot();
 
     cr_assert_eq(callbacks.sendTranslateCommand, sendTranslateCommand);
+    cr_assert_eq(callbacks.sendSpeedsCommand, sendSpeedsCommand);
     cr_assert_eq(callbacks.sendRotateCommand, sendRotateCommand);
     cr_assert_eq(callbacks.sendLightRedLEDCommand, sendLightRedLEDCommand);
     cr_assert_eq(callbacks.sendLightGreenLEDCommand, sendLightGreenLEDCommand);
@@ -27,6 +29,7 @@ Test(CommandSender, given_when_fetchCommandSenderCallbacksForRobot_then_theCorre
 }
 
 int translate_validator;
+int speeds_validator;
 int rotate_validator;
 int light_red_led_validator;
 int light_green_led_validator;
@@ -43,6 +46,7 @@ void setup_CommandSender(void)
 {
     command_sender = CommandSender_new();
     translate_validator = 0;
+    speeds_validator = 0;
     rotate_validator = 0;
     light_red_led_validator = 0;
     light_green_led_validator = 0;
@@ -62,6 +66,7 @@ Test(CommandSender, construction_destruction)
     struct CommandSender *command_sender = CommandSender_new();
 
     cr_assert_eq(command_sender->command_callbacks.sendTranslateCommand, &RobotServer_sendTranslateCommand);
+    cr_assert_eq(command_sender->command_callbacks.sendSpeedsCommand, &RobotServer_sendSpeedsCommand);
     cr_assert_eq(command_sender->command_callbacks.sendRotateCommand, &RobotServer_sendRotateCommand);
     cr_assert_eq(command_sender->command_callbacks.sendLightRedLEDCommand, &RobotServer_sendLightRedLEDCommand);
     cr_assert_eq(command_sender->command_callbacks.sendLightGreenLEDCommand, &RobotServer_sendLightGreenLEDCommand);
@@ -77,6 +82,10 @@ Test(CommandSender, construction_destruction)
 void CommandSenderTest_sendTranslateCommand(struct Command_Translate command_translate)
 {
     ++translate_validator;
+}
+void CommandSenderTest_sendSpeedsCommand(struct Command_Speeds command_speeds)
+{
+    ++speeds_validator;
 }
 void CommandSenderTest_sendRotateCommand(struct Command_Rotate command_rotate)
 {
@@ -111,6 +120,7 @@ struct CommandSender_Callbacks generateCommandSenderTestTarget(void)
 {
     struct CommandSender_Callbacks test_callbacks = {
         .sendTranslateCommand = &CommandSenderTest_sendTranslateCommand,
+        .sendSpeedsCommand = &CommandSenderTest_sendSpeedsCommand,
         .sendRotateCommand = &CommandSenderTest_sendRotateCommand,
         .sendLightRedLEDCommand = &CommandSenderTest_sendLightRedLEDCommand,
         .sendLightGreenLEDCommand = &CommandSenderTest_sendLightGreenLEDCommand,
@@ -131,6 +141,7 @@ Test(CommandSender, given_aCommandSenderCallbacks_when_changesCommandSenderTarge
     CommandSender_changeTarget(command_sender, test_callbacks);
 
     cr_assert_eq(command_sender->command_callbacks.sendTranslateCommand, test_callbacks.sendTranslateCommand);
+    cr_assert_eq(command_sender->command_callbacks.sendSpeedsCommand, test_callbacks.sendSpeedsCommand);
     cr_assert_eq(command_sender->command_callbacks.sendRotateCommand, test_callbacks.sendRotateCommand);
     cr_assert_eq(command_sender->command_callbacks.sendLightRedLEDCommand, test_callbacks.sendLightRedLEDCommand);
     cr_assert_eq(command_sender->command_callbacks.sendLightGreenLEDCommand, test_callbacks.sendLightGreenLEDCommand);
@@ -153,6 +164,19 @@ Test(CommandSender, given_aTranslateCallback_when_askedToSendCommand_then_theCal
 
     CommandSender_sendTranslateCommand(command_sender, translate_command);
     cr_assert_eq(translate_validator, EXPECTED_VALIDATOR_VALUE);
+
+}
+
+Test(CommandSender, given_aSpeedsCallback_when_askedToSendCommand_then_theCallbackIsCalled
+     , .init = setup_CommandSender
+     , .fini = teardown_CommandSender)
+{
+    struct CommandSender_Callbacks test_callbacks = generateCommandSenderTestTarget();
+    CommandSender_changeTarget(command_sender, test_callbacks);
+    struct Command_Speeds speeds_command = { .x = 0, . y = 0};
+
+    CommandSender_sendSpeedsCommand(command_sender, speeds_command);
+    cr_assert_eq(speeds_validator, EXPECTED_VALIDATOR_VALUE);
 
 }
 

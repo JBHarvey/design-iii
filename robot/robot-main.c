@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "Logger.h"
-#include "OnboardCamera.h"
 
 static struct Robot *robot;
 struct Logger *logger;
@@ -16,9 +15,9 @@ static void waitASecond()
     usleep(1000000);
 }
 
-static void waitASecondAndAHalf()
+static void waitFiveSeconds()
 {
-    usleep(1500000);
+    usleep(5000000);
 }
 
 static void waitFifteenSeconds()
@@ -30,14 +29,14 @@ static void sendTranslate(int x, int y)
 {
     struct Command_Translate translate = { .x = x, .y = y };
     CommandSender_sendTranslateCommand(command_sender, translate);
-    waitASecondAndAHalf();
+    waitFiveSeconds();
 }
 
 static void sendRotate(int theta)
 {
     struct Command_Rotate rotate = { .theta = theta};
     CommandSender_sendRotateCommand(command_sender, rotate);
-    waitASecondAndAHalf();
+    waitFiveSeconds();
 }
 
 int main(int argc, char *argv[])
@@ -48,7 +47,7 @@ int main(int argc, char *argv[])
 
     logger = Logger_new();
 
-    struct CommandSender *command_sender = CommandSender_new();
+    command_sender = CommandSender_new();
 
     struct DataReceiver_Callbacks data_receiver_callbacks = DataReceiver_fetchCallbacks();
     struct CommandSender_Callbacks command_sender_callbacks = CommandSender_fetchCallbacksForRobot();
@@ -59,6 +58,7 @@ int main(int argc, char *argv[])
     CommandSender_changeTarget(command_sender, command_sender_callbacks);
     RobotServer_updateDataReceiverCallbacks(data_receiver_callbacks);
 
+    /*
     waitFifteenSeconds();
     waitFifteenSeconds();
 
@@ -68,12 +68,24 @@ int main(int argc, char *argv[])
         CommandSender_sendLightGreenLEDCommand(command_sender);
         waitASecond();
     }
+    */
 
+    // ROTATION TESTS
+
+    sendTranslate(0, 2000);
+    sendRotate(MINUS_HALF_PI);
+    sendTranslate(0, 2000);
+    sendRotate(MINUS_HALF_PI);
+    sendTranslate(0, 2000);
+    sendRotate(MINUS_HALF_PI);
+    sendTranslate(0, 2000);
+    sendRotate(MINUS_HALF_PI);
     // MANCHESTER ASK + LOG RETURN TEST
     CommandSender_sendFetchManchesterCode(command_sender);
 
     // TEST OF CAMERA AND PATH
     // Initialise the camera
+    // The camera will have to be initialized and freed in the main
     OnboardCamera_init();
 
     IplImage *test_image;
@@ -150,7 +162,8 @@ int main(int argc, char *argv[])
     }
 
     // Releases Camera
-    OnboardCamera_deleteImageAndFreeCamera(&test_image);
+    OnboardCamera_deleteImage(&test_image);
+    OnboardCamera_freeCamera();
 
     CommandSender_delete(command_sender);
     Logger_delete(logger);

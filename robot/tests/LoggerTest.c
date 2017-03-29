@@ -84,6 +84,7 @@ Test(Logger, given_aLogger_when_startsLoggingCommandSender_then_decoratedCommand
      , .fini = teardown_logger)
 {
     void (*sendTranslateCommand)(struct Command_Translate) = &Logger_sendTranslateCommand;
+    void (*sendSpeedsCommand)(struct Command_Speeds) = &Logger_sendSpeedsCommand;
     void (*sendRotateCommand)(struct Command_Rotate) = &Logger_sendRotateCommand;
     void (*sendLightRedLEDCommand)(void) = &Logger_sendLightRedLEDCommand;
     void (*sendLightGreenLEDCommand)(void) = &Logger_sendLightGreenLEDCommand;
@@ -96,6 +97,7 @@ Test(Logger, given_aLogger_when_startsLoggingCommandSender_then_decoratedCommand
     struct CommandSender_Callbacks from_logger = Logger_startLoggingCommandSenderAndReturnCallbacks(logger, callbacks);
 
     cr_assert_eq(from_logger.sendTranslateCommand, sendTranslateCommand);
+    cr_assert_eq(from_logger.sendSpeedsCommand, sendSpeedsCommand);
     cr_assert_eq(from_logger.sendRotateCommand, sendRotateCommand);
     cr_assert_eq(from_logger.sendLightRedLEDCommand, sendLightRedLEDCommand);
     cr_assert_eq(from_logger.sendLightGreenLEDCommand, sendLightGreenLEDCommand);
@@ -116,6 +118,7 @@ Test(Logger, given_aLogger_when_stopsLoggingCommandSender_then_originalCommandSe
     struct CommandSender_Callbacks from_logger = Logger_stopLoggingCommandSenderAndReturnCallbacks(logger);
 
     cr_assert_eq(from_logger.sendTranslateCommand, command_sender_callbacks.sendTranslateCommand);
+    cr_assert_eq(from_logger.sendSpeedsCommand, command_sender_callbacks.sendSpeedsCommand);
     cr_assert_eq(from_logger.sendRotateCommand, command_sender_callbacks.sendRotateCommand);
     cr_assert_eq(from_logger.sendLightRedLEDCommand, command_sender_callbacks.sendLightRedLEDCommand);
     cr_assert_eq(from_logger.sendLightGreenLEDCommand, command_sender_callbacks.sendLightGreenLEDCommand);

@@ -10,11 +10,12 @@ struct Flags *Flags_new(void)
 
     pointer->object = new_object;
 
+    pointer->navigable_map_is_ready = FALSE;
+    pointer->ready_to_start_received_by_station = FALSE;
     pointer->start_cycle_signal_received = FALSE;
+    pointer->planned_trajectory_received_by_station = FALSE;
     pointer->picture_taken = FALSE;
     pointer->image_received_by_station = FALSE;
-    pointer->planned_trajectory_received_by_station = FALSE;
-    pointer->ready_to_start_received_by_station = FALSE;
     pointer->ready_to_draw_received_by_station = FALSE;
     pointer->end_of_cycle_received_by_station = FALSE;
 
@@ -31,13 +32,28 @@ void Flags_delete(struct Flags *flags)
     }
 }
 
+struct Flags *Flags_irrelevant(void)
+{
+    struct Flags *irrelevant = Flags_new();
+    Flags_setNavigableMapIsReady(irrelevant, IRRELEVANT);
+    Flags_setReadyToStartReceivedByStation(irrelevant, IRRELEVANT);
+    Flags_setStartCycleSignalReceived(irrelevant, IRRELEVANT);
+    Flags_setPlannedTrajectoryReceivedByStation(irrelevant, IRRELEVANT);
+    Flags_setPictureTaken(irrelevant, IRRELEVANT);
+    Flags_setImageReceivedByStation(irrelevant, IRRELEVANT);
+    Flags_setReadyToDrawReceivedByStation(irrelevant, IRRELEVANT);
+    Flags_setEndOfCycleReceivedByStation(irrelevant, IRRELEVANT);
+    return irrelevant;
+}
+
 void Flags_copyValuesFrom(struct Flags *recipient, struct Flags *source)
 {
+    recipient->navigable_map_is_ready = source->navigable_map_is_ready;
+    recipient->ready_to_start_received_by_station = source->ready_to_start_received_by_station;
     recipient->start_cycle_signal_received = source->start_cycle_signal_received;
+    recipient->planned_trajectory_received_by_station = source->planned_trajectory_received_by_station;
     recipient->picture_taken = source->picture_taken;
     recipient->image_received_by_station = source->image_received_by_station;
-    recipient->planned_trajectory_received_by_station = source->planned_trajectory_received_by_station;
-    recipient->ready_to_start_received_by_station = source->ready_to_start_received_by_station;
     recipient->ready_to_draw_received_by_station = source->ready_to_draw_received_by_station;
     recipient->end_of_cycle_received_by_station = source->end_of_cycle_received_by_station;
 }
@@ -46,18 +62,20 @@ void Flags_copyValuesFrom(struct Flags *recipient, struct Flags *source)
 int Flags_haveTheSameValues(struct Flags *flags, struct Flags *other_flags)
 {
     return
-        (flags->start_cycle_signal_received == other_flags->start_cycle_signal_received
-         || flags->start_cycle_signal_received == IRRELEVANT || other_flags->start_cycle_signal_received == IRRELEVANT)
-        && (flags->picture_taken == other_flags->picture_taken
-            || flags->picture_taken == IRRELEVANT || other_flags->picture_taken == IRRELEVANT)
-        && (flags->image_received_by_station == other_flags->image_received_by_station
-            || flags->image_received_by_station == IRRELEVANT || other_flags->image_received_by_station == IRRELEVANT)
-        && (flags->planned_trajectory_received_by_station == other_flags->planned_trajectory_received_by_station
-            || flags->planned_trajectory_received_by_station == IRRELEVANT
-            || other_flags->planned_trajectory_received_by_station == IRRELEVANT)
+        (flags->navigable_map_is_ready == other_flags->navigable_map_is_ready || flags->navigable_map_is_ready == IRRELEVANT
+         || other_flags->navigable_map_is_ready == IRRELEVANT)
         && (flags->ready_to_start_received_by_station == other_flags->ready_to_start_received_by_station
             || flags->ready_to_start_received_by_station == IRRELEVANT
             || other_flags->ready_to_start_received_by_station == IRRELEVANT)
+        && (flags->start_cycle_signal_received == other_flags->start_cycle_signal_received
+            || flags->start_cycle_signal_received == IRRELEVANT || other_flags->start_cycle_signal_received == IRRELEVANT)
+        && (flags->planned_trajectory_received_by_station == other_flags->planned_trajectory_received_by_station
+            || flags->planned_trajectory_received_by_station == IRRELEVANT
+            || other_flags->planned_trajectory_received_by_station == IRRELEVANT)
+        && (flags->picture_taken == other_flags->picture_taken || flags->picture_taken == IRRELEVANT
+            || other_flags->picture_taken == IRRELEVANT)
+        && (flags->image_received_by_station == other_flags->image_received_by_station
+            || flags->image_received_by_station == IRRELEVANT || other_flags->image_received_by_station == IRRELEVANT)
         && (flags->ready_to_draw_received_by_station == other_flags->ready_to_draw_received_by_station
             || flags->ready_to_draw_received_by_station == IRRELEVANT
             || other_flags->ready_to_draw_received_by_station == IRRELEVANT)
@@ -66,9 +84,24 @@ int Flags_haveTheSameValues(struct Flags *flags, struct Flags *other_flags)
            );
 }
 
+void Flags_setNavigableMapIsReady(struct Flags *flags, int new_value)
+{
+    flags->navigable_map_is_ready = new_value;
+}
+
+void Flags_setReadyToStartReceivedByStation(struct Flags *flags, int new_value)
+{
+    flags->ready_to_start_received_by_station = new_value;
+}
+
 void Flags_setStartCycleSignalReceived(struct Flags *flags, int new_value)
 {
     flags->start_cycle_signal_received = new_value;
+}
+
+void Flags_setPlannedTrajectoryReceivedByStation(struct Flags *flags, int new_value)
+{
+    flags->planned_trajectory_received_by_station = new_value;
 }
 
 void Flags_setPictureTaken(struct Flags *flags, int new_value)
@@ -79,16 +112,6 @@ void Flags_setPictureTaken(struct Flags *flags, int new_value)
 void Flags_setImageReceivedByStation(struct Flags *flags, int new_value)
 {
     flags->image_received_by_station = new_value;
-}
-
-void Flags_setPlannedTrajectoryReceivedByStation(struct Flags *flags, int new_value)
-{
-    flags->planned_trajectory_received_by_station = new_value;
-}
-
-void Flags_setReadyToStartReceivedByStation(struct Flags *flags, int new_value)
-{
-    flags->ready_to_start_received_by_station = new_value;
 }
 
 void Flags_setReadyToDrawReceivedByStation(struct Flags *flags, int new_value)

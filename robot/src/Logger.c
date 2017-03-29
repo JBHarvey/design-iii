@@ -98,6 +98,7 @@ struct CommandSender_Callbacks Logger_startLoggingCommandSenderAndReturnCallback
 
     struct CommandSender_Callbacks command_sender_callbacks_with_logging = {
         .sendTranslateCommand = &Logger_sendTranslateCommand,
+        .sendSpeedsCommand = &Logger_sendSpeedsCommand,
         .sendRotateCommand = &Logger_sendRotateCommand,
         .sendLightRedLEDCommand = &Logger_sendLightRedLEDCommand,
         .sendLightGreenLEDCommand = &Logger_sendLightGreenLEDCommand,
@@ -301,6 +302,18 @@ static void logTranslationCommand(struct Command_Translate translation)
             TAB, SUB, y_movement);
 }
 
+static const char *SPEEDS_COMMAND = "Sending Speeds Command:";
+static void logSpeedsCommand(struct Command_Speeds speeds)
+{
+    int x_speeds = speeds.x;
+    int y_speeds = speeds.y;
+    fprintf(file_logger->log_file,
+            "\n%s%s \n%s%sx:  %d\n%s%sy:  %d\n",
+            ITEM, SPEEDS_COMMAND,
+            TAB, SUB, x_speeds,
+            TAB, SUB, y_speeds);
+}
+
 static const char *ROTATION_COMMAND = "Sending Rotation Command:";
 static void logRotationCommand(struct Command_Rotate rotation)
 {
@@ -313,11 +326,19 @@ static void logRotationCommand(struct Command_Rotate rotation)
 
 void Logger_sendTranslateCommand(struct Command_Translate translate_command)
 {
+    logTranslationCommand(translate_command);
     (*(file_logger->original_command_sender_callbacks.sendTranslateCommand))(translate_command);
+}
+
+void Logger_sendSpeedsCommand(struct Command_Speeds speeds_command)
+{
+    logSpeedsCommand(speeds_command);
+    (*(file_logger->original_command_sender_callbacks.sendSpeedsCommand))(speeds_command);
 }
 
 void Logger_sendRotateCommand(struct Command_Rotate rotate_command)
 {
+    logRotationCommand(rotate_command);
     (*(file_logger->original_command_sender_callbacks.sendRotateCommand))(rotate_command);
 }
 

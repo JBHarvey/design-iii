@@ -2,7 +2,9 @@
 #define DATARECEIVER_H_
 
 #include "CommunicationStructures.h"
-#include "Robot.h"
+#include "OnboardCamera.h"
+#include "Wheels.h"
+#include "WorldCamera.h"
 
 struct Mesurements {
     struct Communication_World world;

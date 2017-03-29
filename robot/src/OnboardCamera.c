@@ -28,6 +28,11 @@ void OnboardCamera_init(void)
     }
 }
 
+void OnboardCamera_freeCamera(void)
+{
+    cvReleaseCapture(&(cv_cap));
+}
+
 #define OPENCV_IMAGE_BUFFER_LENGTH (5)
 
 /* NOTE: returned image is in yuv color space and must be freed.
@@ -118,9 +123,8 @@ struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **
     return sequence;
 }
 
-void OnboardCamera_deleteImageAndFreeCamera(IplImage **image)
+void OnboardCamera_deleteImage(IplImage **image)
 {
     cvReleaseImage(image);
-    cvReleaseCapture(&(cv_cap));
 }
 

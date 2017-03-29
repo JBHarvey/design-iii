@@ -4,6 +4,7 @@ struct CommandSender_Callbacks CommandSender_fetchCallbacksForRobot(void)
 {
     struct CommandSender_Callbacks commands = {
         .sendTranslateCommand = &RobotServer_sendTranslateCommand,
+        .sendSpeedsCommand = &RobotServer_sendSpeedsCommand,
         .sendRotateCommand = &RobotServer_sendRotateCommand,
         .sendLightRedLEDCommand = &RobotServer_sendLightRedLEDCommand,
         .sendLightGreenLEDCommand = &RobotServer_sendLightGreenLEDCommand,
@@ -48,6 +49,12 @@ void CommandSender_sendTranslateCommand(struct CommandSender *command_sender,
                                         struct Command_Translate translate_command)
 {
     (*(command_sender->command_callbacks.sendTranslateCommand))(translate_command);
+}
+
+void CommandSender_sendSpeedsCommand(struct CommandSender *command_sender,
+                                     struct Command_Speeds speeds_command)
+{
+    (*(command_sender->command_callbacks.sendSpeedsCommand))(speeds_command);
 }
 
 void CommandSender_sendRotateCommand(struct CommandSender *command_sender, struct Command_Rotate rotate_command)

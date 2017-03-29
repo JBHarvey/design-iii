@@ -9,9 +9,10 @@
 #include "CoordinatesSequence.h"
 
 void OnboardCamera_init(void);
+void OnboardCamera_freeCamera(void);
 
 struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **image_yuv_in_green_square);
 
-void OnboardCamera_deleteImageAndFreeCamera(IplImage **image);
+void OnboardCamera_deleteImage(IplImage **image);
 
 #endif //ONBOARDCAMERA_H

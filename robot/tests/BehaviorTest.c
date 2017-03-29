@@ -121,8 +121,8 @@ Test(Behavior, given_aBehaviorWithOneChild_when_itReceivesANewChild_then_itIsPla
     struct Behavior *behavior = BehaviorBuilder_default();
     struct Behavior *first_behavior = BehaviorBuilder_default();
     struct Behavior *second_behavior = BehaviorBuilder_build(
-                                          BehaviorBuilder_withGoalX(X_TOLERANCE_MAX + DEFAULT_GOAL_X,
-                                                  BehaviorBuilder_end()));
+                                           BehaviorBuilder_withGoalX(X_TOLERANCE_MAX + DEFAULT_GOAL_X,
+                                                   BehaviorBuilder_end()));
 
     Behavior_addChild(behavior, first_behavior);
     Behavior_addChild(behavior, second_behavior);
@@ -164,8 +164,8 @@ Test(Behavior_WithTwoChildren,
     struct Behavior *behavior = BehaviorBuilder_default();
     struct Behavior *reachable_child = BehaviorBuilder_default();
     struct Behavior *unreachable_child = BehaviorBuilder_build(
-                                            BehaviorBuilder_withGoalX(X_TOLERANCE_MAX + DEFAULT_GOAL_X,
-                                                    BehaviorBuilder_end()));
+            BehaviorBuilder_withGoalX(X_TOLERANCE_MAX + DEFAULT_GOAL_X,
+                                      BehaviorBuilder_end()));
 
     Behavior_addChild(behavior, reachable_child);
     Behavior_addChild(behavior, unreachable_child);
@@ -187,8 +187,8 @@ Test(Behavior_WithTwoChildren,
     struct Behavior *behavior = BehaviorBuilder_default();
     struct Behavior *reachable_child = BehaviorBuilder_default();
     struct Behavior *unreachable_child = BehaviorBuilder_build(
-                                            BehaviorBuilder_withGoalX(X_TOLERANCE_MAX + DEFAULT_GOAL_X,
-                                                    BehaviorBuilder_end()));
+            BehaviorBuilder_withGoalX(X_TOLERANCE_MAX + DEFAULT_GOAL_X,
+                                      BehaviorBuilder_end()));
 
     Behavior_addChild(behavior, unreachable_child);
     Behavior_addChild(behavior, reachable_child);
@@ -202,12 +202,12 @@ Test(Behavior_WithTwoChildren,
     Behavior_delete(unreachable_child);
 }
 
-Test(Behavior, given_aDefaultBehavior_when__then_itsActionIsDummyAction
+Test(Behavior, given_aDefaultBehavior_when__then_itsActionIsIdleAction
      , .init = setup_behavior
      , .fini = teardown_behavior)
 {
     struct Behavior *behavior = BehaviorBuilder_default();
-    void (*action)(struct Robot *) = &Behavior_dummyAction;
+    void (*action)(struct Robot *) = &Behavior_idle;
 
     cr_assert_eq(behavior->action, action);
 

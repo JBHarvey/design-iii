@@ -5,24 +5,33 @@ struct DefaultValues {
     struct Pose *pose;
 };
 
-struct Robot *Robot_new()
+struct Robot *Robot_new(void)
 {
     struct DefaultValues *default_values = malloc(sizeof(struct DefaultValues));
     default_values->pose = Pose_zero();
 
     struct Object *new_object = Object_new();
     struct State *new_state = State_new(default_values->pose);
-    struct WorldCamera *new_world_camera = WorldCamera_new();
-    struct Wheels *new_wheels = Wheels_new();
     struct ManchesterCode *new_manchester_code = ManchesterCode_new();
+    struct Wheels *new_wheels = Wheels_new();
+    struct WorldCamera *new_world_camera = WorldCamera_new();
+    struct Navigator *new_navigator = Navigator_new();
+    struct DataSender *new_data_sender = DataSender_new();
+    struct CommandSender *new_command_sender = CommandSender_new();
     struct Robot *pointer =  malloc(sizeof(struct Robot));
 
     pointer->object = new_object;
     pointer->default_values = default_values;
     pointer->current_state = new_state;
-    pointer->world_camera = new_world_camera;
-    pointer->wheels = new_wheels;
     pointer->manchester_code = new_manchester_code;
+    pointer->wheels = new_wheels;
+    pointer->world_camera = new_world_camera;
+    pointer->navigator = new_navigator;
+    pointer->data_sender = new_data_sender;
+    pointer->command_sender = new_command_sender;
+
+    RobotBehaviors_prepareInitialBehaviors(pointer);
+    pointer->first_behavior = pointer->current_behavior;
 
     return pointer;
 }
@@ -34,9 +43,13 @@ void Robot_delete(struct Robot *robot)
     if(Object_canBeDeleted(robot->object)) {
         Object_delete(robot->object);
         State_delete(robot->current_state);
-        WorldCamera_delete(robot->world_camera);
-        Wheels_delete(robot->wheels);
         ManchesterCode_delete(robot->manchester_code);
+        Wheels_delete(robot->wheels);
+        WorldCamera_delete(robot->world_camera);
+        Behavior_delete(robot->first_behavior);
+        Navigator_delete(robot->navigator);
+        DataSender_delete(robot->data_sender);
+        CommandSender_delete(robot->command_sender);
 
         /* DefaultValues destruction */
         Pose_delete(robot->default_values->pose);
@@ -44,6 +57,16 @@ void Robot_delete(struct Robot *robot)
 
         free(robot);
     }
+}
+
+void Robot_sendReadyToStartSignal(struct Robot *robot)
+{
+    DataSender_sendSignalReadyToStart(robot->data_sender);
+}
+
+void Robot_sendPlannedTrajectory(struct Robot *robot)
+{
+    DataSender_sendPlannedTrajectory(robot->data_sender, robot->navigator->planned_trajectory);
 }
 
 void Robot_takePicture(struct Robot *robot)
