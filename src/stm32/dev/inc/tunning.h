@@ -34,11 +34,11 @@ extern uint8_t bSendData;
 /******************************************************
  * Variables pour tester le PID de vitesse
  * ****************************************************/
-//#define ENABLE_SPEED_PI
+#define ENABLE_SPEED_PI
 #ifdef ENABLE_SPEED_PI
 #define PID_SPEED
-#define MAX_SPEED_PID_INDEX 1400
-#define CONSIGNE_SPEED 0.08
+#define MAX_SPEED_PID_INDEX 2000
+#define CONSIGNE_SPEED 0.06
 extern uint16_t bufferSpeedPIDIndex1;
 extern uint16_t bufferSpeedPIDIndex2;
 extern uint16_t bufferSpeedPIDIndex3;

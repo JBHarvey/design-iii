@@ -88,8 +88,6 @@ void systickInit(uint16_t frequency) {
 void initAll(void) {
 	// Initialization of STM system
 	SystemInit();
-	initEncoders();
-
 	// LCD initialization
 	TM_HD44780_Init(16, 2);
 	// Intern LEDs initialization
@@ -252,7 +250,7 @@ extern void EXTI4_IRQHandler(void) {
 extern void EXTI9_5_IRQHandler(void) {
 	/* Make sure that interrupt flag is set */
 
-// wheel 1 channel 1
+	// wheel 1 channel 1
 	if (EXTI_GetITStatus(EXTI_Line5) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges1++;
@@ -505,8 +503,6 @@ extern void TIM2_IRQHandler() {
 			sendMeasureCounter = 0;
 		}
 
-		resetEncoderSpeedVariables();
-
 #ifdef ENABLE_ACQUIS
 		if (bufferWheelIndex1 < MAX_WHEEL_INDEX) {
 			bufferWheel1[bufferWheelIndex1++] = numberOfSpeedEdges1;
@@ -609,6 +605,7 @@ extern void TIM2_IRQHandler() {
 			bufferSpeedPI4[bufferSpeedPIIndex4++] = numberOfSpeedEdges4;
 		}
 #endif
+		resetEncoderSpeedVariables();
 	}
 }
 

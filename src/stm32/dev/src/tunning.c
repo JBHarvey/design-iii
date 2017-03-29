@@ -351,16 +351,16 @@ void tunningSpeedPI() {
 		MotorSetDirection(4, BRAKE_G);
 	}
 
+	// Initialise l'état
+	bTunningSpeedDone = 0;
+	bFlagTunningSpeedDone = 0;
+	bFlagStartTunningSpeed = 1;
+
 	// Redémarre les buffers
 	bufferSpeedPIDIndex1 = 0;
 	bufferSpeedPIDIndex2 = 0;
 	bufferSpeedPIDIndex3 = 0;
 	bufferSpeedPIDIndex4 = 0;
-
-	// Initialise l'état
-	bTunningSpeedDone = 0;
-	bFlagTunningSpeedDone = 0;
-	bFlagStartTunningSpeed = 1;
 
 	while (bTunningSpeedDone == 0) {
 
@@ -423,21 +423,21 @@ void tunningSendSpeedPI() {
 	/****** ENVOIE DONNÉES MOTEUR 1 ******/
 	VCP_DataTx((uint8_t*) bufferSpeedPID1, MAX_SPEED_PID_INDEX * 2);
 
-	VCP_DataTx((uint8_t*) bufferSpeedCmd1, MAX_SPEED_PID_INDEX);
+	//VCP_DataTx((uint8_t*) bufferSpeedCmd1, MAX_SPEED_PID_INDEX);
 	Delayms(1000);
 	/****** ENVOIE DONNÉES MOTEUR 2 ******/
 	VCP_DataTx((uint8_t*) bufferSpeedPID2, MAX_SPEED_PID_INDEX * 2);
 
-	VCP_DataTx((uint8_t*) bufferSpeedCmd2, MAX_SPEED_PID_INDEX);
+	//VCP_DataTx((uint8_t*) bufferSpeedCmd2, MAX_SPEED_PID_INDEX);
 	Delayms(1000);
 	/****** ENVOIE DONNÉES MOTEUR 3 ******/
 	VCP_DataTx((uint8_t*) bufferSpeedPID3, MAX_SPEED_PID_INDEX * 2);
 
-	VCP_DataTx((uint8_t*) bufferSpeedCmd3, MAX_SPEED_PID_INDEX);
+	//VCP_DataTx((uint8_t*) bufferSpeedCmd3, MAX_SPEED_PID_INDEX);
 	Delayms(1000);
 	/****** ENVOIE DONNÉES MOTEUR 4 ******/
 	VCP_DataTx((uint8_t*) bufferSpeedPID4, MAX_SPEED_PID_INDEX * 2);
-	VCP_DataTx((uint8_t*) bufferSpeedCmd4, MAX_SPEED_PID_INDEX);
+	//VCP_DataTx((uint8_t*) bufferSpeedCmd4, MAX_SPEED_PID_INDEX);
 	bFlagSendDataSpeed = 0;
 	bSendDataSpeed = 0;
 	while(1)
