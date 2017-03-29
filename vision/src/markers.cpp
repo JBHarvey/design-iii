@@ -22,8 +22,16 @@ static double distance_points(double x1, double y1, double x2, double y2)
 
 static struct Marker calculateMarker(std::vector<cv::Point2f> corners, unsigned int corner_number)
 {
+    double angle = atan2(corners[0].y - corners[2].y, corners[0].x - corners[2].x);
+    double angle_x = cos(angle);
+    double angle_y = sin(angle);
+    angle = atan2(corners[1].y - corners[3].y, corners[1].x - corners[3].x);
+    angle -= (M_PI /  2.0);
+    angle_x += cos(angle);
+    angle_y += sin(angle);
+
     struct Marker marker;
-    marker.angle = atan2(corners[0].y - corners[2].y, corners[0].x - corners[2].x);
+    marker.angle = atan2(angle_y, angle_x);
     double distance = distance_points(corners[0].x, corners[0].y, corners[2].x, corners[2].y);
     distance += distance_points(corners[1].x, corners[1].y, corners[3].x, corners[3].y);
     distance /= 2.0;
@@ -61,6 +69,8 @@ struct Marker detectMarker(CvArr *image)
 
     unsigned int i;
 
+    double angle_x = 0.0, angle_y = 0.0;
+
     for(i = 0; i < ids.size(); ++i) {
         struct Marker marker;
         marker.valid = 0;
@@ -84,7 +94,9 @@ struct Marker detectMarker(CvArr *image)
         if(marker.valid) {
             out_marker.x += marker.x;
             out_marker.y += marker.y;
-            out_marker.angle += marker.angle;
+            angle_x += cos(marker.angle);
+            angle_y += sin(marker.angle);
+
             out_marker.valid = 1;
             ++num_markers;
         }
@@ -93,7 +105,7 @@ struct Marker detectMarker(CvArr *image)
     if(num_markers) {
         out_marker.x /= (double)num_markers;
         out_marker.y /= (double)num_markers;
-        out_marker.angle /= (double)num_markers;
+        out_marker.angle = atan2(angle_y, angle_x);
     }
 
     return out_marker;
