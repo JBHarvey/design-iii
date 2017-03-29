@@ -119,9 +119,7 @@ static void sendRotationCommand(struct Robot *robot, int angle_to_target)
 
     if(angle_to_target < tolerance && angle_to_target > (-1 * tolerance)) {
         theta = 0;
-    } else if(angle_to_target > tolerance) {
-        theta = angle_to_target;
-    } else if(angle_to_target < (-1 * tolerance)) {
+    } else {
         theta = angle_to_target;
     }
 

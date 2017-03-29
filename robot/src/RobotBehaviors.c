@@ -1,7 +1,7 @@
 
 #include "RobotBehaviors.h"
 
-void prepareInitialBehaviors(struct Robot *robot)
+void RobotBehaviors_prepareInitialBehaviors(struct Robot *robot)
 {
     void (*initial_action)(struct Robot*) = &Navigator_updateNavigableMap;
     robot->behavior = BehaviorBuilder_build(

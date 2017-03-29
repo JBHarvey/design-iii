@@ -30,7 +30,7 @@ struct Robot *Robot_new(void)
     pointer->data_sender = new_data_sender;
     pointer->command_sender = new_command_sender;
 
-    prepareInitialBehaviors(pointer);
+    RobotBehaviors_prepareInitialBehaviors(pointer);
 
     return pointer;
 }

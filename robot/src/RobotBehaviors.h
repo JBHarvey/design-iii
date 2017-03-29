@@ -5,6 +5,6 @@
 #include "DataSender.h"
 #include "Navigator.h"
 
-void prepareInitialBehaviors(struct Robot *robot);
+void RobotBehaviors_prepareInitialBehaviors(struct Robot *robot);
 
 #endif // ROBOTBEHAVIORS_H_
