@@ -65,11 +65,21 @@ void intializePinsD() {
 	GPIO_InitTypeDef GPIO_InitStruct;
 	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN;
 	GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_8 | GPIO_Pin_9
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_8 | GPIO_Pin_9
 			| GPIO_Pin_10 | GPIO_Pin_11;
 	GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_DOWN;
 	GPIO_InitStruct.GPIO_Speed = GPIO_Speed_100MHz;
 	GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+	/* Changement pour PD5 qui se comportement bizarement en pull down */
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+	GPIO_InitTypeDef GPIO_InitStruct2;
+	GPIO_InitStruct2.GPIO_Mode = GPIO_Mode_IN;
+	GPIO_InitStruct2.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStruct2.GPIO_Pin = GPIO_Pin_5;
+	GPIO_InitStruct2.GPIO_PuPd = GPIO_PuPd_DOWN;
+	GPIO_InitStruct2.GPIO_Speed = GPIO_Speed_100MHz;
+	GPIO_Init(GPIOB, &GPIO_InitStruct2);
 
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
 	/* Set pins as input */
@@ -86,7 +96,7 @@ void initializeExternalInterruptLine5() {
 	NVIC_InitTypeDef NVIC_InitStruct;
 
 	/* Tell system that you will use PD5 for EXTI_Line5 */
-	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOD, EXTI_PinSource5);
+	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOB, EXTI_PinSource5);
 
 	/* PD5 is connected to EXTI_Line5 */
 	EXTI_InitStruct.EXTI_Line = EXTI_Line5;
