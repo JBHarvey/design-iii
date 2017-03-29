@@ -14,6 +14,10 @@ extern "C" {
 #define MARKER_ID_BOTTOM_LEFT 104
 
 #define MARKER_DISTANCE_RATIO (0.25)
+#define ANGLE_CORNER ((M_PI /  4.0) * 0.7486681672439952)
+#define MARKER_CORNER_DISTANCE_RATION (0.9013878188659974)
+
+#define MARKER_CORNERS 4
 
 static double distance_points(double x1, double y1, double x2, double y2)
 {
@@ -22,23 +26,53 @@ static double distance_points(double x1, double y1, double x2, double y2)
 
 static struct Marker calculateMarker(std::vector<cv::Point2f> corners, unsigned int corner_number)
 {
+    double angle = atan2(corners[0].y - corners[2].y, corners[0].x - corners[2].x);
+    double angle_x = cos(angle);
+    double angle_y = sin(angle);
+    angle = atan2(corners[1].y - corners[3].y, corners[1].x - corners[3].x);
+    angle -= (M_PI /  2.0);
+    angle_x += cos(angle);
+    angle_y += sin(angle);
+
     struct Marker marker;
-    marker.angle = atan2(corners[0].y - corners[2].y, corners[0].x - corners[2].x);
+    marker.angle = atan2(angle_y, angle_x);
     double distance = distance_points(corners[0].x, corners[0].y, corners[2].x, corners[2].y);
     distance += distance_points(corners[1].x, corners[1].y, corners[3].x, corners[3].y);
     distance /= 2.0;
     distance *= MARKER_DISTANCE_RATIO;
 
-    double x = corners[corner_number].x;
-    x += distance * cos(marker.angle + ((double)corner_number) * (M_PI /  2.0));
+    double corner_angle = marker.angle + ((double)corner_number) * (M_PI /  2.0);
 
-    double y = corners[corner_number].y;
-    y += distance * sin(marker.angle + ((double)corner_number) * (M_PI /  2.0));
+    double x = 0.0;
+    x += corners[corner_number].x;
+    x += (distance * MARKER_DISTANCE_RATIO) * cos(corner_angle);
+
+    x += corners[(corner_number + 2) % MARKER_CORNERS].x;
+    x += (distance + distance * MARKER_DISTANCE_RATIO) * cos(corner_angle);
+
+    x += corners[(corner_number + 1) % MARKER_CORNERS].x;
+    x += (distance * MARKER_CORNER_DISTANCE_RATION) * cos(corner_angle - ANGLE_CORNER);
+
+    x += corners[(corner_number + 3) % MARKER_CORNERS].x;
+    x += (distance * MARKER_CORNER_DISTANCE_RATION) * cos(corner_angle + ANGLE_CORNER);
+
+    double y = 0.0;
+    y += corners[corner_number].y;
+    y += (distance * MARKER_DISTANCE_RATIO) * sin(corner_angle);
+
+    y += corners[(corner_number + 2) % MARKER_CORNERS].y;
+    y += (distance + distance * MARKER_DISTANCE_RATIO) * sin(corner_angle);
+
+    y += corners[(corner_number + 1) % MARKER_CORNERS].y;
+    y += (distance * MARKER_CORNER_DISTANCE_RATION) * sin(corner_angle - ANGLE_CORNER);
+
+    y += corners[(corner_number + 3) % MARKER_CORNERS].y;
+    y += (distance * MARKER_CORNER_DISTANCE_RATION) * sin(corner_angle + ANGLE_CORNER);
 
     marker.angle += (M_PI / 4.0);
     marker.valid = 1;
-    marker.x = x;
-    marker.y = y;
+    marker.x = x / 4.0;
+    marker.y = y / 4.0;
     return marker;
 }
 
@@ -60,6 +94,8 @@ struct Marker detectMarker(CvArr *image)
     unsigned int num_markers = 0;
 
     unsigned int i;
+
+    double angle_x = 0.0, angle_y = 0.0;
 
     for(i = 0; i < ids.size(); ++i) {
         struct Marker marker;
@@ -84,7 +120,9 @@ struct Marker detectMarker(CvArr *image)
         if(marker.valid) {
             out_marker.x += marker.x;
             out_marker.y += marker.y;
-            out_marker.angle += marker.angle;
+            angle_x += cos(marker.angle);
+            angle_y += sin(marker.angle);
+
             out_marker.valid = 1;
             ++num_markers;
         }
@@ -93,7 +131,7 @@ struct Marker detectMarker(CvArr *image)
     if(num_markers) {
         out_marker.x /= (double)num_markers;
         out_marker.y /= (double)num_markers;
-        out_marker.angle /= (double)num_markers;
+        out_marker.angle = atan2(angle_y, angle_x);
     }
 
     return out_marker;
