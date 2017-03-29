@@ -702,7 +702,7 @@ CvPoint coordinateToTableCoordinate(CvPoint point, double height_cm, CvPoint cam
     return out;
 }
 
-#define MIN_TABLE_CORNER_DISTANCE_FROM_SIDE 10
+#define MIN_TABLE_CORNER_DISTANCE_FROM_SIDE 25
 #define MAX_TABLE_CORNER_DISTANCE_FROM_SIDE 100
 #define MIN_CORNER_DISTANCE 10
 
@@ -712,11 +712,11 @@ CvPoint coordinateToTableCoordinate(CvPoint point, double height_cm, CvPoint cam
 #define BLACK_BORDER_SIZE 4
 #define TABLE_ANGLE_RIGHT_BORDER (M_PI / 2.0)
 
-#define ANGLE_ERROR_CONSTANT (M_PI / 32.0)
+#define ANGLE_ERROR_CONSTANT (M_PI / 128.0)
 #define DISTANCE_ERROR_CONTSTANT (100.0)
 
 #define DISTANCE_ALLOWED_ERROR 0.1
-#define MAX_DETECTED_CORNERS 10
+#define MAX_DETECTED_CORNERS 20
 #define CORNER_IMPROVEMENT_RADIUS_TABLE_CORNERS 5
 
 static void findCornersWithDistanceAngle(CvPoint2D32f *corners, unsigned int num_corners, double target_distance,
