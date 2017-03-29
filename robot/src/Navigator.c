@@ -6,11 +6,13 @@ struct Navigator *Navigator_new(void)
     struct Object *new_object = Object_new();
     struct Map *new_navigable_map = NULL;
     struct Graph *new_graph = Graph_new();
+    int new_oriented_before_last_command_value = 0;
     struct Navigator *pointer =  malloc(sizeof(struct Navigator));
 
     pointer->object = new_object;
     pointer->navigable_map = new_navigable_map;
     pointer->graph = new_graph;
+    pointer->was_oriented_before_last_command = new_oriented_before_last_command_value;
 
     return pointer;
 }
@@ -53,6 +55,11 @@ void Navigator_navigateRobotTowardsGoal(struct Robot *robot)
         .y = 0
     };
     CommandSender_sendSpeedsCommand(robot->command_sender, speeds_command);
+}
+
+int Navigator_isAngleWithinRotationTolerance(int angle)
+{
+    return 1;
 }
 
 int Navigator_computeRotationToleranceForPrecisionMovement(int planned_distance)

@@ -330,19 +330,3 @@ Test(Coordinates,
     cr_assert(Coordinates_haveTheSameValues(coordinates, expected_coordinates));
     Coordinates_delete(expected_coordinates);
 }
-
-const int TEST_COORDINATES_SCALE = 10;
-Test(Coordinates,
-     given_aScaleFactor_when_askedToScale_then_theOriginalCoordinatesValuesAreMultipliedByTheScaleFactor
-     , .init = setup_coordinates
-     , .fini = teardown_coordinates)
-{
-    Coordinates_scaleOf(coordinates, TEST_COORDINATES_SCALE);
-
-    int expected_x = COORDINATES_X * TEST_COORDINATES_SCALE;
-    int expected_y = COORDINATES_Y * TEST_COORDINATES_SCALE;
-
-    struct Coordinates *expected_coordinates = Coordinates_new(expected_x, expected_y);
-    cr_assert(Coordinates_haveTheSameValues(coordinates, expected_coordinates));
-    Coordinates_delete(expected_coordinates);
-}

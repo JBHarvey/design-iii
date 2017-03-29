@@ -15,5 +15,6 @@ void Pose_delete(struct Pose *pose);
 
 void Pose_copyValuesFrom(struct Pose *recipient, struct Pose *source);
 int Pose_haveTheSameValues(struct Pose *pose, struct Pose *other_pose);
+int Pose_computeAngleBetween(struct Pose *pose, struct Coordinates *coordinates);
 
 #endif // POSE_H_

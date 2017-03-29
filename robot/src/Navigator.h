@@ -12,6 +12,7 @@ struct Navigator {
     struct Object *object;
     struct Map *navigable_map;
     struct Graph *graph;
+    int was_oriented_before_last_command;
 };
 
 struct Navigator *Navigator_new(void);
@@ -21,7 +22,7 @@ void Navigator_updateNavigableMap(struct Robot *robot);
 
 void Navigator_navigateRobotTowardsGoal(struct Robot *robot);
 
-
+int Navigator_isAngleWithinRotationTolerance(int angle);
 int Navigator_computeRotationToleranceForPrecisionMovement(int planned_distance);
 
 #endif // NAVIGATOR_H_
