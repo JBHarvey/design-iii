@@ -6,5 +6,6 @@
 #include "Navigator.h"
 
 void RobotBehaviors_prepareInitialBehaviors(struct Robot *robot);
+void RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(struct Robot *robot);
 
 #endif // ROBOTBEHAVIORS_H_

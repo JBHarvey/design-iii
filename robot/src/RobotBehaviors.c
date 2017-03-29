@@ -55,3 +55,20 @@ void RobotBehaviors_prepareInitialBehaviors(struct Robot *robot)
     Behavior_delete(behavior_send_ready_to_start_when_map_is_navigable);
 }
 
+void RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(struct Robot *robot)
+{
+    struct Behavior *last_behavior = robot->current_behavior;
+
+    while(last_behavior->first_child != last_behavior) {
+        last_behavior = last_behavior->first_child;
+    }
+
+    void (*sendPlannedTrajectory)(struct Robot *) = &Robot_sendPlannedTrajectory;
+    struct Behavior *new_behavior = BehaviorBuilder_build(
+                                        BehaviorBuilder_withAction(sendPlannedTrajectory,
+                                                BehaviorBuilder_withFreeEntry(
+                                                        BehaviorBuilder_end())));
+
+    Behavior_addChild(last_behavior, new_behavior);
+    Behavior_delete(new_behavior);
+}

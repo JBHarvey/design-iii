@@ -104,6 +104,37 @@ Test(Robot, given_aRobot_when_askedToSendAPlannedTrajectory_then_theSignalIsSent
     cr_assert(validation_planned_trajectory_is_sent);
 }
 
+void assertBehaviorIsAFreeEntrySendingPlannedTrajectory(struct Behavior *received)
+{
+
+    while(received->first_child != received) {
+        received = received->first_child;
+    }
+
+    void (*sendPlannedTrajectory) = &Robot_sendPlannedTrajectory;
+    struct Behavior *expected = BehaviorBuilder_build(
+                                    BehaviorBuilder_withAction(sendPlannedTrajectory,
+                                            BehaviorBuilder_withFreeEntry(
+                                                    BehaviorBuilder_end())));
+    cr_assert(Pose_haveTheSameValues(expected->entry_conditions->tolerances->pose,
+                                     received->entry_conditions->tolerances->pose),
+             );
+    cr_assert(Flags_haveTheSameValues(expected->entry_conditions->goal_state->flags,
+                                      received->entry_conditions->goal_state->flags));
+    cr_assert_eq(expected->action, received->action);
+
+    Behavior_delete(expected);
+}
+Test(Robot,
+     given_aBehaviorWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    robot->current_behavior->action = &Navigator_planTowardsAntennaStart;
+    Behavior_act(robot->current_behavior, robot);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+}
+
 Test(Robot, given_initialRobot_when_takesAPicture_then_thePicureTakenFlagValueIsOne
      , .init = setup_robot
      , .fini = teardown_robot)
