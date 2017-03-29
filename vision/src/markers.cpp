@@ -14,6 +14,10 @@ extern "C" {
 #define MARKER_ID_BOTTOM_LEFT 104
 
 #define MARKER_DISTANCE_RATIO (0.25)
+#define ANGLE_CORNER ((M_PI /  4.0) * 0.7486681672439952)
+#define MARKER_CORNER_DISTANCE_RATION (0.9013878188659974)
+
+#define MARKER_CORNERS 4
 
 static double distance_points(double x1, double y1, double x2, double y2)
 {
@@ -37,16 +41,38 @@ static struct Marker calculateMarker(std::vector<cv::Point2f> corners, unsigned 
     distance /= 2.0;
     distance *= MARKER_DISTANCE_RATIO;
 
-    double x = corners[corner_number].x;
-    x += distance * cos(marker.angle + ((double)corner_number) * (M_PI /  2.0));
+    double corner_angle = marker.angle + ((double)corner_number) * (M_PI /  2.0);
 
-    double y = corners[corner_number].y;
-    y += distance * sin(marker.angle + ((double)corner_number) * (M_PI /  2.0));
+    double x = 0.0;
+    x += corners[corner_number].x;
+    x += (distance * MARKER_DISTANCE_RATIO) * cos(corner_angle);
+
+    x += corners[(corner_number + 2) % MARKER_CORNERS].x;
+    x += (distance + distance * MARKER_DISTANCE_RATIO) * cos(corner_angle);
+
+    x += corners[(corner_number + 1) % MARKER_CORNERS].x;
+    x += (distance * MARKER_CORNER_DISTANCE_RATION) * cos(corner_angle - ANGLE_CORNER);
+
+    x += corners[(corner_number + 3) % MARKER_CORNERS].x;
+    x += (distance * MARKER_CORNER_DISTANCE_RATION) * cos(corner_angle + ANGLE_CORNER);
+
+    double y = 0.0;
+    y += corners[corner_number].y;
+    y += (distance * MARKER_DISTANCE_RATIO) * sin(corner_angle);
+
+    y += corners[(corner_number + 2) % MARKER_CORNERS].y;
+    y += (distance + distance * MARKER_DISTANCE_RATIO) * sin(corner_angle);
+
+    y += corners[(corner_number + 1) % MARKER_CORNERS].y;
+    y += (distance * MARKER_CORNER_DISTANCE_RATION) * sin(corner_angle - ANGLE_CORNER);
+
+    y += corners[(corner_number + 3) % MARKER_CORNERS].y;
+    y += (distance * MARKER_CORNER_DISTANCE_RATION) * sin(corner_angle + ANGLE_CORNER);
 
     marker.angle += (M_PI / 4.0);
     marker.valid = 1;
-    marker.x = x;
-    marker.y = y;
+    marker.x = x / 4.0;
+    marker.y = y / 4.0;
     return marker;
 }
 
