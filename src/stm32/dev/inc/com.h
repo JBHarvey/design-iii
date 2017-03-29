@@ -13,6 +13,7 @@ enum COMMAND {
 	COMMAND_PREHENSOR_DOWN = 5,
 	COMMAND_DECODE_MANCHESTER = 6,
 	COMMAND_STOP_DECODE_MANCHESTER = 7,
+	COMMAND_SET_SPEED = 8,
 	COMMAND_START_IDEN_WHEELS = 65,
 	COMMAND_IDEN_WHEELS = 66,
 	COMMAND_START_TEST_PID_SPEED = 67,
@@ -38,10 +39,8 @@ extern uint8_t bFlagSendData;
 #include "tm_stm32f4_usb_vcp.h"
 
 uint8_t readUSB();
-void sendMoveMeasures(int numberOfPositionEdges1, int numberOfPositionEdges2,
-		int numberOfPositionEdges3, int numberOfPositionEdges4,
-		int numberOfSpeedEdges1, int numberOfSpeedEdges2,
-		int numberOfSpeedEdges3, int numberOfSpeedEdges4);
+void sendMoveMeasures(float positionX, float positionY, float speedX,
+		float speedY);
 
 void sendRedLightConfirmation();
 
