@@ -28,6 +28,8 @@ void OnboardCamera_init(void)
     }
 }
 
+#define OPENCV_IMAGE_BUFFER_LENGTH (5)
+
 /* NOTE: returned image is in yuv color space and must be freed.
  */
 static IplImage *getImage(void)
@@ -39,7 +41,7 @@ static IplImage *getImage(void)
     do {
         image = cvQueryFrame(cv_cap);
         ++buffer;
-    } while(buffer != 30);
+    } while(buffer <= OPENCV_IMAGE_BUFFER_LENGTH);
 
     if(camera_matrix && distortion_coeffs) {
         IplImage *image_temp = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
