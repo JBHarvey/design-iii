@@ -314,3 +314,78 @@ Test(BehaviorBuilder,
     Flags_delete(irrelevant_flags);
     Behavior_delete(built_behavior);
 }
+
+Test(BehaviorBuilder, given__when_buildingABehaviorWithFreePoseEntry_then_theXYAndThetaToleranceHaveMaxValues)
+{
+
+    struct Flags* comparison_flags = Flags_new();
+    struct Behavior *built_behavior = BehaviorBuilder_build(
+                                          BehaviorBuilder_withFreePoseEntry(
+                                                  BehaviorBuilder_end()));
+
+    int are_equal = validate_behavior_has_parameters(
+                        built_behavior,
+                        DEFAULT_GOAL_X,
+                        DEFAULT_GOAL_Y,
+                        DEFAULT_GOAL_THETA,
+                        X_TOLERANCE_MAX,
+                        Y_TOLERANCE_MAX,
+                        THETA_TOLERANCE_MAX,
+                        comparison_flags,
+                        &Behavior_idle);
+
+    cr_assert(are_equal);
+
+    Behavior_delete(built_behavior);
+    Flags_delete(comparison_flags);
+}
+
+Test(BehaviorBuilder,
+     given__when_buildingABehaviorWithTrajectoryEntry_then_theThetaToleranceHaveMaxValuesAndItsFlagsAreIrrelevant)
+{
+
+    struct Flags *irrelevant_flags = Flags_irrelevant();
+    struct Behavior *built_behavior = BehaviorBuilder_build(
+                                          BehaviorBuilder_withFreeTrajectoryEntry(
+                                                  BehaviorBuilder_end()));
+
+    int are_equal = validate_behavior_has_parameters(
+                        built_behavior,
+                        DEFAULT_GOAL_X,
+                        DEFAULT_GOAL_Y,
+                        DEFAULT_GOAL_THETA,
+                        X_TOLERANCE_DEFAULT,
+                        Y_TOLERANCE_DEFAULT,
+                        THETA_TOLERANCE_MAX,
+                        irrelevant_flags,
+                        &Behavior_idle);
+
+    cr_assert(are_equal);
+
+    Flags_delete(irrelevant_flags);
+    Behavior_delete(built_behavior);
+}
+
+Test(BehaviorBuilder, given__when_buildingABehaviorWithFreeFlagsEntry_then_itsFlagsEntryConditionAreIrrelevant)
+{
+    struct Flags *irrelevant_flags = Flags_irrelevant();
+    struct Behavior *built_behavior = BehaviorBuilder_build(
+                                          BehaviorBuilder_withFreeFlagsEntry(
+                                                  BehaviorBuilder_end()));
+
+
+    int are_equal = validate_behavior_has_parameters(
+                        built_behavior,
+                        DEFAULT_GOAL_X,
+                        DEFAULT_GOAL_Y,
+                        DEFAULT_GOAL_THETA,
+                        X_TOLERANCE_DEFAULT,
+                        Y_TOLERANCE_DEFAULT,
+                        THETA_TOLERANCE_DEFAULT,
+                        irrelevant_flags,
+                        &Behavior_idle);
+    cr_assert(are_equal);
+
+    Flags_delete(irrelevant_flags);
+    Behavior_delete(built_behavior);
+}

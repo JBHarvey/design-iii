@@ -7,12 +7,14 @@ struct Navigator *Navigator_new(void)
     struct Map *new_navigable_map = NULL;
     struct Graph *new_graph = Graph_new();
     int new_oriented_before_last_command_value = 0;
+    struct CoordinatesSequence *new_planned_trajectory = NULL;
     struct Navigator *pointer =  malloc(sizeof(struct Navigator));
 
     pointer->object = new_object;
     pointer->navigable_map = new_navigable_map;
     pointer->graph = new_graph;
     pointer->was_oriented_before_last_command = new_oriented_before_last_command_value;
+    pointer->planned_trajectory = new_planned_trajectory;
 
     return pointer;
 }
@@ -26,6 +28,10 @@ void Navigator_delete(struct Navigator *navigator)
 
         if(navigator->navigable_map != NULL) {
             Map_delete(navigator->navigable_map);
+        }
+
+        if(navigator->planned_trajectory != NULL) {
+            CoordinatesSequence_delete(navigator->planned_trajectory);
         }
 
         Graph_delete(navigator->graph);
@@ -157,7 +163,14 @@ void Navigator_navigateRobotTowardsGoal(struct Robot *robot)
 
 void Navigator_planTowardsAntennaStart(struct Robot *robot)
 {
+    struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
+    struct Coordinates *antenna_start_coordinates = robot->navigator->navigable_map->antenna_zone_start;
+    struct CoordinatesSequence *trajectory_to_antenna_start = CoordinatesSequence_new(current_coordinates);
+    CoordinatesSequence_append(trajectory_to_antenna_start, antenna_start_coordinates);
+
+    robot->navigator->planned_trajectory = trajectory_to_antenna_start;
     RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
+    RobotBehaviors_appendTrajectoryBehaviors(robot, trajectory_to_antenna_start);
 }
 
 int Navigator_computeRotationToleranceForPrecisionMovement(int planned_distance)

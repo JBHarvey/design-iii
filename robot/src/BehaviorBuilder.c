@@ -61,12 +61,32 @@ struct Behavior* BehaviorBuilder_default(void)
 
 struct BehaviorBuilder* BehaviorBuilder_withFreeEntry(struct BehaviorBuilder *behavior_builder)
 {
+    behavior_builder = BehaviorBuilder_withFreePoseEntry(behavior_builder);
+    behavior_builder = BehaviorBuilder_withFreeFlagsEntry(behavior_builder);
+    return behavior_builder;
+}
+
+struct BehaviorBuilder* BehaviorBuilder_withFreeFlagsEntry(struct BehaviorBuilder *behavior_builder)
+{
     struct Flags *irrelevant = Flags_irrelevant();
+    behavior_builder = BehaviorBuilder_withFlags(irrelevant, behavior_builder);
+    Flags_delete(irrelevant);
+    return behavior_builder;
+}
+
+
+struct BehaviorBuilder* BehaviorBuilder_withFreePoseEntry(struct BehaviorBuilder *behavior_builder)
+{
     behavior_builder = BehaviorBuilder_withTolerancesX(X_TOLERANCE_MAX, behavior_builder);
     behavior_builder = BehaviorBuilder_withTolerancesY(Y_TOLERANCE_MAX, behavior_builder);
     behavior_builder = BehaviorBuilder_withTolerancesTheta(THETA_TOLERANCE_MAX, behavior_builder);
-    behavior_builder = BehaviorBuilder_withFlags(irrelevant, behavior_builder);
-    Flags_delete(irrelevant);
+    return behavior_builder;
+}
+
+struct BehaviorBuilder* BehaviorBuilder_withFreeTrajectoryEntry(struct BehaviorBuilder *behavior_builder)
+{
+    behavior_builder = BehaviorBuilder_withTolerancesTheta(THETA_TOLERANCE_MAX, behavior_builder);
+    behavior_builder = BehaviorBuilder_withFreeFlagsEntry(behavior_builder);
     return behavior_builder;
 }
 
