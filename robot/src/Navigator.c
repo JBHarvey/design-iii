@@ -48,18 +48,8 @@ void Navigator_updateNavigableMap(struct Robot *robot)
     }
 }
 
-void Navigator_navigateRobotTowardsGoal(struct Robot *robot)
-{
-    struct Command_Speeds speeds_command = {
-        .x = 0,
-        .y = 0
-    };
-    CommandSender_sendSpeedsCommand(robot->command_sender, speeds_command);
-}
-
 int Navigator_isAngleWithinRotationTolerance(int angle)
 {
-
     if(angle > HALF_PI) {
         angle -= HALF_PI;
     }
@@ -79,6 +69,68 @@ int Navigator_isAngleWithinRotationTolerance(int angle)
 
     return is_within;
 }
+
+static void sendSpeedsCommand(struct Robot *robot, int x, int y)
+{
+    struct Command_Speeds speeds_command = {
+        .x = x,
+        .y = y
+    };
+    CommandSender_sendSpeedsCommand(robot->command_sender, speeds_command);
+}
+
+static void sendRotationCommand(struct Robot *robot, int angle_to_target)
+{
+
+    int theta;
+    int tolerance = THETA_TOLERANCE_DEFAULT;
+
+    while(angle_to_target > QUARTER_PI) {
+        angle_to_target -= HALF_PI;
+    }
+
+    while(angle_to_target < MINUS_QUARTER_PI) {
+        angle_to_target += HALF_PI;
+    }
+
+    if(angle_to_target < tolerance && angle_to_target > (-1 * tolerance)) {
+        theta = 0;
+    } else if(angle_to_target > tolerance) {
+        theta = angle_to_target;
+    } else if(angle_to_target < (-1 * tolerance)) {
+        theta = angle_to_target;
+    }
+
+    struct Command_Rotate rotate_command = {
+        .theta = theta
+    };
+
+    CommandSender_sendRotateCommand(robot->command_sender, rotate_command);
+}
+
+void Navigator_navigateRobotTowardsGoal(struct Robot *robot)
+{
+    struct Coordinates *goal_coordinates = robot->behavior->first_child->entry_conditions->goal_state->pose->coordinates;
+    struct Pose *current_pose = robot->current_state->pose;
+    int angle_between_robot_and_target = Pose_computeAngleBetween(current_pose, goal_coordinates);
+    int was_oriented = robot->navigator->was_oriented_before_last_command;
+    int is_oriented = Navigator_isAngleWithinRotationTolerance(angle_between_robot_and_target);
+
+    if(!is_oriented) {
+        robot->navigator->was_oriented_before_last_command = 0;
+        sendRotationCommand(robot, angle_between_robot_and_target);
+    } else {
+        robot->navigator->was_oriented_before_last_command = 1;
+
+        if(was_oriented) {
+            sendSpeedsCommand(robot, 0, 0);
+        } else {
+            sendRotationCommand(robot, angle_between_robot_and_target);
+        }
+    }
+
+}
+
 
 int Navigator_computeRotationToleranceForPrecisionMovement(int planned_distance)
 {
