@@ -160,7 +160,6 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 
 
         case DATA_ESTIMATED_ROBOT_POSITION: {
-
                 break;
             }
 
@@ -173,9 +172,7 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 
         case SIGNAL_READY_TO_DRAW: {
                 Logger_startRobotConnectionHandlerSectionAndAppend("Robot signaled that he is ready to draw.");
-
-                //TODO Recalibration with the green square.
-
+                WorldVision_recalibrateForDrawing();
                 StationClientSender_sendReadyToDrawSignalReceivedAck();
                 break;
             }
@@ -183,6 +180,7 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
         case SIGNAL_END_OF_CYCLE: {
                 Logger_startRobotConnectionHandlerSectionAndAppend("Robot signaled that the cycle is completed.");
                 Timer_stop();
+                WorldVision_recalibrateForMoving();
                 StationInterface_activateStartCycleButton();
                 StationClientSender_sendEndOfCycleSignalReceivedAck();
                 break;

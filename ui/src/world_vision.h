@@ -16,7 +16,7 @@
 
 /* Type definitions */
 
-enum CameraStatus {UNCALIBRATED, INTRINSICALLY_CALIBRATED, INTRINSICALLY_AND_EXTRINSICALLY_CALIBRATED, FULLY_CALIBRATED};
+enum CameraStatus {UNCALIBRATED, INTRINSICALLY_CALIBRATED, FULLY_CALIBRATED};
 
 struct CameraCapture {
     CvCapture *camera_capture_feed;
@@ -52,8 +52,12 @@ void WorldVision_applyWorldCameraBackFrame(void);
 void WorldVision_createWorldCameraFrameSafeCopy(void);
 
 void WorldVision_sendWorldInformationToRobot(struct Communication_Object robot,
-        struct Communication_Object obstacles[MAXIMUM_OBSTACLE_NUMBER]);
+        struct Communication_Object obstacles[MAXIMUM_OBSTACLE_NUMBER], int environment_has_changed);
 
 void WorldVision_setPlannedTrajectory(struct Point3DSet *world_trajectory);
+
+void WorldVision_recalibrateForDrawing(void);
+
+void WorldVision_recalibrateForMoving(void);
 
 #endif // __WORLD_VISION

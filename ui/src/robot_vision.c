@@ -29,4 +29,3 @@ void RobotVision_finalize(void)
     cvReleaseImage(&robot_vision_image);
 }
 
-

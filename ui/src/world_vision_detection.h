@@ -31,3 +31,6 @@ struct Point2DSet *WorldVisionDetection_getDetectedTableCorners(void);
 
 struct Point2DSet *WorldVisionDetection_getDetectedGreenSquareCorners(void);
 
+void WorldVisionDetection_setRobotStateToMoving(void);
+
+void WorldVisionDetection_setRobotStateToDrawing(void);
