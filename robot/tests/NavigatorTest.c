@@ -494,6 +494,101 @@ Test(Navigator,
     Pose_delete(robot_pose);
 }
 
+Test(Navigator,
+     given_aRobotOrientedWithItsGoalToTheEast_when_askedToNavigateTowardsGoal_then_theSpeedsCommandIsSentWithPositiveXAndZeroY
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+    struct Pose *robot_pose = Pose_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y, 0);
+    Pose_copyValuesFrom(robot->current_state->pose, robot_pose);
+
+    struct Coordinates *target_coordinates = Coordinates_new(NAVIGATOR_ROBOT_X + TARGET_DELTA_X, NAVIGATOR_ROBOT_Y);
+    updateRobotGoalCoordinatesTo(target_coordinates);
+
+    navigator->was_oriented_before_last_command = 1;
+    Navigator_navigateRobotTowardsGoal(robot);
+
+    cr_assert(rotation_validator != COMMAND_SENT);
+    cr_assert(speeds_validator == COMMAND_SENT);
+
+    cr_assert(sent_speeds_command_x > 0);
+    cr_assert(sent_speeds_command_y == 0);
+
+    Coordinates_delete(target_coordinates);
+    Pose_delete(robot_pose);
+}
+
+Test(Navigator,
+     given_aRobotOrientedWithItsGoalToTheNorth_when_askedToNavigateTowardsGoal_then_theSpeedsCommandIsSentWithZeroXAndPositiveY
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+    struct Pose *robot_pose = Pose_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y, 0);
+    Pose_copyValuesFrom(robot->current_state->pose, robot_pose);
+
+    struct Coordinates *target_coordinates = Coordinates_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y + TARGET_DELTA_Y);
+    updateRobotGoalCoordinatesTo(target_coordinates);
+
+    navigator->was_oriented_before_last_command = 1;
+    Navigator_navigateRobotTowardsGoal(robot);
+
+    cr_assert(rotation_validator != COMMAND_SENT);
+    cr_assert(speeds_validator == COMMAND_SENT);
+
+    cr_assert(sent_speeds_command_x == 0);
+    cr_assert(sent_speeds_command_y > 0);
+
+    Coordinates_delete(target_coordinates);
+    Pose_delete(robot_pose);
+}
+
+Test(Navigator,
+     given_aRobotOrientedWithItsGoalToTheSouth_when_askedToNavigateTowardsGoal_then_theSpeedsCommandIsSentWithZeroXAndNegativeY
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+    struct Pose *robot_pose = Pose_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y, 0);
+    Pose_copyValuesFrom(robot->current_state->pose, robot_pose);
+
+    struct Coordinates *target_coordinates = Coordinates_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y - TARGET_DELTA_Y);
+    updateRobotGoalCoordinatesTo(target_coordinates);
+
+    navigator->was_oriented_before_last_command = 1;
+    Navigator_navigateRobotTowardsGoal(robot);
+
+    cr_assert(rotation_validator != COMMAND_SENT);
+    cr_assert(speeds_validator == COMMAND_SENT);
+
+    cr_assert(sent_speeds_command_x == 0, "Angle to target : %d \n", sent_speeds_command_x);
+    cr_assert(sent_speeds_command_y < 0);
+
+    Coordinates_delete(target_coordinates);
+    Pose_delete(robot_pose);
+}
+
+Test(Navigator,
+     given_aRobotOrientedWithItsGoalToTheWest_when_askedToNavigateTowardsGoal_then_theSpeedsCommandIsSentWithNegativeXAndZeroY
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+    struct Pose *robot_pose = Pose_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y, 0);
+    Pose_copyValuesFrom(robot->current_state->pose, robot_pose);
+
+    struct Coordinates *target_coordinates = Coordinates_new(NAVIGATOR_ROBOT_X - TARGET_DELTA_X, NAVIGATOR_ROBOT_Y);
+    updateRobotGoalCoordinatesTo(target_coordinates);
+
+    navigator->was_oriented_before_last_command = 1;
+    Navigator_navigateRobotTowardsGoal(robot);
+
+    cr_assert(rotation_validator != COMMAND_SENT);
+    cr_assert(speeds_validator == COMMAND_SENT);
+
+    cr_assert(sent_speeds_command_x < 0);
+    cr_assert(sent_speeds_command_y == 0);
+
+    Coordinates_delete(target_coordinates);
+    Pose_delete(robot_pose);
+}
 
 void assertEqualityWithTolerance(int expected_value, int received_value, int tolerance)
 {
