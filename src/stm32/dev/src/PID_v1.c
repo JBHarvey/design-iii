@@ -52,7 +52,7 @@ void PID_init(PidType* pid, FloatType Kp, FloatType Ki, FloatType Kd,
 	PID_SetOutputLimits(pid, 0, 0xffff);
 
 	//default Controller Sample Time is 0.1 seconds
-	pid->SampleTime = PID_SAMPLE_TIME;
+	pid->SampleTime = 10;
 
 	PID_SetControllerDirection(pid, ControllerDirection);
 	PID_SetTunings(pid, Kp, Ki, Kd);
@@ -545,6 +545,72 @@ void computeCustomPIDS(uint8_t *mainState) {
 			stopMove();
 			setState(mainState, MAIN_IDLE);
 		}
+	}
+}
+
+void computeSpeedPIDS() {
+
+	if (PID_Compute_Speed(&PID_SPEED1)) {
+		int cmdMotor1 = PID_SPEED1.myOutput;
+		if (cmdMotor1 > 0) {
+			MotorSetDirection(1, COUNTER_CLOCK);
+		} else if (cmdMotor1 < 0) {
+			MotorSetDirection(1, CLOCK);
+			cmdMotor1 = -cmdMotor1;
+		} else {
+			speedDirection1 = SPEED_DIRECTION_NONE;
+			MotorSetDirection(1, BRAKE_V);
+		}
+
+		MotorSetSpeed(1, cmdMotor1);
+		PID_SetMode(&PID_SPEED1, PID_Mode_Manual);
+	}
+
+	if (PID_Compute_Speed(&PID_SPEED2)) {
+		int cmdMotor2 = PID_SPEED2.myOutput;
+		if (cmdMotor2 > 0) {
+			MotorSetDirection(2, COUNTER_CLOCK);
+		} else if (cmdMotor2 < 0) {
+			MotorSetDirection(2, CLOCK);
+			cmdMotor2 = -cmdMotor2;
+		} else {
+			speedDirection2 = SPEED_DIRECTION_NONE;
+			MotorSetDirection(2, BRAKE_V);
+		}
+
+		MotorSetSpeed(2, cmdMotor2);
+		PID_SetMode(&PID_SPEED2, PID_Mode_Manual);
+	}
+
+	if (PID_Compute_Speed(&PID_SPEED3)) {
+		int cmdMotor3 = PID_SPEED3.myOutput;
+		if (cmdMotor3 > 0) {
+			MotorSetDirection(3, CLOCK);
+		} else if (cmdMotor3 < 0) {
+			MotorSetDirection(3, COUNTER_CLOCK);
+			cmdMotor3 = -cmdMotor3;
+		} else {
+			speedDirection3 = SPEED_DIRECTION_NONE;
+			MotorSetDirection(3, BRAKE_V);
+		}
+
+		MotorSetSpeed(3, cmdMotor3);
+		PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
+	}
+
+	if (PID_Compute_Speed(&PID_SPEED4)) {
+		int cmdMotor4 = PID_SPEED4.myOutput;
+		if (cmdMotor4 > 0) {
+			MotorSetDirection(4, CLOCK);
+		} else if (cmdMotor4 < 0) {
+			MotorSetDirection(4, COUNTER_CLOCK);
+			cmdMotor4 = -cmdMotor4;
+		} else {
+			speedDirection4 = SPEED_DIRECTION_NONE;
+			MotorSetDirection(4, BRAKE_V);
+		}
+		MotorSetSpeed(4, cmdMotor4);
+		PID_SetMode(&PID_SPEED4, PID_Mode_Manual);
 	}
 }
 
