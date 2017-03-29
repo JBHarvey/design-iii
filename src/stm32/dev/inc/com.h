@@ -39,10 +39,8 @@ extern uint8_t bFlagSendData;
 #include "tm_stm32f4_usb_vcp.h"
 
 uint8_t readUSB();
-void sendMoveMeasures(int numberOfPositionEdges1, int numberOfPositionEdges2,
-		int numberOfPositionEdges3, int numberOfPositionEdges4,
-		int numberOfSpeedEdges1, int numberOfSpeedEdges2,
-		int numberOfSpeedEdges3, int numberOfSpeedEdges4);
+void sendMoveMeasures(float positionX, float positionY, float speedX,
+		float speedY);
 
 void sendRedLightConfirmation();
 
