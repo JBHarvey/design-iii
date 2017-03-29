@@ -31,6 +31,7 @@ struct Robot *Robot_new(void)
     pointer->command_sender = new_command_sender;
 
     RobotBehaviors_prepareInitialBehaviors(pointer);
+    pointer->first_behavior = pointer->current_behavior;
 
     return pointer;
 }
@@ -45,7 +46,7 @@ void Robot_delete(struct Robot *robot)
         ManchesterCode_delete(robot->manchester_code);
         Wheels_delete(robot->wheels);
         WorldCamera_delete(robot->world_camera);
-        Behavior_delete(robot->behavior);
+        Behavior_delete(robot->first_behavior);
         Navigator_delete(robot->navigator);
         DataSender_delete(robot->data_sender);
         CommandSender_delete(robot->command_sender);

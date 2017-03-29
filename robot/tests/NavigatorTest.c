@@ -204,7 +204,7 @@ Test(Navigator,
 
 void updateRobotGoalCoordinatesTo(struct Coordinates *coordinates)
 {
-    Coordinates_copyValuesFrom(robot->behavior->first_child->entry_conditions->goal_state->pose->coordinates,
+    Coordinates_copyValuesFrom(robot->current_behavior->first_child->entry_conditions->goal_state->pose->coordinates,
                                coordinates);
 }
 

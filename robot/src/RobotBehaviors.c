@@ -4,9 +4,9 @@
 void RobotBehaviors_prepareInitialBehaviors(struct Robot *robot)
 {
     void (*initial_action)(struct Robot*) = &Navigator_updateNavigableMap;
-    robot->behavior = BehaviorBuilder_build(
-                          BehaviorBuilder_withAction(initial_action,
-                                  BehaviorBuilder_end()));
+    robot->current_behavior = BehaviorBuilder_build(
+                                  BehaviorBuilder_withAction(initial_action,
+                                          BehaviorBuilder_end()));
 
 
     void (*sendReadyToStart)(struct Robot *) = &Robot_sendReadyToStartSignal;
@@ -18,7 +18,7 @@ void RobotBehaviors_prepareInitialBehaviors(struct Robot *robot)
                                           BehaviorBuilder_withAction(sendReadyToStart,
                                                   BehaviorBuilder_end())));
 
-    Behavior_addChild(robot->behavior, behavior_send_ready_to_start_when_map_is_navigable);
+    Behavior_addChild(robot->current_behavior, behavior_send_ready_to_start_when_map_is_navigable);
 
     Flags_delete(map_is_ready_flags);
 

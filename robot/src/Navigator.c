@@ -132,7 +132,8 @@ static void sendRotationCommand(struct Robot *robot, int angle_to_target)
 
 void Navigator_navigateRobotTowardsGoal(struct Robot *robot)
 {
-    struct Coordinates *goal_coordinates = robot->behavior->first_child->entry_conditions->goal_state->pose->coordinates;
+    struct Coordinates *goal_coordinates =
+            robot->current_behavior->first_child->entry_conditions->goal_state->pose->coordinates;
     struct Pose *current_pose = robot->current_state->pose;
     int angle_between_robot_and_target = Pose_computeAngleBetween(current_pose, goal_coordinates);
     int was_oriented = robot->navigator->was_oriented_before_last_command;

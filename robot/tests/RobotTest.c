@@ -21,10 +21,10 @@ Test(Robot, creation_destruction)
     cr_assert_eq(robot->manchester_code->painting_number, manchester_code->painting_number);
     cr_assert_eq(robot->manchester_code->scale_factor, manchester_code->scale_factor);
     cr_assert_eq(robot->manchester_code->orientation, manchester_code->orientation);
-    cr_assert_eq(robot->behavior->action, initial_behavior_action);
+    cr_assert_eq(robot->first_behavior->action, initial_behavior_action);
 
 
-    struct Behavior *second_behavior = robot->behavior->first_child;
+    struct Behavior *second_behavior = robot->first_behavior->first_child;
     void (*second_behavior_action)(struct Robot *) = &Robot_sendReadyToStartSignal;
     struct Flags *second_flags = second_behavior->entry_conditions->goal_state->flags;
     struct Flags *map_is_ready_flags = Flags_new();

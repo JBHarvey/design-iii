@@ -10,7 +10,8 @@ struct Robot {
     struct ManchesterCode *manchester_code;
     struct Wheels *wheels;
     struct WorldCamera *world_camera;
-    struct Behavior *behavior;
+    struct Behavior *first_behavior;
+    struct Behavior *current_behavior;
     struct Navigator *navigator;
     struct DataSender *data_sender;
     struct CommandSender *command_sender;
