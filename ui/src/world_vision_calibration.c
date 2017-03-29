@@ -157,8 +157,6 @@ static void computeCameraPose(struct Camera *input_camera)
                                  input_camera->camera_intrinsics->distortion_coefficients,
                                  input_camera->camera_extrinsics->rotation_vector,
                                  input_camera->camera_extrinsics->translation_vector, 0);
-
-    double reprojection_error = checkReprojectionErrorOnCameraPose(input_camera);
 }
 
 static void computePlaneEquation(struct Camera *input_camera)
