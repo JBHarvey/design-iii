@@ -143,9 +143,9 @@ Test(vision, detectMarker)
     struct Marker marker = detectMarker(image);
 
     cr_assert(marker.valid);
-    cr_assert(in_range(marker.x, 877, 0.02));
-    cr_assert(in_range(marker.y, 290, 0.02));
-    cr_assert(in_range(marker.angle, -0.22, 0.02));
+    cr_assert(in_range_pixels(marker.x, 876, 1));
+    cr_assert(in_range_pixels(marker.y, 290, 1));
+    cr_assert(in_range(marker.angle, -0.22, 0.01));
     cvReleaseImage(&image);
 }
 

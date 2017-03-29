@@ -27,13 +27,13 @@ extern GMutex world_vision_camera_intrinsics_mutex;
 enum CameraCalibrationProcessMode world_camera_calibration_process_mode = NONE;
 struct Point2DSet *image_point_set_defining_the_corners_of_the_table;
 struct Point3DSet *object_point_set_defining_the_corners_of_the_table;
+struct Point2DSet *image_point_set_defining_the_corners_of_the_green_square;
+struct Point3DSet *object_point_set_defining_the_corners_of_the_green_square;
 
-static void initializePointsArraysForCameraPoseComputation(void)
+static void initializeTablePointsArraysForCameraPoseComputation(void)
 {
-    //image_point_set_defining_the_corners_of_the_table = PointTypes_initializePoint2DSet(NUMBER_OF_CORNERS_OF_THE_TABLE);
     image_point_set_defining_the_corners_of_the_table = WorldVisionDetection_getDetectedTableCorners();
     object_point_set_defining_the_corners_of_the_table = PointTypes_initializePoint3DSet(NUMBER_OF_CORNERS_OF_THE_TABLE);
-
 
     PointTypes_addPointToPoint3DSet(object_point_set_defining_the_corners_of_the_table, PointTypes_createPoint3D(0, 0, 0));
     PointTypes_addPointToPoint3DSet(object_point_set_defining_the_corners_of_the_table, PointTypes_createPoint3D(0,
@@ -41,15 +41,23 @@ static void initializePointsArraysForCameraPoseComputation(void)
     PointTypes_addPointToPoint3DSet(object_point_set_defining_the_corners_of_the_table,
                                     PointTypes_createPoint3D(LENGTH_OF_THE_TABLE_IN_MM, WIDTH_OF_THE_TABLE_IN_MM, 0));
     PointTypes_addPointToPoint3DSet(object_point_set_defining_the_corners_of_the_table,
-                                    PointTypes_createPoint3D(LENGTH_OF_THE_TABLE_IN_MM, 0, 0));
-    /* PointTypes_addPointToPoint3DSet(object_point_set_defining_the_green_square, PointTypes_createPoint3D(0, 0, 0));
-     PointTypes_addPointToPoint3DSet(object_point_set_defining_the_green_square, PointTypes_createPoint3D(0,
-                                     WIDTH_OF_THE_GREEN_SQUARE_IN_MM, 0));
-     PointTypes_addPointToPoint3DSet(object_point_set_defining_the_green_square,
-                                     PointTypes_createPoint3D(WIDTH_OF_THE_GREEN_SQUARE_IN_MM, WIDTH_OF_THE_GREEN_SQUARE_IN_MM, 0));
-     PointTypes_addPointToPoint3DSet(object_point_set_defining_the_green_square,
-                                     PointTypes_createPoint3D(WIDTH_OF_THE_GREEN_SQUARE_IN_MM, 0, 0));*/
 }
+
+static void initializeGreenSquarePointsArraysForCameraPoseComputation(void)
+{
+    image_point_set_defining_the_corners_of_the_green_square = WorldVisionDetection_getDetectedGreenSquareCorners();
+    object_point_set_defining_the_corners_of_the_green_square = PointTypes_initializePoint3DSet(
+                NUMBER_OF_CORNERS_OF_GREEN_SQUARE);
+
+    PointTypes_addPointToPoint3DSet(object_point_set_defining_the_green_square, PointTypes_createPoint3D(0, 0, 0));
+    PointTypes_addPointToPoint3DSet(object_point_set_defining_the_green_square, PointTypes_createPoint3D(0,
+                                    WIDTH_OF_THE_GREEN_SQUARE_IN_MM, 0));
+    PointTypes_addPointToPoint3DSet(object_point_set_defining_the_green_square,
+                                    PointTypes_createPoint3D(WIDTH_OF_THE_GREEN_SQUARE_IN_MM, WIDTH_OF_THE_GREEN_SQUARE_IN_MM, 0));
+    PointTypes_addPointToPoint3DSet(object_point_set_defining_the_green_square,
+                                    PointTypes_createPoint3D(WIDTH_OF_THE_GREEN_SQUARE_IN_MM, 0, 0));
+}
+
 
 static gboolean gatherUserPointsForCalibration(int point_index)
 {
@@ -335,21 +343,16 @@ gboolean WorldVisionCalibration_calibrate(struct Camera * input_camera)
     //releaseGatheredUserPointsForCalibration(input_camera);
     double reprojection_error;
 
-    do {
-        while(!WorldVisionDetection_detectTableCorners(input_camera));
+    while(!WorldVisionDetection_detectTableCorners(input_camera));
 
-        while(!WorldVisionDetection_detectGreenSquareCorners(input_camera));
-
-        initializePointsArraysForCameraPoseComputation();
-        computeCameraPose(input_camera);
-        reprojection_error = checkReprojectionErrorOnCameraPose(input_camera);
-        Logger_append("\n Reprojection error on camera pose: ");
-        Logger_appendDouble(reprojection_error);
-        computePlaneEquation(input_camera);
-        releasePointsUsedForCalibration(input_camera);
-
-    } while(reprojection_error > 1.0);
-
+    //while(!WorldVisionDetection_detectGreenSquareCorners(input_camera));
+    initializePointsArraysForCameraPoseComputation();
+    computeCameraPose(input_camera);
+    reprojection_error = checkReprojectionErrorOnCameraPose(input_camera);
+    Logger_append("\n Reprojection error on camera pose: ");
+    Logger_appendDouble(reprojection_error);
+    computePlaneEquation(input_camera);
+    releasePointsUsedForCalibration(input_camera);
     Logger_startMessageSectionAndAppend("Plane equation: ");
     Logger_appendPlaneEquation(input_camera);
     input_camera->camera_status = FULLY_CALIBRATED;

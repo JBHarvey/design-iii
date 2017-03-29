@@ -1,37 +1,9 @@
 #include "station_client_sender.h"
 #include "station_client.h"
 #include "station_interface.h"
+#include "Defines.h"
 
 // Fake data
-#define ANGLE_BASE_UNIT 0.00001
-#define QUARTER_PI 78540
-#define HALF_PI 157080
-#define THREE_QUARTER_PI 235620
-#define PI 314160
-#define MINUS_PI -314160
-#define MINUS_THREE_QUARTER_PI -235620
-#define MINUS_HALF_PI -157080
-#define MINUS_QUARTER_PI -78540
-#define THEORICAL_OBSTACLE_RADIUS 625
-const int RECEIVER_TEST_ROBOT_RADIUS = 1750;
-const int RECEIVER_TEST_ROBOT_X = 9000;
-const int RECEIVER_TEST_ROBOT_Y = 5000;
-const int RECEIVER_TEST_ROBOT_THETA = PI;
-const int MAP_TABLE_HEIGHT = 11000;
-const int MAP_TABLE_LENGTH = 20000;
-const int MAP_DRAWING_SIDE = 6600;
-const int ANTENNA_ZONE_X = 10000;
-const int ANTENNA_ZONE_Y = 10000;
-const int ANTENNA_ZONE_LENGTH = 6000;
-const int TEST_OBSTACLE_0_X = 1250;
-const int TEST_OBSTACLE_0_Y = 3250;
-const int TEST_OBSTACLE_0_ORIENTATION = HALF_PI;
-const int TEST_OBSTACLE_1_X = 5500;
-const int TEST_OBSTACLE_1_Y = 4500;
-const int TEST_OBSTACLE_1_ORIENTATION = MINUS_HALF_PI;
-const int TEST_OBSTACLE_2_X = 7000;
-const int TEST_OBSTACLE_2_Y = 2500;
-const int TEST_OBSTACLE_2_ORIENTATION = 0;
 const int TEST_PAINTING_0_X = 4060;
 const int TEST_PAINTING_0_Y = 2500;
 const int TEST_PAINTING_0_ORIENTATION = MINUS_HALF_PI;
@@ -91,51 +63,28 @@ void StationClientSender_sendWorldInformationsToRobot(struct Communication_Objec
 
     struct Communication_World communication_world = {
         .environment = {
-            .north_eastern_table_corner = {.x = MAP_TABLE_LENGTH, .y = MAP_TABLE_HEIGHT},
-            .north_western_table_corner = {.x = 0, .y = MAP_TABLE_HEIGHT},
-            .south_eastern_table_corner = {.x = MAP_TABLE_LENGTH, .y = 0},
+            .north_eastern_table_corner = {.x = THEORICAL_WORLD_LENGTH, .y = THEORICAL_WORLD_HEIGHT},
+            .north_western_table_corner = {.x = 0, .y = THEORICAL_WORLD_HEIGHT},
+            .south_eastern_table_corner = {.x = THEORICAL_WORLD_LENGTH, .y = 0},
             .south_western_table_corner = {.x = 0, .y = 0},
-            .north_eastern_drawing_corner = {.x = MAP_DRAWING_SIDE, .y = MAP_DRAWING_SIDE},
-            .north_western_drawing_corner = {.x = 0, .y = MAP_DRAWING_SIDE},
-            .south_eastern_drawing_corner = {.x = MAP_DRAWING_SIDE, .y = 0},
-            .south_western_drawing_corner = {.x = 0, .y = 0},
-            .antenna_zone_start = {.x = ANTENNA_ZONE_X + ANTENNA_ZONE_LENGTH, .y = ANTENNA_ZONE_Y},
-            .antenna_zone_stop = {.x = ANTENNA_ZONE_X, .y = ANTENNA_ZONE_Y},
-            .obstacles = {
-                {
-                    // Obstacle 0
-                    .zone = {
-                        .pose = {
-                            .coordinates = { .x = TEST_OBSTACLE_0_X, .y = TEST_OBSTACLE_0_Y },
-                            .theta = TEST_OBSTACLE_0_ORIENTATION
-                        },
-                        .index = 0
-                    },
-                    .radius = THEORICAL_OBSTACLE_RADIUS
-                },
-                {
-                    // Obstacle 1
-                    .zone = {
-                        .pose = {
-                            .coordinates = { .x = TEST_OBSTACLE_1_X, .y = TEST_OBSTACLE_1_Y },
-                            .theta = TEST_OBSTACLE_1_ORIENTATION
-                        },
-                        .index = 1
-                    },
-                    .radius = THEORICAL_OBSTACLE_RADIUS
-                },
-                {
-                    // Obstacle 2
-                    .zone = {
-                        .pose = {
-                            .coordinates = { .x = TEST_OBSTACLE_2_X, .y = TEST_OBSTACLE_2_Y },
-                            .theta = TEST_OBSTACLE_2_ORIENTATION
-                        },
-                        .index = 2
-                    },
-                    .radius = THEORICAL_OBSTACLE_RADIUS
-                },
+            .north_eastern_drawing_corner = {
+                .x = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_X,
+                .y = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_Y + THEORICAL_DRAWING_ZONE_SIDE
             },
+            .north_western_drawing_corner = {
+                .x = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_X - THEORICAL_DRAWING_ZONE_SIDE,
+                .y = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_Y + THEORICAL_DRAWING_ZONE_SIDE
+            },
+            .south_eastern_drawing_corner = {
+                .x = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_X,
+                .y = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_Y
+            },
+            .south_western_drawing_corner = {
+                .x = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_X - THEORICAL_DRAWING_ZONE_SIDE,
+                .y = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_Y
+            },
+            .antenna_zone_start = {.x = THEORICAL_ANTENNA_ZONE_START_X, .y = THEORICAL_ANTENNA_ZONE_Y},
+            .antenna_zone_stop = {.x = THEORICAL_ANTENNA_ZONE_STOP_X, .y = THEORICAL_ANTENNA_ZONE_Y},
             .painting_zone = {
                 {
                     // Painting zone 0
@@ -203,19 +152,9 @@ void StationClientSender_sendWorldInformationsToRobot(struct Communication_Objec
                 }
             }
         },
-        .environment_has_changed = 1,
-        .robot = {
-            .zone = {
-                .pose = {
-                    .coordinates = { .x = RECEIVER_TEST_ROBOT_X, .y = RECEIVER_TEST_ROBOT_Y },
-                    .theta = RECEIVER_TEST_ROBOT_THETA
-                },
-                .index = 0
-            },
-            .radius = RECEIVER_TEST_ROBOT_RADIUS
-        }
     };
 
+    communication_world.environment_has_changed = 1;
     communication_world.robot = robot;
     memcpy(communication_world.environment.obstacles, obstacles, num_obstacles * sizeof(struct Communication_Object));
     memcpy(data + 1, &communication_world, sizeof(struct Communication_World));
@@ -231,7 +170,7 @@ void StationClientSender_sendImageReceivedAck(void)
     addPacketToQueue(data, sizeof(data));
 }
 
-void StationClientSender_sendPlannedTrajectoryAck(void)
+void StationClientSender_sendPlannedTrajectoryReceivedAck(void)
 {
     uint8_t data[1];
     data[0] = ACK_PLANNED_TRAJECTORY_RECEIVED;
@@ -239,3 +178,26 @@ void StationClientSender_sendPlannedTrajectoryAck(void)
     addPacketToQueue(data, sizeof(data));
 }
 
+void StationClientSender_sendReadyToStartSignalReceivedAck(void)
+{
+    uint8_t data[1];
+    data[0] = ACK_READY_TO_START_RECEIVED;
+
+    addPacketToQueue(data, sizeof(data));
+}
+
+void StationClientSender_sendReadyToDrawSignalReceivedAck(void)
+{
+    uint8_t data[1];
+    data[0] = ACK_READY_TO_DRAW_RECEIVED;
+
+    addPacketToQueue(data, sizeof(data));
+}
+
+void StationClientSender_sendEndOfCycleSignalReceivedAck(void)
+{
+    uint8_t data[1];
+    data[0] = ACK_END_OF_CYCLE_RECEIVED;
+
+    addPacketToQueue(data, sizeof(data));
+}

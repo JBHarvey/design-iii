@@ -7,6 +7,7 @@ cp -u --preserve=all ../shared/CommunicationStructures.h src/.
 cp -u --preserve=all ../shared/Defines.h src/.
 cp -u --preserve=all ../vision/src/vision.c src/.
 cp -u --preserve=all ../vision/src/vision.h src/.
+cp -u --preserve=all ../vision/acceptation-tests/camera_calibration.xml utils/.
 cp -r src/* build/coverage/.
 cp -r tests/* build/coverage/.
 

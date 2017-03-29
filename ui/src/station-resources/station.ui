@@ -127,6 +127,7 @@
                   <object class="GtkButton" id="start_cycle">
                     <property name="label" translatable="yes">Start cycle</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <signal name="clicked" handler="startCycleClickedEventCallback" swapped="no"/>
