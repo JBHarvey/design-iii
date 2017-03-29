@@ -26,8 +26,6 @@
 #define CYAN CV_RGB(255, 255, 0)
 #define YELLOW CV_RGB(0, 255, 255)
 
-
-#define DETECTION_RETRY_NUMBER 5
 #define ANGLE_TOLERANCE 0.0872665
 #define POSITION_TOLERANCE 2
 
@@ -325,17 +323,8 @@ int WorldVisionDetection_detectGreenSquareCorners(struct Camera *input_camera)
 
 static void tryDetectGreenSquare(struct Camera *input_camera)
 {
-    int i;
+    if(!WorldVisionDetection_detectGreenSquareCorners(input_camera)) {
 
-    for(i = 0; i < DETECTION_RETRY_NUMBER; ++i) {
-
-        if(WorldVisionDetection_detectGreenSquareCorners(input_camera)) {
-
-            break;
-        }
-    }
-
-    if(i == DETECTION_RETRY_NUMBER) {
         detected->green_square_detected = 0;
     }
 }
