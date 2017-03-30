@@ -42,7 +42,7 @@ void RobotBehaviors_prepareInitialBehaviors(struct Robot *robot)
     Flags_setStartCycleSignalReceived(start_cycle_signal_received, 1);
     struct Behavior *behavior_plan_towards_antenna_when_start_cycle_signal_is_received;
     behavior_plan_towards_antenna_when_start_cycle_signal_is_received = BehaviorBuilder_build(
-                BehaviorBuilder_withFreePoseEntry(
+                BehaviorBuilder_withFreeEntry(
                     BehaviorBuilder_withFlags(start_cycle_signal_received,
                             BehaviorBuilder_withAction(planTowardsAntennaStart,
                                     BehaviorBuilder_withAction(planTowardsAntennaStart,
