@@ -51,6 +51,8 @@ void Navigator_updateNavigableMap(struct Robot *robot)
         Graph_updateForMap(robot->navigator->graph, robot->navigator->navigable_map);
         Sensor_readsData(robot->world_camera->map_sensor);
         // TODO: add validation that map is navigable && robot can go through the obstacles
+        // Add to tests
+        Flags_setNavigableMapIsReady(robot->current_state->flags, 1);
     }
 }
 
