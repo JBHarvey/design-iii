@@ -26,6 +26,9 @@ void Navigator_navigateRobotTowardsGoal(struct Robot *robot);
 
 void Navigator_planTowardsAntennaStart(struct Robot *robot);
 
+void Navigator_planTowardsAntennaStop(struct Robot *robot);
+
 int Navigator_computeRotationToleranceForPrecisionMovement(int planned_distance);
+
 
 #endif // NAVIGATOR_H_

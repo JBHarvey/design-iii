@@ -182,6 +182,18 @@ Test(Robot,
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
 }
 
+Test(Robot,
+     given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planTowardsAntennaStop;
+    Behavior_act(robot->current_behavior, robot);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+}
+
 void assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(struct Behavior *behavior,
         struct CoordinatesSequence *trajectory)
 {
@@ -224,13 +236,26 @@ void assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(struct Behavi
 }
 
 Test(Robot,
-     given_aBehaviorWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorFollowingThePlannedTrajectory
+     given_aBehaviorWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
     Sensor_receivesData(robot->world_camera->map_sensor);
     Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsAntennaStart;
+    Behavior_act(robot->current_behavior, robot);
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
+            robot->navigator->planned_trajectory);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planTowardsAntennaStop;
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
             robot->navigator->planned_trajectory);
