@@ -15,7 +15,7 @@ void RobotBehaviors_prepareInitialBehaviors(struct Robot *robot)
     struct Behavior *behavior_send_ready_to_start_when_map_is_navigable;
     behavior_send_ready_to_start_when_map_is_navigable = BehaviorBuilder_build(
                 BehaviorBuilder_withFlags(map_is_ready_flags,
-                                          BehaviorBuilder_withFreeEntry(
+                                          BehaviorBuilder_withFreePoseEntry(
                                                   BehaviorBuilder_withAction(sendReadyToStart,
                                                           BehaviorBuilder_end()))));
 
