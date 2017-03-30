@@ -63,7 +63,8 @@ static int thetaIsWithinToleranceOfGoal(struct Objective *objective, struct Stat
     struct Angle *goal_angle = objective->goal_state->pose->angle;
 
     int distance = Angle_smallestAngleBetween(goal_angle, current_angle);
-    return (distance <= THETA_TOLERANCE_DEFAULT);
+    int tolerance_angle = objective->tolerances->pose->angle->theta;
+    return (distance <= tolerance_angle);
 }
 
 static int flagsAreTheSame(struct Objective *objective, struct State *current_state)
