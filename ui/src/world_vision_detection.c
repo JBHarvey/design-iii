@@ -258,7 +258,7 @@ struct Point2DSet *WorldVisionDetection_getDetectedTableCorners(void)
 {
     if(detected->table_detected) {
 
-        return sortCvPoint2D32fSquareCorners(detected->table.corner);
+        return sortSquareCorners(detected->table.corner);
 
     } else {
 
@@ -270,7 +270,7 @@ struct Point2DSet *WorldVisionDetection_getDetectedGreenSquareCorners(void)
 {
     if(detected->green_square_detected) {
 
-        return sortCvPoint2D32fSquareCorners(detected->green_square.corner);
+        return sortSquareCorners(detected->green_square.corner);
 
     } else {
 

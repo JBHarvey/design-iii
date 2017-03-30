@@ -160,6 +160,14 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 
 
         case DATA_ESTIMATED_ROBOT_POSITION: {
+                struct Communication_Coordinates coordinates;
+                memcpy(&coordinates, data + 1, sizeof(coordinates));
+                int x = coordinates.x;
+                int y = coordinates.y;
+                double dx = (double) x;
+                double dy = (double) y;
+                struct Point3D point = PointTypes_createPoint3D(dx, dy, 0);
+                WorldVision_setRobotPosition(point);
                 break;
             }
 

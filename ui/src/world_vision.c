@@ -33,6 +33,7 @@ GMutex world_vision_frame_mutex;
 GMutex world_vision_camera_frame_mutex;
 GMutex world_vision_camera_intrinsics_mutex;
 GMutex world_vision_planned_trajectory_mutex;
+GMutex world_vision_robot_position_mutex;
 
 enum TooltipStatus world_camera_coordinates_tooltip_status = PRINT;
 enum FrameStatus world_camera_frame_status = NOT_READY;
@@ -42,6 +43,7 @@ IplImage *world_camera_back_frame = NULL;
 GdkPixbuf *world_camera_pixbuf = NULL;
 
 struct Point2DSet *current_planned_trajectory = NULL;
+GSList *robot_position = NULL;
 
 GThread *world_vision_detection_worker_thread = NULL;
 
@@ -66,6 +68,8 @@ gboolean worldCameraCalibrationClickedEventCallback(GtkWidget *widget, gpointer 
         WorldVisionDetection_initialize();
         world_vision_detection_worker_thread = g_thread_new("world_camera_detector",
                                                (GThreadFunc) WorldVisionDetection_detectObstaclesAndRobot, (gpointer) world_camera);
+        WorldVisionCalibration_calibrateWithTableCorners(world_camera);
+        WorldVisionDetection_detectGreenSquareCorners(world_camera);
     }
 
     return TRUE;
@@ -351,5 +355,35 @@ void WorldVision_recalibrateForMoving(void)
 {
     WorldVisionCalibration_calibrateWithTableCorners(world_camera);
     WorldVisionDetection_setRobotStateToMoving();
+}
+
+void WorldVision_setRobotPosition(struct Point3D world_coordinates)
+{
+    g_mutex_lock(&world_vision_robot_position_mutex);
+
+    struct Point2D image_coordinates = WorldVisionCalibration_convertWorldCoordinatesToImageCoordinates(
+                                           world_coordinates, world_camera);
+    struct Point2D *image_coordinates_pointer = malloc(sizeof(struct Point2D));
+    memcpy(image_coordinates_pointer, &image_coordinates, sizeof(struct Point2D));
+    robot_position = g_slist_append(robot_position, (gpointer) image_coordinates_pointer);
+
+    g_mutex_unlock(&world_vision_robot_position_mutex);
+}
+
+static void freeRobotPosition(gpointer data)
+{
+    free((struct Point2D *) data);
+}
+
+void WorldVision_resetRobotPosition(void)
+{
+    g_mutex_lock(&world_vision_robot_position_mutex);
+
+    if(robot_position != NULL) {
+        g_slist_free_full(robot_position, (GDestroyNotify) freeRobotPosition);
+        robot_position = NULL;
+    }
+
+    g_mutex_unlock(&world_vision_robot_position_mutex);
 }
 

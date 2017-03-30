@@ -40,6 +40,7 @@ void uiWindowDestroyEventCallback(GtkWidget *widget, gpointer data)
 
 void startCycleClickedEventCallback(GtkWidget *widget, gpointer data)
 {
+    WorldVision_resetRobotPosition();
     StationClientSender_sendStartCycleCommand();
     Logger_startMessageSectionAndAppend("Cycle started!");
     StationInterface_deactivateStartCycleButton();
