@@ -50,6 +50,21 @@ void Logger_delete(struct Logger *logger)
     }
 }
 
+struct DataReceiver_Callbacks Logger_startLoggingRobot(struct Robot *robot)
+{
+    struct DataReceiver_Callbacks data_receiver_callbacks = DataReceiver_fetchCallbacks();
+    struct CommandSender_Callbacks command_sender_callbacks = CommandSender_fetchCallbacksForRobot();
+    struct DataSender_Callbacks data_sender_callbacks = DataSender_fetchCallbacksForRobot();
+    data_receiver_callbacks = Logger_startLoggingDataReceiverAndReturnCallbacks(robot->logger, data_receiver_callbacks);
+    command_sender_callbacks = Logger_startLoggingCommandSenderAndReturnCallbacks(robot->logger, command_sender_callbacks);
+    data_sender_callbacks = Logger_startLoggingDataSenderAndReturnCallbacks(robot->logger, data_sender_callbacks);
+
+    RobotServer_updateDataReceiverCallbacks(data_receiver_callbacks);
+    CommandSender_changeTarget(robot->command_sender, command_sender_callbacks);
+    DataSender_changeTarget(robot->data_sender, data_sender_callbacks);
+    return data_receiver_callbacks;
+}
+
 static struct Logger *file_logger;
 
 static void robotLog(const char *text)

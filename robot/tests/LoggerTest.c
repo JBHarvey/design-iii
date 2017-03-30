@@ -14,9 +14,7 @@ void teardown_logger(void)
     Logger_delete(logger);
 }
 
-Test(Logger, given_aLogger_when_startsLoggingDataReceiver_then_decoratedDataReceiverCallbacksAreReturned
-     , .init = setup_logger
-     , .fini = teardown_logger)
+void assertDataReceiverCallbacksAreDecoratedByLogger(struct DataReceiver_Callbacks data_receiver_callbacks)
 {
     void (*updateWorld)(struct WorldCamera *, struct Communication_World) = &Logger_updateWorld;
     void (*updateWheelsTranslation)(struct Wheels *, struct Communication_Translation) = &Logger_updateWheelsTranslation;
@@ -34,24 +32,33 @@ Test(Logger, given_aLogger_when_startsLoggingDataReceiver_then_decoratedDataRece
     void (*updateFlagsEndOfCycleSignalReceivedByStation)(struct Flags *) =
         &Logger_updateFlagsEndOfCycleSignalReceivedByStation;
 
+    cr_assert_eq(data_receiver_callbacks.updateWorld, updateWorld);
+    cr_assert_eq(data_receiver_callbacks.updateWheelsTranslation, updateWheelsTranslation);
+    cr_assert_eq(data_receiver_callbacks.updateWheelsRotation, updateWheelsRotation);
+    cr_assert_eq(data_receiver_callbacks.updateManchesterCode, updateManchesterCode);
+    cr_assert_eq(data_receiver_callbacks.updateFlagsStartCycle, updateFlagsStartCycle);
+    cr_assert_eq(data_receiver_callbacks.updateFlagsImageReceivedByStation, updateFlagsImageReceivedByStation);
+    cr_assert_eq(data_receiver_callbacks.updateFlagsPlannedTrajectoryReceivedByStation,
+                 updateFlagsPlannedTrajectoryReceivedByStation);
+    cr_assert_eq(data_receiver_callbacks.updateFlagsReadyToStartSignalReceivedByStation,
+                 updateFlagsReadyToStartSignalReceivedByStation);
+    cr_assert_eq(data_receiver_callbacks.updateFlagsReadyToDrawSignalReceivedByStation,
+                 updateFlagsReadyToDrawSignalReceivedByStation);
+    cr_assert_eq(data_receiver_callbacks.updateFlagsEndOfCycleSignalReceivedByStation,
+                 updateFlagsEndOfCycleSignalReceivedByStation);
+}
+
+Test(Logger, given_aLogger_when_startsLoggingDataReceiver_then_decoratedDataReceiverCallbacksAreReturned
+     , .init = setup_logger
+     , .fini = teardown_logger)
+{
+
     struct DataReceiver_Callbacks data_receiver_callbacks = DataReceiver_fetchCallbacks();
 
     struct DataReceiver_Callbacks from_logger = Logger_startLoggingDataReceiverAndReturnCallbacks(logger,
             data_receiver_callbacks);
+    assertDataReceiverCallbacksAreDecoratedByLogger(from_logger);
 
-    cr_assert_eq(from_logger.updateWorld, updateWorld);
-    cr_assert_eq(from_logger.updateWheelsTranslation, updateWheelsTranslation);
-    cr_assert_eq(from_logger.updateWheelsRotation, updateWheelsRotation);
-    cr_assert_eq(from_logger.updateManchesterCode, updateManchesterCode);
-    cr_assert_eq(from_logger.updateFlagsStartCycle, updateFlagsStartCycle);
-    cr_assert_eq(from_logger.updateFlagsImageReceivedByStation, updateFlagsImageReceivedByStation);
-    cr_assert_eq(from_logger.updateFlagsPlannedTrajectoryReceivedByStation, updateFlagsPlannedTrajectoryReceivedByStation);
-    cr_assert_eq(from_logger.updateFlagsReadyToStartSignalReceivedByStation,
-                 updateFlagsReadyToStartSignalReceivedByStation);
-    cr_assert_eq(from_logger.updateFlagsReadyToDrawSignalReceivedByStation,
-                 updateFlagsReadyToDrawSignalReceivedByStation);
-    cr_assert_eq(from_logger.updateFlagsEndOfCycleSignalReceivedByStation,
-                 updateFlagsEndOfCycleSignalReceivedByStation);
 }
 
 Test(Logger, given_aLogger_when_stopsLoggingDataReceiver_then_originalDataReceiverCallbacksAreReturned
@@ -79,9 +86,7 @@ Test(Logger, given_aLogger_when_stopsLoggingDataReceiver_then_originalDataReceiv
                  data_receiver_callbacks.updateFlagsEndOfCycleSignalReceivedByStation);
 }
 
-Test(Logger, given_aLogger_when_startsLoggingCommandSender_then_decoratedCommandSenderCallbacksAreReturned
-     , .init = setup_logger
-     , .fini = teardown_logger)
+void assertCommandSenderCallbacksAreDecoratedByLogger(struct CommandSender_Callbacks command_sender_callbacks)
 {
     void (*sendTranslateCommand)(struct Command_Translate) = &Logger_sendTranslateCommand;
     void (*sendSpeedsCommand)(struct Command_Speeds) = &Logger_sendSpeedsCommand;
@@ -93,18 +98,25 @@ Test(Logger, given_aLogger_when_startsLoggingCommandSender_then_decoratedCommand
     void (*sendFetchManchesterCodeCommand)(void) = &Logger_sendFetchManchesterCode;
     void (*sendStopSendingManchesterSignalCommand)(void) = &Logger_sendStopSendingManchesterSignal;
 
+    cr_assert_eq(command_sender_callbacks.sendTranslateCommand, sendTranslateCommand);
+    cr_assert_eq(command_sender_callbacks.sendSpeedsCommand, sendSpeedsCommand);
+    cr_assert_eq(command_sender_callbacks.sendRotateCommand, sendRotateCommand);
+    cr_assert_eq(command_sender_callbacks.sendLightRedLEDCommand, sendLightRedLEDCommand);
+    cr_assert_eq(command_sender_callbacks.sendLightGreenLEDCommand, sendLightGreenLEDCommand);
+    cr_assert_eq(command_sender_callbacks.sendRisePenCommand, sendRisePenCommand);
+    cr_assert_eq(command_sender_callbacks.sendLowerPenCommand, sendLowerPenCommand);
+    cr_assert_eq(command_sender_callbacks.sendFetchManchesterCodeCommand, sendFetchManchesterCodeCommand);
+    cr_assert_eq(command_sender_callbacks.sendStopSendingManchesterSignalCommand, sendStopSendingManchesterSignalCommand);
+}
+
+Test(Logger, given_aLogger_when_startsLoggingCommandSender_then_decoratedCommandSenderCallbacksAreReturned
+     , .init = setup_logger
+     , .fini = teardown_logger)
+{
+
     struct CommandSender_Callbacks callbacks = CommandSender_fetchCallbacksForRobot();
     struct CommandSender_Callbacks from_logger = Logger_startLoggingCommandSenderAndReturnCallbacks(logger, callbacks);
-
-    cr_assert_eq(from_logger.sendTranslateCommand, sendTranslateCommand);
-    cr_assert_eq(from_logger.sendSpeedsCommand, sendSpeedsCommand);
-    cr_assert_eq(from_logger.sendRotateCommand, sendRotateCommand);
-    cr_assert_eq(from_logger.sendLightRedLEDCommand, sendLightRedLEDCommand);
-    cr_assert_eq(from_logger.sendLightGreenLEDCommand, sendLightGreenLEDCommand);
-    cr_assert_eq(from_logger.sendRisePenCommand, sendRisePenCommand);
-    cr_assert_eq(from_logger.sendLowerPenCommand, sendLowerPenCommand);
-    cr_assert_eq(from_logger.sendFetchManchesterCodeCommand, sendFetchManchesterCodeCommand);
-    cr_assert_eq(from_logger.sendStopSendingManchesterSignalCommand, sendStopSendingManchesterSignalCommand);
+    assertCommandSenderCallbacksAreDecoratedByLogger(from_logger);
 
 }
 
@@ -129,9 +141,7 @@ Test(Logger, given_aLogger_when_stopsLoggingCommandSender_then_originalCommandSe
                  command_sender_callbacks.sendStopSendingManchesterSignalCommand);
 }
 
-Test(Logger, given_aLogger_when_startsLoggingDataSender_then_decoratedDataSenderCallbacksAreReturned
-     , .init = setup_logger
-     , .fini = teardown_logger)
+void assertDataSenderCallbacksAreDecoratedByLogger(struct DataSender_Callbacks data_sender_callbacks)
 {
     void (*sendRobotPoseEstimate)(struct Pose *) = &Logger_sendRobotPoseEstimate;
     void (*sendImage)(IplImage *) = &Logger_sendImage;
@@ -140,15 +150,22 @@ Test(Logger, given_aLogger_when_startsLoggingDataSender_then_decoratedDataSender
     void (*sendSignalReadyToDraw)(void) = &Logger_sendSignalReadyToDraw;
     void (*sendSignalEndOfCycle)(void) = &Logger_sendSignalEndOfCycle;
 
+    cr_assert_eq(data_sender_callbacks.sendRobotPoseEstimate, sendRobotPoseEstimate);
+    cr_assert_eq(data_sender_callbacks.sendImage, sendImage);
+    cr_assert_eq(data_sender_callbacks.sendPlannedTrajectory, sendPlannedTrajectory);
+    cr_assert_eq(data_sender_callbacks.sendSignalReadyToStart, sendSignalReadyToStart);
+    cr_assert_eq(data_sender_callbacks.sendSignalReadyToDraw, sendSignalReadyToDraw);
+    cr_assert_eq(data_sender_callbacks.sendSignalEndOfCycle, sendSignalEndOfCycle);
+}
+
+Test(Logger, given_aLogger_when_startsLoggingDataSender_then_decoratedDataSenderCallbacksAreReturned
+     , .init = setup_logger
+     , .fini = teardown_logger)
+{
+
     struct DataSender_Callbacks callbacks = DataSender_fetchCallbacksForRobot();
     struct DataSender_Callbacks from_logger = Logger_startLoggingDataSenderAndReturnCallbacks(logger, callbacks);
-
-    cr_assert_eq(from_logger.sendRobotPoseEstimate, sendRobotPoseEstimate);
-    cr_assert_eq(from_logger.sendImage, sendImage);
-    cr_assert_eq(from_logger.sendPlannedTrajectory, sendPlannedTrajectory);
-    cr_assert_eq(from_logger.sendSignalReadyToStart, sendSignalReadyToStart);
-    cr_assert_eq(from_logger.sendSignalReadyToDraw, sendSignalReadyToDraw);
-    cr_assert_eq(from_logger.sendSignalEndOfCycle, sendSignalEndOfCycle);
+    assertDataSenderCallbacksAreDecoratedByLogger(from_logger);
 
 }
 
@@ -167,4 +184,23 @@ Test(Logger, given_aLogger_when_stopsLoggingDataSender_then_originalDataSenderCa
     cr_assert_eq(from_logger.sendSignalReadyToStart, data_sender_callbacks.sendSignalReadyToStart);
     cr_assert_eq(from_logger.sendSignalEndOfCycle, data_sender_callbacks.sendSignalEndOfCycle);
     cr_assert_eq(from_logger.sendSignalReadyToDraw, data_sender_callbacks.sendSignalReadyToDraw);
+}
+
+Test(Logger, given_aRobot_when_askedToStartLoggingRobot_then_allTheCallbacksAreLogged
+     , .init = setup_logger
+     , .fini = teardown_logger)
+{
+    char *ttyACM = "/dev/null";
+    const int port = 25895;
+    struct Robot *robot = Robot_new();
+    struct RobotServer *robot_server = RobotServer_new(robot, port, ttyACM);
+
+    struct DataReceiver_Callbacks data_receiver_callbacks = Logger_startLoggingRobot(robot);
+    struct DataSender_Callbacks data_sender_callbacks = robot->data_sender->data_callbacks;
+    struct CommandSender_Callbacks command_sender_callbacks = robot->command_sender->command_callbacks;
+    assertDataSenderCallbacksAreDecoratedByLogger(data_sender_callbacks);
+    assertDataReceiverCallbacksAreDecoratedByLogger(data_receiver_callbacks);
+    assertCommandSenderCallbacksAreDecoratedByLogger(command_sender_callbacks);
+    RobotServer_delete(robot_server);
+    Robot_delete(robot);
 }

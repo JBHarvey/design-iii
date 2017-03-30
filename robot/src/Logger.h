@@ -7,6 +7,7 @@ struct Logger;
 
 struct Logger *Logger_new(void);
 void Logger_delete(struct Logger *logger);
+struct DataReceiver_Callbacks Logger_startLoggingRobot(struct Robot *robot);
 
 struct DataReceiver_Callbacks Logger_startLoggingDataReceiverAndReturnCallbacks(struct Logger *logger, struct DataReceiver_Callbacks callbacks_to_log);
 struct DataReceiver_Callbacks Logger_stopLoggingDataReceiverAndReturnCallbacks(struct Logger *logger);
