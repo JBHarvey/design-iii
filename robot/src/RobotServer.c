@@ -472,14 +472,8 @@ void RobotServer_sendStopSendingManchesterSignalCommand(void) {}
 
 void RobotServer_sendSpeedsCommand(struct Command_Speeds command_speeds)
 {
-    /* TO FIX WITH ACTUAL VALUES
-     *
-    float x = command_speeds.x * DISTANCE_UNIT_IN_METERS_FACTOR;
-    float y = command_speeds.y * DISTANCE_UNIT_IN_METERS_FACTOR;
-     *
-    */
-    float x = command_speeds.x * DISTANCE_UNIT_IN_METERS_FACTOR;
-    float y = command_speeds.y * DISTANCE_UNIT_IN_METERS_FACTOR;
+    float x = command_speeds.x * SPEEDS_BASE_UNIT;
+    float y = command_speeds.y * SPEEDS_BASE_UNIT;
 
     uint8_t data[sizeof(float) * 2];
 

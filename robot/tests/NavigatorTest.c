@@ -590,6 +590,131 @@ Test(Navigator,
     Pose_delete(robot_pose);
 }
 
+Test(Navigator,
+     given_aRobotSeparatedOfItsGoalOfMoreThanTheLowSpeedDistance_when_navigateTowardsGoal_then_theSpeedsCommandValueIsTheMediumSpeed
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+    struct Pose *robot_pose = Pose_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y, 0);
+    Pose_copyValuesFrom(robot->current_state->pose, robot_pose);
+
+    struct Coordinates *target_coordinates = Coordinates_new(NAVIGATOR_ROBOT_X + (2 * LOW_SPEED_DISTANCE),
+            NAVIGATOR_ROBOT_Y);
+    updateRobotGoalCoordinatesTo(target_coordinates);
+
+    navigator->was_oriented_before_last_command = 1;
+    Navigator_navigateRobotTowardsGoal(robot);
+
+    cr_assert(rotation_validator != COMMAND_SENT);
+    cr_assert(speeds_validator == COMMAND_SENT);
+
+    cr_assert(sent_speeds_command_x == MEDIUM_SPEED_VALUE);
+    cr_assert(sent_speeds_command_y == 0);
+
+    Coordinates_delete(target_coordinates);
+    Pose_delete(robot_pose);
+}
+
+Test(Navigator,
+     given_aRobotSeparatedOfItsGoalByTheLowSpeedDistance_when_navigateTowardsGoal_then_theSpeedsCommandValueIsTheLowSpeed
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+    struct Pose *robot_pose = Pose_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y, 0);
+    Pose_copyValuesFrom(robot->current_state->pose, robot_pose);
+
+    struct Coordinates *target_coordinates = Coordinates_new(NAVIGATOR_ROBOT_X + LOW_SPEED_DISTANCE, NAVIGATOR_ROBOT_Y);
+    updateRobotGoalCoordinatesTo(target_coordinates);
+
+    navigator->was_oriented_before_last_command = 1;
+    Navigator_navigateRobotTowardsGoal(robot);
+
+    cr_assert(rotation_validator != COMMAND_SENT);
+    cr_assert(speeds_validator == COMMAND_SENT);
+
+    cr_assert(sent_speeds_command_x == LOW_SPEED_VALUE);
+    cr_assert(sent_speeds_command_y == 0);
+
+    Coordinates_delete(target_coordinates);
+    Pose_delete(robot_pose);
+}
+
+Test(Navigator,
+     given_aRobotSeparatedOfItsGoalByLessThanTheLowSpeedDistanceButMoreThanTheStopDistance_when_navigateTowardsGoal_then_theSpeedsCommandValueIsTheLowSpeed
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+    struct Pose *robot_pose = Pose_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y, 0);
+    Pose_copyValuesFrom(robot->current_state->pose, robot_pose);
+
+    int distance = (4 * LOW_SPEED_DISTANCE / 5);
+    struct Coordinates *target_coordinates = Coordinates_new(NAVIGATOR_ROBOT_X + distance, NAVIGATOR_ROBOT_Y);
+    cr_assert(distance > STOP_DISTANCE,
+              "Warning! This test won't pass because the stop distance is greater than the used distance\n\n");
+    updateRobotGoalCoordinatesTo(target_coordinates);
+
+    navigator->was_oriented_before_last_command = 1;
+    Navigator_navigateRobotTowardsGoal(robot);
+
+    cr_assert(rotation_validator != COMMAND_SENT);
+    cr_assert(speeds_validator == COMMAND_SENT);
+
+    cr_assert(sent_speeds_command_x == LOW_SPEED_VALUE);
+    cr_assert(sent_speeds_command_y == 0);
+
+    Coordinates_delete(target_coordinates);
+    Pose_delete(robot_pose);
+}
+
+Test(Navigator,
+     given_aRobotSeparatedOfItsGoalByTheStopDistance_when_navigateTowardsGoal_then_theSpeedsCommandValueIsTheStopSpeed
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+    struct Pose *robot_pose = Pose_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y, 0);
+    Pose_copyValuesFrom(robot->current_state->pose, robot_pose);
+
+    int distance = STOP_DISTANCE;
+    struct Coordinates *target_coordinates = Coordinates_new(NAVIGATOR_ROBOT_X + distance, NAVIGATOR_ROBOT_Y);
+    updateRobotGoalCoordinatesTo(target_coordinates);
+
+    navigator->was_oriented_before_last_command = 1;
+    Navigator_navigateRobotTowardsGoal(robot);
+
+    cr_assert(rotation_validator != COMMAND_SENT);
+    cr_assert(speeds_validator == COMMAND_SENT);
+
+    cr_assert(sent_speeds_command_x == STOP_VALUE, "Received speed : %d\n Distance : %d", sent_speeds_command_x, distance);
+    cr_assert(sent_speeds_command_y == 0);
+
+    Coordinates_delete(target_coordinates);
+    Pose_delete(robot_pose);
+}
+
+Test(Navigator,
+     given_aRobotSeparatedOfItsGoalByLessThanTheStopDistance_when_navigateTowardsGoal_then_theSpeedsCommandValueIsTheStopSpeed
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+    struct Pose *robot_pose = Pose_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y, 0);
+    Pose_copyValuesFrom(robot->current_state->pose, robot_pose);
+
+    struct Coordinates *target_coordinates = Coordinates_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y);
+    updateRobotGoalCoordinatesTo(target_coordinates);
+
+    navigator->was_oriented_before_last_command = 1;
+    Navigator_navigateRobotTowardsGoal(robot);
+
+    cr_assert(rotation_validator != COMMAND_SENT);
+    cr_assert(speeds_validator == COMMAND_SENT);
+
+    cr_assert(sent_speeds_command_x == STOP_VALUE);
+    cr_assert(sent_speeds_command_y == 0);
+
+    Coordinates_delete(target_coordinates);
+    Pose_delete(robot_pose);
+}
+
 void assertEqualityWithTolerance(int expected_value, int received_value, int tolerance)
 {
     cr_assert((abs(expected_value - received_value) <= tolerance));

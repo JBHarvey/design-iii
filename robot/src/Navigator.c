@@ -78,16 +78,17 @@ int Navigator_isAngleWithinRotationTolerance(int angle)
 
 static int convertDistanceToSpeed(int distance)
 {
-    /*
-     *
-     * 0.08 medium speed
-     *
-     * 0.04 low speed distance < 1000
-     *
-     * 0 stop distance < 100
-     *
-     */
-    return distance;
+    int speed;
+
+    if(distance > LOW_SPEED_DISTANCE) {
+        speed = MEDIUM_SPEED_VALUE;
+    } else if(distance > STOP_DISTANCE * 2) {
+        speed = LOW_SPEED_VALUE;
+    } else {
+        speed = STOP_VALUE;
+    }
+
+    return speed;
 }
 
 static void sendSpeedsCommand(struct Robot *robot, int distance_to_target, int angle_to_target)
