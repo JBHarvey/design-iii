@@ -3,6 +3,10 @@
 #include "Logger.h"
 #include "PoseFilter.h"
 
+static void waitASecond(void)
+{
+    usleep(1000000);
+}
 
 struct PoseFilter *pose_filter;
 struct Robot *robot;
@@ -10,8 +14,8 @@ struct RobotServer *robot_server;
 int main(int argc, char *argv[])
 {
     const int port = 35794;
-    //char *ttyACM = "/dev/null";
-    char *ttyACM = "/dev/ttyACM0";
+    char *ttyACM = "/dev/null";
+    //char *ttyACM = "/dev/ttyACM0";
 
     struct PoseFilter_Callbacks callbacks = PoseFilter_fetchCallbacks();
 
@@ -21,6 +25,15 @@ int main(int argc, char *argv[])
 
     Logger_startLoggingRobot(robot);
 
+    /*
+
+    for(int i = 0; i < 5; ++i) {
+        CommandSender_sendLightRedLEDCommand(command_sender);
+        waitASecond();
+        CommandSender_sendLightGreenLEDCommand(command_sender);
+        waitASecond();
+    }
+
     while(1) {
         RobotServer_communicate(robot_server);
         PoseFilter_executeFilter(pose_filter, callbacks.updateFromCameraOnly);
@@ -28,34 +41,15 @@ int main(int argc, char *argv[])
         Robot_act(robot);
         //Robot_sendPoseEstimate(robot);
     }
-
-
-    RobotServer_delete(robot_server);
-    Robot_delete(robot);
-    PoseFilter_delete(pose_filter);
-
-    return 0;
+    */
 
     /*
-    for(int i = 0; i < 15; ++i) {
-        CommandSender_sendLightRedLEDCommand(command_sender);
-        waitASecond();
-        CommandSender_sendLightGreenLEDCommand(command_sender);
-        waitASecond();
-    }
 
 
-    sendTranslate(0, 2000);
-    sendRotate(MINUS_HALF_PI);
-    sendTranslate(0, 2000);
-    sendRotate(MINUS_HALF_PI);
-    sendTranslate(0, 2000);
-    sendRotate(MINUS_HALF_PI);
-    sendTranslate(0, 2000);
-    sendRotate(MINUS_HALF_PI);
     // MANCHESTER ASK + LOG RETURN TEST
-    CommandSender_sendFetchManchesterCode(command_sender);
+    CommandSender_sendFetchManchesterCode(robot->command_sender);
 
+    */
     // TEST OF CAMERA AND PATH
     // Initialise the camera
     // The camera will have to be initialized and freed in the main
@@ -66,16 +60,20 @@ int main(int argc, char *argv[])
 
     image_trajectory = OnboardCamera_extractTrajectoryFromImage(&test_image);
 
-    struct ManchesterCode *code = ManchesterCode_new();
-    ManchesterCode_updateCodeValues(code, 0, TIMES_TWO, WEST);
+    //struct ManchesterCode *code = ManchesterCode_new();
+    //ManchesterCode_updateCodeValues(code, 0, TIMES_TWO, WEST);
 
     RobotServer_sendImageToStation(test_image);
     RobotServer_sendPlannedTrajectoryToStation(image_trajectory);
+
+    while(1) {
+        RobotServer_communicate(robot_server);
+    }
+
     // After communication:
     // Releases Camera
     OnboardCamera_deleteImage(&test_image);
     OnboardCamera_freeCamera();
-    */
 
 
     /*
@@ -122,17 +120,9 @@ int main(int argc, char *argv[])
     RobotServer_sendRisePenCommand();
     */
 
-
-    /*
-    struct Communication_Rotation rotation = { .theta = 855, .gamma = 5};
-    struct Communication_Translation translation = {
-        .movement = { .x = 1531, .y = 13513},
-        .speeds = { .x = 55, .y = 42}
-    };
-    (*(test_callbacks.updateFlagsStartCycle))(robot->current_state->flags, 1);
-    (*(test_callbacks.updateFlagsStartCycle))(robot->current_state->flags, 0);
-    (*(test_callbacks.updateWheelsRotation))(robot->wheels, rotation);
-    (*(test_callbacks.updateWheelsTranslation))(robot->wheels, translation);
-    */
+    RobotServer_delete(robot_server);
+    Robot_delete(robot);
+    PoseFilter_delete(pose_filter);
+    return 0;
 
 }
