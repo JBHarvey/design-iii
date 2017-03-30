@@ -31,6 +31,16 @@
 #define MAX_NUMBER_OF_NODE 22
 #define MAX_VALUE_OF_FLOAT FLT_MAX
 
+// Navigation related
+#define SPEEDS_BASE_UNIT 0.001
+#define MEDIUM_SPEED_VALUE 80
+
+#define LOW_SPEED_VALUE 20
+#define LOW_SPEED_DISTANCE 1000
+
+#define STOP_VALUE 0
+#define STOP_DISTANCE 100
+
 // Units and mesurements related
 
 #define ANGLE_BASE_UNIT 0.00001
