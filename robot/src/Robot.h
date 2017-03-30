@@ -21,6 +21,7 @@ struct Robot {
 struct Robot *Robot_new();
 void Robot_delete(struct Robot *robot);
 
+void Robot_act(struct Robot *robot);
 void Robot_sendReadyToStartSignal(struct Robot *robot);
 void Robot_sendPlannedTrajectory(struct Robot *robot);
 void Robot_takePicture(struct Robot *robot);
