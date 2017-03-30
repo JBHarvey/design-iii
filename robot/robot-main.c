@@ -25,9 +25,10 @@ int main(int argc, char *argv[])
 
     Logger_startLoggingRobot(robot);
 
-    CommandSender_sendFetchManchesterCode(robot->command_sender);
 
     while(1) {
+        CommandSender_sendFetchManchesterCode(robot->command_sender);
+        waitASecond();
         RobotServer_communicate(robot_server);
     }
 
