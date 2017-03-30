@@ -63,6 +63,11 @@ void Robot_delete(struct Robot *robot)
     }
 }
 
+void Robot_act(struct Robot *robot)
+{
+    Behavior_act(robot->current_behavior, robot);
+}
+
 void Robot_sendReadyToStartSignal(struct Robot *robot)
 {
     DataSender_sendSignalReadyToStart(robot->data_sender);
@@ -78,3 +83,4 @@ void Robot_takePicture(struct Robot *robot)
     //TODO : Take the actual picture with the on-board camera;
     Flags_setPictureTaken(robot->current_state->flags, TRUE);
 }
+
