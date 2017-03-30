@@ -125,6 +125,7 @@
 #define CONSIGNE_SPEED_LOW 0.04
 
 #define Y_MOVE_DATA_BUFFER_INDEX 4
+#define Y_SPEED_DATA_BUFFER_INDEX 4
 
 // Pour utiliser la librairie sans que sa plante
 #define ARM_CORTEX_M3
