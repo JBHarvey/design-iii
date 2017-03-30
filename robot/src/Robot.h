@@ -25,6 +25,7 @@ void Robot_updateBehaviorIfNeeded(struct Robot *robot);
 void Robot_act(struct Robot *robot);
 void Robot_sendReadyToStartSignal(struct Robot *robot);
 void Robot_sendPlannedTrajectory(struct Robot *robot);
+void Robot_sendPoseEstimate(struct Robot *robot);
 void Robot_takePicture(struct Robot *robot);
 
 #endif // ROBOT_H_

@@ -83,6 +83,11 @@ void Robot_sendPlannedTrajectory(struct Robot *robot)
     DataSender_sendPlannedTrajectory(robot->data_sender, robot->navigator->planned_trajectory);
 }
 
+void Robot_sendPoseEstimate(struct Robot *robot)
+{
+    DataSender_sendRobotPoseEstimate(robot->data_sender, robot->current_state->pose);
+}
+
 void Robot_takePicture(struct Robot *robot)
 {
     //TODO : Take the actual picture with the on-board camera;
