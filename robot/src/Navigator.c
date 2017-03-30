@@ -54,8 +54,9 @@ void Navigator_updateNavigableMap(struct Robot *robot)
         */
         // TODO: add validation that map is navigable && robot can go through the obstacles
         // Add to tests
-        Flags_setNavigableMapIsReady(robot->current_state->flags, 1);
     }
+
+    Flags_setNavigableMapIsReady(robot->current_state->flags, 1);
 
 }
 
