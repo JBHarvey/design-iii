@@ -38,18 +38,18 @@ int main(int argc, char *argv[])
 
     /*
 
+    */
 
     // MANCHESTER ASK + LOG RETURN TEST
     CommandSender_sendFetchManchesterCode(robot->command_sender);
 
-    */
     // TEST OF CAMERA AND PATH
     // Initialise the camera
     // The camera will have to be initialized and freed in the main
+    /*
 
     RobotServer_sendLowerPenCommand();
     waitASecond();
-    RobotServer_sendRisePenCommand();
     waitASecond();
 
     for(int i = 0; i < 15; ++i) {
@@ -72,6 +72,9 @@ int main(int argc, char *argv[])
     RobotServer_sendImageToStation(test_image);
     RobotServer_sendPlannedTrajectoryToStation(image_trajectory);
 
+    RobotServer_sendRisePenCommand();
+    waitASecond();
+
     while(1) {
         RobotServer_communicate(robot_server);
     }
@@ -81,6 +84,7 @@ int main(int argc, char *argv[])
     OnboardCamera_deleteImage(&test_image);
     OnboardCamera_freeCamera();
 
+    */
 
     /*
     // HOUSE TEST
