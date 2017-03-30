@@ -25,6 +25,12 @@ int main(int argc, char *argv[])
 
     Logger_startLoggingRobot(robot);
 
+    CommandSender_sendFetchManchesterCode(robot->command_sender);
+
+    while(1) {
+        RobotServer_communicate(robot_server);
+    }
+
     /*
 
     while(1) {
@@ -40,6 +46,7 @@ int main(int argc, char *argv[])
 
 
 
+    /*
 
     // HERE--------------------------------------
 
@@ -73,16 +80,12 @@ int main(int argc, char *argv[])
     RobotServer_sendRisePenCommand();
     waitASecond();
 
-    while(1) {
-        RobotServer_communicate(robot_server);
-    }
 
     // After communication:
     // Releases Camera
     OnboardCamera_deleteImage(&test_image);
     OnboardCamera_freeCamera();
 
-    /*
     // TO HERE ----------------------------------------------
     */
 
@@ -138,6 +141,5 @@ int main(int argc, char *argv[])
 
     /*
     // MANCHESTER ASK + LOG RETURN TEST
-    CommandSender_sendFetchManchesterCode(robot->command_sender);
     */
 }
