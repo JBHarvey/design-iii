@@ -3,41 +3,10 @@
 #include "Logger.h"
 
 static struct Robot *robot;
-struct Logger *logger;
 struct RobotServer *robot_server;
-struct CommandSender *command_sender;
 const int port = 35794;
 //char *ttyACM = "/dev/null";
 char *ttyACM = "/dev/ttyACM0";
-
-static void waitASecond()
-{
-    usleep(1000000);
-}
-
-static void waitFiveSeconds()
-{
-    usleep(5000000);
-}
-
-static void waitFifteenSeconds()
-{
-    usleep(15000000);
-}
-
-static void sendTranslate(int x, int y)
-{
-    struct Command_Translate translate = { .x = x, .y = y };
-    CommandSender_sendTranslateCommand(command_sender, translate);
-    waitFiveSeconds();
-}
-
-static void sendRotate(int theta)
-{
-    struct Command_Rotate rotate = { .theta = theta};
-    CommandSender_sendRotateCommand(command_sender, rotate);
-    waitFiveSeconds();
-}
 
 int main(int argc, char *argv[])
 {
@@ -45,22 +14,19 @@ int main(int argc, char *argv[])
     robot = Robot_new();
     robot_server = RobotServer_new(robot, port, ttyACM);
 
-    logger = Logger_new();
+    Logger_startLoggingRobot(robot);
 
-    command_sender = CommandSender_new();
+    while(1) {
+        RobotServer_communicate(robot_server);
+        Robot_updatePoseEstimate(robot);
+    }
 
-    struct DataReceiver_Callbacks data_receiver_callbacks = DataReceiver_fetchCallbacks();
-    struct CommandSender_Callbacks command_sender_callbacks = CommandSender_fetchCallbacksForRobot();
 
-    data_receiver_callbacks = Logger_startLoggingDataReceiverAndReturnCallbacks(logger, data_receiver_callbacks);
-    command_sender_callbacks = Logger_startLoggingCommandSenderAndReturnCallbacks(logger, command_sender_callbacks);
+    RobotServer_delete(robot_server);
+    Robot_delete(robot);
 
-    CommandSender_changeTarget(command_sender, command_sender_callbacks);
-    RobotServer_updateDataReceiverCallbacks(data_receiver_callbacks);
-
+    return 0;
     /*
-    waitFifteenSeconds();
-    waitFifteenSeconds();
 
     for(int i = 0; i < 15; ++i) {
         CommandSender_sendLightRedLEDCommand(command_sender);
@@ -68,9 +34,7 @@ int main(int argc, char *argv[])
         CommandSender_sendLightGreenLEDCommand(command_sender);
         waitASecond();
     }
-    */
 
-    // ROTATION TESTS
 
     sendTranslate(0, 2000);
     sendRotate(MINUS_HALF_PI);
@@ -98,6 +62,11 @@ int main(int argc, char *argv[])
 
     RobotServer_sendImageToStation(test_image);
     RobotServer_sendPlannedTrajectoryToStation(image_trajectory);
+    // After communication:
+    // Releases Camera
+    OnboardCamera_deleteImage(&test_image);
+    OnboardCamera_freeCamera();
+    */
 
 
     /*
@@ -157,18 +126,4 @@ int main(int argc, char *argv[])
     (*(test_callbacks.updateWheelsTranslation))(robot->wheels, translation);
     */
 
-    while(1) {
-        RobotServer_communicate(robot_server);
-    }
-
-    // Releases Camera
-    OnboardCamera_deleteImage(&test_image);
-    OnboardCamera_freeCamera();
-
-    CommandSender_delete(command_sender);
-    Logger_delete(logger);
-    RobotServer_delete(robot_server);
-    Robot_delete(robot);
-
-    return 0;
 }

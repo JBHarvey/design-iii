@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "Robot.h"
+#include "Logger.h"
 
 struct DefaultValues {
     struct Pose *pose;
@@ -18,6 +19,7 @@ struct Robot *Robot_new(void)
     struct Navigator *new_navigator = Navigator_new();
     struct DataSender *new_data_sender = DataSender_new();
     struct CommandSender *new_command_sender = CommandSender_new();
+    struct Logger *new_logger = Logger_new();
     struct Robot *pointer =  malloc(sizeof(struct Robot));
 
     pointer->object = new_object;
@@ -29,6 +31,7 @@ struct Robot *Robot_new(void)
     pointer->navigator = new_navigator;
     pointer->data_sender = new_data_sender;
     pointer->command_sender = new_command_sender;
+    pointer->logger = new_logger;
 
     RobotBehaviors_prepareInitialBehaviors(pointer);
     pointer->first_behavior = pointer->current_behavior;
@@ -50,6 +53,7 @@ void Robot_delete(struct Robot *robot)
         Navigator_delete(robot->navigator);
         DataSender_delete(robot->data_sender);
         CommandSender_delete(robot->command_sender);
+        Logger_delete(robot->logger);
 
         /* DefaultValues destruction */
         Pose_delete(robot->default_values->pose);

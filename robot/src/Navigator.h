@@ -14,6 +14,8 @@ struct Navigator {
     struct Graph *graph;
     struct CoordinatesSequence *planned_trajectory;
     int was_oriented_before_last_command;
+    struct PoseFilter *poseFilter;
+    struct PoseFilter_Callback filters;
 };
 
 struct Navigator *Navigator_new(void);
