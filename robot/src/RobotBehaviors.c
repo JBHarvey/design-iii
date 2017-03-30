@@ -24,7 +24,7 @@ void RobotBehaviors_prepareInitialBehaviors(struct Robot *robot)
     Flags_delete(map_is_ready_flags);
 
     void (*beIdle)(struct Robot*) = &Behavior_idle;
-    struct Flags *ready_to_start_signal_received = Flags_new();
+    struct Flags *ready_to_start_signal_received = Flags_irrelevant();
     Flags_setReadyToStartReceivedByStation(ready_to_start_signal_received, 1);
     struct Behavior *behavior_idle_when_ready_to_start_is_received;
     behavior_idle_when_ready_to_start_is_received = BehaviorBuilder_build(
@@ -38,7 +38,7 @@ void RobotBehaviors_prepareInitialBehaviors(struct Robot *robot)
     Flags_delete(ready_to_start_signal_received);
 
     void (*planTowardsAntennaStart)(struct Robot *) = &Navigator_planTowardsAntennaStart;
-    struct Flags *start_cycle_signal_received = Flags_new();
+    struct Flags *start_cycle_signal_received = Flags_irrelevant();
     Flags_setStartCycleSignalReceived(start_cycle_signal_received, 1);
     struct Behavior *behavior_plan_towards_antenna_when_start_cycle_signal_is_received;
     behavior_plan_towards_antenna_when_start_cycle_signal_is_received = BehaviorBuilder_build(
@@ -84,7 +84,7 @@ void RobotBehaviors_appendTrajectoryBehaviors(struct Robot *robot, struct Coordi
     }
 
     void (*navigationAction)(struct Robot *) = &Navigator_navigateRobotTowardsGoal;
-    struct Flags *planned_trajectory_received_by_station = Flags_new();
+    struct Flags *planned_trajectory_received_by_station = Flags_irrelevant();
     Flags_setPlannedTrajectoryReceivedByStation(planned_trajectory_received_by_station, 1);
 
     struct Behavior *first_trajectory_behavior = BehaviorBuilder_build(
