@@ -63,6 +63,11 @@ void Robot_delete(struct Robot *robot)
     }
 }
 
+void Robot_updateBehaviorIfNeeded(struct Robot *robot)
+{
+    robot->current_behavior = Behavior_fetchFirstReachedChildOrReturnSelf(robot->current_behavior, robot->current_state);
+}
+
 void Robot_act(struct Robot *robot)
 {
     Behavior_act(robot->current_behavior, robot);
@@ -76,6 +81,11 @@ void Robot_sendReadyToStartSignal(struct Robot *robot)
 void Robot_sendPlannedTrajectory(struct Robot *robot)
 {
     DataSender_sendPlannedTrajectory(robot->data_sender, robot->navigator->planned_trajectory);
+}
+
+void Robot_sendPoseEstimate(struct Robot *robot)
+{
+    DataSender_sendRobotPoseEstimate(robot->data_sender, robot->current_state->pose);
 }
 
 void Robot_takePicture(struct Robot *robot)
