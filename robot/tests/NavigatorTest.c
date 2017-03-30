@@ -29,6 +29,7 @@ void sendRotateCommandValidator(struct Command_Rotate rotate)
 
 void setup_Navigator(void)
 {
+
     robot = Robot_new();
     navigator = robot->navigator;
     command_sender = CommandSender_new();
@@ -587,17 +588,6 @@ Test(Navigator,
 
     Coordinates_delete(target_coordinates);
     Pose_delete(robot_pose);
-}
-
-int pose_filter_callback_validator;
-Test(Navigator,
-     given_aRobot_when_askedToUpdateRobotPoseEstimate_then_theNavigatorCallbackItsPoseFilter
-     , .init = setup_Navigator
-     , .fini = teardown_Navigator)
-{
-    pose_filter_callback_validator = 0;
-    Navigator_updateRobotPoseEstimate(robot);
-    cr_assert(pose_filter_callback_validator);
 }
 
 void assertEqualityWithTolerance(int expected_value, int received_value, int tolerance)
