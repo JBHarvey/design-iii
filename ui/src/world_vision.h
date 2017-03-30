@@ -60,4 +60,8 @@ void WorldVision_recalibrateForDrawing(void);
 
 void WorldVision_recalibrateForMoving(void);
 
+void WorldVision_resetRobotPosition(void);
+
+void WorldVision_setRobotPosition(struct Point3D world_coordinates);
+
 #endif // __WORLD_VISION

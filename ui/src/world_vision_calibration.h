@@ -18,4 +18,7 @@ struct Point3D WorldVisionCalibration_convertImageCoordinatesToWorldCoordinates(
 void WorldVisionCalibration_convertWorldCoordinatesSetToImageCoordinatesSet(struct Point3DSet *world_coordinates_set,
         struct Point2DSet *output_images_coordinates_set,  struct Camera *input_camera);
 
+struct Point2D WorldVisionCalibration_convertWorldCoordinatesToImageCoordinates(
+    struct Point3D world_coordinates, struct Camera *input_camera);
+
 #endif // __WORLD_VISION_CALIBRATION
