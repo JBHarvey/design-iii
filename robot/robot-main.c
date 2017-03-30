@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
 
     /*
 
+    */
     while(1) {
         RobotServer_communicate(robot_server);
         PoseFilter_executeFilter(pose_filter, callbacks.updateFromCameraOnly);
@@ -34,18 +35,13 @@ int main(int argc, char *argv[])
         Robot_act(robot);
         //Robot_sendPoseEstimate(robot);
     }
-    */
 
-    /*
 
-    */
 
-    // MANCHESTER ASK + LOG RETURN TEST
-    CommandSender_sendFetchManchesterCode(robot->command_sender);
 
-    // TEST OF CAMERA AND PATH
-    // Initialise the camera
-    // The camera will have to be initialized and freed in the main
+
+
+    // HERE--------------------------------------
     /*
 
     RobotServer_sendLowerPenCommand();
@@ -59,6 +55,9 @@ int main(int argc, char *argv[])
         waitASecond();
     }
 
+    // TEST OF CAMERA AND PATH
+    // Initialise the camera
+    // The camera will have to be initialized and freed in the main
     OnboardCamera_init();
 
     IplImage *test_image;
@@ -84,6 +83,7 @@ int main(int argc, char *argv[])
     OnboardCamera_deleteImage(&test_image);
     OnboardCamera_freeCamera();
 
+    // TO HERE ----------------------------------------------
     */
 
     /*
@@ -135,4 +135,9 @@ int main(int argc, char *argv[])
     PoseFilter_delete(pose_filter);
     return 0;
 
+
+    /*
+    // MANCHESTER ASK + LOG RETURN TEST
+    CommandSender_sendFetchManchesterCode(robot->command_sender);
+    */
 }
