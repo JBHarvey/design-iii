@@ -194,7 +194,6 @@ Test(Robot,
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
 }
 
-
 void assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(struct Behavior *behavior,
         struct CoordinatesSequence *trajectory)
 {
