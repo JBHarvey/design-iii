@@ -10,8 +10,8 @@ struct RobotServer *robot_server;
 int main(int argc, char *argv[])
 {
     const int port = 35794;
-    char *ttyACM = "/dev/null";
-    //char *ttyACM = "/dev/ttyACM0";
+    //char *ttyACM = "/dev/null";
+    char *ttyACM = "/dev/ttyACM0";
 
     struct PoseFilter_Callbacks callbacks = PoseFilter_fetchCallbacks();
 
