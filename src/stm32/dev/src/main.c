@@ -27,7 +27,7 @@
 #include "utils.h"
 #include "com.h"
 #include "prehenseur.h"
-#include "motion.h" // here
+#include "motion.h"
 
 #define TAILLE 500
 
@@ -51,7 +51,15 @@ volatile uint8_t manchesterFactorVerification = 0;
 
 volatile uint8_t sendMeasureCounter = 0;
 
-volatile newMoveCommand = 0;
+volatile uint8_t newMoveCommand = 0;
+
+volatile uint8_t newSpeedSetpointCommand = 0;
+
+volatile uint8_t readyToSendManchester = 0;
+
+volatile uint8_t readyToSendMoveMeasures = 0;
+
+volatile uint8_t readyToSendData = 0;
 
 extern void TIM5_IRQHandler() {
 	if (TIM_GetITStatus(TIM5, TIM_IT_Update) != RESET) {
@@ -137,6 +145,9 @@ int main(void) {
 	TM_HD44780_Puts(0, 0, "Captain ready");
 	/* Test routine LEDs */
 	//startLEDsRoutine();
+	MotorSetDirection(1, CLOCK);
+	MotorSetSpeed(1, 30);
+
 	while (1) {
 		/* Main state machine */
 		switch (mainState) {
@@ -167,19 +178,27 @@ int main(void) {
 			break;
 
 		case MAIN_PID:
-			if (newMoveCommand) {
+			/*if (newMoveCommand) {
 
-				resetPositionEncoderVariables();
+			 resetPositionEncoderVariables();
 
-				resetPIDValues();
+			 resetPIDValues();
 
-				setWheelMoveDirections();
+			 setWheelMoveDirections();
 
-				newMoveCommand = 0;
+			 newMoveCommand = 0;
+			 } else {
+			 setSpeedSetpoints();
+			 computeCustomPIDS(&mainState);
+			 }*/
+
+			if (newSpeedSetpointCommand) {
+				//resetPIDResidualValues();
+				newSpeedSetpointCommand = 0;
 			} else {
-				setSpeedSetpoints();
-				computeCustomPIDS(&mainState);
+				computeSpeedPIDS();
 			}
+
 			break;
 		case MAIN_MANCH:
 
@@ -188,12 +207,20 @@ int main(void) {
 					manchesterOrientationVerification,
 					&manchesterFactorVerification);
 
-			//if (manchesterFactorVerification != 0
-			//		&& manchesterOrientationVerification[2] != ' ') {
-			//sendManchesterCode(manchesterFigureVerification,
-			//manchesterFactorVerification,
-			//manchesterOrientationVerification);
-			//}
+			/* conidition pour code valide
+			 * if (manchesterFactorVerification != 0
+			 && manchesterOrientationVerification[2] != ' '
+			 && readyToSendManchester)
+			 *********************************************/
+
+			if (readyToSendManchester && readyToSendData) {
+
+				sendManchesterCode(manchesterFigureVerification,
+						manchesterFactorVerification,
+						manchesterOrientationVerification);
+
+				readyToSendManchester = 0;
+			}
 
 			break;
 		case MAIN_PREHENSEUR:
@@ -233,6 +260,27 @@ int main(void) {
 		default:
 			setState(&mainState, MAIN_IDLE);
 		}
+
+		/* send measure position and speed */
+		// il envoie des donnees apres que readyToSendData == 1 donc apres avoir recu une commande de mouvement.
+		if (readyToSendMoveMeasures && readyToSendData) {
+
+			float positionX = calculatePosition(
+					(numberOfPositionEdges1 + numberOfPositionEdges3) / 2);
+
+			float positionY = calculatePosition(
+					(numberOfPositionEdges2 + numberOfPositionEdges4) / 2);
+
+			float speedX = calculateSpeed(
+					(PID_SPEED1.myInput + PID_SPEED3.myInput) / 2);
+
+			float speedY = calculateSpeed(
+					(PID_SPEED2.myInput + PID_SPEED4.myInput) / 2);
+
+			sendMoveMeasures(positionX, positionY, speedX, speedY);
+
+			readyToSendMoveMeasures = 0;
+		}
 	}
 }
 
@@ -250,12 +298,12 @@ extern void EXTI4_IRQHandler(void) {
 extern void EXTI9_5_IRQHandler(void) {
 	/* Make sure that interrupt flag is set */
 
-	// wheel 1 channel 1
+// wheel 1 channel 1
 	if (EXTI_GetITStatus(EXTI_Line5) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges1++;
 
-		wheel1Channel1UP = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_5);
+		wheel1Channel1UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_5);
 		wheel1Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_6);
 
 		// check wheel 1
@@ -279,7 +327,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		/* increase ticks */
 		numberOfSpeedEdges1++;
 
-		wheel1Channel1UP = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_5);
+		wheel1Channel1UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_5);
 		wheel1Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_6);
 
 		// check wheel 1
@@ -440,33 +488,33 @@ extern void TIM2_IRQHandler() {
 	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
 
-		/* update Speed pids inputs */
-		/*if (speedDirection1 == SPEED_DIRECTION_FORWARD) {
-		 PID_SPEED1.myInput = numberOfSpeedEdges1;
-		 } else if (speedDirection1 == SPEED_DIRECTION_BACKWARD) {
-		 PID_SPEED1.myInput = -numberOfSpeedEdges1;
-		 }
-		 if (speedDirection2 == SPEED_DIRECTION_FORWARD) {
+		/* update Speed pids inputs ticks with direction sign */
+		if (speedDirection1 == SPEED_DIRECTION_FORWARD) {
+			PID_SPEED1.myInput = numberOfSpeedEdges1;
+		} else if (speedDirection1 == SPEED_DIRECTION_BACKWARD) {
+			PID_SPEED1.myInput = -numberOfSpeedEdges1;
+		}
+		if (speedDirection2 == SPEED_DIRECTION_FORWARD) {
+			PID_SPEED2.myInput = numberOfSpeedEdges2;
+		} else if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
+			PID_SPEED2.myInput = -numberOfSpeedEdges2;
+		}
+		if (speedDirection3 == SPEED_DIRECTION_FORWARD) {
+			PID_SPEED3.myInput = numberOfSpeedEdges3; // slave
+		} else if (speedDirection3 == SPEED_DIRECTION_BACKWARD) {
+			PID_SPEED3.myInput = -numberOfSpeedEdges3; // slave
+
+		}
+		if (speedDirection4 == SPEED_DIRECTION_FORWARD) {
+			PID_SPEED4.myInput = numberOfSpeedEdges4; // slave
+		} else if (speedDirection4 == SPEED_DIRECTION_BACKWARD) {
+			PID_SPEED4.myInput = -numberOfSpeedEdges4; // slave
+		}
+
+		/*PID_SPEED1.myInput = numberOfSpeedEdges1;
 		 PID_SPEED2.myInput = numberOfSpeedEdges2;
-		 } else if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
-		 PID_SPEED2.myInput = -numberOfSpeedEdges2;
-		 }
-		 if (speedDirection3 == SPEED_DIRECTION_FORWARD) {
-		 PID_SPEED3.myInput = numberOfSpeedEdges3; // slave
-		 } else if (speedDirection3 == SPEED_DIRECTION_BACKWARD) {
-		 PID_SPEED3.myInput = -numberOfSpeedEdges3; // slave
-
-		 }
-		 if (speedDirection4 == SPEED_DIRECTION_FORWARD) {
-		 PID_SPEED4.myInput = numberOfSpeedEdges4; // slave
-		 } else if (speedDirection4 == SPEED_DIRECTION_BACKWARD) {
-		 PID_SPEED4.myInput = -numberOfSpeedEdges4; // slave
-		 }*/
-
-		PID_SPEED1.myInput = numberOfSpeedEdges1;
-		PID_SPEED2.myInput = numberOfSpeedEdges2;
-		PID_SPEED3.myInput = numberOfSpeedEdges3;
-		PID_SPEED4.myInput = numberOfSpeedEdges4;
+		 PID_SPEED3.myInput = numberOfSpeedEdges3;
+		 PID_SPEED4.myInput = numberOfSpeedEdges4;*/
 
 		ticksBuffer4[ticksIndex4] = numberOfSpeedEdges2;
 		ticksIndex4++;
@@ -493,15 +541,13 @@ extern void TIM2_IRQHandler() {
 
 		sendMeasureCounter++;
 
-		if (sendMeasureCounter == 5) {
+		if (sendMeasureCounter == 10) {
 			/* envoyer les mesures captees, a remplacer par USART */
-			/*sendMoveMeasures(numberOfPositionEdges1, numberOfPositionEdges2,
-			 numberOfPositionEdges3, numberOfPositionEdges4,
-			 numberOfSpeedEdges1, numberOfSpeedEdges2,
-			 numberOfSpeedEdges3, numberOfSpeedEdges4);*/
-
+			readyToSendMoveMeasures = 1;
 			sendMeasureCounter = 0;
 		}
+
+		resetEncoderSpeedVariables();
 
 #ifdef ENABLE_ACQUIS
 		if (bufferWheelIndex1 < MAX_WHEEL_INDEX) {
@@ -590,7 +636,7 @@ extern void TIM2_IRQHandler() {
 
 		if (bufferPositionPIDIndex1 < MAX_POSITION_INDEX) {
 			bufferPositionPID1[bufferPositionPIDIndex1++] =
-			calculatePosition((numberOfPositionEdges1 + numberOfPositionEdges3));
+			calculatePosition((numberOfPositionEdges1 + numberOfPositionEdges3)/2);
 		}
 		if (bufferSpeedPIIndex1 < MAX_POSITION_INDEX) {
 			bufferSpeedPI1[bufferSpeedPIIndex1++] = numberOfSpeedEdges1;
@@ -605,7 +651,6 @@ extern void TIM2_IRQHandler() {
 			bufferSpeedPI4[bufferSpeedPIIndex4++] = numberOfSpeedEdges4;
 		}
 #endif
-		resetEncoderSpeedVariables();
 	}
 }
 
@@ -613,32 +658,40 @@ extern void TIM2_IRQHandler() {
 extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 	switch (type) {
 	case COMMAND_MOVE:
-		if (len == 8 && type == 0) {
+		if (len == 8) {
 			// stop the robot before moving again
-			stopMove();
+			/*stopMove();
 
-			newMoveCommand = 1;
+			 newMoveCommand = 1;
 
-			isRobotRotating = 0;
+			 isRobotRotating = 0;
 
-			setMoveSetpoints(data);
+			 setMoveSetpoints(data);
 
-			setState(&mainState, MAIN_PID);
+			 setState(&mainState, MAIN_PID);*/
 		}
 		break;
 	case COMMAND_ROTATE:
-		if (len == 4 && type == COMMAND_ROTATE) {
+		if (len == 4) {
 			// stop the robot before rotating
-			stopMove();
+			/*stopMove();
+
+			 newMoveCommand = 1;
+
+			 isRobotRotating = 1;
+
+			 setRotateSetpoints(data);
+
+			 //setRotateSettings(data);
+			 setCustomRotateSettings(data);
+
+			 setState(&mainState, MAIN_PID);*/
 
 			newMoveCommand = 1;
 
 			isRobotRotating = 1;
 
-			setRotateSetpoints(data);
-
-			//setRotateSettings(data);
-			setCustomRotateSettings(data);
+			setRotatePidSetpoints(data);
 
 			setState(&mainState, MAIN_PID);
 		}
@@ -680,6 +733,7 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 		setState(&mainState, MAIN_MOVE_DOWN_PREHENSOR);
 		break;
 	case COMMAND_DECODE_MANCHESTER:
+		readyToSendManchester = 1;
 		setState(&mainState, MAIN_MANCH);
 		break;
 	case COMMAND_STOP_DECODE_MANCHESTER:
@@ -691,6 +745,14 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 		break;
 	case COMMAND_GREEN_LED:
 		setState(&mainState, MAIN_TURN_GREEN_LED);
+		break;
+	case COMMAND_SET_SPEED:
+		if (len == 8) {
+			newSpeedSetpointCommand = 1;
+			readyToSendData = 1;
+			setSpeedPidSetpoints(data);
+			setState(&mainState, MAIN_PID);
+		}
 		break;
 	}
 }
