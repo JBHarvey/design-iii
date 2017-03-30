@@ -145,9 +145,6 @@ int main(void) {
 	TM_HD44780_Puts(0, 0, "Captain ready");
 	/* Test routine LEDs */
 	//startLEDsRoutine();
-	MotorSetDirection(1, CLOCK);
-	MotorSetSpeed(1, 30);
-
 	while (1) {
 		/* Main state machine */
 		switch (mainState) {
@@ -202,10 +199,10 @@ int main(void) {
 			break;
 		case MAIN_MANCH:
 
-			tryToDecodeManchesterCode(&manchesterState, manchesterBuffer,
-					&manchesterFigureVerification,
-					manchesterOrientationVerification,
-					&manchesterFactorVerification);
+			/*tryToDecodeManchesterCode(&manchesterState, manchesterBuffer,
+			 &manchesterFigureVerification,
+			 manchesterOrientationVerification,
+			 &manchesterFactorVerification);*/
 
 			/* conidition pour code valide
 			 * if (manchesterFactorVerification != 0
@@ -213,7 +210,8 @@ int main(void) {
 			 && readyToSendManchester)
 			 *********************************************/
 
-			if (readyToSendManchester && readyToSendData) {
+			if (readyToSendManchester && readyToSendData
+					&& manchesterOrientationVerification[2] != ' ') {
 
 				sendManchesterCode(manchesterFigureVerification,
 						manchesterFactorVerification,
@@ -303,7 +301,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		/* increase ticks */
 		numberOfSpeedEdges1++;
 
-		wheel1Channel1UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_5);
+		wheel1Channel1UP = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_5);
 		wheel1Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_6);
 
 		// check wheel 1
@@ -327,7 +325,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		/* increase ticks */
 		numberOfSpeedEdges1++;
 
-		wheel1Channel1UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_5);
+		wheel1Channel1UP = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_5);
 		wheel1Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_6);
 
 		// check wheel 1
@@ -541,11 +539,11 @@ extern void TIM2_IRQHandler() {
 
 		sendMeasureCounter++;
 
-		if (sendMeasureCounter == 10) {
-			/* envoyer les mesures captees, a remplacer par USART */
-			readyToSendMoveMeasures = 1;
-			sendMeasureCounter = 0;
-		}
+		//if (sendMeasureCounter == 10) {
+		/* envoyer les mesures captees, a remplacer par USART */
+		readyToSendMoveMeasures = 1;
+		sendMeasureCounter = 0;
+		//}
 
 		resetEncoderSpeedVariables();
 
@@ -733,6 +731,7 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 		setState(&mainState, MAIN_MOVE_DOWN_PREHENSOR);
 		break;
 	case COMMAND_DECODE_MANCHESTER:
+		readyToSendData = 1;
 		readyToSendManchester = 1;
 		setState(&mainState, MAIN_MANCH);
 		break;
