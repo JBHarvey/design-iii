@@ -44,8 +44,9 @@ void Navigator_updateNavigableMap(struct Robot *robot)
 {
     int map_has_been_updated = robot->world_camera->map_sensor->has_received_new_data;
 
+    Flags_setNavigableMapIsReady(robot->current_state->flags, 1);
+
     if(map_has_been_updated) {
-        Flags_setNavigableMapIsReady(robot->current_state->flags, 1);
         struct Map *base_map = robot->world_camera->map;
         int robot_radius = robot->world_camera->robot_radius;
         robot->navigator->navigable_map = Map_fetchNavigableMap(base_map, robot_radius);
