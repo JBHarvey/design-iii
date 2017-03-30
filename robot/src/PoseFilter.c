@@ -47,6 +47,6 @@ void PoseFilter_updateFromCameraOnly(struct PoseFilter *pose_filter)
         struct Pose *current_robot_pose = robot->current_state->pose;
         struct Pose *world_camera_pose = robot->world_camera->robot_pose;
         Pose_copyValuesFrom(current_robot_pose, world_camera_pose);
-        Sensor_readsData(robot->world_camera->robot_sensor);
+        //Sensor_readsData(robot->world_camera->robot_sensor);
     }
 }
