@@ -27,13 +27,6 @@ int main(int argc, char *argv[])
 
     /*
 
-    for(int i = 0; i < 5; ++i) {
-        CommandSender_sendLightRedLEDCommand(command_sender);
-        waitASecond();
-        CommandSender_sendLightGreenLEDCommand(command_sender);
-        waitASecond();
-    }
-
     while(1) {
         RobotServer_communicate(robot_server);
         PoseFilter_executeFilter(pose_filter, callbacks.updateFromCameraOnly);
@@ -53,6 +46,19 @@ int main(int argc, char *argv[])
     // TEST OF CAMERA AND PATH
     // Initialise the camera
     // The camera will have to be initialized and freed in the main
+
+    RobotServer_sendLowerPenCommand();
+    waitASecond();
+    RobotServer_sendRisePenCommand();
+    waitASecond();
+
+    for(int i = 0; i < 15; ++i) {
+        CommandSender_sendLightRedLEDCommand(robot->command_sender);
+        waitASecond();
+        CommandSender_sendLightGreenLEDCommand(robot->command_sender);
+        waitASecond();
+    }
+
     OnboardCamera_init();
 
     IplImage *test_image;
