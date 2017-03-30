@@ -27,7 +27,6 @@ int main(int argc, char *argv[])
 
     /*
 
-    */
     while(1) {
         RobotServer_communicate(robot_server);
         PoseFilter_executeFilter(pose_filter, callbacks.updateFromCameraOnly);
@@ -36,13 +35,13 @@ int main(int argc, char *argv[])
         //Robot_sendPoseEstimate(robot);
     }
 
+    */
 
 
 
 
 
     // HERE--------------------------------------
-    /*
 
     RobotServer_sendLowerPenCommand();
     waitASecond();
@@ -83,6 +82,7 @@ int main(int argc, char *argv[])
     OnboardCamera_deleteImage(&test_image);
     OnboardCamera_freeCamera();
 
+    /*
     // TO HERE ----------------------------------------------
     */
 
