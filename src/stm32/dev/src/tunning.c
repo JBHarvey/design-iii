@@ -309,47 +309,47 @@ void tunningSendIdenWheels() {
 #ifdef ENABLE_SPEED_PI
 void tunningSpeedPI() {
 
-	// Initialization of wheel 1 PIDs
-	PID_init(&tunningPI1, PID_SPEED1_KP, PID_SPEED1_KI, 0,
-			PID_Direction_Direct, PID_SPEED1_N);
-	PID_SetOutputLimits(&tunningPI1, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
-	tunningPI1.mySetpoint = CONSIGNE_SPEED;
-
-	// Initialization of wheel 2 PIDs
-	PID_init(&tunningPI2, PID_SPEED2_KP, PID_SPEED2_KI, 0,
-			PID_Direction_Direct, PID_SPEED2_N);
-	PID_SetOutputLimits(&tunningPI2, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
-	tunningPI2.mySetpoint = CONSIGNE_SPEED;
-
-	// Initialization of wheel 3 PIDs
-	PID_init(&tunningPI3, PID_SPEED3_KP, PID_SPEED3_KI, 0,
-			PID_Direction_Direct, PID_SPEED3_N);
-	PID_SetOutputLimits(&tunningPI3, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
-	tunningPI3.mySetpoint = CONSIGNE_SPEED;
-
-	// Initialization of wheel 4 PIDs
-	PID_init(&tunningPI4, PID_SPEED4_KP, PID_SPEED4_KI, 0,
-			PID_Direction_Direct, PID_SPEED4_N);
-	PID_SetOutputLimits(&tunningPI4, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
-	tunningPI4.mySetpoint = CONSIGNE_SPEED;
-
 	// Setting of direction for wheels
 	if (CONSIGNE_SPEED > 0) {
 		MotorSetDirection(1, COUNTER_CLOCK);
-		MotorSetDirection(2, COUNTER_CLOCK);
+		MotorSetDirection(2, BRAKE_G);
 		MotorSetDirection(3, CLOCK);
-		MotorSetDirection(4, CLOCK);
+		MotorSetDirection(4, BRAKE_G);
 	} else if (CONSIGNE_SPEED < 0) {
-		MotorSetDirection(1, COUNTER_CLOCK);
-		MotorSetDirection(2, COUNTER_CLOCK);
-		MotorSetDirection(3, CLOCK);
-		MotorSetDirection(4, CLOCK);
+		MotorSetDirection(1, CLOCK);
+		MotorSetDirection(2, BRAKE_G);
+		MotorSetDirection(3, COUNTER_CLOCK);
+		MotorSetDirection(4, BRAKE_G);
 	} else {
 		MotorSetDirection(1, BRAKE_G);
 		MotorSetDirection(2, BRAKE_G);
 		MotorSetDirection(3, BRAKE_G);
 		MotorSetDirection(4, BRAKE_G);
 	}
+
+	// Initialization of wheel 1 PIDs
+	PID_init(&tunningPI1, PID_SPEED1_KP, PID_SPEED1_KI, 0,
+			PID_Direction_Direct, PID_SPEED1_N);
+	PID_SetOutputLimits(&tunningPI1, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
+	tunningPI1.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED);
+
+	// Initialization of wheel 2 PIDs
+	PID_init(&tunningPI2, PID_SPEED2_KP, PID_SPEED2_KI, 0,
+			PID_Direction_Direct, PID_SPEED2_N);
+	PID_SetOutputLimits(&tunningPI2, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
+	tunningPI2.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED);
+
+	// Initialization of wheel 3 PIDs
+	PID_init(&tunningPI3, PID_SPEED3_KP, PID_SPEED3_KI, 0,
+			PID_Direction_Direct, PID_SPEED3_N);
+	PID_SetOutputLimits(&tunningPI3, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
+	tunningPI3.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED);
+
+	// Initialization of wheel 4 PIDs
+	PID_init(&tunningPI4, PID_SPEED4_KP, PID_SPEED4_KI, 0,
+			PID_Direction_Direct, PID_SPEED4_N);
+	PID_SetOutputLimits(&tunningPI4, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
+	tunningPI4.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED);
 
 	// Initialise l'état
 	bTunningSpeedDone = 0;

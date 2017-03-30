@@ -58,29 +58,29 @@
 #define DEPLACEMENT_TOLERANCE 0.005
 /* PID1 */
 // Parametres en vitesse
-#define PID_SPEED1_KP 0.35//30//4.87
-#define PID_SPEED1_KI 1.3 //107.6
-#define PID_SPEED1_KD 0.0
+#define PID_SPEED1_KP 4 // 1.8 //1.2 //0.35//30//4.87
+#define PID_SPEED1_KI 5 // 3.5 // 3 // 2.5 // 2 // BON 1.3 //107.6
+#define PID_SPEED1_KD 0
 #define PID_SPEED1_N 0.0
 #define PID_SPEED1_OFFSET 5
 /* PID2 */
 // Parametres en vitesse
-#define PID_SPEED2_KP 0.38//30//4.87
-#define PID_SPEED2_KI 1//0.0006 //107.6
+#define PID_SPEED2_KP 4 // BON 0.38//30//4.87
+#define PID_SPEED2_KI 5 // 1.5 // BON 1//0.0006 //107.6
 #define PID_SPEED2_KD 0.0
 #define PID_SPEED2_N 0.0
 #define PID_SPEED2_OFFSET 5
 /* PID3 */
 // Parametres en vitesse
-#define PID_SPEED3_KP 0.39 //30//4.87
-#define PID_SPEED3_KI 1.3 //0.0006 //107.6
-#define PID_SPEED3_KD 0.0
+#define PID_SPEED3_KP 4 // 1.4 //30//4.87
+#define PID_SPEED3_KI 5 //0.0006 //107.6
+#define PID_SPEED3_KD 0
 #define PID_SPEED3_N 0.0
 #define PID_SPEED3_OFFSET 5
 /* PID4 */
 // Parametres en vitesse
-#define PID_SPEED4_KP 0.4259//30//4.87
-#define PID_SPEED4_KI 1.5 //107.6
+#define PID_SPEED4_KP 4 // 0.4259//30//4.87
+#define PID_SPEED4_KI 5 //107.6
 #define PID_SPEED4_KD 0.0
 #define PID_SPEED4_N 0.0
 #define PID_SPEED4_OFFSET 5
@@ -117,7 +117,7 @@
 #define DOUBLE_CHANNEL_TICKS 6400
 #define METERS_PER_TICK 0.00003387029
 #define MAX_SPEED_COMMAND 40
-#define MIN_SPEED_COMMAND -40
+#define MIN_SPEED_COMMAND 0
 #define MIN_POS_COMMAND -0.2
 #define MAX_POS_COMMAND 0.2
 

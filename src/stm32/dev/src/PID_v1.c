@@ -74,15 +74,15 @@ bool PID_Compute_Speed(PidType* pid) {
 //  unsigned long timeChange = (now - pid->lastTime);
 //  if (timeChange >= pid->SampleTime) {
 	/*Compute all the working error variables*/
-	float preInput = pid->myInput;
-	FloatType input = calculateSpeed(preInput);
+	float input = pid->myInput;
+	//FloatType input = calculateSpeed(preInput);
 	pid->error = pid->mySetpoint - input;
 	pid->ITerm += (pid->ki * pid->error);
 	if (pid->ITerm > pid->outMax)
 		pid->ITerm = pid->outMax;
 	else if (pid->ITerm < pid->outMin)
 		pid->ITerm = pid->outMin;
-	FloatType dInput = (input - calculateSpeed(pid->lastInput));
+	FloatType dInput = (input - pid->lastInput); // (input - calculateSpeed(pid->lastInput));
 
 	/*Compute PID Output*/
 	FloatType output = pid->kp * pid->error + pid->ITerm - pid->kd * dInput;
@@ -236,7 +236,7 @@ void PID_SetOutputLimits(PidType* pid, FloatType Min, FloatType Max) {
 void PID_SetMode(PidType* pid, PidModeType Mode) {
 	bool newAuto = (Mode == PID_Mode_Automatic);
 	if (newAuto == !pid->inAuto) { /*we just went from manual to auto*/
-		PID_Initialize(pid);
+		//PID_Initialize(pid);
 	}
 	pid->inAuto = newAuto;
 }
@@ -295,14 +295,17 @@ FloatType calculateSpeed(FloatType speedEdges) {
 
 	FloatType speedResult = (speedEdges * METERS_PER_TICK)
 			/ SPEED_CALC_TIME_DELAY;
-
-	ticksBuffer5[ticksIndex5] = speedResult;
-	ticksIndex5++;
-	if (ticksIndex5 >= 100) {
-		ticksIndex5 = 0;
-	}
-
 	return speedResult;
+}
+
+uint16_t calculateSpeedToTicks(FloatType speedInMeters) {
+	if (speedInMeters < 0) {
+		speedInMeters = -speedInMeters;
+	}
+	uint16_t ticksResult = (speedInMeters * SPEED_CALC_TIME_DELAY)
+			/ METERS_PER_TICK;
+
+	return ticksResult;
 }
 
 FloatType calculatePosition(FloatType positionEdges) {

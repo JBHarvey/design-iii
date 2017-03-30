@@ -126,6 +126,8 @@ PidDirectionType PID_GetDirection(PidType* pid);
 
 FloatType calculateSpeed(FloatType speedEdges);
 
+uint16_t calculateSpeedToTicks(FloatType speedInMeters);
+
 FloatType calculatePosition(FloatType positionEdges);
 
 //void PID_Initialize(PidType* pid);
