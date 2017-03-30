@@ -173,9 +173,9 @@ void DataReceiver_updateWorld(struct WorldCamera *world_camera, struct Communica
         updateObstacles(map, world.environment);
         updatePaintingZone(map, world.environment);
         Sensor_receivesData(world_camera->map_sensor);
+        updateWorldCameraRobot(world_camera, world.robot);
     }
 
-    updateWorldCameraRobot(world_camera, world.robot);
 }
 
 void DataReceiver_updateWheelsTranslation(struct Wheels *wheels, struct Communication_Translation translation)

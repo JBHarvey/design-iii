@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
         Robot_updateBehaviorIfNeeded(robot);
         Robot_act(robot);
         PoseFilter_executeFilter(pose_filter, callbacks.updateFromCameraOnly);
-        //Robot_sendPoseEstimate(robot);
+        Robot_sendPoseEstimate(robot);
     }
 
 
