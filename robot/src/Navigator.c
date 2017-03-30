@@ -44,10 +44,7 @@ void Navigator_updateNavigableMap(struct Robot *robot)
 {
     int map_has_been_updated = robot->world_camera->map_sensor->has_received_new_data;
 
-    Flags_setNavigableMapIsReady(robot->current_state->flags, map_has_been_updated);
-
     if(map_has_been_updated) {
-        Robot_sendReadyToStartSignal(robot);
         struct Map *base_map = robot->world_camera->map;
         int robot_radius = robot->world_camera->robot_radius;
         robot->navigator->navigable_map = Map_fetchNavigableMap(base_map, robot_radius);
@@ -56,6 +53,8 @@ void Navigator_updateNavigableMap(struct Robot *robot)
         // TODO: add validation that map is navigable && robot can go through the obstacles
         // Add to tests
     }
+
+    Flags_setNavigableMapIsReady(robot->current_state->flags, map_has_been_updated);
 }
 
 int Navigator_isAngleWithinRotationTolerance(int angle)
