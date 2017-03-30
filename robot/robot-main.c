@@ -19,6 +19,9 @@ int main(int argc, char *argv[])
     while(1) {
         RobotServer_communicate(robot_server);
         Robot_updatePoseEstimate(robot);
+        Robot_updateBehaviorIfNeeded(robot);
+        Robot_act(robot);
+        Robot_sendPoseEstimate(robot);
     }
 
 
