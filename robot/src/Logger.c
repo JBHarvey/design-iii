@@ -164,7 +164,7 @@ static void logRobot(struct Communication_Object robot)
     int x = robot.zone.pose.coordinates.x;
     int y = robot.zone.pose.coordinates.y;
     int theta = robot.zone.pose.theta;
-    fprintf(file_logger->log_file, "\n%s%s \n%sradius:  %d\n%sx:  %d\n%sy:  %d\n%stheta:  %d",
+    fprintf(file_logger->log_file, "\n%s%s \n%sradius:  %d\n%sx:  %d\n%sy:  %d\n%stheta:  %d\n",
             ITEM, ROBOT_UPDATE,
             SUB, radius,
             SUB, x,
