@@ -1,33 +1,42 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "Logger.h"
+#include "PoseFilter.h"
 
-static struct Robot *robot;
+
+struct PoseFilter *pose_filter;
+struct Robot *robot;
 struct RobotServer *robot_server;
-const int port = 35794;
-//char *ttyACM = "/dev/null";
-char *ttyACM = "/dev/ttyACM0";
-
 int main(int argc, char *argv[])
 {
+    const int port = 35794;
+    //char *ttyACM = "/dev/null";
+    char *ttyACM = "/dev/ttyACM0";
+
+    struct PoseFilter_Callbacks callbacks = PoseFilter_fetchCallbacks();
 
     robot = Robot_new();
+    pose_filter = PoseFilter_new(robot);
     robot_server = RobotServer_new(robot, port, ttyACM);
 
     Logger_startLoggingRobot(robot);
 
     while(1) {
         RobotServer_communicate(robot_server);
-        Robot_updatePoseEstimate(robot);
+        PoseFilter_executeFilter(pose_filter, callbacks.updateFromCameraOnly);
+        Robot_updateBehaviorIfNeeded(robot);
+        Robot_act(robot);
+        Robot_sendPoseEstimate(robot);
     }
 
 
     RobotServer_delete(robot_server);
     Robot_delete(robot);
+    PoseFilter_delete(pose_filter);
 
     return 0;
-    /*
 
+    /*
     for(int i = 0; i < 15; ++i) {
         CommandSender_sendLightRedLEDCommand(command_sender);
         waitASecond();

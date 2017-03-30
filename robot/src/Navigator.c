@@ -78,6 +78,15 @@ int Navigator_isAngleWithinRotationTolerance(int angle)
 
 static int convertDistanceToSpeed(int distance)
 {
+    /*
+     *
+     * 0.08 medium speed
+     *
+     * 0.04 low speed distance < 1000
+     *
+     * 0 stop distance < 100
+     *
+     */
     return distance;
 }
 
