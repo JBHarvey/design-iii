@@ -175,7 +175,7 @@ static void logRobot(struct Communication_Object robot)
 static const char *ENVIRONMENT_HAS_CHANGED = "Environment has changed: ";
 static void logEnvironment(struct Communication_World world)
 {
-    fprintf(file_logger->log_file, "\n%s%s : %d",
+    fprintf(file_logger->log_file, "\n%s%s : %d\n",
             ITEM, ENVIRONMENT_HAS_CHANGED,
             world.environment_has_changed);
 }
