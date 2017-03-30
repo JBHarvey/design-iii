@@ -14,12 +14,10 @@ void RobotBehaviors_prepareInitialBehaviors(struct Robot *robot)
     Flags_setNavigableMapIsReady(map_is_ready_flags, 1);
     struct Behavior *behavior_send_ready_to_start_when_map_is_navigable;
     behavior_send_ready_to_start_when_map_is_navigable = BehaviorBuilder_build(
-                //BehaviorBuilder_withFreePoseEntry(
-                //BehaviorBuilder_withFlags(map_is_ready_flags,
                 BehaviorBuilder_withFreeEntry(
-                    BehaviorBuilder_withAction(sendReadyToStart,
-                            BehaviorBuilder_end())));
-    //BehaviorBuilder_end()))));
+                    BehaviorBuilder_withFlags(map_is_ready_flags,
+                            BehaviorBuilder_withAction(sendReadyToStart,
+                                    BehaviorBuilder_end()))));
 
     Behavior_addChild(robot->current_behavior, behavior_send_ready_to_start_when_map_is_navigable);
 
