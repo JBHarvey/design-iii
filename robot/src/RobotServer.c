@@ -334,7 +334,7 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
     // TODO : ADD:
     // Wheels Translation
     // Wheels Rotation
-
+    printf("packet type: %u length: %u\n", type, length);
     switch(type) {
 
         case MANCHESTER_CODE_DECODED:
