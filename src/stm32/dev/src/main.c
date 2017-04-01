@@ -213,6 +213,8 @@ int main(void) {
 							manchesterFactorVerification,
 							manchesterOrientationVerification);
 
+					manchesterOrientationVerification[2] = ' ';
+
 					readyToSendManchester = 0;
 				}
 			}

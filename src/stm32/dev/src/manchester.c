@@ -206,34 +206,48 @@ void tryToDecodeManchesterCode(uint8_t *manchesterState,
 		if (decodeManchester(informationBits, manchesterBuffer)
 				== VALID_INFORMATION) {
 
-			uint8_t figure = getFigureFromInformationBits(informationBits);
+			*manchesterFigureVerification = getFigureFromInformationBits(
+					informationBits);
 
-			char orientation[ORIENTATION_LENGTH];
-			setOrientationFromInformationBits(informationBits, orientation);
+			setOrientationFromInformationBits(informationBits,
+					manchesterOrientationVerification);
 
-			uint8_t factor = getFactorFromInformationBits(informationBits);
+			*manchesterFactorVerification = getFactorFromInformationBits(
+					informationBits);
 
-			if (isSameDataThanPreviousIteration(&figure,
-					manchesterFigureVerification, orientation,
-					manchesterOrientationVerification, &factor,
-					manchesterFactorVerification)) {
-				char messageToDisplay[MESSAGE_TO_DISPLAY_LENGTH];
+			char messageToDisplay[MESSAGE_TO_DISPLAY_LENGTH];
 
-				setMessageToDisplay(figure, orientation, factor,
-						messageToDisplay);
-				displayManchesterMessage(messageToDisplay);
-				disableExternalInterruptLine4();
-				disableTimer5Interrupt();
-				*manchesterState = MANCHESTER_IDLE;
-				GPIO_SetBits(GPIOD, GPIO_Pin_13);
-			} else {
-				*manchesterFigureVerification = figure;
-				strcpy(manchesterOrientationVerification, orientation);
-				*manchesterFactorVerification = factor;
-				disableTimer5Interrupt();
-				*manchesterState = MANCHESTER_WAIT_FOR_DECODING;
-				initializeExternalInterruptLine4();
-			}
+			setMessageToDisplay(*manchesterFigureVerification,
+					manchesterOrientationVerification,
+					*manchesterFactorVerification, messageToDisplay);
+
+			displayManchesterMessage(messageToDisplay);
+			disableExternalInterruptLine4();
+			disableTimer5Interrupt();
+			*manchesterState = MANCHESTER_IDLE;
+			GPIO_SetBits(GPIOD, GPIO_Pin_13);
+
+			/*if (isSameDataThanPreviousIteration(&figure,
+			 manchesterFigureVerification, orientation,
+			 manchesterOrientationVerification, &factor,
+			 manchesterFactorVerification)) {
+			 char messageToDisplay[MESSAGE_TO_DISPLAY_LENGTH];
+
+			 setMessageToDisplay(figure, orientation, factor,
+			 messageToDisplay);
+			 displayManchesterMessage(messageToDisplay);
+			 disableExternalInterruptLine4();
+			 disableTimer5Interrupt();
+			 *manchesterState = MANCHESTER_IDLE;
+			 GPIO_SetBits(GPIOD, GPIO_Pin_13);
+			 } else {
+			 *manchesterFigureVerification = figure;
+			 strcpy(manchesterOrientationVerification, orientation);
+			 *manchesterFactorVerification = factor;
+			 disableTimer5Interrupt();
+			 *manchesterState = MANCHESTER_WAIT_FOR_DECODING;
+			 initializeExternalInterruptLine4();
+			 }*/
 
 		} else {
 			// On désactive l'interruption pour qu'il recommence
