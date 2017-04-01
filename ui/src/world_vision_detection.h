@@ -4,6 +4,7 @@
 #include "Defines.h"
 #include "world_vision_calibration.h"
 #include "vision.h"
+#include "markers.h"
 
 
 struct DetectedThings {

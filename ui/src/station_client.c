@@ -167,7 +167,8 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
                 double dx = (double) x;
                 double dy = (double) y;
                 struct Point3D point = PointTypes_createPoint3D(dx, dy, 0);
-                WorldVision_setRobotPosition(point);
+                Logger_startRobotConnectionHandlerSectionAndAppend("Robot pose received.");
+                //WorldVision_setRobotPosition(point);
                 break;
             }
 
@@ -175,6 +176,7 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
                 Logger_startRobotConnectionHandlerSectionAndAppend("Robot signaled that he is ready to start a cycle.");
                 StationInterface_activateStartCycleButton();
                 StationClientSender_sendReadyToStartSignalReceivedAck();
+                StationClientSender_removeForceEnvironmentHasChanged();
                 break;
             }
 
