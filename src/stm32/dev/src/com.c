@@ -92,8 +92,8 @@ void sendManchesterCode(uint8_t figure, uint8_t factor, uint8_t *orientation) {
 	uint8_t dataToSend[5];
 	dataToSend[0] = COMMAND_DECODED_MANCHESTER;
 	dataToSend[1] = 3;
-	dataToSend[2] = 1;
-	dataToSend[3] = 4;
+	dataToSend[2] = figure;
+	dataToSend[3] = factor;
 
 	switch (orientation[2]) {
 	case 'o':
@@ -106,11 +106,11 @@ void sendManchesterCode(uint8_t figure, uint8_t factor, uint8_t *orientation) {
 		dataToSend[4] = 'S';
 		break;
 	case 'e':
-		dataToSend[4] = 'e';
+		dataToSend[4] = 'W';
 		break;
 	}
 
-	dataToSend[4] = 'N';
+	//dataToSend[4] = 'N';
 
 	VCP_DataTx(dataToSend, 5);
 }

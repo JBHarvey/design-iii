@@ -29,6 +29,11 @@ uint8_t findIndexOfBeginningCycle(uint16_t analyserIndex,
 	return 0;
 }
 
+/********************************************************
+ * param: manchesterBuffer contenant les bits doubles
+ * return l'index d'un début de cycle.
+ *
+ *********************************************************/
 uint8_t findAValidCycle(uint8_t *manchesterBuffer) {
 	uint8_t analyserIndex = 0;
 	uint8_t beginningCycleIndex = 0;
@@ -63,6 +68,13 @@ uint8_t decodeInformationBits(uint8_t indexOfBeginningCycle,
 	}
 	return VALID_INFORMATION;
 }
+
+/*******************************************************************
+ * param: informationBits : buffer contenant les bits simples
+ * param: manchesterBuffer: buffer contenant les bits doubles captés par la pin.
+ * return: VALID_INFORMATION OU BAD_INFORMATION
+ *
+ *******************************************************************/
 
 uint8_t decodeManchester(uint8_t * informationBits, uint8_t *manchesterBuffer) {
 	uint8_t indexOfBeginningCycle = findAValidCycle(manchesterBuffer);
@@ -189,6 +201,8 @@ void tryToDecodeManchesterCode(uint8_t *manchesterState,
 
 		// les 8 bits contenant l'information
 		uint8_t informationBits[INFORMATION_BITS_LENGTH];
+
+		// decode le code manchester et retourne VALID_INFORMATION si valide
 		if (decodeManchester(informationBits, manchesterBuffer)
 				== VALID_INFORMATION) {
 
@@ -222,6 +236,7 @@ void tryToDecodeManchesterCode(uint8_t *manchesterState,
 			}
 
 		} else {
+			// On désactive l'interruption pour qu'il recommence
 			disableTimer5Interrupt();
 			*manchesterState = MANCHESTER_WAIT_FOR_DECODING;
 			initializeExternalInterruptLine4();

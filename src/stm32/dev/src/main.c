@@ -29,15 +29,6 @@
 #include "prehenseur.h"
 #include "motion.h"
 
-#define TAILLE 500
-
-// buffer ticks for debug
-volatile int ticksIndex4 = 0;
-volatile int ticksBuffer4[TICKS_BUFFER_SIZE];
-
-volatile int speedIndex = 0;
-volatile uint16_t speedBuffer[MAX_SPEED_INDEX];
-
 volatile int mainState = MAIN_IDLE;
 
 // Buffer contenant tous les bits du manchester
@@ -61,24 +52,26 @@ volatile uint8_t readyToSendMoveMeasures = 0;
 
 volatile uint8_t readyToSendData = 0;
 
+volatile uint8_t initializeManchesterFlag = 0;
+
 extern void TIM5_IRQHandler() {
 	if (TIM_GetITStatus(TIM5, TIM_IT_Update) != RESET) {
 		TIM_ClearITPendingBit(TIM5, TIM_IT_Update);
 
 		switch (manchesterState) {
 		case MANCHESTER_FIRST:
-			//GPIO_ToggleBits(GPIOD, GPIO_Pin_12);
 			manchesterIndex = 0;
 			manchesterState = MANCHESTER_FILL;
 			TIM_SetAutoreload(TIM5, MANCHESTER_PERIOD * 4 - 1);
 			break;
 		case MANCHESTER_FILL:
-			//GPIO_ToggleBits(GPIOD, GPIO_Pin_13);
 			manchesterBuffer[manchesterIndex] = GPIO_ReadInputDataBit(GPIOD,
 					MANCHESTER_PIN);
 			manchesterIndex++;
-			if (manchesterIndex >= MANCHESTER_BUFFER_LENGTH)
+			if (manchesterIndex >= MANCHESTER_BUFFER_LENGTH) {
 				manchesterState = MANCHESTER_DECODE;
+				disableTimer5Interrupt();
+			}
 			break;
 		}
 	}
@@ -124,7 +117,7 @@ void initAll(void) {
 	// Manchester initialization
 	InitializeManchesterInput();
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
-	initializeExternalInterruptLine4();
+	//initializeExternalInterruptLine4();
 }
 
 int main(void) {
@@ -139,10 +132,8 @@ int main(void) {
 
 	turnOffLEDs();
 
-	//moveDownPrehensor();
-	//Delayms(800);
-
 	TM_HD44780_Puts(0, 0, "Captain ready");
+
 	/* Test routine LEDs */
 	//startLEDsRoutine();
 	while (1) {
@@ -190,7 +181,7 @@ int main(void) {
 			 }*/
 
 			if (newSpeedSetpointCommand) {
-				//resetPIDResidualValues();
+				resetPositionEncoderVariables();
 				newSpeedSetpointCommand = 0;
 			} else {
 				computeSpeedPIDS();
@@ -199,25 +190,31 @@ int main(void) {
 			break;
 		case MAIN_MANCH:
 
-			/*tryToDecodeManchesterCode(&manchesterState, manchesterBuffer,
-			 &manchesterFigureVerification,
-			 manchesterOrientationVerification,
-			 &manchesterFactorVerification);*/
+			if (initializeManchesterFlag == 1) {
+				initializeExternalInterruptLine4();
+				initializeManchesterFlag = 0;
+			} else {
 
-			/* conidition pour code valide
-			 * if (manchesterFactorVerification != 0
-			 && manchesterOrientationVerification[2] != ' '
-			 && readyToSendManchester)
-			 *********************************************/
+				tryToDecodeManchesterCode(&manchesterState, manchesterBuffer,
+						&manchesterFigureVerification,
+						manchesterOrientationVerification,
+						&manchesterFactorVerification);
 
-			if (readyToSendManchester && readyToSendData
-					&& manchesterOrientationVerification[2] != ' ') {
+				/* conidition pour code valide
+				 * if (manchesterFactorVerification != 0
+				 && manchesterOrientationVerification[2] != ' '
+				 && readyToSendManchester)
+				 *********************************************/
 
-				sendManchesterCode(manchesterFigureVerification,
-						manchesterFactorVerification,
-						manchesterOrientationVerification);
+				if (readyToSendManchester && readyToSendData
+						&& manchesterOrientationVerification[2] != ' ') {
 
-				readyToSendManchester = 0;
+					sendManchesterCode(manchesterFigureVerification,
+							manchesterFactorVerification,
+							manchesterOrientationVerification);
+
+					readyToSendManchester = 0;
+				}
 			}
 
 			break;
@@ -272,8 +269,16 @@ int main(void) {
 			float speedX = calculateSpeed(
 					(PID_SPEED1.myInput + PID_SPEED3.myInput) / 2);
 
+			if (speedDirection1 == SPEED_DIRECTION_BACKWARD) {
+				speedX = -speedX;
+			}
+
 			float speedY = calculateSpeed(
 					(PID_SPEED2.myInput + PID_SPEED4.myInput) / 2);
+
+			if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
+				speedY = -speedY;
+			}
 
 			sendMoveMeasures(positionX, positionY, speedX, speedY);
 
@@ -287,9 +292,9 @@ extern void EXTI4_IRQHandler(void) {
 		/* Clear interrupt flag */
 		EXTI_ClearITPendingBit (EXTI_Line4);
 		manchesterState = MANCHESTER_FIRST;
+		disableExternalInterruptLine4();
 		InitializeTimer5();
 		EnableTimer5Interrupt();
-		disableExternalInterruptLine4();
 	}
 }
 
@@ -487,38 +492,33 @@ extern void TIM2_IRQHandler() {
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
 
 		/* update Speed pids inputs ticks with direction sign */
-		if (speedDirection1 == SPEED_DIRECTION_FORWARD) {
-			PID_SPEED1.myInput = numberOfSpeedEdges1;
-		} else if (speedDirection1 == SPEED_DIRECTION_BACKWARD) {
-			PID_SPEED1.myInput = -numberOfSpeedEdges1;
-		}
-		if (speedDirection2 == SPEED_DIRECTION_FORWARD) {
-			PID_SPEED2.myInput = numberOfSpeedEdges2;
-		} else if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
-			PID_SPEED2.myInput = -numberOfSpeedEdges2;
-		}
-		if (speedDirection3 == SPEED_DIRECTION_FORWARD) {
-			PID_SPEED3.myInput = numberOfSpeedEdges3; // slave
-		} else if (speedDirection3 == SPEED_DIRECTION_BACKWARD) {
-			PID_SPEED3.myInput = -numberOfSpeedEdges3; // slave
-
-		}
-		if (speedDirection4 == SPEED_DIRECTION_FORWARD) {
-			PID_SPEED4.myInput = numberOfSpeedEdges4; // slave
-		} else if (speedDirection4 == SPEED_DIRECTION_BACKWARD) {
-			PID_SPEED4.myInput = -numberOfSpeedEdges4; // slave
-		}
-
-		/*PID_SPEED1.myInput = numberOfSpeedEdges1;
+		/*if (speedDirection1 == SPEED_DIRECTION_FORWARD) {
+		 PID_SPEED1.myInput = numberOfSpeedEdges1;
+		 } else if (speedDirection1 == SPEED_DIRECTION_BACKWARD) {
+		 PID_SPEED1.myInput = -numberOfSpeedEdges1;
+		 }
+		 if (speedDirection2 == SPEED_DIRECTION_FORWARD) {
 		 PID_SPEED2.myInput = numberOfSpeedEdges2;
-		 PID_SPEED3.myInput = numberOfSpeedEdges3;
-		 PID_SPEED4.myInput = numberOfSpeedEdges4;*/
+		 } else if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
+		 PID_SPEED2.myInput = -numberOfSpeedEdges2;
+		 }
+		 if (speedDirection3 == SPEED_DIRECTION_FORWARD) {
+		 PID_SPEED3.myInput = numberOfSpeedEdges3; // slave
+		 } else if (speedDirection3 == SPEED_DIRECTION_BACKWARD) {
+		 PID_SPEED3.myInput = -numberOfSpeedEdges3; // slave
 
-		ticksBuffer4[ticksIndex4] = numberOfSpeedEdges2;
-		ticksIndex4++;
-		if (ticksIndex4 >= TICKS_BUFFER_SIZE) {
-			ticksIndex4 = 0;
-		}
+		 }
+		 if (speedDirection4 == SPEED_DIRECTION_FORWARD) {
+		 PID_SPEED4.myInput = numberOfSpeedEdges4; // slave
+		 } else if (speedDirection4 == SPEED_DIRECTION_BACKWARD) {
+		 PID_SPEED4.myInput = -numberOfSpeedEdges4; // slave
+		 }*/
+
+		PID_SPEED1.myInput = numberOfSpeedEdges1;
+		PID_SPEED2.myInput = numberOfSpeedEdges2;
+		PID_SPEED3.myInput = numberOfSpeedEdges3;
+		PID_SPEED4.myInput = numberOfSpeedEdges4;
+
 		/* update position pids */
 		PID_POSITION1.myInput = numberOfPositionEdges1;
 		PID_POSITION2.myInput = numberOfPositionEdges2;
@@ -733,6 +733,7 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 	case COMMAND_DECODE_MANCHESTER:
 		readyToSendData = 1;
 		readyToSendManchester = 1;
+		initializeManchesterFlag = 1;
 		setState(&mainState, MAIN_MANCH);
 		break;
 	case COMMAND_STOP_DECODE_MANCHESTER:
