@@ -295,6 +295,11 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             reception_callbacks.updateWorld(world_camera, communication_world);
 
             break;
+        case DEBUG_TTY_ACM_SEND: {
+            if (length >= 2) {
+                writeTTYACMPacket(data[1], data + 2, length - 2);
+            }
+        }
     }
 
 }
