@@ -297,6 +297,7 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             break;
         case DEBUG_TTY_ACM_SEND: {
             if (length >= 2) {
+                printf("send tty packet %u: %u", data[1], length - 2);
                 writeTTYACMPacket(data[1], data + 2, length - 2);
             }
         }
