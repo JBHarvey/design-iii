@@ -33,7 +33,7 @@ void OnboardCamera_freeCamera(void)
     cvReleaseCapture(&(cv_cap));
 }
 
-#define OPENCV_IMAGE_BUFFER_LENGTH (5)
+#define OPENCV_IMAGE_BUFFER_LENGTH (30)
 
 /* NOTE: returned image is in yuv color space and must be freed.
  */

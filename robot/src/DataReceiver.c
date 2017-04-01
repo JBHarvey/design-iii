@@ -166,13 +166,13 @@ static void updateWorldCameraRobot(struct WorldCamera *world_camera, struct Comm
 void DataReceiver_updateWorld(struct WorldCamera *world_camera, struct Communication_World world)
 {
     if(world.environment_has_changed) {
-        Sensor_receivesData(world_camera->map_sensor);
         struct Map *map = world_camera->map;
         updateTableCorners(map, world.environment);
         updateDrawingCorners(map, world.environment);
         updateAntennaZone(map, world.environment);
         updateObstacles(map, world.environment);
         updatePaintingZone(map, world.environment);
+        Sensor_receivesData(world_camera->map_sensor);
     }
 
     updateWorldCameraRobot(world_camera, world.robot);

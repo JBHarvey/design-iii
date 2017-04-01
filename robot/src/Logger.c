@@ -164,7 +164,7 @@ static void logRobot(struct Communication_Object robot)
     int x = robot.zone.pose.coordinates.x;
     int y = robot.zone.pose.coordinates.y;
     int theta = robot.zone.pose.theta;
-    fprintf(file_logger->log_file, "\n%s%s \n%sradius:  %d\n%sx:  %d\n%sy:  %d\n%stheta:  %d",
+    fprintf(file_logger->log_file, "\n%s%s \n%sradius:  %d\n%sx:  %d\n%sy:  %d\n%stheta:  %d\n",
             ITEM, ROBOT_UPDATE,
             SUB, radius,
             SUB, x,
@@ -172,6 +172,13 @@ static void logRobot(struct Communication_Object robot)
             SUB, theta);
 }
 
+static const char *ENVIRONMENT_HAS_CHANGED = "Environment has changed: ";
+static void logEnvironment(struct Communication_World world)
+{
+    fprintf(file_logger->log_file, "\n%s%s : %d\n",
+            ITEM, ENVIRONMENT_HAS_CHANGED,
+            world.environment_has_changed);
+}
 
 static const char *WORLD_CAMERA_UPDATE = "WorldCamera Update: ";
 static void logWorld(struct Communication_World world)
@@ -179,6 +186,7 @@ static void logWorld(struct Communication_World world)
     struct Communication_Object robot = world.robot;
     fprintf(file_logger->log_file, "%s", WORLD_CAMERA_UPDATE);
     logRobot(world.robot);
+    logEnvironment(world);
 }
 
 void Logger_updateWorld(struct WorldCamera *world_camera, struct Communication_World world)
