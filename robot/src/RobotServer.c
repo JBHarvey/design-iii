@@ -321,6 +321,14 @@ struct __attribute__((__packed__)) TransitionManchester {
     char orientation;
 };
 
+struct __attribute__((__packed__)) TransitionTranslation {
+    float travelled_x;
+    float travelled_y;
+    float speed_x;
+    float speed_y;
+};
+
+
 static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
 {
     // TODO : ADD:
@@ -351,9 +359,16 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
             break;
 
         case PHYSICAL_FEEDBACK_TRANSLATION: {
-            if (length == sizeof(struct Communication_Translation)) {
-                struct Communication_Translation communication_translation;
-                memcpy(&communication_translation, data, sizeof(struct Communication_Translation));
+            if (length == sizeof(struct TransitionTranslation)) {
+                struct TransitionTranslation transition_translation;
+                memcpy(&transition_translation, data, sizeof(struct TransitionTranslation));
+                struct Communication_Translation communication_translation = {
+                    .movement.x = transition_translation.travelled_x / SPEEDS_BASE_UNIT,
+                    .movement.y = transition_translation.travelled_y / SPEEDS_BASE_UNIT,
+                    .speeds.x = transition_translation.speed_x / SPEEDS_BASE_UNIT,
+                    .speeds.y = transition_translation.speed_y / SPEEDS_BASE_UNIT
+                };
+
                 reception_callbacks.updateWheelsTranslation(robot_server->robot->wheels, communication_translation);
             } else {
                 printf("wrong struct Communication_Translation length\n");
