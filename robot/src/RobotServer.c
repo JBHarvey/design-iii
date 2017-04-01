@@ -328,6 +328,11 @@ struct __attribute__((__packed__)) TransitionTranslation {
     float speed_y;
 };
 
+struct __attribute__((__packed__)) TransitionRotation {
+    float travelled_radiants;
+    float speed_radiants_second;
+};
+
 
 static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
 {
@@ -372,6 +377,17 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
                 reception_callbacks.updateWheelsTranslation(robot_server->robot->wheels, communication_translation);
             } else {
                 printf("wrong struct Communication_Translation length\n");
+            }
+
+            break;
+        }
+
+        case PHYSICAL_FEEDBACK_ROTATION: {
+            if (length == sizeof(struct TransitionRotation)) {
+                struct TransitionRotation transition_rotation;
+                memcpy(&transition_rotation, data, sizeof(struct TransitionRotation));
+
+                printf("feedback rotation: %f %f\n", transition_rotation.travelled_radiants, transition_rotation.speed_radiants_second);
             }
 
             break;
