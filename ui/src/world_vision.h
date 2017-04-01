@@ -7,8 +7,6 @@
 #include "CommunicationStructures.h"
 #include "station_client.h"
 #include "point_types.h"
-#include "markers.h"
-#include "vision.h"
 #include "Defines.h"
 
 #define WORLD_CAMERA_WIDTH 1600

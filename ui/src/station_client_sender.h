@@ -21,4 +21,6 @@ void StationClientSender_sendReadyToDrawSignalReceivedAck(void);
 
 void StationClientSender_sendEndOfCycleSignalReceivedAck(void);
 
+void StationClientSender_removeForceEnvironmentHasChanged(void);
+
 #endif // STATION_CLIENT_SENDER_H_

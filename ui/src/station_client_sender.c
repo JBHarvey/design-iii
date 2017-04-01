@@ -33,6 +33,8 @@ const int TEST_PAINTING_7_ORIENTATION = HALF_PI;
 GMutex add_packet_mutex;
 GMutex communicate_mutex;
 
+static int force_environment_has_changed = 1;
+
 static void addPacketToQueue(uint8_t *data, uint32_t length)
 {
     if(StationInterface_isConnectedToRobot) {
@@ -155,11 +157,17 @@ void StationClientSender_sendWorldInformationsToRobot(struct Communication_Objec
         },
     };
 
-    communication_world.environment_has_changed = environment_has_changed;
+    if(force_environment_has_changed) {
+        communication_world.environment_has_changed = 1;
+    } else {
+        communication_world.environment_has_changed = environment_has_changed;
+    }
+
     communication_world.robot = robot;
     memcpy(communication_world.environment.obstacles, obstacles, num_obstacles * sizeof(struct Communication_Object));
     memcpy(data + 1, &communication_world, sizeof(struct Communication_World));
 
+    Logger_startMessageSectionAndAppend("World send!");
     addPacketToQueue(data, sizeof(data));
 }
 
@@ -201,4 +209,9 @@ void StationClientSender_sendEndOfCycleSignalReceivedAck(void)
     data[0] = ACK_END_OF_CYCLE_RECEIVED;
 
     addPacketToQueue(data, sizeof(data));
+}
+
+void StationClientSender_removeForceEnvironmentHasChanged(void)
+{
+    force_environment_has_changed = 0;
 }
