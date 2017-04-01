@@ -297,7 +297,7 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             break;
         case DEBUG_TTY_ACM_SEND: {
             if (length >= 2) {
-                printf("send tty packet %u: %u", data[1], length - 2);
+                printf("send tty packet %u: %u\n", data[1], length - 2);
                 writeTTYACMPacket(data[1], data + 2, length - 2);
             }
         }
@@ -349,6 +349,18 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
             reception_callbacks.updateManchesterCode(robot_server->robot->manchester_code, communication_manchester_code);
 
             break;
+
+        case PHYSICAL_FEEDBACK_TRANSLATION: {
+            if (length == sizeof(struct Communication_Translation)) {
+                struct Communication_Translation communication_translation;
+                memcpy(&communication_translation, data, sizeof(struct Communication_Translation));
+                reception_callbacks.updateWheelsTranslation(robot_server->robot->wheels, communication_translation);
+            } else {
+                printf("wrong struct Communication_Translation length\n");
+            }
+
+            break;
+        }
     };
 }
 
