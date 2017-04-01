@@ -40,7 +40,7 @@ extern uint8_t bFlagSendData;
 
 uint8_t readUSB();
 void sendMoveMeasures(float positionX, float positionY, float speedX,
-		float speedY);
+		float speedY, float radian, float radianSpeed);
 
 void sendRedLightConfirmation();
 

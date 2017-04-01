@@ -262,27 +262,42 @@ int main(void) {
 		// il envoie des donnees apres que readyToSendData == 1 donc apres avoir recu une commande de mouvement.
 		if (readyToSendMoveMeasures && readyToSendData) {
 
-			float positionX = calculatePosition(
-					(numberOfPositionEdges1 + numberOfPositionEdges3) / 2);
+			if (isRobotRotating) {
+				float perimeterInMeters = calculatePosition(
+						(-numberOfPositionEdges1 - numberOfPositionEdges3
+								+ numberOfPositionEdges2
+								+ numberOfPositionEdges4) / 4);
 
-			float positionY = calculatePosition(
-					(numberOfPositionEdges2 + numberOfPositionEdges4) / 2);
+				float radian = calculateRadianFromMeters(perimeterInMeters);
 
-			float speedX = calculateSpeed(
-					(PID_SPEED1.myInput + PID_SPEED3.myInput) / 2);
+				float radianSpeed = radian / SPEED_CALC_TIME_DELAY;
 
-			if (speedDirection1 == SPEED_DIRECTION_BACKWARD) {
-				speedX = -speedX;
+				sendMoveMeasures(0, 0, 0, 0, radian, radianSpeed);
+
+			} else {
+
+				float positionX = calculatePosition(
+						(numberOfPositionEdges1 + numberOfPositionEdges3) / 2);
+
+				float positionY = calculatePosition(
+						(numberOfPositionEdges2 + numberOfPositionEdges4) / 2);
+
+				float speedX = calculateSpeed(
+						(PID_SPEED1.myInput + PID_SPEED3.myInput) / 2);
+
+				if (speedDirection1 == SPEED_DIRECTION_BACKWARD) {
+					speedX = -speedX;
+				}
+
+				float speedY = calculateSpeed(
+						(PID_SPEED2.myInput + PID_SPEED4.myInput) / 2);
+
+				if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
+					speedY = -speedY;
+				}
+
+				sendMoveMeasures(positionX, positionY, speedX, speedY, 0, 0);
 			}
-
-			float speedY = calculateSpeed(
-					(PID_SPEED2.myInput + PID_SPEED4.myInput) / 2);
-
-			if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
-				speedY = -speedY;
-			}
-
-			sendMoveMeasures(positionX, positionY, speedX, speedY);
 
 			readyToSendMoveMeasures = 0;
 		}
@@ -691,6 +706,8 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 
 			isRobotRotating = 1;
 
+			resetPositionEncoderVariables();
+
 			setRotatePidSetpoints(data);
 
 			setState(&mainState, MAIN_PID);
@@ -752,6 +769,8 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 		if (len == 8) {
 			newSpeedSetpointCommand = 1;
 			readyToSendData = 1;
+			isRobotRotating = 0;
+			resetPositionEncoderVariables();
 			setSpeedPidSetpoints(data);
 			setState(&mainState, MAIN_PID);
 		}

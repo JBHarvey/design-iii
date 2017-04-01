@@ -24,33 +24,47 @@ uint8_t readUSB() {
 }
 
 void sendMoveMeasures(float positionX, float positionY, float speedX,
-		float speedY) {
+		float speedY, float radian, float radianSpeed) {
 	uint8_t dataToSend[18];
 	uint8_t *dataToSendPointer = dataToSend;
 
 	if (isRobotRotating) {
+
 		dataToSend[0] = COMMAND_SEND_ROTATION_MEASURES;
+
+		dataToSend[1] = 8;
+		dataToSendPointer += 2;
+
+		memcpy(dataToSendPointer, &radian, 4);
+		dataToSendPointer += 4;
+
+		memcpy(dataToSendPointer, &radianSpeed, 4);
+		dataToSendPointer += 4;
+
+		/* il faut envoyer les données par USART, sinon, ca crash ici. */
+		VCP_DataTx(dataToSend, 10);
+
 	} else {
 		dataToSend[0] = COMMAND_SEND_MOVE_MEASURES;
+
+		dataToSend[1] = 16;
+		dataToSendPointer += 2;
+
+		memcpy(dataToSendPointer, &positionX, 4);
+		dataToSendPointer += 4;
+
+		memcpy(dataToSendPointer, &positionY, 4);
+		dataToSendPointer += 4;
+
+		memcpy(dataToSendPointer, &speedX, 4);
+		dataToSendPointer += 4;
+
+		memcpy(dataToSendPointer, &speedY, 4);
+		dataToSendPointer += 4;
+
+		/* il faut envoyer les données par USART, sinon, ca crash ici. */
+		VCP_DataTx(dataToSend, 18);
 	}
-
-	dataToSend[1] = 16;
-	dataToSendPointer += 2;
-
-	memcpy(dataToSendPointer, &positionX, 4);
-	dataToSendPointer += 4;
-
-	memcpy(dataToSendPointer, &positionY, 4);
-	dataToSendPointer += 4;
-
-	memcpy(dataToSendPointer, &speedX, 4);
-	dataToSendPointer += 4;
-
-	memcpy(dataToSendPointer, &speedY, 4);
-	dataToSendPointer += 4;
-
-	/* il faut envoyer les données par USART, sinon, ca crash ici. */
-	VCP_DataTx(dataToSend, 18);
 }
 
 void sendRedLightConfirmation() {

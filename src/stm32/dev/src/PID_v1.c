@@ -311,7 +311,14 @@ uint16_t calculateSpeedToTicks(FloatType speedInMeters) {
 
 FloatType calculatePosition(FloatType positionEdges) {
 	FloatType positionResult = (positionEdges * METERS_PER_TICK);
+
 	return positionResult;
+}
+
+FloatType calculateRadianFromMeters(FloatType perimeterInMeters) {
+	FloatType radian = perimeterInMeters / WHEEL_RADIUS;
+
+	return radian;
 }
 
 /*******************************************************
