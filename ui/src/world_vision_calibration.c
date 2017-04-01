@@ -6,10 +6,6 @@
 #include "world_vision_detection.h"
 #include "logger.h"
 
-/* Flag definitions */
-
-enum CameraCalibrationProcessMode {NONE, GET_USER_MOUSE_CLICKS_FOR_CAMERA_POSE_COMPUTATION};
-
 /* Constants */
 
 const int NUMBER_OF_CORNERS_OF_GREEN_SQUARE = 4;
@@ -24,7 +20,6 @@ const int WIDTH_OF_THE_GREEN_SQUARE_IN_MM = 660;
 
 extern GMutex world_vision_camera_intrinsics_mutex;
 
-enum CameraCalibrationProcessMode world_camera_calibration_process_mode = NONE;
 struct Point2DSet *image_point_set;
 struct Point3DSet *object_point_set;
 
@@ -184,13 +179,13 @@ static void computePlaneEquation(struct Camera *input_camera)
                                            transformed_origin_point.z) / normal_vector_norm;
 }
 
-static void releasePointsUsedForCalibration(struct Camera *input_camera)
+static void releasePointsUsedForCalibration(void)
 {
     PointTypes_releasePoint2DSet(image_point_set);
     PointTypes_releasePoint3DSet(object_point_set);
 }
 
-gboolean WorldVisionCalibration_calibrateWithTableCorners(struct Camera * input_camera)
+void WorldVisionCalibration_calibrateWithTableCorners(struct Camera * input_camera)
 {
     double reprojection_error;
 
@@ -200,18 +195,16 @@ gboolean WorldVisionCalibration_calibrateWithTableCorners(struct Camera * input_
     computeCameraPose(input_camera);
     reprojection_error = checkReprojectionErrorOnCameraPose(input_camera);
     computePlaneEquation(input_camera);
-    releasePointsUsedForCalibration(input_camera);
+    releasePointsUsedForCalibration();
     input_camera->camera_status = FULLY_CALIBRATED;
     Logger_startMessageSectionAndAppend("Camera pose computation completed.");
     Logger_append("\nReprojection error on camera pose: ");
     Logger_appendDouble(reprojection_error);
     Logger_append("\nPlane equation: ");
     Logger_appendPlaneEquation(input_camera);
-
-    return TRUE;
 }
 
-gboolean WorldVisionCalibration_calibrateWithGreenSquareCorners(struct Camera *input_camera)
+void WorldVisionCalibration_calibrateWithGreenSquareCorners(struct Camera *input_camera)
 {
     double reprojection_error;
 
@@ -221,15 +214,13 @@ gboolean WorldVisionCalibration_calibrateWithGreenSquareCorners(struct Camera *i
     computeCameraPose(input_camera);
     reprojection_error = checkReprojectionErrorOnCameraPose(input_camera);
     computePlaneEquation(input_camera);
-    releasePointsUsedForCalibration(input_camera);
+    releasePointsUsedForCalibration();
     input_camera->camera_status = FULLY_CALIBRATED;
     Logger_startMessageSectionAndAppend("Camera pose computation completed.");
     Logger_append("\nReprojection error on camera pose: ");
     Logger_appendDouble(reprojection_error);
     Logger_append("\nPlane equation: ");
     Logger_appendPlaneEquation(input_camera);
-
-    return TRUE;
 }
 
 

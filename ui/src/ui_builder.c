@@ -6,7 +6,7 @@
 #include "station_interface.h"
 
 
-GtkWidget* buildUiAndReturnTopLevelWindow(const gchar* resource_path)
+GtkWidget* UiBuilder_buildUiAndReturnTopLevelWindow(const gchar* resource_path)
 {
     GtkBuilder *builder = gtk_builder_new_from_resource(resource_path);
 
