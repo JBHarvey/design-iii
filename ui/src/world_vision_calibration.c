@@ -189,7 +189,13 @@ void WorldVisionCalibration_calibrateWithTableCorners(struct Camera * input_came
 {
     double reprojection_error;
 
-    while(!WorldVisionDetection_detectTableCorners(input_camera));
+    while(!WorldVisionDetection_detectTableCorners(input_camera)) {
+        printf("\n Trying");
+
+        while(gtk_events_pending()) {
+            gtk_main_iteration();
+        }
+    }
 
     initializeTablePointsArraysForCameraPoseComputation();
     computeCameraPose(input_camera);
@@ -208,7 +214,11 @@ void WorldVisionCalibration_calibrateWithGreenSquareCorners(struct Camera *input
 {
     double reprojection_error;
 
-    while(!WorldVisionDetection_detectGreenSquareCorners(input_camera));
+    while(!WorldVisionDetection_detectGreenSquareCorners(input_camera)) {
+        while(gtk_events_pending()) {
+            gtk_main_iteration();
+        }
+    }
 
     initializeGreenSquarePointsArraysForCameraPoseComputation();
     computeCameraPose(input_camera);
