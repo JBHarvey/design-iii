@@ -115,7 +115,7 @@ static void sendSpeedsCommand(struct Robot *robot, int distance_to_target, int a
     }
 
     struct Command_Speeds speeds_command = {
-        .x = x,
+        .x = (-1 * x),
         .y = y
     };
 
