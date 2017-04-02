@@ -82,4 +82,7 @@
 #define THETA_TOLERANCE_MAX 314160          // Pi rad
 
 
+// Time related
+#define ONE_SECOND 1
+
 #endif // DEFINES_H_
