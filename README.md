@@ -20,7 +20,7 @@ cd vision
 
 ## Base station
 
-Dependencies: opencv clang gtk+-3.0 gmodule-2.0
+Dependencies: opencv clang gtk+-3.0 gmodule-2.0 libev
 
 The base station is built on GTK+3.0 with OpenCV. In order to make it works,  
 you must recompile OpenCV with those three flags:  
@@ -31,10 +31,16 @@ you must recompile OpenCV with those three flags:
 How to build and run:
 ```
 cd ui
-make all
+./deploy.sh
+cd ..
 ./station-main
 ```
 
+How to run tests and coverage:
+```
+cd ui
+./test_and_check_coverage.sh
+```
 
 ## Robot
 
