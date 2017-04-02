@@ -143,7 +143,7 @@ static void sendRotationCommand(struct Robot *robot, int angle_to_target)
     }
 
     struct Command_Rotate rotate_command = {
-        .theta = theta
+        .theta = (-1 * theta)
     };
 
     CommandSender_sendRotateCommand(robot->command_sender, rotate_command);

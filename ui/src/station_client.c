@@ -167,7 +167,9 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
                 double dx = (double) x;
                 double dy = (double) y;
                 struct Point3D point = PointTypes_createPoint3D(dx, dy, 0);
-                Logger_startRobotConnectionHandlerSectionAndAppend("Robot pose received.");
+                // Commented out because there's too much things to print
+                //Logger_startRobotConnectionHandlerSectionAndAppend("Robot pose received.");
+                // Commented out because of To Be Repared SEGV
                 //WorldVision_setRobotPosition(point);
                 break;
             }

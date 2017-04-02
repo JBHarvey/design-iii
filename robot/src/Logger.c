@@ -424,7 +424,7 @@ static void logRobotPoseEstimate(struct Pose *pose)
     int x = pose->coordinates->x;
     int y = pose->coordinates->y;
     int theta = pose->angle->theta;
-    fprintf(file_logger->log_file, "\n%s%s \n%sx:  %d\n%sy:  %d\n%stheta:  %d",
+    fprintf(file_logger->log_file, "\n%s%s \n%sx:  %d\n%sy:  %d\n%stheta:  %d\n",
             ITEM, SENDING_ROBOT_ESTIMATE,
             SUB, x,
             SUB, y,
