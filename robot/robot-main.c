@@ -29,22 +29,11 @@ int main(int argc, char *argv[])
 
     while(1) {
         RobotServer_communicate(robot_server);
-    }
-
-    /*
-
-    while(1) {
-        RobotServer_communicate(robot_server);
         PoseFilter_executeFilter(pose_filter, callbacks.updateFromCameraOnly);
         Robot_updateBehaviorIfNeeded(robot);
         Robot_act(robot);
-        //Robot_sendPoseEstimate(robot);
+        Robot_sendPoseEstimate(robot);
     }
-
-    */
-
-
-
 
     /*
 
