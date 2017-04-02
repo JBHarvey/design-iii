@@ -46,7 +46,7 @@ Test(Timer, given_aTimer_when_reset_then_theStartTimestampIsAReset
     cr_assert(timer->start_timestamp != initial_start_timestamp);
 }
 
-Test(Timer, given_aTimer_when_askingForElaspedTime_then_itReturnsTheCorrectTimeInNanoseconds
+Test(Timer, given_aTimer_when_askingForElaspedTimeOnARunningTimer_then_itReturnsATimeGreaterThanZero
      , .init = setup_timer
      , .fini = teardown_timer)
 {
@@ -56,7 +56,7 @@ Test(Timer, given_aTimer_when_askingForElaspedTime_then_itReturnsTheCorrectTimeI
 }
 
 
-Test(Timer, given_aTimer_when_askIsTimePassedAndTheTimeIsPassed_then_returnsTrue
+Test(Timer, given_aTimerAndATimeInSeconds_when_askIsTimePassedAndTheTimeIsPassed_then_returnsTrue
      , .init = setup_timer
      , .fini = teardown_timer)
 {
@@ -67,7 +67,7 @@ Test(Timer, given_aTimer_when_askIsTimePassedAndTheTimeIsPassed_then_returnsTrue
     cr_assert_eq(status, TRUE);
 }
 
-Test(Timer, given_aTimer_when_askIsTimePassedAndTheTimeIsNotPassed_then_returnsFalse
+Test(Timer, given_aTimerATimeInSeconds_when_askIsTimePassedAndTheTimeIsNotPassed_then_returnsFalse
      , .init = setup_timer
      , .fini = teardown_timer)
 {
