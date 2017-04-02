@@ -4,11 +4,6 @@
 #include "PoseFilter.h"
 #include "Timer.h"
 
-static void waitASecond(void)
-{
-    usleep(1000000);
-}
-
 struct PoseFilter *pose_filter;
 struct Robot *robot;
 struct RobotServer *robot_server;
@@ -37,14 +32,13 @@ int main(int argc, char *argv[])
         Robot_updateBehaviorIfNeeded(robot);
         Robot_act(robot);
 
-        if(Timer_isTimePassed(timer, ONE_SECOND)) {
+        if(Timer_hasTimePassed(timer, ONE_TENTH_OF_A_SECOND)) {
             Robot_sendPoseEstimate(robot);
             Timer_reset(timer);
         }
     }
 
     /*
-
     // HERE--------------------------------------
 
     RobotServer_sendLowerPenCommand();

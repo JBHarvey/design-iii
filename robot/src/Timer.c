@@ -1,6 +1,5 @@
 #include "Timer.h"
 
-#define NUMBER_OF_NANOSECONDS_IN_A_SECOND 1.0e9
 
 struct Timer *Timer_new(void)
 {
@@ -37,7 +36,7 @@ double Timer_elapsedTime(struct Timer *timer)
     return (timer->time.tv_sec * NUMBER_OF_NANOSECONDS_IN_A_SECOND + timer->time.tv_nsec) - timer->start_timestamp;
 }
 
-int Timer_isTimePassed(struct Timer *timer, int seconds)
+int Timer_hasTimePassed(struct Timer *timer, int milliseconds)
 {
-    return Timer_elapsedTime(timer) >= seconds * NUMBER_OF_NANOSECONDS_IN_A_SECOND;
+    return Timer_elapsedTime(timer) >= milliseconds * NUMBER_OF_NANOSECONDS_IN_A_MILLISECOND;
 }
