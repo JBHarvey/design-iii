@@ -61,4 +61,5 @@ ui/autodeploy/makefile
 ui/src/station-resources/station.ui~
 ui/src/CommunicationStructures.h
 ui/src/Defines.h
+ui/station_log.txt
 
