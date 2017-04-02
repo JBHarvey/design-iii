@@ -36,16 +36,11 @@ make all
 ```
 
 
-## Intelligence
+## Robot
 
-Dependency: [docker](https://docs.docker.com/engine/getstarted/)  
-How to run tests:
+Dependency: opencv clang libev
+How to run tests and see coverage:
 ```
-cd intelligence
-./build-docker.sh
-./runtest.sh
-```
-To see the test log in details:
-```
-./showlog.sh
+cd robot
+./coverage.sh
 ```
