@@ -28,7 +28,6 @@ void RobotServer_sendLowerPenCommand(void);
 void RobotServer_fetchManchesterCodeCommand(void);
 void RobotServer_sendStopSendingManchesterSignalCommand(void);
 
-// TODO: THE ACTUAL IMPLEMENTATION OF THESE FUNCTIONS:
 void RobotServer_sendRobotPoseEstimate(struct Pose *pose);
 void RobotServer_sendImageToStation(IplImage *image);
 void RobotServer_sendPlannedTrajectoryToStation(struct CoordinatesSequence *coordinates_sequence);
