@@ -110,6 +110,17 @@ Test(Navigator,
     cr_assert(!has_new_data);
 }
 
+Test(Navigator,
+     given_aRobotWithNewDataInItsWorldCamera_when_askedToUpdateNavigableWorld_then_theRobotsNavigableMapIsReadyFlagIsOne
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    int navigable_map_is_ready = robot->current_state->flags->navigable_map_is_ready;
+    cr_assert(navigable_map_is_ready);
+}
+
 Test(Navigator, given_anAngleSmallerThanTheThetaTolerance_when_askedIfTheAngleIsWithinTheRotationTolerance_then_itIs
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
