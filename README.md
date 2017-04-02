@@ -44,7 +44,7 @@ cd ui
 
 ## Robot
 
-Dependency: opencv clang libev
+Dependency: opencv clang libev  
 How to run tests and see coverage:
 ```
 cd robot
