@@ -17,4 +17,8 @@ void Timer_delete(struct Timer *timer);
 
 void Timer_reset(struct Timer *timer);
 
+double Timer_elapsedTime(struct Timer *timer);
+
+int Timer_isTimePassed(struct Timer *timer, int seconds);
+
 #endif // TIMER_H_
