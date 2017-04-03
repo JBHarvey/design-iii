@@ -227,13 +227,13 @@ static void logWheelsRotationUpdate(struct Communication_Rotation rotation)
 
 void Logger_updateWheelsTranslation(struct Wheels *wheels, struct Communication_Translation translation)
 {
-    logWheelsTranslationUpdate(translation);
+    //logWheelsTranslationUpdate(translation);
     (*(file_logger->original_data_receiver_callbacks.updateWheelsTranslation))(wheels, translation);
 }
 
 void Logger_updateWheelsRotation(struct Wheels *wheels, struct Communication_Rotation rotation)
 {
-    logWheelsRotationUpdate(rotation);
+    //logWheelsRotationUpdate(rotation);
     (*(file_logger->original_data_receiver_callbacks.updateWheelsRotation))(wheels, rotation);
 }
 
@@ -355,13 +355,13 @@ void Logger_sendTranslateCommand(struct Command_Translate translate_command)
 
 void Logger_sendSpeedsCommand(struct Command_Speeds speeds_command)
 {
-    logSpeedsCommand(speeds_command);
+    //logSpeedsCommand(speeds_command);
     (*(file_logger->original_command_sender_callbacks.sendSpeedsCommand))(speeds_command);
 }
 
 void Logger_sendRotateCommand(struct Command_Rotate rotate_command)
 {
-    logRotationCommand(rotate_command);
+    //logRotationCommand(rotate_command);
     (*(file_logger->original_command_sender_callbacks.sendRotateCommand))(rotate_command);
 }
 
@@ -424,7 +424,7 @@ static void logRobotPoseEstimate(struct Pose *pose)
     int x = pose->coordinates->x;
     int y = pose->coordinates->y;
     int theta = pose->angle->theta;
-    fprintf(file_logger->log_file, "\n%s%s \n%sx:  %d\n%sy:  %d\n%stheta:  %d",
+    fprintf(file_logger->log_file, "\n%s%s \n%sx:  %d\n%sy:  %d\n%stheta:  %d\n",
             ITEM, SENDING_ROBOT_ESTIMATE,
             SUB, x,
             SUB, y,
@@ -469,6 +469,7 @@ static void logSignal(const char *signal_type)
 }
 void Logger_sendRobotPoseEstimate(struct Pose *pose)
 {
+    //Commented out because it pollutes the log file
     logRobotPoseEstimate(pose);
     (*(file_logger->original_data_sender_callbacks.sendRobotPoseEstimate))(pose);
 }

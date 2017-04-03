@@ -695,7 +695,7 @@ Test(Navigator,
     cr_assert(rotation_validator != COMMAND_SENT);
     cr_assert(speeds_validator == COMMAND_SENT);
 
-    cr_assert(sent_speeds_command_x == STOP_VALUE, "Received speed : %d\n Distance : %d", sent_speeds_command_x, distance);
+    cr_assert(sent_speeds_command_x == STOP_VALUE);
     cr_assert(sent_speeds_command_y == 0);
 
     Coordinates_delete(target_coordinates);

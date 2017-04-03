@@ -19,6 +19,6 @@ void Timer_reset(struct Timer *timer);
 
 double Timer_elapsedTime(struct Timer *timer);
 
-int Timer_isTimePassed(struct Timer *timer, int seconds);
+int Timer_hasTimePassed(struct Timer *timer, int milliseconds);
 
 #endif // TIMER_H_

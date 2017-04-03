@@ -9,6 +9,7 @@
 
 #define SIZE_DRAW_LINES 3
 #define BURGUNDY CV_RGB(29, 7, 173)
+#define MAGENTA CV_RGB(153, 46, 137)
 
 /* Flags definitions */
 
@@ -43,7 +44,7 @@ IplImage *world_camera_back_frame = NULL;
 GdkPixbuf *world_camera_pixbuf = NULL;
 
 struct Point2DSet *current_planned_trajectory = NULL;
-GSList *robot_position = NULL;
+GSList *robot_position = NULL, *robot_position_iterator = NULL;
 
 GThread *world_vision_detection_worker_thread = NULL;
 
@@ -233,11 +234,35 @@ void WorldVision_createWorldCameraFrameSafeCopy(void)
 
 static void drawPlannedTrajectory(void)
 {
-    for(int i = 0; i < PointTypes_getNumberOfPointStoredInPoint2DSet(current_planned_trajectory) - 1; i++) {
-        struct Point2D origin = PointTypes_getPointFromPoint2DSet(current_planned_trajectory, i);
-        struct Point2D end = PointTypes_getPointFromPoint2DSet(current_planned_trajectory, i + 1);
-        cvLine(world_camera_frame, cvPoint((int) origin.x, (int) origin.y), cvPoint((int) end.x, (int) end.y),
-               BURGUNDY, SIZE_DRAW_LINES, 8, 0);
+    if(current_planned_trajectory != NULL) {
+
+        for(int i = 0; i < PointTypes_getNumberOfPointStoredInPoint2DSet(current_planned_trajectory) - 1; i++) {
+            struct Point2D origin = PointTypes_getPointFromPoint2DSet(current_planned_trajectory, i);
+            struct Point2D end = PointTypes_getPointFromPoint2DSet(current_planned_trajectory, i + 1);
+            cvLine(world_camera_frame, cvPoint((int) origin.x, (int) origin.y), cvPoint((int) end.x, (int) end.y),
+                   BURGUNDY, SIZE_DRAW_LINES, 8, 0);
+        }
+    }
+}
+
+static void drawRobotPosition(void)
+{
+    if(robot_position != NULL) {
+
+        struct Point2D *last = NULL;
+        robot_position_iterator = robot_position;
+
+        while(robot_position_iterator != NULL) {
+            if(last != NULL) {
+                cvLine(world_camera_frame, cvPoint((int) last->x, (int) last->y),
+                       cvPoint((int)((struct Point2D *) robot_position_iterator->data)->x,
+                               (int)((struct Point2D *) robot_position_iterator->data)->y),
+                       MAGENTA, SIZE_DRAW_LINES, 8, 0);
+            }
+
+            last = robot_position_iterator->data;
+            robot_position_iterator = robot_position_iterator->next;
+        }
     }
 }
 
@@ -248,10 +273,8 @@ void WorldVision_applyWorldCameraBackFrame(void)
 
     g_mutex_lock(&world_vision_planned_trajectory_mutex);
 
-    if(current_planned_trajectory != NULL) {
-
-        drawPlannedTrajectory();
-    }
+    drawPlannedTrajectory();
+    drawRobotPosition();
 
     g_mutex_unlock(&world_vision_planned_trajectory_mutex);
 
@@ -361,11 +384,18 @@ void WorldVision_setRobotPosition(struct Point3D world_coordinates)
 {
     g_mutex_lock(&world_vision_robot_position_mutex);
 
-    struct Point2D image_coordinates = WorldVisionCalibration_convertWorldCoordinatesToImageCoordinates(
-                                           world_coordinates, world_camera);
-    struct Point2D *image_coordinates_pointer = malloc(sizeof(struct Point2D));
-    memcpy(image_coordinates_pointer, &image_coordinates, sizeof(struct Point2D));
-    robot_position = g_slist_append(robot_position, (gpointer) image_coordinates_pointer);
+    if(world_camera->camera_status == FULLY_CALIBRATED) {
+        struct Point2D image_coordinates = WorldVisionCalibration_convertWorldCoordinatesToImageCoordinates(
+                                               world_coordinates, world_camera);
+
+        if(robot_position != NULL && (((struct Point2D *) g_slist_last(robot_position)->data)->x == image_coordinates.x &&
+                                      ((struct Point2D *) g_slist_last(robot_position)->data)->y == image_coordinates.y)) {
+        } else {
+            struct Point2D *image_coordinates_pointer = malloc(sizeof(struct Point2D));
+            memcpy(image_coordinates_pointer, &image_coordinates, sizeof(struct Point2D));
+            robot_position = g_slist_append(robot_position, (gpointer) image_coordinates_pointer);
+        }
+    }
 
     g_mutex_unlock(&world_vision_robot_position_mutex);
 }

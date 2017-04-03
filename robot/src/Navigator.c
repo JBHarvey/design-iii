@@ -94,21 +94,21 @@ static int convertDistanceToSpeed(int distance)
     return speed;
 }
 
-static void sendSpeedsCommand(struct Robot *robot, int distance_to_target, int angle_to_target)
+static void sendSpeedsCommand(struct Robot *robot, int angular_distance_to_target, int angle_to_target)
 {
     int x = 0;
     int y = 0;
     int tolerance = THETA_TOLERANCE_DEFAULT;
-    int distance_to_east = abs(angle_to_target);
-    int distance_to_north = abs(HALF_PI - angle_to_target);
-    int distance_to_south = abs(MINUS_HALF_PI - angle_to_target);
-    int speed = convertDistanceToSpeed(distance_to_target);
+    int angular_distance_to_east = abs(angle_to_target);
+    int angular_distance_to_north = abs(HALF_PI - angle_to_target);
+    int angular_distance_to_south = abs(MINUS_HALF_PI - angle_to_target);
+    int speed = convertDistanceToSpeed(angular_distance_to_target);
 
-    if(distance_to_east < tolerance) {
+    if(angular_distance_to_east < tolerance) {
         x = speed;
-    } else if(distance_to_north < tolerance) {
+    } else if(angular_distance_to_north < tolerance) {
         y = speed;
-    } else if(distance_to_south < tolerance) {
+    } else if(angular_distance_to_south < tolerance) {
         y = -1 * speed;
     } else {
         x = -1 * speed;

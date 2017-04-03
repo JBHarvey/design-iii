@@ -14,7 +14,7 @@ struct Pose *Pose_new(int newX, int newY, int new_theta)
     struct Object *new_object = Object_new();
     struct Coordinates *new_coordinates = Coordinates_new(newX, newY);
     struct Angle *new_angle = Angle_new(new_theta);
-    struct Pose *pointer = (struct Pose *) malloc(sizeof(struct Pose));
+    struct Pose *pointer = malloc(sizeof(struct Pose));
 
     pointer->object = new_object;
     pointer->angle = new_angle;

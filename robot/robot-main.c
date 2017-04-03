@@ -2,15 +2,12 @@
 #include <unistd.h>
 #include "Logger.h"
 #include "PoseFilter.h"
-
-static void waitASecond(void)
-{
-    usleep(1000000);
-}
+#include "Timer.h"
 
 struct PoseFilter *pose_filter;
 struct Robot *robot;
 struct RobotServer *robot_server;
+struct Timer *timer;
 int main(int argc, char *argv[])
 {
     const int port = 35794;
@@ -23,31 +20,25 @@ int main(int argc, char *argv[])
     pose_filter = PoseFilter_new(robot);
     robot_server = RobotServer_new(robot, port, ttyACM);
 
+    timer = Timer_new();
+
     Logger_startLoggingRobot(robot);
 
     CommandSender_sendFetchManchesterCode(robot->command_sender);
 
     while(1) {
         RobotServer_communicate(robot_server);
-    }
-
-    /*
-
-    while(1) {
-        RobotServer_communicate(robot_server);
         PoseFilter_executeFilter(pose_filter, callbacks.updateFromCameraOnly);
         Robot_updateBehaviorIfNeeded(robot);
         Robot_act(robot);
-        //Robot_sendPoseEstimate(robot);
+
+        if(Timer_hasTimePassed(timer, ONE_TENTH_OF_A_SECOND)) {
+            Robot_sendPoseEstimate(robot);
+            Timer_reset(timer);
+        }
     }
 
-    */
-
-
-
-
     /*
-
     // HERE--------------------------------------
 
     RobotServer_sendLowerPenCommand();
@@ -133,6 +124,7 @@ int main(int argc, char *argv[])
     RobotServer_sendRisePenCommand();
     */
 
+    Timer_delete(timer);
     RobotServer_delete(robot_server);
     Robot_delete(robot);
     PoseFilter_delete(pose_filter);
