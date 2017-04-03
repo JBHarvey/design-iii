@@ -355,13 +355,13 @@ void Logger_sendTranslateCommand(struct Command_Translate translate_command)
 
 void Logger_sendSpeedsCommand(struct Command_Speeds speeds_command)
 {
-    logSpeedsCommand(speeds_command);
+    //logSpeedsCommand(speeds_command);
     (*(file_logger->original_command_sender_callbacks.sendSpeedsCommand))(speeds_command);
 }
 
 void Logger_sendRotateCommand(struct Command_Rotate rotate_command)
 {
-    logRotationCommand(rotate_command);
+    //logRotationCommand(rotate_command);
     (*(file_logger->original_command_sender_callbacks.sendRotateCommand))(rotate_command);
 }
 
