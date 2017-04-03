@@ -320,8 +320,11 @@ extern void EXTI4_IRQHandler(void) {
 	}
 }
 
+/**********************************************************************
+ * Handlers pour metter à jour les encodeurs et les variables positions
+ * vitesses.
+ ***********************************************************************/
 extern void EXTI9_5_IRQHandler(void) {
-	/* Make sure that interrupt flag is set */
 
 // wheel 1 channel 1
 	if (EXTI_GetITStatus(EXTI_Line5) != RESET) {
@@ -331,7 +334,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		wheel1Channel1UP = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_5);
 		wheel1Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_6);
 
-		// check wheel 1
+		// regarde le déphasage pour la direction
 		if (wheel1Channel1UP == wheel1Channel2UP) {
 
 			numberOfPositionEdges1++;
@@ -348,6 +351,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		EXTI_ClearITPendingBit (EXTI_Line5);
 	}
 
+	// wheel 1 channel 2
 	if (EXTI_GetITStatus(EXTI_Line6) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges1++;
@@ -355,7 +359,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		wheel1Channel1UP = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_5);
 		wheel1Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_6);
 
-		// check wheel 1
+		// regarde le déphasage pour la direction
 		if (wheel1Channel1UP != wheel1Channel2UP) {
 			numberOfPositionEdges1++;
 			incWheel1Canal2EncoderCounter++;
@@ -370,6 +374,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		EXTI_ClearITPendingBit (EXTI_Line6);
 	}
 
+	// wheel 2 channel 1
 	if (EXTI_GetITStatus(EXTI_Line8) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges2++;
@@ -377,7 +382,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		wheel2Channel1UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_8);
 		wheel2Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_9);
 
-		// check wheel 2
+		// regarde le déphasage pour la direction
 		if (wheel2Channel1UP == wheel2Channel2UP) {
 
 			numberOfPositionEdges2++;
@@ -394,6 +399,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		EXTI_ClearITPendingBit (EXTI_Line8);
 	}
 
+	// wheel 2 channel 2
 	if (EXTI_GetITStatus(EXTI_Line9) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges2++;
@@ -401,7 +407,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		wheel2Channel1UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_8);
 		wheel2Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_9);
 
-		// check wheel 2
+		// regarde le déphasage pour la direction
 		if (wheel2Channel1UP != wheel2Channel2UP) {
 			numberOfPositionEdges2++;
 			incWheel2Canal2EncoderCounter++;
@@ -420,6 +426,7 @@ extern void EXTI9_5_IRQHandler(void) {
 
 extern void EXTI15_10_IRQHandler(void) {
 	/* Make sure that interrupt flag is set */
+	// wheel 3 channel 1
 	if (EXTI_GetITStatus(EXTI_Line10) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges3++;
@@ -427,7 +434,7 @@ extern void EXTI15_10_IRQHandler(void) {
 		wheel3Channel1UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_10);
 		wheel3Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_11);
 
-		// check wheel 3
+		// regarde le déphasage pour la direction
 		if (wheel3Channel1UP != wheel3Channel2UP) {
 			numberOfPositionEdges3++;
 			incWheel3Canal1EncoderCounter++;
@@ -464,6 +471,7 @@ extern void EXTI15_10_IRQHandler(void) {
 		EXTI_ClearITPendingBit (EXTI_Line11);
 	}
 
+	// wheel 3 channel 2
 	if (EXTI_GetITStatus(EXTI_Line12) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges4++;
@@ -471,7 +479,7 @@ extern void EXTI15_10_IRQHandler(void) {
 		wheel4Channel1UP = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_12);
 		wheel4Channel2UP = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_13);
 
-		// check wheel 4
+		// regarde le déphasage pour la direction
 		if (wheel4Channel1UP != wheel4Channel2UP) {
 			numberOfPositionEdges4++;
 			incWheel4Canal1EncoderCounter++;
@@ -486,6 +494,7 @@ extern void EXTI15_10_IRQHandler(void) {
 		EXTI_ClearITPendingBit (EXTI_Line12);
 	}
 
+	// wheel 4 channel 2
 	if (EXTI_GetITStatus(EXTI_Line13) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges4++;
@@ -493,7 +502,7 @@ extern void EXTI15_10_IRQHandler(void) {
 		wheel4Channel1UP = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_12);
 		wheel4Channel2UP = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_13);
 
-		// check wheel 4
+		// regarde le déphasage pour la direction
 		if (wheel4Channel1UP == wheel4Channel2UP) {
 			numberOfPositionEdges4++;
 			incWheel4Canal2EncoderCounter++;
@@ -536,6 +545,7 @@ extern void TIM2_IRQHandler() {
 		 PID_SPEED4.myInput = -numberOfSpeedEdges4; // slave
 		 }*/
 
+		/* Update Speed measure PIDS*/
 		PID_SPEED1.myInput = numberOfSpeedEdges1;
 		PID_SPEED2.myInput = numberOfSpeedEdges2;
 		PID_SPEED3.myInput = numberOfSpeedEdges3;
@@ -561,11 +571,9 @@ extern void TIM2_IRQHandler() {
 
 		sendMeasureCounter++;
 
-		//if (sendMeasureCounter == 10) {
-		/* envoyer les mesures captees, a remplacer par USART */
+		//flag to send measure datas to Robot
 		readyToSendMoveMeasures = 1;
 		sendMeasureCounter = 0;
-		//}
 
 		resetEncoderSpeedVariables();
 
@@ -693,19 +701,6 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 		break;
 	case COMMAND_ROTATE:
 		if (len == 4) {
-			// stop the robot before rotating
-			/*stopMove();
-
-			 newMoveCommand = 1;
-
-			 isRobotRotating = 1;
-
-			 setRotateSetpoints(data);
-
-			 //setRotateSettings(data);
-			 setCustomRotateSettings(data);
-
-			 setState(&mainState, MAIN_PID);*/
 
 			newMoveCommand = 1;
 

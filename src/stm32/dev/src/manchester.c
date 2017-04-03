@@ -197,12 +197,13 @@ void tryToDecodeManchesterCode(uint8_t *manchesterState,
 		char *manchesterOrientationVerification,
 		uint8_t *manchesterFactorVerification) {
 
+	// check if state is ready to decode
 	if (*manchesterState == MANCHESTER_DECODE) {
 
-		// les 8 bits contenant l'information
+		// buffer contenant l'information compressée 10 devient 1 et 01 devient 0
 		uint8_t informationBits[INFORMATION_BITS_LENGTH];
 
-		// decode le code manchester et retourne VALID_INFORMATION si valide
+		// décode le code manchester et retourne VALID_INFORMATION si valide
 		if (decodeManchester(informationBits, manchesterBuffer)
 				== VALID_INFORMATION) {
 
@@ -227,28 +228,7 @@ void tryToDecodeManchesterCode(uint8_t *manchesterState,
 			*manchesterState = MANCHESTER_IDLE;
 			GPIO_SetBits(GPIOD, GPIO_Pin_13);
 
-			/*if (isSameDataThanPreviousIteration(&figure,
-			 manchesterFigureVerification, orientation,
-			 manchesterOrientationVerification, &factor,
-			 manchesterFactorVerification)) {
-			 char messageToDisplay[MESSAGE_TO_DISPLAY_LENGTH];
-
-			 setMessageToDisplay(figure, orientation, factor,
-			 messageToDisplay);
-			 displayManchesterMessage(messageToDisplay);
-			 disableExternalInterruptLine4();
-			 disableTimer5Interrupt();
-			 *manchesterState = MANCHESTER_IDLE;
-			 GPIO_SetBits(GPIOD, GPIO_Pin_13);
-			 } else {
-			 *manchesterFigureVerification = figure;
-			 strcpy(manchesterOrientationVerification, orientation);
-			 *manchesterFactorVerification = factor;
-			 disableTimer5Interrupt();
-			 *manchesterState = MANCHESTER_WAIT_FOR_DECODING;
-			 initializeExternalInterruptLine4();
-			 }*/
-
+			// recommence l'acquisition si le code décodé est non-valide
 		} else {
 			// On désactive l'interruption pour qu'il recommence
 			disableTimer5Interrupt();
