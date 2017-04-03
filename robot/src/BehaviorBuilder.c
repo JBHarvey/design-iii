@@ -90,6 +90,14 @@ struct BehaviorBuilder* BehaviorBuilder_withFreeTrajectoryEntry(struct BehaviorB
     return behavior_builder;
 }
 
+struct BehaviorBuilder* BehaviorBuilder_withFreeOrientationEntry(struct BehaviorBuilder *behavior_builder)
+{
+    behavior_builder = BehaviorBuilder_withTolerancesX(X_TOLERANCE_MAX, behavior_builder);
+    behavior_builder = BehaviorBuilder_withTolerancesY(Y_TOLERANCE_MAX, behavior_builder);
+    behavior_builder = BehaviorBuilder_withFreeFlagsEntry(behavior_builder);
+    return behavior_builder;
+}
+
 struct BehaviorBuilder* BehaviorBuilder_withGoalX(int goalX, struct BehaviorBuilder *behavior_builder)
 {
     behavior_builder->goalX = goalX;

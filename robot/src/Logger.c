@@ -252,11 +252,11 @@ static void logManchesterCode(struct Communication_ManchesterCode manchester_cod
             SUB, new_orientation);
 }
 
-void Logger_updateManchesterCode(struct ManchesterCode *manchester_code,
+void Logger_updateManchesterCode(struct ManchesterCode *manchester_code, struct Flags *flags,
                                  struct Communication_ManchesterCode code_informations)
 {
     logManchesterCode(code_informations);
-    (*(file_logger->original_data_receiver_callbacks.updateManchesterCode))(manchester_code, code_informations);
+    (*(file_logger->original_data_receiver_callbacks.updateManchesterCode))(manchester_code, flags, code_informations);
 }
 
 static const char *FLAG_UPDATE = "New Flag Value:";

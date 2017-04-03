@@ -295,12 +295,13 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             reception_callbacks.updateWorld(world_camera, communication_world);
 
             break;
+
         case DEBUG_TTY_ACM_SEND: {
-            if (length >= 2) {
-                printf("send tty packet %u: %u\n", data[1], length - 2);
-                writeTTYACMPacket(data[1], data + 2, length - 2);
+                if(length >= 2) {
+                    printf("send tty packet %u: %u\n", data[1], length - 2);
+                    writeTTYACMPacket(data[1], data + 2, length - 2);
+                }
             }
-        }
     }
 
 }
@@ -340,6 +341,7 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
     // Wheels Translation
     // Wheels Rotation
     printf("packet type: %u length: %u\n", type, length);
+
     switch(type) {
 
         case MANCHESTER_CODE_DECODED:
@@ -359,39 +361,41 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
                 .orientation = transition_manchester.orientation
             };
 
-            reception_callbacks.updateManchesterCode(robot_server->robot->manchester_code, communication_manchester_code);
+            reception_callbacks.updateManchesterCode(robot_server->robot->manchester_code,
+                    robot_server->robot->current_state->flags,
+                    communication_manchester_code);
 
             break;
 
         case PHYSICAL_FEEDBACK_TRANSLATION: {
-            if (length == sizeof(struct TransitionTranslation)) {
-                struct TransitionTranslation transition_translation;
-                memcpy(&transition_translation, data, sizeof(struct TransitionTranslation));
-                struct Communication_Translation communication_translation = {
-                    .movement.x = transition_translation.travelled_x / SPEEDS_BASE_UNIT,
-                    .movement.y = transition_translation.travelled_y / SPEEDS_BASE_UNIT,
-                    .speeds.x = transition_translation.speed_x / SPEEDS_BASE_UNIT,
-                    .speeds.y = transition_translation.speed_y / SPEEDS_BASE_UNIT
-                };
+                if(length == sizeof(struct TransitionTranslation)) {
+                    struct TransitionTranslation transition_translation;
+                    memcpy(&transition_translation, data, sizeof(struct TransitionTranslation));
+                    struct Communication_Translation communication_translation = {
+                        .movement.x = transition_translation.travelled_x / SPEEDS_BASE_UNIT,
+                        .movement.y = transition_translation.travelled_y / SPEEDS_BASE_UNIT,
+                        .speeds.x = transition_translation.speed_x / SPEEDS_BASE_UNIT,
+                        .speeds.y = transition_translation.speed_y / SPEEDS_BASE_UNIT
+                    };
 
-                reception_callbacks.updateWheelsTranslation(robot_server->robot->wheels, communication_translation);
-            } else {
-                printf("wrong struct Communication_Translation length\n");
+                    reception_callbacks.updateWheelsTranslation(robot_server->robot->wheels, communication_translation);
+                } else {
+                    printf("wrong struct Communication_Translation length\n");
+                }
+
+                break;
             }
-
-            break;
-        }
 
         case PHYSICAL_FEEDBACK_ROTATION: {
-            if (length == sizeof(struct TransitionRotation)) {
-                struct TransitionRotation transition_rotation;
-                memcpy(&transition_rotation, data, sizeof(struct TransitionRotation));
+                if(length == sizeof(struct TransitionRotation)) {
+                    struct TransitionRotation transition_rotation;
+                    memcpy(&transition_rotation, data, sizeof(struct TransitionRotation));
 
-                printf("feedback rotation: %f %f\n", transition_rotation.travelled_radiants, transition_rotation.speed_radiants_second);
+                    printf("feedback rotation: %f %f\n", transition_rotation.travelled_radiants, transition_rotation.speed_radiants_second);
+                }
+
+                break;
             }
-
-            break;
-        }
     };
 }
 

@@ -21,6 +21,7 @@ struct BehaviorBuilder* BehaviorBuilder_withFreeEntry(struct BehaviorBuilder *be
 struct BehaviorBuilder* BehaviorBuilder_withFreeFlagsEntry(struct BehaviorBuilder *behavior_builder);
 struct BehaviorBuilder* BehaviorBuilder_withFreePoseEntry(struct BehaviorBuilder *behavior_builder);
 struct BehaviorBuilder* BehaviorBuilder_withFreeTrajectoryEntry(struct BehaviorBuilder *behavior_builder);
+struct BehaviorBuilder* BehaviorBuilder_withFreeOrientationEntry(struct BehaviorBuilder *behavior_builder);
 struct BehaviorBuilder* BehaviorBuilder_withGoalX(int goalX, struct BehaviorBuilder *behavior_builder);
 struct BehaviorBuilder* BehaviorBuilder_withGoalY(int goalY, struct BehaviorBuilder *behavior_builder);
 struct BehaviorBuilder* BehaviorBuilder_withGoalTheta(int goal_theta, struct BehaviorBuilder *behavior_builder);

@@ -389,3 +389,28 @@ Test(BehaviorBuilder, given__when_buildingABehaviorWithFreeFlagsEntry_then_itsFl
     Flags_delete(irrelevant_flags);
     Behavior_delete(built_behavior);
 }
+
+Test(BehaviorBuilder,
+     given__when_buildingABehaviorWithFreeOrientation_then_itsFlagsEntryConditionAreIrrelevantAndItsXAndYToleranceAreMaxed)
+{
+    struct Flags *irrelevant_flags = Flags_irrelevant();
+    struct Behavior *built_behavior = BehaviorBuilder_build(
+                                          BehaviorBuilder_withFreeOrientationEntry(
+                                                  BehaviorBuilder_end()));
+
+
+    int are_equal = validate_behavior_has_parameters(
+                        built_behavior,
+                        DEFAULT_GOAL_X,
+                        DEFAULT_GOAL_Y,
+                        DEFAULT_GOAL_THETA,
+                        X_TOLERANCE_MAX,
+                        Y_TOLERANCE_MAX,
+                        THETA_TOLERANCE_DEFAULT,
+                        irrelevant_flags,
+                        &Behavior_idle);
+    cr_assert(are_equal);
+
+    Flags_delete(irrelevant_flags);
+    Behavior_delete(built_behavior);
+}

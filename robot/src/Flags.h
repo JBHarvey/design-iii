@@ -12,6 +12,7 @@ struct Flags {
     int image_received_by_station;
     int ready_to_draw_received_by_station;
     int end_of_cycle_received_by_station;
+    int manchester_code_received;
 };
 
 struct Flags *Flags_new(void);
@@ -29,5 +30,6 @@ void Flags_setPictureTaken(struct Flags *flags, int new_value);
 void Flags_setImageReceivedByStation(struct Flags *flags, int new_value);
 void Flags_setReadyToDrawReceivedByStation(struct Flags *flags, int new_value);
 void Flags_setEndOfCycleReceivedByStation(struct Flags *flags, int new_value);
+void Flags_setManchesterCodeReceived(struct Flags *flags, int new_value);
 
 #endif // FLAGS_H_
