@@ -167,7 +167,6 @@ void StationClientSender_sendWorldInformationsToRobot(struct Communication_Objec
     memcpy(communication_world.environment.obstacles, obstacles, num_obstacles * sizeof(struct Communication_Object));
     memcpy(data + 1, &communication_world, sizeof(struct Communication_World));
 
-    Logger_startMessageSectionAndAppend("World send!");
     addPacketToQueue(data, sizeof(data));
 }
 

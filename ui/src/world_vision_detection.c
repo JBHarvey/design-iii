@@ -11,7 +11,6 @@
 #define OBSTACLE_HEIGHT_CM 41.0
 #define OBSTACLE_RADIUS_CM 7.0
 
-#define ANGLE_RATIO 100000.0
 #define LENGTH_MM_RATIO (10)
 #define LENGTH_CM_RATIO (10 * LENGTH_MM_RATIO)
 
@@ -19,7 +18,8 @@
 #define POSITIVE_ANGLE_VALUE (HALF_PI)
 
 #define SIZE_DRAW_LINES 3
-#define RADIUS_DRAW_CIRCLE 40
+#define RADIUS_DRAW_OBSTACLE_CIRCLE 40
+#define RADIUS_DRAW_ROBOT_CIRCLE (RADIUS_DRAW_OBSTACLE_CIRCLE * 2.56)
 #define PINK CV_RGB(255, 0, 255)
 #define RED CV_RGB(255, 0, 0)
 #define GREEN CV_RGB(0, 255, 0)
@@ -42,7 +42,15 @@ struct DetectedThings *detected = NULL;
 
 static int convertAngleToRobotAngle(double angle)
 {
-    return (angle * ANGLE_RATIO) + 0.5;
+    int robot_angle = (angle / ANGLE_BASE_UNIT) + 0.5;
+
+    if(robot_angle >= 0) {
+        robot_angle = PI - robot_angle;
+    } else {
+        robot_angle = MINUS_PI - robot_angle;
+    }
+
+    return robot_angle;
 }
 
 static int convertObstacleAngleToRobotAngle(double angle)
@@ -64,26 +72,26 @@ static void drawMarkerLocationOnImage(IplImage *image, struct Marker marker)
 {
     if(marker.valid) {
 
-        cvLine(image, cvPoint(marker.x, marker.y), cvPoint(marker.x + RADIUS_DRAW_CIRCLE * cos(marker.angle),
-                marker.y + RADIUS_DRAW_CIRCLE * sin(marker.angle)), PINK, SIZE_DRAW_LINES, 8, 0);
-        cvCircle(image, cvPoint(marker.x, marker.y), RADIUS_DRAW_CIRCLE, PINK, SIZE_DRAW_LINES, 8, 0);
+        cvLine(image, cvPoint(marker.x, marker.y), cvPoint(marker.x + RADIUS_DRAW_ROBOT_CIRCLE * cos(marker.angle),
+                marker.y + RADIUS_DRAW_ROBOT_CIRCLE * sin(marker.angle)), PINK, SIZE_DRAW_LINES, 8, 0);
+        cvCircle(image, cvPoint(marker.x, marker.y), RADIUS_DRAW_ROBOT_CIRCLE, PINK, SIZE_DRAW_LINES, 8, 0);
     }
 }
 
 static void drawObstacleOnImage(IplImage *image, struct Obstacle obstacle)
 {
     if(obstacle.type == OBSTACLE_CIRCLE) {
-        cvCircle(image, cvPoint(obstacle.x, obstacle.y), RADIUS_DRAW_CIRCLE / 2, RED, SIZE_DRAW_LINES,
+        cvCircle(image, cvPoint(obstacle.x, obstacle.y), RADIUS_DRAW_OBSTACLE_CIRCLE / 2, RED, SIZE_DRAW_LINES,
                  8, 0);
-        cvCircle(image, cvPoint(obstacle.x, obstacle.y), RADIUS_DRAW_CIRCLE, RED, SIZE_DRAW_LINES, 8,
+        cvCircle(image, cvPoint(obstacle.x, obstacle.y), RADIUS_DRAW_OBSTACLE_CIRCLE, RED, SIZE_DRAW_LINES, 8,
                  0);
     }
 
     if(obstacle.type == OBSTACLE_TRIANGLE) {
         cvLine(image, cvPoint(obstacle.x, obstacle.y),
-               cvPoint(obstacle.x + RADIUS_DRAW_CIRCLE * cos(obstacle.angle),
-                       obstacle.y + RADIUS_DRAW_CIRCLE * sin(obstacle.angle)), GREEN, SIZE_DRAW_LINES, 8, 0);
-        cvCircle(image, cvPoint(obstacle.x, obstacle.y), RADIUS_DRAW_CIRCLE, GREEN, SIZE_DRAW_LINES, 8,
+               cvPoint(obstacle.x + RADIUS_DRAW_OBSTACLE_CIRCLE * cos(obstacle.angle),
+                       obstacle.y + RADIUS_DRAW_OBSTACLE_CIRCLE * sin(obstacle.angle)), GREEN, SIZE_DRAW_LINES, 8, 0);
+        cvCircle(image, cvPoint(obstacle.x, obstacle.y), RADIUS_DRAW_OBSTACLE_CIRCLE, GREEN, SIZE_DRAW_LINES, 8,
                  0);
     }
 }

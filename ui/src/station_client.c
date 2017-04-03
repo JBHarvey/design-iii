@@ -153,7 +153,6 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 
                 WorldVision_setPlannedTrajectory(point_set);
                 PointTypes_releasePoint3DSet(point_set);
-                Logger_startRobotConnectionHandlerSectionAndAppend("Planned trajectory received.");
                 StationClientSender_sendPlannedTrajectoryReceivedAck();
                 break;
             }
@@ -168,14 +167,16 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
                 double dy = (double) y;
                 struct Point3D point = PointTypes_createPoint3D(dx, dy, 0);
                 // Commented out because there's too much things to print
-                //Logger_startRobotConnectionHandlerSectionAndAppend("Robot pose received.");
+                /*Logger_startRobotConnectionHandlerSectionAndAppend("Robot pose received. X: ");
+                Logger_appendDouble(dx);
+                Logger_append(", Y: ");
+                Logger_appendDouble(dy);*/
                 // Commented out because of To Be Repared SEGV
-                //WorldVision_setRobotPosition(point);
+                WorldVision_setRobotPosition(point);
                 break;
             }
 
         case SIGNAL_READY_TO_START: {
-                Logger_startRobotConnectionHandlerSectionAndAppend("Robot signaled that he is ready to start a cycle.");
                 StationInterface_activateStartCycleButton();
                 StationClientSender_sendReadyToStartSignalReceivedAck();
                 StationClientSender_removeForceEnvironmentHasChanged();
