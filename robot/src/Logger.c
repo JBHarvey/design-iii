@@ -470,7 +470,7 @@ static void logSignal(const char *signal_type)
 void Logger_sendRobotPoseEstimate(struct Pose *pose)
 {
     //Commented out because it pollutes the log file
-    //logRobotPoseEstimate(pose);
+    logRobotPoseEstimate(pose);
     (*(file_logger->original_data_sender_callbacks.sendRobotPoseEstimate))(pose);
 }
 
