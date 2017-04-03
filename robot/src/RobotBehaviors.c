@@ -57,13 +57,20 @@ void RobotBehaviors_prepareInitialBehaviors(struct Robot *robot)
     Behavior_delete(behavior_send_ready_to_start_when_map_is_navigable);
 }
 
+static struct Behavior *fetchLastBehavior(struct Robot *robot)
+{
+    struct Behavior *current = robot->current_behavior;
+
+    while(current != current->first_child) {
+        current = current->first_child;
+    }
+
+    return current;
+}
+
 void RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(struct Robot *robot)
 {
-    struct Behavior *last_behavior = robot->current_behavior;
-
-    while(last_behavior->first_child != last_behavior) {
-        last_behavior = last_behavior->first_child;
-    }
+    struct Behavior *last_behavior = fetchLastBehavior(robot);
 
     void (*sendPlannedTrajectory)(struct Robot *) = &Robot_sendPlannedTrajectory;
     struct Behavior *new_behavior = BehaviorBuilder_build(
@@ -78,11 +85,7 @@ void RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(struct Robot *robot
 void RobotBehaviors_appendTrajectoryBehaviors(struct Robot *robot, struct CoordinatesSequence *trajectory,
         void (*last_action)(struct Robot *))
 {
-    struct Behavior *planning_behavior = robot->current_behavior;
-
-    while(planning_behavior->first_child != planning_behavior) {
-        planning_behavior = planning_behavior->first_child;
-    }
+    struct Behavior *planning_behavior = fetchLastBehavior(robot);
 
     void (*navigationAction)(struct Robot *) = &Navigator_navigateRobotTowardsGoal;
     struct Flags *planned_trajectory_received_by_station = Flags_irrelevant();
@@ -120,17 +123,6 @@ void RobotBehaviors_appendTrajectoryBehaviors(struct Robot *robot, struct Coordi
 
     Flags_delete(planned_trajectory_received_by_station);
     Behavior_delete(first_trajectory_behavior);
-}
-
-static struct Behavior *fetchLastBehavior(struct Robot *robot)
-{
-    struct Behavior *current = robot->current_behavior;
-
-    while(current != current->first_child) {
-        current = current->first_child;
-    }
-
-    return current;
 }
 
 

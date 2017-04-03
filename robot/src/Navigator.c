@@ -216,6 +216,21 @@ void Navigator_planTowardsAntennaStart(struct Robot *robot)
 
 void Navigator_planTowardsAntennaMiddle(struct Robot *robot)
 {
+    struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
+    struct Coordinates *start = robot->navigator->navigable_map->antenna_zone_start;
+    struct Coordinates *stop = robot->navigator->navigable_map->antenna_zone_stop;
+    int middle_x = Coordinates_computeMeanX(start, stop);
+    int middle_y = Coordinates_computeMeanY(start, stop);
+    struct Coordinates *antenna_middle_coordinates = Coordinates_new(middle_x, middle_y);
+    struct CoordinatesSequence *trajectory_to_antenna_middle = CoordinatesSequence_new(current_coordinates);
+    CoordinatesSequence_append(trajectory_to_antenna_middle, antenna_middle_coordinates);
+    Coordinates_delete(antenna_middle_coordinates);
+
+    robot->navigator->planned_trajectory = trajectory_to_antenna_middle;
+
+    RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
+    void (*fetchManchester)(struct Robot *) = &Navigator_planFetchingManchesterCode;
+    RobotBehaviors_appendTrajectoryBehaviors(robot, trajectory_to_antenna_middle, fetchManchester);
 }
 
 void Navigator_planOrientationTowardsAntenna(struct Robot *robot)
@@ -223,6 +238,8 @@ void Navigator_planOrientationTowardsAntenna(struct Robot *robot)
     void (*action)(struct Robot *) = &Navigator_planTowardsAntennaMiddle;
     RobotBehavior_appendOrientationBehaviorWithChildAction(robot, 0, action);
 }
+
+void Navigator_planFetchingManchesterCode(struct Robot *robot) {}
 
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot)

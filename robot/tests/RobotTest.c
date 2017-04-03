@@ -249,6 +249,18 @@ Test(Robot,
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
 }
 
+Test(Robot,
+     given_aBehaviorWithPlanTowardsAntennaMiddleAction_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planTowardsAntennaMiddle;
+    Behavior_act(robot->current_behavior, robot);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+}
+
 /*
 Test(Robot,
      given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
@@ -327,7 +339,7 @@ struct Behavior *fetchLastBehavior(struct Behavior *behavior)
 }
 
 Test(Robot,
-     given_aBehaviorWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theLastBehaviorOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
+     given_aBehaviorWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
@@ -340,7 +352,7 @@ Test(Robot,
 }
 
 Test(Robot,
-     given_aRobotWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanToOrientTowardsTheAntenna
+     given_aBehaviorWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanToOrientTowardsTheAntenna
      , .init = setup_robot
      , .fini = teardown_robot)
 {
@@ -354,7 +366,34 @@ Test(Robot,
 }
 
 Test(Robot,
-     given_aRobotWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     given_aBehaviorWithPlanTowardsAntennaMiddleAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planTowardsAntennaMiddle;
+    Behavior_act(robot->current_behavior, robot);
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
+            robot->navigator->planned_trajectory);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanFetchingManchesterCode
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planTowardsAntennaMiddle;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    void (*planFetchingManchesterCode)(struct Robot *) = &Navigator_planFetchingManchesterCode;
+    cr_assert_eq(last_behavior->action, planFetchingManchesterCode);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
@@ -367,7 +406,7 @@ Test(Robot,
 }
 
 Test(Robot,
-     given_aRobotWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theBeforeLastBehaviorHasAnOrientRobotTowardsGoalAction
+     given_aBehaviorWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theBeforeLastBehaviorHasAnOrientRobotTowardsGoalAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
@@ -381,7 +420,7 @@ Test(Robot,
 }
 
 Test(Robot,
-     given_aRobotWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theLastBehaviorHasAThetaZeroEntryGoal
+     given_aBehaviorWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theLastBehaviorHasAThetaZeroEntryGoal
      , .init = setup_robot
      , .fini = teardown_robot)
 {
@@ -394,7 +433,7 @@ Test(Robot,
 }
 
 Test(Robot,
-     given_aRobotWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsAntennaMiddleAction
+     given_aBehaviorWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsAntennaMiddleAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
