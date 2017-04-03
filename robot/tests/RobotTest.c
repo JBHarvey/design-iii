@@ -10,6 +10,42 @@ int validation_pose_estimate_is_sent;
 const int SIGNAL_SENT = 1;
 const int SIGNAL_NOT_SENT = 0;
 
+void assertBehaviorHasFreeFlagsEntry(struct Behavior *behavior)
+{
+    struct Flags *irrelevant_flags = Flags_irrelevant();
+    cr_assert(Flags_haveTheSameValues(irrelevant_flags, behavior->entry_conditions->goal_state->flags));
+    Flags_delete(irrelevant_flags);
+}
+
+void assertBehaviorHasOrientationEntry(struct Behavior *behavior, enum CardinalDirection orientation)
+{
+    struct Pose *angle_tolerance = Pose_new(X_TOLERANCE_MAX, Y_TOLERANCE_MAX, THETA_TOLERANCE_DEFAULT);
+    cr_assert(Pose_haveTheSameValues(angle_tolerance, behavior->entry_conditions->tolerances->pose));
+    Pose_delete(angle_tolerance);
+    int angle;
+
+    switch(orientation) {
+        case EAST:
+            angle = 0;
+            break;
+
+        case NORTH:
+            angle = HALF_PI;
+            break;
+
+        case WEST:
+            angle = PI;
+            break;
+
+        default:
+            angle = 0;
+            break;
+    }
+
+    cr_assert_eq(angle, behavior->entry_conditions->goal_state->pose->angle->theta);
+
+    assertBehaviorHasFreeFlagsEntry(behavior);
+}
 
 void assertBehaviorHasFreePoseEntry(struct Behavior *behavior)
 {
@@ -18,14 +54,18 @@ void assertBehaviorHasFreePoseEntry(struct Behavior *behavior)
     Pose_delete(max_pose_tolerance);
 }
 
+void assertBehaviorHasFreeEntry(struct Behavior *behavior)
+{
+    assertBehaviorHasFreeFlagsEntry(behavior);
+    assertBehaviorHasFreePoseEntry(behavior);
+}
+
 void assertBehaviorHasFreeTrajectoryEntry(struct Behavior *behavior)
 {
     struct Pose *free_coordinates_tolerance = Pose_new(X_TOLERANCE_DEFAULT, Y_TOLERANCE_DEFAULT, THETA_TOLERANCE_MAX);
-    struct Flags *irrelevant_flags = Flags_irrelevant();
     cr_assert(Pose_haveTheSameValues(free_coordinates_tolerance, behavior->entry_conditions->tolerances->pose));
-    cr_assert(Flags_haveTheSameValues(irrelevant_flags, behavior->entry_conditions->goal_state->flags));
     Pose_delete(free_coordinates_tolerance);
-    Flags_delete(irrelevant_flags);
+    assertBehaviorHasFreeFlagsEntry(behavior);
 }
 
 Test(Robot, creation_destruction)
@@ -238,15 +278,21 @@ void assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(struct Behavi
     Flags_delete(flags_planned_trajectory_received);
 }
 
-struct Behavior *fetchLastBehavior(struct Behavior *behavior)
+struct Behavior *fetchBeforeLastBehavior(struct Behavior *behavior)
 {
     struct Behavior *current = behavior;
 
-    while(current != current->first_child) {
+    while(current->first_child != current->first_child->first_child) {
         current = current->first_child;
     }
 
     return current;
+}
+
+struct Behavior *fetchLastBehavior(struct Behavior *behavior)
+{
+    struct Behavior *current = fetchBeforeLastBehavior(behavior);
+    return current->first_child;
 }
 
 Test(Robot,
@@ -274,6 +320,60 @@ Test(Robot,
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
     void (*planOrientationTowardsAntenna)(struct Robot *) = &Navigator_planOrientationTowardsAntenna;
     cr_assert_eq(last_behavior->action, planOrientationTowardsAntenna);
+}
+
+Test(Robot,
+     given_aRobotWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theBeforeLastBehaviorsHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planOrientationTowardsAntenna;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
+    assertBehaviorHasFreeEntry(before_last_behavior);
+}
+
+Test(Robot,
+     given_aRobotWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theBeforeLastBehaviorsHasAnOrientRobotTowardsGoalAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planOrientationTowardsAntenna;
+    Behavior_act(robot->current_behavior, robot);
+    void (*orientationTowardsAntenna)(struct Robot *) = &Navigator_orientRobotTowardsGoal;
+    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
+    cr_assert_eq(before_last_behavior->action, orientationTowardsAntenna);
+}
+
+Test(Robot,
+     given_aRobotWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theLastBehaviorsHasAThetaZeroEntryGoal
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planOrientationTowardsAntenna;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    assertBehaviorHasOrientationEntry(last_behavior, EAST);
+}
+
+Test(Robot,
+     given_aRobotWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theLastBehaviorsHasAPlanTowardsAntennaMiddleAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planOrientationTowardsAntenna;
+    Behavior_act(robot->current_behavior, robot);
+    void (*planTowardsAntennaMiddle)(struct Robot *) = &Navigator_planTowardsAntennaMiddle;
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    cr_assert_eq(last_behavior->action, planTowardsAntennaMiddle);
 }
 
 /*

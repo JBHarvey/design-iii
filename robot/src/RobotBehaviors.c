@@ -121,3 +121,42 @@ void RobotBehaviors_appendTrajectoryBehaviors(struct Robot *robot, struct Coordi
     Flags_delete(planned_trajectory_received_by_station);
     Behavior_delete(first_trajectory_behavior);
 }
+
+static struct Behavior *fetchLastBehavior(struct Robot *robot)
+{
+    struct Behavior *current = robot->current_behavior;
+
+    while(current != current->first_child) {
+        current = current->first_child;
+    }
+
+    return current;
+}
+
+
+void RobotBehavior_appendOrientationBehaviorWithChildAction(struct Robot *robot, int angle,
+        void (*action)(struct Robot *))
+{
+    struct Behavior *last_behavior = fetchLastBehavior(robot);
+
+    void (*orientTowardsGoal)(struct Robot*) = &Navigator_orientRobotTowardsGoal;
+    struct Behavior *behavior_orient_robot_with_free_entry;
+    behavior_orient_robot_with_free_entry = BehaviorBuilder_build(
+            BehaviorBuilder_withAction(orientTowardsGoal,
+                                       BehaviorBuilder_withFreeEntry(
+                                           BehaviorBuilder_end())));
+    Behavior_addChild(last_behavior, behavior_orient_robot_with_free_entry);
+
+    last_behavior = last_behavior->first_child;
+
+    struct Behavior *behavior_do_action_after_orientation;
+    behavior_do_action_after_orientation = BehaviorBuilder_build(
+            BehaviorBuilder_withAction(action,
+                                       BehaviorBuilder_withGoalTheta(angle,
+                                               BehaviorBuilder_withFreeOrientationEntry(
+                                                       BehaviorBuilder_end()))));
+    Behavior_addChild(last_behavior, behavior_do_action_after_orientation);
+
+    Behavior_delete(behavior_orient_robot_with_free_entry);
+    Behavior_delete(behavior_do_action_after_orientation);
+}

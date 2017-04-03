@@ -174,6 +174,8 @@ void Navigator_navigateRobotTowardsGoal(struct Robot *robot)
 
 }
 
+void Navigator_orientRobotTowardsGoal(struct Robot *robot) {}
+
 void Navigator_planTowardsAntennaStart(struct Robot *robot)
 {
     struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
@@ -187,8 +189,12 @@ void Navigator_planTowardsAntennaStart(struct Robot *robot)
     RobotBehaviors_appendTrajectoryBehaviors(robot, trajectory_to_antenna_start, orientationAction);
 }
 
+void Navigator_planTowardsAntennaMiddle(struct Robot *robot) {}
+
 void Navigator_planOrientationTowardsAntenna(struct Robot *robot)
 {
+    void (*action)(struct Robot *) = &Navigator_planTowardsAntennaMiddle;
+    RobotBehavior_appendOrientationBehaviorWithChildAction(robot, 0, action);
 }
 
 /*

@@ -8,5 +8,6 @@
 void RobotBehaviors_prepareInitialBehaviors(struct Robot *robot);
 void RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(struct Robot *robot);
 void RobotBehaviors_appendTrajectoryBehaviors(struct Robot *robot, struct CoordinatesSequence *trajectory,void (*last_action)(struct Robot *));
+void RobotBehavior_appendOrientationBehaviorWithChildAction(struct Robot *robot, int orientation, void (*action)(struct Robot *));
 
 #endif // ROBOTBEHAVIORS_H_
