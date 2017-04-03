@@ -1,4 +1,3 @@
-
 #include "RobotBehaviors.h"
 
 void RobotBehaviors_prepareInitialBehaviors(struct Robot *robot)
@@ -14,10 +13,10 @@ void RobotBehaviors_prepareInitialBehaviors(struct Robot *robot)
     Flags_setNavigableMapIsReady(map_is_ready_flags, 1);
     struct Behavior *behavior_send_ready_to_start_when_map_is_navigable;
     behavior_send_ready_to_start_when_map_is_navigable = BehaviorBuilder_build(
-                BehaviorBuilder_withFlags(map_is_ready_flags,
-                                          BehaviorBuilder_withFreePoseEntry(
-                                                  BehaviorBuilder_withAction(sendReadyToStart,
-                                                          BehaviorBuilder_end()))));
+                BehaviorBuilder_withAction(sendReadyToStart,
+                                           BehaviorBuilder_withFlags(map_is_ready_flags,
+                                                   BehaviorBuilder_withFreePoseEntry(
+                                                           BehaviorBuilder_end()))));
 
     Behavior_addChild(robot->current_behavior, behavior_send_ready_to_start_when_map_is_navigable);
 
@@ -151,4 +150,35 @@ void RobotBehavior_appendOrientationBehaviorWithChildAction(struct Robot *robot,
 
     Behavior_delete(behavior_orient_robot_with_free_entry);
     Behavior_delete(behavior_do_action_after_orientation);
+}
+
+void RobotBehavior_appendFetchManchesterCodeBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *))
+{
+    struct Behavior *last_behavior = fetchLastBehavior(robot);
+
+    void (*fetchManchesterGoal)(struct Robot*) =
+        &Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset;
+    struct Behavior *behavior_fetch_manchester_code_with_free_entry;
+    behavior_fetch_manchester_code_with_free_entry = BehaviorBuilder_build(
+                BehaviorBuilder_withAction(fetchManchesterGoal,
+                                           BehaviorBuilder_withFreeEntry(
+                                                   BehaviorBuilder_end())));
+    Behavior_addChild(last_behavior, behavior_fetch_manchester_code_with_free_entry);
+
+    last_behavior = last_behavior->first_child;
+
+    struct Flags *manchester_code_received_flags = Flags_irrelevant();
+    Flags_setNavigableMapIsReady(manchester_code_received_flags, 1);
+    struct Behavior *behavior_do_action_after_manchester_code_reception;
+    behavior_do_action_after_manchester_code_reception = BehaviorBuilder_build(
+                BehaviorBuilder_withAction(action,
+                                           BehaviorBuilder_withFlags(manchester_code_received_flags,
+                                                   BehaviorBuilder_withFreePoseEntry(
+                                                           BehaviorBuilder_end()))));
+    Behavior_addChild(last_behavior, behavior_do_action_after_manchester_code_reception);
+
+    Flags_delete(manchester_code_received_flags);
+
+    Behavior_delete(behavior_fetch_manchester_code_with_free_entry);
+    Behavior_delete(behavior_do_action_after_manchester_code_reception);
 }

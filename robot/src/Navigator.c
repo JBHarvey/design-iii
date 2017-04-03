@@ -235,11 +235,18 @@ void Navigator_planTowardsAntennaMiddle(struct Robot *robot)
 
 void Navigator_planOrientationTowardsAntenna(struct Robot *robot)
 {
+    int angle = 0;
     void (*action)(struct Robot *) = &Navigator_planTowardsAntennaMiddle;
-    RobotBehavior_appendOrientationBehaviorWithChildAction(robot, 0, action);
+    RobotBehavior_appendOrientationBehaviorWithChildAction(robot, angle, action);
 }
 
-void Navigator_planFetchingManchesterCode(struct Robot *robot) {}
+void Navigator_planFetchingManchesterCode(struct Robot *robot)
+{
+    void (*action)(struct Robot *) = &Navigator_planLowerPenForAntennaMark;
+    RobotBehavior_appendFetchManchesterCodeBehaviorWithChildAction(robot, action);
+}
+
+void Navigator_planLowerPenForAntennaMark(struct Robot *robot) {}
 
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot)
