@@ -183,9 +183,15 @@ void Navigator_planTowardsAntennaStart(struct Robot *robot)
 
     robot->navigator->planned_trajectory = trajectory_to_antenna_start;
     RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
-    RobotBehaviors_appendTrajectoryBehaviors(robot, trajectory_to_antenna_start);
+    void (*orientationAction)(struct Robot *) = &Navigator_planOrientationTowardsAntenna;
+    RobotBehaviors_appendTrajectoryBehaviors(robot, trajectory_to_antenna_start, orientationAction);
 }
 
+void Navigator_planOrientationTowardsAntenna(struct Robot *robot)
+{
+}
+
+/*
 void Navigator_planTowardsAntennaStop(struct Robot *robot)
 {
     struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
@@ -197,6 +203,7 @@ void Navigator_planTowardsAntennaStop(struct Robot *robot)
     RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
     RobotBehaviors_appendTrajectoryBehaviors(robot, trajectory_to_antenna_stop);
 }
+*/
 
 int Navigator_computeRotationToleranceForPrecisionMovement(int planned_distance)
 {
