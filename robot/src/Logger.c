@@ -227,13 +227,13 @@ static void logWheelsRotationUpdate(struct Communication_Rotation rotation)
 
 void Logger_updateWheelsTranslation(struct Wheels *wheels, struct Communication_Translation translation)
 {
-    logWheelsTranslationUpdate(translation);
+    //logWheelsTranslationUpdate(translation);
     (*(file_logger->original_data_receiver_callbacks.updateWheelsTranslation))(wheels, translation);
 }
 
 void Logger_updateWheelsRotation(struct Wheels *wheels, struct Communication_Rotation rotation)
 {
-    logWheelsRotationUpdate(rotation);
+    //logWheelsRotationUpdate(rotation);
     (*(file_logger->original_data_receiver_callbacks.updateWheelsRotation))(wheels, rotation);
 }
 
