@@ -75,7 +75,8 @@ void RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(struct Robot *robot
     Behavior_delete(new_behavior);
 }
 
-void RobotBehaviors_appendTrajectoryBehaviors(struct Robot *robot, struct CoordinatesSequence *trajectory)
+void RobotBehaviors_appendTrajectoryBehaviors(struct Robot *robot, struct CoordinatesSequence *trajectory,
+        void (*last_action)(struct Robot *))
 {
     struct Behavior *planning_behavior = robot->current_behavior;
 
@@ -114,6 +115,8 @@ void RobotBehaviors_appendTrajectoryBehaviors(struct Robot *robot, struct Coordi
         trajectory_behavior = trajectory_behavior->first_child;
         Behavior_delete(trajectory_behavior_child);
     }
+
+    trajectory_behavior->first_child->action = last_action;
 
     Flags_delete(planned_trajectory_received_by_station);
     Behavior_delete(first_trajectory_behavior);

@@ -44,10 +44,6 @@ Test(Robot, creation_destruction)
     cr_assert_eq(robot->first_behavior->action, initial_behavior_action);
 
 
-    /*TODO :
-     * Add for all the following behaviors the validation that their entry condition's
-     * tolerance is maxed (FreePoseEntry);
-     */
     struct Behavior *second_behavior = robot->first_behavior->first_child;
     void (*second_behavior_action)(struct Robot *) = &Robot_sendReadyToStartSignal;
     struct Flags *second_flags = second_behavior->entry_conditions->goal_state->flags;
@@ -182,6 +178,7 @@ Test(Robot,
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
 }
 
+/*
 Test(Robot,
      given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
      , .init = setup_robot
@@ -193,6 +190,7 @@ Test(Robot,
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
 }
+*/
 
 void assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(struct Behavior *behavior,
         struct CoordinatesSequence *trajectory)
@@ -229,10 +227,26 @@ void assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(struct Behavi
         point_in_trajectory = trajectory->coordinates;
         behavior_goal_coordinates = behavior->entry_conditions->goal_state->pose->coordinates;
         cr_assert(Coordinates_haveTheSameValues(point_in_trajectory, behavior_goal_coordinates));
+
+        if(!CoordinatesSequence_isLast(trajectory)) {
+            cr_assert_eq(behavior->action, navigationAction);
+        }
+
         assertBehaviorHasFreeTrajectoryEntry(behavior);
     } while(!CoordinatesSequence_isLast(trajectory));
 
     Flags_delete(flags_planned_trajectory_received);
+}
+
+struct Behavior *fetchLastBehavior(struct Behavior *behavior)
+{
+    struct Behavior *current = behavior;
+
+    while(current != current->first_child) {
+        current = current->first_child;
+    }
+
+    return current;
 }
 
 Test(Robot,
@@ -249,6 +263,21 @@ Test(Robot,
 }
 
 Test(Robot,
+     given_aRobotWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanToOrientTowardsTheAntenna
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planTowardsAntennaStart;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    void (*planOrientationTowardsAntenna)(struct Robot *) = &Navigator_planOrientationTowardsAntenna;
+    cr_assert_eq(last_behavior->action, planOrientationTowardsAntenna);
+}
+
+/*
+Test(Robot,
      given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -260,6 +289,7 @@ Test(Robot,
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
             robot->navigator->planned_trajectory);
 }
+*/
 
 Test(Robot, given_initialRobot_when_takesAPicture_then_thePicureTakenFlagValueIsOne
      , .init = setup_robot
