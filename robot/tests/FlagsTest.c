@@ -14,6 +14,7 @@ const int PICTURE_TAKEN = 1;
 const int IMAGE_RECEIVED_BY_STATION = 1;
 const int READY_TO_DRAW_RECEIVED_BY_STATION = 1;
 const int END_OF_CYCLE_RECEIVED_BY_STATION = 1;
+const int MANCHESTER_CODE_RECEIVED = 1;
 
 Test(Flags, creation_destruction)
 {
@@ -26,6 +27,7 @@ Test(Flags, creation_destruction)
     cr_assert(flags->image_received_by_station == ZERO);
     cr_assert(flags->ready_to_draw_received_by_station == ZERO);
     cr_assert(flags->end_of_cycle_received_by_station == ZERO);
+    cr_assert(flags->manchester_code_received == ZERO);
     Flags_delete(flags);
 }
 
@@ -40,6 +42,7 @@ Test(Flags, given__when_createIrrelevantFlags_then_flagsWithAllMinusOnesIsReturn
     cr_assert(flags->image_received_by_station == MINUS_ONE);
     cr_assert(flags->ready_to_draw_received_by_station == MINUS_ONE);
     cr_assert(flags->end_of_cycle_received_by_station == MINUS_ONE);
+    cr_assert(flags->manchester_code_received == MINUS_ONE);
     Flags_delete(flags);
 }
 
@@ -56,6 +59,7 @@ void setup_flags(void)
     Flags_setImageReceivedByStation(flags, IMAGE_RECEIVED_BY_STATION);
     Flags_setReadyToDrawReceivedByStation(flags, READY_TO_DRAW_RECEIVED_BY_STATION);
     Flags_setEndOfCycleReceivedByStation(flags, END_OF_CYCLE_RECEIVED_BY_STATION);
+    Flags_setManchesterCodeReceived(flags, MANCHESTER_CODE_RECEIVED);
 
     Flags_setNavigableMapIsReady(other_flags, NAVIGABLE_MAP_IS_READY);
     Flags_setReadyToStartReceivedByStation(other_flags, READY_TO_START_RECEIVED_BY_STATION);
@@ -65,6 +69,7 @@ void setup_flags(void)
     Flags_setImageReceivedByStation(other_flags, IMAGE_RECEIVED_BY_STATION);
     Flags_setReadyToDrawReceivedByStation(other_flags, READY_TO_DRAW_RECEIVED_BY_STATION);
     Flags_setEndOfCycleReceivedByStation(other_flags, END_OF_CYCLE_RECEIVED_BY_STATION);
+    Flags_setManchesterCodeReceived(other_flags, MANCHESTER_CODE_RECEIVED);
 }
 
 void teardown_flags(void)
@@ -93,6 +98,7 @@ Test(Flags, given_twoFlagsWithDifferentValues_when_comparesThem_then_returnsFals
     Flags_setImageReceivedByStation(flags, ZERO);
     Flags_setReadyToDrawReceivedByStation(flags, ZERO);
     Flags_setEndOfCycleReceivedByStation(flags, ZERO);
+    Flags_setManchesterCodeReceived(flags, ZERO);
 
     int comparison = Flags_haveTheSameValues(flags, other_flags);
     cr_assert(comparison == 0);
@@ -123,6 +129,7 @@ Test(Flags, given_twoFlagsWithDifferentValues_when_copied_then_theFlagsHaveTheSa
     Flags_setImageReceivedByStation(flags, ZERO);
     Flags_setReadyToDrawReceivedByStation(flags, ZERO);
     Flags_setEndOfCycleReceivedByStation(flags, ZERO);
+    Flags_setManchesterCodeReceived(flags, ZERO);
 
     Flags_copyValuesFrom(flags, other_flags);
 
@@ -197,4 +204,13 @@ Test(Flags_flag,
 {
     Flags_setEndOfCycleReceivedByStation(flags, END_OF_CYCLE_RECEIVED_BY_STATION);
     cr_assert(flags->end_of_cycle_received_by_station == END_OF_CYCLE_RECEIVED_BY_STATION);
+}
+
+Test(Flags_flag,
+     given_defaultFlags_when_triesToSetManchesterCodeReceivedToOne_then_manchesterCodeReceivedIsOne
+     , .init = setup_flags
+     , .fini = teardown_flags)
+{
+    Flags_setManchesterCodeReceived(flags, MANCHESTER_CODE_RECEIVED);
+    cr_assert(flags->manchester_code_received == MANCHESTER_CODE_RECEIVED);
 }

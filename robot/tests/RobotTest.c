@@ -1,15 +1,60 @@
 #include <criterion/criterion.h>
 #include <stdio.h>
 #include "Robot.h"
+#include "Timer.h"
 
 struct Robot *robot;
-struct DataSender_Callbacks validation_callbacks;
+struct DataSender_Callbacks validation_data_sender_callbacks;
+struct CommandSender_Callbacks validation_command_sender_callbacks;
 int validation_ready_to_start_is_sent;
 int validation_planned_trajectory_is_sent;
 int validation_pose_estimate_is_sent;
+int validation_pen_down_command_is_sent;
+int validation_pen_up_command_is_sent;
 const int SIGNAL_SENT = 1;
 const int SIGNAL_NOT_SENT = 0;
+const int PEN_DOWN_COMMAND_SENT = 1;
+const int PEN_DOWN_COMMAND_NOT_SENT = 0;
+const int PEN_UP_COMMAND_SENT = 1;
+const int PEN_UP_COMMAND_NOT_SENT = 0;
+int manchester_code_command_count;
 
+void assertBehaviorHasFreeFlagsEntry(struct Behavior *behavior)
+{
+    struct Flags *irrelevant_flags = Flags_irrelevant();
+    cr_assert(Flags_haveTheSameValues(irrelevant_flags, behavior->entry_conditions->goal_state->flags));
+    Flags_delete(irrelevant_flags);
+}
+
+void assertBehaviorHasOrientationEntry(struct Behavior *behavior, enum CardinalDirection orientation)
+{
+    struct Pose *angle_tolerance = Pose_new(X_TOLERANCE_MAX, Y_TOLERANCE_MAX, THETA_TOLERANCE_DEFAULT);
+    cr_assert(Pose_haveTheSameValues(angle_tolerance, behavior->entry_conditions->tolerances->pose));
+    Pose_delete(angle_tolerance);
+    int angle;
+
+    switch(orientation) {
+        case EAST:
+            angle = 0;
+            break;
+
+        case NORTH:
+            angle = HALF_PI;
+            break;
+
+        case WEST:
+            angle = PI;
+            break;
+
+        default:
+            angle = 0;
+            break;
+    }
+
+    cr_assert_eq(angle, behavior->entry_conditions->goal_state->pose->angle->theta);
+
+    assertBehaviorHasFreeFlagsEntry(behavior);
+}
 
 void assertBehaviorHasFreePoseEntry(struct Behavior *behavior)
 {
@@ -18,14 +63,18 @@ void assertBehaviorHasFreePoseEntry(struct Behavior *behavior)
     Pose_delete(max_pose_tolerance);
 }
 
+void assertBehaviorHasFreeEntry(struct Behavior *behavior)
+{
+    assertBehaviorHasFreeFlagsEntry(behavior);
+    assertBehaviorHasFreePoseEntry(behavior);
+}
+
 void assertBehaviorHasFreeTrajectoryEntry(struct Behavior *behavior)
 {
     struct Pose *free_coordinates_tolerance = Pose_new(X_TOLERANCE_DEFAULT, Y_TOLERANCE_DEFAULT, THETA_TOLERANCE_MAX);
-    struct Flags *irrelevant_flags = Flags_irrelevant();
     cr_assert(Pose_haveTheSameValues(free_coordinates_tolerance, behavior->entry_conditions->tolerances->pose));
-    cr_assert(Flags_haveTheSameValues(irrelevant_flags, behavior->entry_conditions->goal_state->flags));
     Pose_delete(free_coordinates_tolerance);
-    Flags_delete(irrelevant_flags);
+    assertBehaviorHasFreeFlagsEntry(behavior);
 }
 
 Test(Robot, creation_destruction)
@@ -44,10 +93,6 @@ Test(Robot, creation_destruction)
     cr_assert_eq(robot->first_behavior->action, initial_behavior_action);
 
 
-    /*TODO :
-     * Add for all the following behaviors the validation that their entry condition's
-     * tolerance is maxed (FreePoseEntry);
-     */
     struct Behavior *second_behavior = robot->first_behavior->first_child;
     void (*second_behavior_action)(struct Robot *) = &Robot_sendReadyToStartSignal;
     struct Flags *second_flags = second_behavior->entry_conditions->goal_state->flags;
@@ -104,16 +149,38 @@ void validatePoseEstimateIsSent(struct Pose *pose)
     validation_pose_estimate_is_sent = SIGNAL_SENT;
 }
 
+void validatePenDownIsSent(void)
+{
+    validation_pen_down_command_is_sent = PEN_DOWN_COMMAND_SENT;
+}
+
+void validatePenUpIsSent(void)
+{
+    validation_pen_up_command_is_sent = PEN_UP_COMMAND_SENT;
+}
+
+void validateFetchManchesterCodeIsSent(void)
+{
+    manchester_code_command_count++;
+}
+
 void setup_robot(void)
 {
     robot = Robot_new();
     validation_ready_to_start_is_sent = SIGNAL_NOT_SENT;
     validation_planned_trajectory_is_sent = SIGNAL_NOT_SENT;
     validation_pose_estimate_is_sent = SIGNAL_NOT_SENT;
-    validation_callbacks.sendSignalReadyToStart = &validateReadyToStartIsSent;
-    validation_callbacks.sendPlannedTrajectory = &validatePlannedTrajectoryIsSent;
-    validation_callbacks.sendRobotPoseEstimate = &validatePoseEstimateIsSent;
-    DataSender_changeTarget(robot->data_sender, validation_callbacks);
+    validation_pen_down_command_is_sent = PEN_DOWN_COMMAND_NOT_SENT;
+    validation_pen_up_command_is_sent = PEN_UP_COMMAND_NOT_SENT;
+    manchester_code_command_count = 0;
+    validation_data_sender_callbacks.sendSignalReadyToStart = &validateReadyToStartIsSent;
+    validation_data_sender_callbacks.sendPlannedTrajectory = &validatePlannedTrajectoryIsSent;
+    validation_data_sender_callbacks.sendRobotPoseEstimate = &validatePoseEstimateIsSent;
+    validation_command_sender_callbacks.sendFetchManchesterCodeCommand = &validateFetchManchesterCodeIsSent;
+    validation_command_sender_callbacks.sendLowerPenCommand = &validatePenDownIsSent;
+    validation_command_sender_callbacks.sendRisePenCommand = &validatePenUpIsSent;
+    DataSender_changeTarget(robot->data_sender, validation_data_sender_callbacks);
+    CommandSender_changeTarget(robot->command_sender, validation_command_sender_callbacks);
 }
 
 void teardown_robot(void)
@@ -182,6 +249,7 @@ Test(Robot,
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
 }
 
+/*
 Test(Robot,
      given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
      , .init = setup_robot
@@ -193,6 +261,7 @@ Test(Robot,
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
 }
+*/
 
 void assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(struct Behavior *behavior,
         struct CoordinatesSequence *trajectory)
@@ -229,14 +298,36 @@ void assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(struct Behavi
         point_in_trajectory = trajectory->coordinates;
         behavior_goal_coordinates = behavior->entry_conditions->goal_state->pose->coordinates;
         cr_assert(Coordinates_haveTheSameValues(point_in_trajectory, behavior_goal_coordinates));
+
+        if(!CoordinatesSequence_isLast(trajectory)) {
+            cr_assert_eq(behavior->action, navigationAction);
+        }
+
         assertBehaviorHasFreeTrajectoryEntry(behavior);
     } while(!CoordinatesSequence_isLast(trajectory));
 
     Flags_delete(flags_planned_trajectory_received);
 }
 
+struct Behavior *fetchBeforeLastBehavior(struct Behavior *behavior)
+{
+    struct Behavior *current = behavior;
+
+    while(current->first_child != current->first_child->first_child) {
+        current = current->first_child;
+    }
+
+    return current;
+}
+
+struct Behavior *fetchLastBehavior(struct Behavior *behavior)
+{
+    struct Behavior *current = fetchBeforeLastBehavior(behavior);
+    return current->first_child;
+}
+
 Test(Robot,
-     given_aBehaviorWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
+     given_aBehaviorWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theLastBehaviorOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
@@ -249,7 +340,76 @@ Test(Robot,
 }
 
 Test(Robot,
-     given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
+     given_aRobotWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanToOrientTowardsTheAntenna
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planTowardsAntennaStart;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    void (*planOrientationTowardsAntenna)(struct Robot *) = &Navigator_planOrientationTowardsAntenna;
+    cr_assert_eq(last_behavior->action, planOrientationTowardsAntenna);
+}
+
+Test(Robot,
+     given_aRobotWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planOrientationTowardsAntenna;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
+    assertBehaviorHasFreeEntry(before_last_behavior);
+}
+
+Test(Robot,
+     given_aRobotWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theBeforeLastBehaviorHasAnOrientRobotTowardsGoalAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planOrientationTowardsAntenna;
+    Behavior_act(robot->current_behavior, robot);
+    void (*orientationTowardsAntenna)(struct Robot *) = &Navigator_orientRobotTowardsGoal;
+    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
+    cr_assert_eq(before_last_behavior->action, orientationTowardsAntenna);
+}
+
+Test(Robot,
+     given_aRobotWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theLastBehaviorHasAThetaZeroEntryGoal
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planOrientationTowardsAntenna;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    assertBehaviorHasOrientationEntry(last_behavior, EAST);
+}
+
+Test(Robot,
+     given_aRobotWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsAntennaMiddleAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planOrientationTowardsAntenna;
+    Behavior_act(robot->current_behavior, robot);
+    void (*planTowardsAntennaMiddle)(struct Robot *) = &Navigator_planTowardsAntennaMiddle;
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    cr_assert_eq(last_behavior->action, planTowardsAntennaMiddle);
+}
+
+/*
+Test(Robot,
+     given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theLastBehaviorOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
@@ -259,6 +419,94 @@ Test(Robot,
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
             robot->navigator->planned_trajectory);
+}
+*/
+
+Test(Robot,
+     given_theRobot_when_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset_then_theCommandIsSend
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    while(!Timer_hasTimePassed(robot->timer, ONE_SECOND));
+
+    Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(robot);
+
+    cr_assert_eq(manchester_code_command_count, 1);
+}
+
+Test(Robot,
+     given_theRobot_when_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerResetTwiceUnderASecond_then_theCommandIsSendOnlyOnce
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    while(!Timer_hasTimePassed(robot->timer, ONE_SECOND));
+
+    Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(robot);
+    Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(robot);
+
+    cr_assert_eq(manchester_code_command_count, 1);
+}
+
+Test(Robot,
+     given_theRobot_when_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerResetTwiceOverASecond_then_theCommandIsSendTwice
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    while(!Timer_hasTimePassed(robot->timer, ONE_SECOND));
+
+    double current_time = Timer_elapsedTime(robot->timer);
+
+    Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(robot);
+
+    while(!Timer_hasTimePassed(robot->timer, ONE_SECOND));
+
+    Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(robot);
+
+    cr_assert_eq(manchester_code_command_count, 2);
+}
+
+Test(Robot, given_theRobot_when_askForPenDownAndWaitASecondAndAnHalf_then_theCommandIsSent
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Robot_penDownAndWaitASecondAndAnHalf(robot);
+
+    cr_assert_eq(validation_pen_down_command_is_sent, PEN_DOWN_COMMAND_SENT);
+}
+
+Test(Robot,
+     given_theRobot_when_askForPenDownAndWaitASecondAndAnHalf_then_atLeastASecondAndAnHalfHasPassedSinceTheActionWasTriggered
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    struct Timer *timer = Timer_new();
+    Robot_penDownAndWaitASecondAndAnHalf(robot);
+
+    cr_assert(Timer_hasTimePassed(timer, ONE_SECOND_AND_AN_HALF));
+
+    Timer_delete(timer);
+}
+
+Test(Robot, given_theRobot_when_askForPenUpAndWaitASecondAnHalfAnd_then_theCommandIsSent
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Robot_penUpAndWaitASecondAndAnHalf(robot);
+
+    cr_assert_eq(validation_pen_up_command_is_sent, PEN_UP_COMMAND_SENT);
+}
+
+Test(Robot,
+     given_theRobot_when_askForPenUpAndWaitASecondAndAnHalf_then_atLeastASecondAndAnHalfHasPassedSinceTheActionWasTriggered
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    struct Timer *timer = Timer_new();
+    Robot_penUpAndWaitASecondAndAnHalf(robot);
+
+    cr_assert(Timer_hasTimePassed(timer, ONE_SECOND_AND_AN_HALF));
+
+    Timer_delete(timer);
 }
 
 Test(Robot, given_initialRobot_when_takesAPicture_then_thePicureTakenFlagValueIsOne

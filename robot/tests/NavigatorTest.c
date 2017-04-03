@@ -219,6 +219,11 @@ void updateRobotGoalCoordinatesTo(struct Coordinates *coordinates)
                                coordinates);
 }
 
+void updateRobotGoalAngleTo(int angle)
+{
+    robot->current_behavior->first_child->entry_conditions->goal_state->pose->angle->theta = angle;
+}
+
 const int NAVIGATOR_ROBOT_X = 2000;
 const int NAVIGATOR_ROBOT_Y = 2000;
 const int TARGET_DELTA_X = 1000;
@@ -724,6 +729,86 @@ Test(Navigator,
 
     Coordinates_delete(target_coordinates);
     Pose_delete(robot_pose);
+}
+
+Test(Navigator,
+     given_aRobotDirectlyAlignedWithItsGoal_when_orientTowardsGoal_then_aRotationCommandIsSentWithAValueOfZero
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+    int target_angle = 0;
+    updateRobotGoalAngleTo(target_angle);
+
+    Navigator_orientRobotTowardsGoal(robot);
+
+    cr_assert(rotation_validator == COMMAND_SENT);
+    cr_assert(speeds_validator != COMMAND_SENT);
+
+    cr_assert(sent_rotation_command_theta == 0);
+}
+
+Test(Navigator,
+     given_aRobotAngularlySeparatedOfItsGoalOfTheDefaultThetaTolerance_when_orientTowardsGoal_then_aRotationCommandIsSentWithAValueOfZero
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+    int target_angle = THETA_TOLERANCE_DEFAULT;
+    updateRobotGoalAngleTo(target_angle);
+
+    Navigator_orientRobotTowardsGoal(robot);
+
+    cr_assert(rotation_validator == COMMAND_SENT);
+    cr_assert(speeds_validator != COMMAND_SENT);
+
+    cr_assert(sent_rotation_command_theta == 0);
+}
+
+Test(Navigator,
+     given_aRobotAngularlySeparatedOfItsGoalOfAnAngleGreaterThanTheDefaultThetaTolerance_when_orientTowardsGoal_then_aRotationCommandIsSentWithAPositiveValue
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+    int target_angle = 2 * THETA_TOLERANCE_DEFAULT;
+    updateRobotGoalAngleTo(target_angle);
+
+    Navigator_orientRobotTowardsGoal(robot);
+
+    cr_assert(rotation_validator == COMMAND_SENT);
+    cr_assert(speeds_validator != COMMAND_SENT);
+
+    cr_assert(sent_rotation_command_theta > 0);
+}
+
+Test(Navigator,
+     given_aRobotAngularlySeparatedOfItsGoalOfMinusTheDefaultThetaTolerance_when_orientTowardsGoal_then_aRotationCommandIsSentWithAValueOfZero
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+    int target_angle = -1 * THETA_TOLERANCE_DEFAULT;
+    updateRobotGoalAngleTo(target_angle);
+
+    Navigator_orientRobotTowardsGoal(robot);
+
+    cr_assert(rotation_validator == COMMAND_SENT);
+    cr_assert(speeds_validator != COMMAND_SENT);
+
+    cr_assert(sent_rotation_command_theta == 0);
+}
+
+Test(Navigator,
+     given_aRobotAngularlySeparatedOfItsGoalOfAnAngleSmallerThanMinusTheDefaultThetaTolerance_when_orientTowardsGoal_then_aRotationCommandIsSentWithANegativeValue
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+    int target_angle = -2 * THETA_TOLERANCE_DEFAULT;
+    updateRobotGoalAngleTo(target_angle);
+
+    Navigator_orientRobotTowardsGoal(robot);
+
+    cr_assert(rotation_validator == COMMAND_SENT);
+    cr_assert(speeds_validator != COMMAND_SENT);
+
+    cr_assert(sent_rotation_command_theta < 0);
 }
 
 void assertEqualityWithTolerance(int expected_value, int received_value, int tolerance)

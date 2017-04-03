@@ -18,6 +18,7 @@ struct Flags *Flags_new(void)
     pointer->image_received_by_station = FALSE;
     pointer->ready_to_draw_received_by_station = FALSE;
     pointer->end_of_cycle_received_by_station = FALSE;
+    pointer->manchester_code_received = FALSE;
 
     return pointer;
 }
@@ -43,6 +44,8 @@ struct Flags *Flags_irrelevant(void)
     Flags_setImageReceivedByStation(irrelevant, IRRELEVANT);
     Flags_setReadyToDrawReceivedByStation(irrelevant, IRRELEVANT);
     Flags_setEndOfCycleReceivedByStation(irrelevant, IRRELEVANT);
+    Flags_setManchesterCodeReceived(irrelevant, IRRELEVANT);
+
     return irrelevant;
 }
 
@@ -56,6 +59,7 @@ void Flags_copyValuesFrom(struct Flags *recipient, struct Flags *source)
     recipient->image_received_by_station = source->image_received_by_station;
     recipient->ready_to_draw_received_by_station = source->ready_to_draw_received_by_station;
     recipient->end_of_cycle_received_by_station = source->end_of_cycle_received_by_station;
+    recipient->manchester_code_received = source->manchester_code_received;
 }
 
 
@@ -80,7 +84,10 @@ int Flags_haveTheSameValues(struct Flags *flags, struct Flags *other_flags)
             || flags->ready_to_draw_received_by_station == IRRELEVANT
             || other_flags->ready_to_draw_received_by_station == IRRELEVANT)
         && (flags->end_of_cycle_received_by_station == other_flags->end_of_cycle_received_by_station
-            || flags->end_of_cycle_received_by_station == IRRELEVANT || other_flags->end_of_cycle_received_by_station == IRRELEVANT
+            || flags->end_of_cycle_received_by_station == IRRELEVANT || other_flags->end_of_cycle_received_by_station == IRRELEVANT)
+        && (flags->manchester_code_received == other_flags->manchester_code_received
+            || flags->manchester_code_received == IRRELEVANT
+            || other_flags->manchester_code_received == IRRELEVANT
            );
 }
 
@@ -124,3 +131,7 @@ void Flags_setEndOfCycleReceivedByStation(struct Flags *flags, int new_value)
     flags->end_of_cycle_received_by_station = new_value;
 }
 
+void Flags_setManchesterCodeReceived(struct Flags *flags, int new_value)
+{
+    flags->manchester_code_received = new_value;
+}

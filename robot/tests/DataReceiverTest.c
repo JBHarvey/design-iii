@@ -1,9 +1,11 @@
 #include <criterion/criterion.h>
 #include <stdio.h>
 #include "DataReceiver.h"
+#include "Robot.h"
 
 struct Mesurements mesurements_mock;
 struct Flags *flags = NULL;
+struct Robot *robot = NULL;
 
 Test(DataReceiver, given_when_fetchDataReceiverCallbacks_then_theCorrectSturctureIsReturned)
 {
@@ -11,7 +13,7 @@ Test(DataReceiver, given_when_fetchDataReceiverCallbacks_then_theCorrectSturctur
     void (*updateWheelsTranslation)(struct Wheels *,
                                     struct Communication_Translation) = &DataReceiver_updateWheelsTranslation;
     void (*updateWheelsRotation)(struct Wheels *, struct Communication_Rotation) = &DataReceiver_updateWheelsRotation;
-    void (*updateManchesterCode)(struct ManchesterCode *,
+    void (*updateManchesterCode)(struct ManchesterCode *, struct Flags *,
                                  struct Communication_ManchesterCode) = &DataReceiver_updateManchesterCode;
     void (*updateFlagsStartCycle)(struct Flags *) = &DataReceiver_updateFlagsStartCycle;
     void (*updateFlagsImageReceivedByStation)(struct Flags *) = &DataReceiver_updateFlagsImageReceivedByStation;
@@ -23,6 +25,8 @@ Test(DataReceiver, given_when_fetchDataReceiverCallbacks_then_theCorrectSturctur
         &DataReceiver_updateFlagsReadyToDrawSignalReceivedByStation;
     void (*updateFlagsEndOfCycleSignalReceivedByStation)(struct Flags *) =
         &DataReceiver_updateFlagsEndOfCycleSignalReceivedByStation;
+    void (*updateFlagsManchesterCodeReceived)(struct Flags *) =
+        &DataReceiver_updateFlagsManchesterCodeReceived;
 
     struct DataReceiver_Callbacks callbacks = DataReceiver_fetchCallbacks();
     cr_assert_eq(callbacks.updateWorld, updateWorld);
@@ -35,6 +39,7 @@ Test(DataReceiver, given_when_fetchDataReceiverCallbacks_then_theCorrectSturctur
     cr_assert_eq(callbacks.updateFlagsReadyToStartSignalReceivedByStation, updateFlagsReadyToStartSignalReceivedByStation);
     cr_assert_eq(callbacks.updateFlagsReadyToDrawSignalReceivedByStation, updateFlagsReadyToDrawSignalReceivedByStation);
     cr_assert_eq(callbacks.updateFlagsEndOfCycleSignalReceivedByStation, updateFlagsEndOfCycleSignalReceivedByStation);
+    cr_assert_eq(callbacks.updateFlagsManchesterCodeReceived, updateFlagsManchesterCodeReceived);
 }
 
 void setup_Flags(void)
@@ -590,106 +595,125 @@ const char RECEIVER_MANCHESTER_EAST = 'E';
 const char RECEIVER_MANCHESTER_SOUTH = 'S';
 const char RECEIVER_MANCHESTER_WEST = 'W';
 
-Test(DataReceiver, given_aManchesterCodePacket_when_updatesManchesterCode_then_thePaintingNumberIsUpdatedCorrectly)
+void setup_Robot(void)
 {
-    struct ManchesterCode *manchester_code = ManchesterCode_new();
-    struct Communication_ManchesterCode manchester_code_mock = {
-        .painting_number = RECEIVER_PAINTING_NUMBER,
-        .scale_factor = RECEIVER_SCALE_FACTOR,
-        .orientation = RECEIVER_MANCHESTER_NORTH
-    };
-
-    DataReceiver_updateManchesterCode(manchester_code, manchester_code_mock);
-
-    cr_assert_eq(manchester_code->painting_number, RECEIVER_PAINTING_NUMBER);
-
-    ManchesterCode_delete(manchester_code);
+    robot = Robot_new();
 }
 
-Test(DataReceiver, given_aManchesterCodePacket_when_updatesManchesterCode_then_theScaleFactorIsUpdatedCorrectly)
+void teardown_Robot(void)
 {
-    struct ManchesterCode *manchester_code = ManchesterCode_new();
+    Robot_delete(robot);
+}
+
+Test(DataReceiver, given_aManchesterCodePacket_when_updatesManchesterCode_then_theManchesterCodeReceivedFlagIsSetToOne
+     , .init = setup_Robot
+     , .fini = teardown_Robot)
+{
     struct Communication_ManchesterCode manchester_code_mock = {
         .painting_number = RECEIVER_PAINTING_NUMBER,
         .scale_factor = RECEIVER_SCALE_FACTOR,
         .orientation = RECEIVER_MANCHESTER_NORTH
     };
 
-    DataReceiver_updateManchesterCode(manchester_code, manchester_code_mock);
+    DataReceiver_updateManchesterCode(robot->manchester_code, robot->current_state->flags, manchester_code_mock);
 
-    cr_assert_eq(manchester_code->scale_factor, RECEIVER_SCALE_FACTOR);
+    cr_assert_eq(robot->current_state->flags->manchester_code_received, 1);
+}
 
-    ManchesterCode_delete(manchester_code);
+Test(DataReceiver, given_aManchesterCodePacket_when_updatesManchesterCode_then_thePaintingNumberIsUpdatedCorrectly
+     , .init = setup_Robot
+     , .fini = teardown_Robot)
+{
+    struct Communication_ManchesterCode manchester_code_mock = {
+        .painting_number = RECEIVER_PAINTING_NUMBER,
+        .scale_factor = RECEIVER_SCALE_FACTOR,
+        .orientation = RECEIVER_MANCHESTER_NORTH
+    };
+
+    DataReceiver_updateManchesterCode(robot->manchester_code, robot->current_state->flags, manchester_code_mock);
+
+    cr_assert_eq(robot->manchester_code->painting_number, RECEIVER_PAINTING_NUMBER);
+}
+
+Test(DataReceiver, given_aManchesterCodePacket_when_updatesManchesterCode_then_theScaleFactorIsUpdatedCorrectly
+     , .init = setup_Robot
+     , .fini = teardown_Robot)
+{
+    struct Communication_ManchesterCode manchester_code_mock = {
+        .painting_number = RECEIVER_PAINTING_NUMBER,
+        .scale_factor = RECEIVER_SCALE_FACTOR,
+        .orientation = RECEIVER_MANCHESTER_NORTH
+    };
+
+    DataReceiver_updateManchesterCode(robot->manchester_code, robot->current_state->flags, manchester_code_mock);
+
+    cr_assert_eq(robot->manchester_code->scale_factor, RECEIVER_SCALE_FACTOR);
 }
 
 Test(DataReceiver,
-     given_aManchesterCodePacketWithNorthOrientation_when_updatesManchesterCode_then_theOrientationIsUpdatedCorrectly)
+     given_aManchesterCodePacketWithNorthOrientation_when_updatesManchesterCode_then_theOrientationIsUpdatedCorrectly
+     , .init = setup_Robot
+     , .fini = teardown_Robot)
 {
-    struct ManchesterCode *manchester_code = ManchesterCode_new();
     struct Communication_ManchesterCode manchester_code_mock = {
         .painting_number = RECEIVER_PAINTING_NUMBER,
         .scale_factor = RECEIVER_SCALE_FACTOR,
         .orientation = RECEIVER_MANCHESTER_NORTH
     };
 
-    DataReceiver_updateManchesterCode(manchester_code, manchester_code_mock);
+    DataReceiver_updateManchesterCode(robot->manchester_code, robot->current_state->flags, manchester_code_mock);
 
     enum CardinalDirection expected_orientation = NORTH;
-    cr_assert_eq(manchester_code->orientation, expected_orientation);
-
-    ManchesterCode_delete(manchester_code);
+    cr_assert_eq(robot->manchester_code->orientation, expected_orientation);
 }
 
 Test(DataReceiver,
-     given_aManchesterCodePacketWithEastOrientation_when_updatesManchesterCode_then_theOrientationIsUpdatedCorrectly)
+     given_aManchesterCodePacketWithEastOrientation_when_updatesManchesterCode_then_theOrientationIsUpdatedCorrectly
+     , .init = setup_Robot
+     , .fini = teardown_Robot)
 {
-    struct ManchesterCode *manchester_code = ManchesterCode_new();
     struct Communication_ManchesterCode manchester_code_mock = {
         .painting_number = RECEIVER_PAINTING_NUMBER,
         .scale_factor = RECEIVER_SCALE_FACTOR,
         .orientation = RECEIVER_MANCHESTER_EAST
     };
 
-    DataReceiver_updateManchesterCode(manchester_code, manchester_code_mock);
+    DataReceiver_updateManchesterCode(robot->manchester_code, robot->current_state->flags, manchester_code_mock);
 
     enum CardinalDirection expected_orientation = EAST;
-    cr_assert_eq(manchester_code->orientation, expected_orientation);
-
-    ManchesterCode_delete(manchester_code);
+    cr_assert_eq(robot->manchester_code->orientation, expected_orientation);
 }
 
 Test(DataReceiver,
-     given_aManchesterCodePacketWithSouthOrientation_when_updatesManchesterCode_then_theOrientationIsUpdatedCorrectly)
+     given_aManchesterCodePacketWithSouthOrientation_when_updatesManchesterCode_then_theOrientationIsUpdatedCorrectly
+     , .init = setup_Robot
+     , .fini = teardown_Robot)
 {
-    struct ManchesterCode *manchester_code = ManchesterCode_new();
     struct Communication_ManchesterCode manchester_code_mock = {
         .painting_number = RECEIVER_PAINTING_NUMBER,
         .scale_factor = RECEIVER_SCALE_FACTOR,
         .orientation = RECEIVER_MANCHESTER_SOUTH
     };
 
-    DataReceiver_updateManchesterCode(manchester_code, manchester_code_mock);
+    DataReceiver_updateManchesterCode(robot->manchester_code, robot->current_state->flags, manchester_code_mock);
 
     enum CardinalDirection expected_orientation = SOUTH;
-    cr_assert_eq(manchester_code->orientation, expected_orientation);
-
-    ManchesterCode_delete(manchester_code);
+    cr_assert_eq(robot->manchester_code->orientation, expected_orientation);
 }
 
 Test(DataReceiver,
-     given_aManchesterCodePacketWithWestOrientation_when_updatesManchesterCode_then_theOrientationIsUpdatedCorrectly)
+     given_aManchesterCodePacketWithWestOrientation_when_updatesManchesterCode_then_theOrientationIsUpdatedCorrectly
+     , .init = setup_Robot
+     , .fini = teardown_Robot)
 {
-    struct ManchesterCode *manchester_code = ManchesterCode_new();
     struct Communication_ManchesterCode manchester_code_mock = {
         .painting_number = RECEIVER_PAINTING_NUMBER,
         .scale_factor = RECEIVER_SCALE_FACTOR,
         .orientation = RECEIVER_MANCHESTER_WEST
     };
 
-    DataReceiver_updateManchesterCode(manchester_code, manchester_code_mock);
+    DataReceiver_updateManchesterCode(robot->manchester_code, robot->current_state->flags, manchester_code_mock);
 
     enum CardinalDirection expected_orientation = WEST;
-    cr_assert_eq(manchester_code->orientation, expected_orientation);
-
-    ManchesterCode_delete(manchester_code);
+    cr_assert_eq(robot->manchester_code->orientation, expected_orientation);
 }
