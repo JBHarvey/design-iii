@@ -54,6 +54,8 @@ volatile uint8_t readyToSendData = 0;
 
 volatile uint8_t initializeManchesterFlag = 0;
 
+float volatile lastRadian = 0;
+
 extern void TIM5_IRQHandler() {
 	if (TIM_GetITStatus(TIM5, TIM_IT_Update) != RESET) {
 		TIM_ClearITPendingBit(TIM5, TIM_IT_Update);
@@ -264,13 +266,16 @@ int main(void) {
 
 			if (isRobotRotating) {
 				float perimeterInMeters = calculatePosition(
-						(-numberOfPositionEdges1 - numberOfPositionEdges3
-								+ numberOfPositionEdges2
+						(-numberOfPositionEdges1 + numberOfPositionEdges3
+								- numberOfPositionEdges2
 								+ numberOfPositionEdges4) / 4);
 
 				float radian = calculateRadianFromMeters(perimeterInMeters);
 
-				float radianSpeed = radian / SPEED_CALC_TIME_DELAY;
+				float radianSpeed = (radian - lastRadian)
+						/ SPEED_CALC_TIME_DELAY;
+
+				lastRadian = radian;
 
 				sendMoveMeasures(0, 0, 0, 0, radian, radianSpeed);
 
