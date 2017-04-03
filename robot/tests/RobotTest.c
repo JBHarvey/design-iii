@@ -1,6 +1,7 @@
 #include <criterion/criterion.h>
 #include <stdio.h>
 #include "Robot.h"
+#include "Timer.h"
 
 struct Robot *robot;
 struct DataSender_Callbacks validation_data_sender_callbacks;

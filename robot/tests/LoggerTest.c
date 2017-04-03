@@ -19,7 +19,7 @@ void assertDataReceiverCallbacksAreDecoratedByLogger(struct DataReceiver_Callbac
     void (*updateWorld)(struct WorldCamera *, struct Communication_World) = &Logger_updateWorld;
     void (*updateWheelsTranslation)(struct Wheels *, struct Communication_Translation) = &Logger_updateWheelsTranslation;
     void (*updateWheelsRotation)(struct Wheels *, struct Communication_Rotation) = &Logger_updateWheelsRotation;
-    void (*updateManchesterCode)(struct ManchesterCode *,
+    void (*updateManchesterCode)(struct ManchesterCode *, struct Flags *,
                                  struct Communication_ManchesterCode) = &Logger_updateManchesterCode;
     void (*updateFlagsStartCycle)(struct Flags *) = &Logger_updateFlagsStartCycle;
     void (*updateFlagsImageReceivedByStation)(struct Flags *) = &Logger_updateFlagsImageReceivedByStation;

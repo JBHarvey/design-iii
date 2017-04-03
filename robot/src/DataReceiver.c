@@ -12,7 +12,8 @@ struct DataReceiver_Callbacks DataReceiver_fetchCallbacks(void)
         .updateFlagsPlannedTrajectoryReceivedByStation = &DataReceiver_updateFlagsPlannedTrajectoryReceivedByStation,
         .updateFlagsReadyToStartSignalReceivedByStation = &DataReceiver_updateFlagsReadyToStartSignalReceivedByStation,
         .updateFlagsReadyToDrawSignalReceivedByStation = &DataReceiver_updateFlagsReadyToDrawSignalReceivedByStation,
-        .updateFlagsEndOfCycleSignalReceivedByStation = &DataReceiver_updateFlagsEndOfCycleSignalReceivedByStation
+        .updateFlagsEndOfCycleSignalReceivedByStation = &DataReceiver_updateFlagsEndOfCycleSignalReceivedByStation,
+        .updateFlagsManchesterCodeReceived = &DataReceiver_updateFlagsManchesterCodeReceived
     };
 
     return callbacks;
@@ -209,7 +210,12 @@ void DataReceiver_updateWheelsRotation(struct Wheels *wheels, struct Communicati
     Angle_delete(rotation_speed);
 }
 
-void DataReceiver_updateManchesterCode(struct ManchesterCode *manchester_code,
+void DataReceiver_updateFlagsManchesterCodeReceived(struct Flags *flags)
+{
+    Flags_setManchesterCodeReceived(flags, 1);
+}
+
+void DataReceiver_updateManchesterCode(struct ManchesterCode *manchester_code, struct Flags *flags,
                                        struct Communication_ManchesterCode new_manchester_code)
 {
     int new_painting_number = new_manchester_code.painting_number;
@@ -235,6 +241,8 @@ void DataReceiver_updateManchesterCode(struct ManchesterCode *manchester_code,
     };
 
     ManchesterCode_updateCodeValues(manchester_code, new_painting_number, new_scaling_factor, new_orientation);
+
+    DataReceiver_updateFlagsManchesterCodeReceived(flags);
 }
 
 void DataReceiver_updateFlagsStartCycle(struct Flags *flags)
