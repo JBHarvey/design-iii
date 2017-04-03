@@ -10,10 +10,13 @@ int validation_ready_to_start_is_sent;
 int validation_planned_trajectory_is_sent;
 int validation_pose_estimate_is_sent;
 int validation_pen_down_command_is_sent;
+int validation_pen_up_command_is_sent;
 const int SIGNAL_SENT = 1;
 const int SIGNAL_NOT_SENT = 0;
 const int PEN_DOWN_COMMAND_SENT = 1;
 const int PEN_DOWN_COMMAND_NOT_SENT = 0;
+const int PEN_UP_COMMAND_SENT = 1;
+const int PEN_UP_COMMAND_NOT_SENT = 0;
 int manchester_code_command_count;
 
 void assertBehaviorHasFreeFlagsEntry(struct Behavior *behavior)
@@ -151,6 +154,11 @@ void validatePenDownIsSent(void)
     validation_pen_down_command_is_sent = PEN_DOWN_COMMAND_SENT;
 }
 
+void validatePenUpIsSent(void)
+{
+    validation_pen_up_command_is_sent = PEN_UP_COMMAND_SENT;
+}
+
 void validateFetchManchesterCodeIsSent(void)
 {
     manchester_code_command_count++;
@@ -163,12 +171,14 @@ void setup_robot(void)
     validation_planned_trajectory_is_sent = SIGNAL_NOT_SENT;
     validation_pose_estimate_is_sent = SIGNAL_NOT_SENT;
     validation_pen_down_command_is_sent = PEN_DOWN_COMMAND_NOT_SENT;
+    validation_pen_up_command_is_sent = PEN_UP_COMMAND_NOT_SENT;
     manchester_code_command_count = 0;
     validation_data_sender_callbacks.sendSignalReadyToStart = &validateReadyToStartIsSent;
     validation_data_sender_callbacks.sendPlannedTrajectory = &validatePlannedTrajectoryIsSent;
     validation_data_sender_callbacks.sendRobotPoseEstimate = &validatePoseEstimateIsSent;
     validation_command_sender_callbacks.sendFetchManchesterCodeCommand = &validateFetchManchesterCodeIsSent;
     validation_command_sender_callbacks.sendLowerPenCommand = &validatePenDownIsSent;
+    validation_command_sender_callbacks.sendRisePenCommand = &validatePenUpIsSent;
     DataSender_changeTarget(robot->data_sender, validation_data_sender_callbacks);
     CommandSender_changeTarget(robot->command_sender, validation_command_sender_callbacks);
 }
@@ -455,23 +465,46 @@ Test(Robot,
     cr_assert_eq(manchester_code_command_count, 2);
 }
 
-Test(Robot, given_theRobot_when_askForPenDownAndWaitASecond_then_theCommandIsSent
+Test(Robot, given_theRobot_when_askForPenDownAndWaitASecondAndAnHalf_then_theCommandIsSent
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Robot_penDownAndWaitASecond(robot);
+    Robot_penDownAndWaitASecondAndAnHalf(robot);
 
     cr_assert_eq(validation_pen_down_command_is_sent, PEN_DOWN_COMMAND_SENT);
 }
 
-Test(Robot, given_theRobot_when_askForPenDownAndWaitASecond_then_atLeastASecondsHasPassedSinceTheActionWasTriggered
+Test(Robot,
+     given_theRobot_when_askForPenDownAndWaitASecondAndAnHalf_then_atLeastASecondAndAnHalfHasPassedSinceTheActionWasTriggered
      , .init = setup_robot
      , .fini = teardown_robot)
 {
     struct Timer *timer = Timer_new();
-    Robot_penDownAndWaitASecond(robot);
+    Robot_penDownAndWaitASecondAndAnHalf(robot);
 
-    cr_assert(Timer_hasTimePassed(timer, ONE_SECOND));
+    cr_assert(Timer_hasTimePassed(timer, ONE_SECOND_AND_AN_HALF));
+
+    Timer_delete(timer);
+}
+
+Test(Robot, given_theRobot_when_askForPenUpAndWaitASecondAnHalfAnd_then_theCommandIsSent
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Robot_penUpAndWaitASecondAndAnHalf(robot);
+
+    cr_assert_eq(validation_pen_up_command_is_sent, PEN_UP_COMMAND_SENT);
+}
+
+Test(Robot,
+     given_theRobot_when_askForPenUpAndWaitASecondAndAnHalf_then_atLeastASecondAndAnHalfHasPassedSinceTheActionWasTriggered
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    struct Timer *timer = Timer_new();
+    Robot_penUpAndWaitASecondAndAnHalf(robot);
+
+    cr_assert(Timer_hasTimePassed(timer, ONE_SECOND_AND_AN_HALF));
 
     Timer_delete(timer);
 }

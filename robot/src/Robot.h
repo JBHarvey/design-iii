@@ -29,6 +29,7 @@ void Robot_sendPlannedTrajectory(struct Robot *robot);
 void Robot_sendPoseEstimate(struct Robot *robot);
 void Robot_takePicture(struct Robot *robot);
 void Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(struct Robot *robot);
-void Robot_penDownAndWaitASecond(struct Robot *robot);
+void Robot_penDownAndWaitASecondAndAnHalf(struct Robot *robot);
+void Robot_penUpAndWaitASecondAndAnHalf(struct Robot *robot);
 
 #endif // ROBOT_H_
