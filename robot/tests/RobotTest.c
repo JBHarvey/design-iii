@@ -3,12 +3,15 @@
 #include "Robot.h"
 
 struct Robot *robot;
-struct DataSender_Callbacks validation_callbacks;
+struct DataSender_Callbacks validation_data_sender_callbacks;
+struct CommandSender_Callbacks validation_command_sender_callbacks;
 int validation_ready_to_start_is_sent;
 int validation_planned_trajectory_is_sent;
 int validation_pose_estimate_is_sent;
+int validation_fetch_manchester_code_is_sent;
 const int SIGNAL_SENT = 1;
 const int SIGNAL_NOT_SENT = 0;
+int manchester_code_command_count;
 
 
 void assertBehaviorHasFreePoseEntry(struct Behavior *behavior)
@@ -104,16 +107,24 @@ void validatePoseEstimateIsSent(struct Pose *pose)
     validation_pose_estimate_is_sent = SIGNAL_SENT;
 }
 
+void validateFetchManchesterCodeIsSent(void)
+{
+    manchester_code_command_count++;
+}
+
 void setup_robot(void)
 {
     robot = Robot_new();
     validation_ready_to_start_is_sent = SIGNAL_NOT_SENT;
     validation_planned_trajectory_is_sent = SIGNAL_NOT_SENT;
     validation_pose_estimate_is_sent = SIGNAL_NOT_SENT;
-    validation_callbacks.sendSignalReadyToStart = &validateReadyToStartIsSent;
-    validation_callbacks.sendPlannedTrajectory = &validatePlannedTrajectoryIsSent;
-    validation_callbacks.sendRobotPoseEstimate = &validatePoseEstimateIsSent;
-    DataSender_changeTarget(robot->data_sender, validation_callbacks);
+    manchester_code_command_count = 0;
+    validation_data_sender_callbacks.sendSignalReadyToStart = &validateReadyToStartIsSent;
+    validation_data_sender_callbacks.sendPlannedTrajectory = &validatePlannedTrajectoryIsSent;
+    validation_data_sender_callbacks.sendRobotPoseEstimate = &validatePoseEstimateIsSent;
+    validation_command_sender_callbacks.sendFetchManchesterCodeCommand = &validateFetchManchesterCodeIsSent;
+    DataSender_changeTarget(robot->data_sender, validation_data_sender_callbacks);
+    CommandSender_changeTarget(robot->command_sender, validation_command_sender_callbacks);
 }
 
 void teardown_robot(void)
@@ -260,6 +271,50 @@ Test(Robot,
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
             robot->navigator->planned_trajectory);
 }
+
+Test(Robot,
+     given_theRobot_when_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset_then_theCommandIsSend
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    while(!Timer_hasTimePassed(robot->timer, ONE_SECOND));
+
+    Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(robot);
+
+    cr_assert(manchester_code_command_count == 1);
+}
+
+Test(Robot,
+     given_theRobot_when_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerResetTwiceUnderASecond_then_theCommandIsSendOnlyOnce
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    while(!Timer_hasTimePassed(robot->timer, ONE_SECOND));
+
+    Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(robot);
+    Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(robot);
+
+    cr_assert(manchester_code_command_count == 1);
+}
+
+Test(Robot,
+     given_theRobot_when_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerResetTwiceOverASecond_then_theCommandIsSendTwice
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    while(!Timer_hasTimePassed(robot->timer, ONE_SECOND));
+
+    double current_time = Timer_elapsedTime(robot->timer);
+
+    Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(robot);
+
+    while(!Timer_hasTimePassed(robot->timer, ONE_SECOND));
+
+    Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(robot);
+
+    cr_assert(manchester_code_command_count == 2);
+}
+
 
 Test(Robot, given_initialRobot_when_takesAPicture_then_thePicureTakenFlagValueIsOne
      , .init = setup_robot
