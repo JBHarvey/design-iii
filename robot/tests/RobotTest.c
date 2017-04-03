@@ -327,7 +327,7 @@ struct Behavior *fetchLastBehavior(struct Behavior *behavior)
 }
 
 Test(Robot,
-     given_aBehaviorWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
+     given_aBehaviorWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theLastBehaviorOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
@@ -354,7 +354,7 @@ Test(Robot,
 }
 
 Test(Robot,
-     given_aRobotWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theBeforeLastBehaviorsHasAFreeEntry
+     given_aRobotWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
@@ -367,7 +367,7 @@ Test(Robot,
 }
 
 Test(Robot,
-     given_aRobotWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theBeforeLastBehaviorsHasAnOrientRobotTowardsGoalAction
+     given_aRobotWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theBeforeLastBehaviorHasAnOrientRobotTowardsGoalAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
@@ -381,7 +381,7 @@ Test(Robot,
 }
 
 Test(Robot,
-     given_aRobotWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theLastBehaviorsHasAThetaZeroEntryGoal
+     given_aRobotWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theLastBehaviorHasAThetaZeroEntryGoal
      , .init = setup_robot
      , .fini = teardown_robot)
 {
@@ -394,7 +394,7 @@ Test(Robot,
 }
 
 Test(Robot,
-     given_aRobotWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theLastBehaviorsHasAPlanTowardsAntennaMiddleAction
+     given_aRobotWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsAntennaMiddleAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
@@ -409,7 +409,7 @@ Test(Robot,
 
 /*
 Test(Robot,
-     given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
+     given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theLastBehaviorOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
