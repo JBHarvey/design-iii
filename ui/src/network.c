@@ -124,7 +124,7 @@ void acceptCallback(struct ev_loop *loop, struct ev_io *watcher, int revents)
 /* Read client message */
 void readWriteCallback(struct ev_loop *loop, struct ev_io *watcher, int revents)
 {
-   char buffer[BUFFER_SIZE];
+    char buffer[BUFFER_SIZE];
     ssize_t read;
 
     if(EV_ERROR & revents) {
@@ -167,7 +167,6 @@ void readWriteCallback(struct ev_loop *loop, struct ev_io *watcher, int revents)
                 read_size = BUFFER_SIZE;
             }
 
-            printf("rs %u\n", read_size);
             read = recv(watcher->fd, buffer, read_size, 0);
         }
 
@@ -183,15 +182,11 @@ void readWriteCallback(struct ev_loop *loop, struct ev_io *watcher, int revents)
             return;
         } else {
             if(packet) {
-                //printf("%i %u\n", read, received_packet_length);
                 memcpy(packet + received_packet_length, buffer, read);
                 received_packet_length += read;
 
                 if(total_packet_length  == received_packet_length) {
-                    //CALLBACK
                     handleReceivedPacket(packet, received_packet_length);
-                    printf("Message of length %u\n", received_packet_length);
-                    //
                     free(packet);
                     packet = 0;
                     total_packet_length = received_packet_length = 0;

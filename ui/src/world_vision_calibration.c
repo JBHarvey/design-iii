@@ -190,7 +190,6 @@ void WorldVisionCalibration_calibrateWithTableCorners(struct Camera * input_came
     double reprojection_error;
 
     while(!WorldVisionDetection_detectTableCorners(input_camera)) {
-        printf("\n Trying");
 
         while(gtk_events_pending()) {
             gtk_main_iteration();
@@ -279,13 +278,21 @@ void WorldVisionCalibration_convertWorldCoordinatesSetToImageCoordinatesSet(
 struct Point2D WorldVisionCalibration_convertWorldCoordinatesToImageCoordinates(
     struct Point3D world_coordinates, struct Camera *input_camera)
 {
-    struct Point3DSet *world_coordinates_set = PointTypes_initializePoint3DSet(2);
-    PointTypes_addPointToPoint3DSet(world_coordinates_set, PointTypes_createPoint3D(0, 0, 0));
+    struct Point3DSet *world_coordinates_set = PointTypes_initializePoint3DSet(10);
     PointTypes_addPointToPoint3DSet(world_coordinates_set, world_coordinates);
-    struct Point2DSet *image_coordinates_set = PointTypes_initializePoint2DSet(2);
+    PointTypes_addPointToPoint3DSet(world_coordinates_set, PointTypes_createPoint3D(0, 0, 0));
+    PointTypes_addPointToPoint3DSet(world_coordinates_set, PointTypes_createPoint3D(0, 0, 0));
+    PointTypes_addPointToPoint3DSet(world_coordinates_set, PointTypes_createPoint3D(0, 0, 0));
+    PointTypes_addPointToPoint3DSet(world_coordinates_set, PointTypes_createPoint3D(0, 0, 0));
+    PointTypes_addPointToPoint3DSet(world_coordinates_set, PointTypes_createPoint3D(0, 0, 0));
+    PointTypes_addPointToPoint3DSet(world_coordinates_set, PointTypes_createPoint3D(0, 0, 0));
+    PointTypes_addPointToPoint3DSet(world_coordinates_set, PointTypes_createPoint3D(0, 0, 0));
+    PointTypes_addPointToPoint3DSet(world_coordinates_set, PointTypes_createPoint3D(0, 0, 0));
+    PointTypes_addPointToPoint3DSet(world_coordinates_set, PointTypes_createPoint3D(0, 0, 0));
+    struct Point2DSet *image_coordinates_set = PointTypes_initializePoint2DSet(10);
     WorldVisionCalibration_convertWorldCoordinatesSetToImageCoordinatesSet(world_coordinates_set, image_coordinates_set,
             input_camera);
-    struct Point2D image_coordinates = PointTypes_getPointFromPoint2DSet(image_coordinates_set, 1);
+    struct Point2D image_coordinates = PointTypes_getPointFromPoint2DSet(image_coordinates_set, 0);
     PointTypes_releasePoint3DSet(world_coordinates_set);
     PointTypes_releasePoint2DSet(image_coordinates_set);
 
