@@ -509,12 +509,21 @@ Test(Robot,
     Timer_delete(timer);
 }
 
-Test(Robot, given_initialRobot_when_takesAPicture_then_thePicureTakenFlagValueIsOne
+Test(Robot, given_theRobot_when_askForTakingAPicture_then_aPictureIsTaken
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    // TODO: take the actual picture
     Robot_takePicture(robot);
-    cr_assert(robot->current_state->flags->picture_taken);
+
+    cr_assert_neq(robot->taken_image, NULL);
 }
+
+Test(Robot, given_theRobot_when_askForTakingAPictureAndTheTakenPictureIsValid_then_thePictureTakenFlagIsSetToOne) {}
+
+Test(Robot, given_theRobot_when_askForTakingAPictureAndTheTakenPictureIsInvalid_then_thePictureTakenFlagIsSetToZero) {}
+
+Test(Robot, given_theRobot_when_askForTakingAPictureAndTheTakenPictureValid_then_theRobotDrawingTrajectoryIsCreated) {}
+
+Test(Robot,
+     given_theRobot_when_askForTakingAPictureAndTheTakenPictureInvalid_then_theRobotDrawingTrajectoryIsNotCreated) {}
 

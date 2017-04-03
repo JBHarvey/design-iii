@@ -35,11 +35,19 @@ struct Robot *Robot_new(void)
     pointer->command_sender = new_command_sender;
     pointer->logger = new_logger;
     pointer->timer = new_timer;
+    pointer->taken_image = NULL;
 
     RobotBehaviors_prepareInitialBehaviors(pointer);
     pointer->first_behavior = pointer->current_behavior;
 
     return pointer;
+}
+
+static void freeTakenImage(IplImage *taken_image)
+{
+    if(taken_image != NULL) {
+        OnboardCamera_deleteImage(&taken_image);
+    }
 }
 
 void Robot_delete(struct Robot *robot)
@@ -58,6 +66,7 @@ void Robot_delete(struct Robot *robot)
         CommandSender_delete(robot->command_sender);
         Logger_delete(robot->logger);
         Timer_delete(robot->timer);
+        freeTakenImage(robot->taken_image);
 
         /* DefaultValues destruction */
         Pose_delete(robot->default_values->pose);
@@ -118,7 +127,7 @@ void Robot_penUpAndWaitASecondAndAnHalf(struct Robot *robot)
 
 void Robot_takePicture(struct Robot *robot)
 {
-    //TODO : Take the actual picture with the on-board camera;
+
     Flags_setPictureTaken(robot->current_state->flags, TRUE);
 }
 

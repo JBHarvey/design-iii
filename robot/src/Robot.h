@@ -17,6 +17,7 @@ struct Robot {
     struct CommandSender *command_sender;
     struct Logger *logger;
     struct Timer *timer;
+    IplImage *taken_image;
 };
 
 struct Robot *Robot_new();
