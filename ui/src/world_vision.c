@@ -234,26 +234,19 @@ void WorldVision_createWorldCameraFrameSafeCopy(void)
 
 static void drawPlannedTrajectory(void)
 {
-    for(int i = 0; i < PointTypes_getNumberOfPointStoredInPoint2DSet(current_planned_trajectory) - 1; i++) {
-        struct Point2D origin = PointTypes_getPointFromPoint2DSet(current_planned_trajectory, i);
-        struct Point2D end = PointTypes_getPointFromPoint2DSet(current_planned_trajectory, i + 1);
-        cvLine(world_camera_frame, cvPoint((int) origin.x, (int) origin.y), cvPoint((int) end.x, (int) end.y),
-               BURGUNDY, SIZE_DRAW_LINES, 8, 0);
+    if(current_planned_trajectory != NULL) {
+
+        for(int i = 0; i < PointTypes_getNumberOfPointStoredInPoint2DSet(current_planned_trajectory) - 1; i++) {
+            struct Point2D origin = PointTypes_getPointFromPoint2DSet(current_planned_trajectory, i);
+            struct Point2D end = PointTypes_getPointFromPoint2DSet(current_planned_trajectory, i + 1);
+            cvLine(world_camera_frame, cvPoint((int) origin.x, (int) origin.y), cvPoint((int) end.x, (int) end.y),
+                   BURGUNDY, SIZE_DRAW_LINES, 8, 0);
+        }
     }
 }
 
-void WorldVision_applyWorldCameraBackFrame(void)
+static void drawRobotPosition(void)
 {
-    g_mutex_lock(&world_vision_frame_mutex);
-    cvCopy(world_camera_back_frame, world_camera_frame, NULL);
-
-    g_mutex_lock(&world_vision_planned_trajectory_mutex);
-
-    if(current_planned_trajectory != NULL) {
-
-        drawPlannedTrajectory();
-    }
-
     if(robot_position != NULL) {
 
         struct Point2D *last = NULL;
@@ -271,6 +264,17 @@ void WorldVision_applyWorldCameraBackFrame(void)
             robot_position_iterator = robot_position_iterator->next;
         }
     }
+}
+
+void WorldVision_applyWorldCameraBackFrame(void)
+{
+    g_mutex_lock(&world_vision_frame_mutex);
+    cvCopy(world_camera_back_frame, world_camera_frame, NULL);
+
+    g_mutex_lock(&world_vision_planned_trajectory_mutex);
+
+    drawPlannedTrajectory();
+    drawRobotPosition();
 
     g_mutex_unlock(&world_vision_planned_trajectory_mutex);
 
