@@ -341,12 +341,12 @@ Test(BehaviorBuilder, given__when_buildingABehaviorWithFreePoseEntry_then_theXYA
 }
 
 Test(BehaviorBuilder,
-     given__when_buildingABehaviorWithTrajectoryEntry_then_theThetaToleranceHaveMaxValuesAndItsFlagsAreIrrelevant)
+     given__when_buildingABehaviorWithEntryForTrajectory_then_theThetaToleranceHaveMaxValuesAndItsFlagsAreIrrelevant)
 {
 
     struct Flags *irrelevant_flags = Flags_irrelevant();
     struct Behavior *built_behavior = BehaviorBuilder_build(
-                                          BehaviorBuilder_withFreeTrajectoryEntry(
+                                          BehaviorBuilder_withFreeEntryForTrajectory(
                                                   BehaviorBuilder_end()));
 
     int are_equal = validate_behavior_has_parameters(
@@ -391,11 +391,11 @@ Test(BehaviorBuilder, given__when_buildingABehaviorWithFreeFlagsEntry_then_itsFl
 }
 
 Test(BehaviorBuilder,
-     given__when_buildingABehaviorWithFreeOrientation_then_itsFlagsEntryConditionAreIrrelevantAndItsXAndYToleranceAreMaxed)
+     given__when_buildingABehaviorWithFreeEntryForOrientation_then_itsFlagsEntryConditionAreIrrelevantAndItsXAndYToleranceAreMaxed)
 {
     struct Flags *irrelevant_flags = Flags_irrelevant();
     struct Behavior *built_behavior = BehaviorBuilder_build(
-                                          BehaviorBuilder_withFreeOrientationEntry(
+                                          BehaviorBuilder_withFreeEntryForOrientation(
                                                   BehaviorBuilder_end()));
 
 

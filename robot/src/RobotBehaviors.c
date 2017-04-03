@@ -108,7 +108,7 @@ void RobotBehaviors_appendTrajectoryBehaviors(struct Robot *robot, struct Coordi
         struct Behavior *trajectory_behavior_child = BehaviorBuilder_build(
                     BehaviorBuilder_withGoalX(goal_coordinates_x,
                                               BehaviorBuilder_withGoalY(goal_coordinates_y,
-                                                      BehaviorBuilder_withFreeTrajectoryEntry(
+                                                      BehaviorBuilder_withFreeEntryForTrajectory(
                                                               BehaviorBuilder_withAction(navigationAction,
                                                                       BehaviorBuilder_end())))));
         Behavior_addChild(trajectory_behavior, trajectory_behavior_child);
@@ -153,7 +153,7 @@ void RobotBehavior_appendOrientationBehaviorWithChildAction(struct Robot *robot,
     behavior_do_action_after_orientation = BehaviorBuilder_build(
             BehaviorBuilder_withAction(action,
                                        BehaviorBuilder_withGoalTheta(angle,
-                                               BehaviorBuilder_withFreeOrientationEntry(
+                                               BehaviorBuilder_withFreeEntryForOrientation(
                                                        BehaviorBuilder_end()))));
     Behavior_addChild(last_behavior, behavior_do_action_after_orientation);
 
