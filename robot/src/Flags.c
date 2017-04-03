@@ -84,11 +84,11 @@ int Flags_haveTheSameValues(struct Flags *flags, struct Flags *other_flags)
             || flags->ready_to_draw_received_by_station == IRRELEVANT
             || other_flags->ready_to_draw_received_by_station == IRRELEVANT)
         && (flags->end_of_cycle_received_by_station == other_flags->end_of_cycle_received_by_station
-            || flags->end_of_cycle_received_by_station == IRRELEVANT || other_flags->end_of_cycle_received_by_station == IRRELEVANT
-           )
+            || flags->end_of_cycle_received_by_station == IRRELEVANT || other_flags->end_of_cycle_received_by_station == IRRELEVANT)
         && (flags->manchester_code_received == other_flags->manchester_code_received
             || flags->manchester_code_received == IRRELEVANT
-            || other_flags->manchester_code_received == IRRELEVANT);
+            || other_flags->manchester_code_received == IRRELEVANT
+           );
 }
 
 void Flags_setNavigableMapIsReady(struct Flags *flags, int new_value)
