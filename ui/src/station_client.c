@@ -123,13 +123,13 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             break;
 
         case DATA_IMAGE: {
+                Logger_startRobotConnectionHandlerSectionAndAppend("Image received.");
                 CvMat *image_data = cvCreateMat(1, length - 1, CV_8UC1);
                 memcpy(image_data->data.ptr, data + 1, length - 1);
                 IplImage *image = cvDecodeImage(image_data, CV_LOAD_IMAGE_COLOR);
                 cvReleaseMat(&image_data);
                 RobotVision_setImage(image);
                 cvReleaseImage(&image);
-                Logger_startRobotConnectionHandlerSectionAndAppend("Image received.");
                 StationClientSender_sendImageReceivedAck();
                 break;
             }
