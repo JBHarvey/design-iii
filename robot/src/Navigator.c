@@ -285,8 +285,23 @@ void Navigator_planRisePenForObstacleCrossing(struct Robot *robot)
     RobotBehavior_appendRisePenBehaviorWithChildAction(robot, action);
 }
 
-void Navigator_planTowardsObstacleZoneEastSide(struct Robot *robot) {}
+void Navigator_planTowardsObstacleZoneEastSide(struct Robot *robot)
+{
+    Graph_updateForMap(robot->navigator->graph, robot->navigator->navigable_map);
+    struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
+    struct Coordinates *obstacles_east_zone_coordinates = robot->navigator->graph->eastern_node->coordinates;
+    struct CoordinatesSequence *obstacles_east_zone_trajectory = CoordinatesSequence_new(current_coordinates);
+    CoordinatesSequence_append(obstacles_east_zone_trajectory, obstacles_east_zone_coordinates);
 
+    robot->navigator->planned_trajectory = obstacles_east_zone_trajectory;
+
+    RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
+    void (*planTowardsPaintingZone)(struct Robot *) = &Navigator_planTowardsPaintingZone;
+    RobotBehaviors_appendTrajectoryBehaviors(robot, obstacles_east_zone_trajectory, planTowardsPaintingZone);
+
+}
+
+void Navigator_planTowardsPaintingZone(struct Robot *robot) {}
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot)
 {

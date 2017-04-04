@@ -33,6 +33,7 @@ void Navigator_planLowerPenForAntennaMark(struct Robot *robot);
 void Navigator_planTowardsAntennaMarkEnd(struct Robot *robot);
 void Navigator_planRisePenForObstacleCrossing(struct Robot *robot);
 void Navigator_planTowardsObstacleZoneEastSide(struct Robot *robot);
+void Navigator_planTowardsPaintingZone(struct Robot *robot);
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot);
  */
