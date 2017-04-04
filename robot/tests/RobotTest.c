@@ -472,7 +472,7 @@ Test(Robot,
 }
 
 Test(Robot,
-     given_aBehaviorWithPlanFetchingManchesterCodeAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFetchManchesterCodeIfAtLeastASecondHasPassedSingceLastRobotTimerResetAction
+     given_aBehaviorWithPlanFetchingManchesterCodeAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFetchManchesterCodeIfAtLeastASecondHasPassedSingeLastRobotTimerResetAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
