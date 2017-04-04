@@ -182,3 +182,29 @@ void RobotBehavior_appendFetchManchesterCodeBehaviorWithChildAction(struct Robot
     Behavior_delete(behavior_fetch_manchester_code_with_free_entry);
     Behavior_delete(behavior_do_action_after_manchester_code_reception);
 }
+
+void RobotBehavior_appendLowerPenBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *))
+{
+    struct Behavior *last_behavior = fetchLastBehavior(robot);
+
+    void (*lowerPen)(struct Robot*) = &Robot_lowerPenAndWaitASecondAndAHalf;
+    struct Behavior *behavior_lower_pen_with_free_entry;
+    behavior_lower_pen_with_free_entry = BehaviorBuilder_build(
+            BehaviorBuilder_withAction(lowerPen,
+                                       BehaviorBuilder_withFreeEntry(
+                                           BehaviorBuilder_end())));
+    Behavior_addChild(last_behavior, behavior_lower_pen_with_free_entry);
+
+    last_behavior = last_behavior->first_child;
+
+    struct Behavior *behavior_do_action_with_free_entry;
+    behavior_do_action_with_free_entry = BehaviorBuilder_build(
+            BehaviorBuilder_withAction(action,
+                                       BehaviorBuilder_withFreeEntry(
+                                           BehaviorBuilder_end())));
+    Behavior_addChild(last_behavior, behavior_do_action_with_free_entry);
+
+
+    Behavior_delete(behavior_do_action_with_free_entry);
+    Behavior_delete(behavior_lower_pen_with_free_entry);
+}

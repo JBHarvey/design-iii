@@ -30,6 +30,7 @@ void Navigator_planTowardsAntennaMiddle(struct Robot *robot);
 void Navigator_planOrientationTowardsAntenna(struct Robot *robot);
 void Navigator_planFetchingManchesterCode(struct Robot *robot);
 void Navigator_planLowerPenForAntennaMark(struct Robot *robot);
+void Navigator_planTowardsAntennaMarkEnd(struct Robot *robot);
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot);
  */

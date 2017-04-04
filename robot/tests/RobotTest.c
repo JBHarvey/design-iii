@@ -511,6 +511,60 @@ Test(Robot,
     cr_assert_eq(last_behavior->action, planLowerPenForAntennaMark);
 }
 
+Test(Robot,
+     given_aBehaviorWithPlanLoweringPenForAntennaMarkAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planLowerPenForAntennaMark;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
+    assertBehaviorHasFreeEntry(before_last_behavior);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanLoweringPenForAntennaMarkAction_when_behaviorActs_then_theBeforeLastBehaviorHasALowerPenAndWaitAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planLowerPenForAntennaMark;
+    Behavior_act(robot->current_behavior, robot);
+    void (*lowerPenAndWait)(struct Robot *) = &Robot_lowerPenAndWaitASecondAndAHalf;
+    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
+    cr_assert_eq(before_last_behavior->action, lowerPenAndWait);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanLoweringPenForAntennaMarkAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planLowerPenForAntennaMark;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    assertBehaviorHasFreeEntry(last_behavior);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanLoweringPenForAntennaMarkAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsAntennaMarkEndAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planLowerPenForAntennaMark;
+    Behavior_act(robot->current_behavior, robot);
+    void (*planTowardsAntennaEnd)(struct Robot *) = &Navigator_planTowardsAntennaMarkEnd;
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    cr_assert_eq(last_behavior->action, planTowardsAntennaEnd);
+}
+
 /*
 Test(Robot,
      given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theLastBehaviorOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
@@ -569,44 +623,44 @@ Test(Robot,
     cr_assert_eq(manchester_code_command_count, 2);
 }
 
-Test(Robot, given_theRobot_when_askForLowerPenAndWaitASecondAndAnHalf_then_theCommandIsSent
+Test(Robot, given_theRobot_when_askForLowerPenAndWaitASecondAndAHalf_then_theCommandIsSent
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Robot_lowerPenAndWaitASecondAndAnHalf(robot);
+    Robot_lowerPenAndWaitASecondAndAHalf(robot);
 
     cr_assert_eq(validation_lower_pen_command_is_sent, PEN_DOWN_COMMAND_SENT);
 }
 
 Test(Robot,
-     given_theRobot_when_askForLowerPenAndWaitASecondAndAnHalf_then_atLeastASecondAndAnHalfHasPassedSinceTheActionWasTriggered
+     given_theRobot_when_askForLowerPenAndWaitASecondAndAHalf_then_atLeastASecondAndAHalfHasPassedSinceTheActionWasTriggered
      , .init = setup_robot
      , .fini = teardown_robot)
 {
     struct Timer *timer = Timer_new();
-    Robot_lowerPenAndWaitASecondAndAnHalf(robot);
+    Robot_lowerPenAndWaitASecondAndAHalf(robot);
 
     cr_assert(Timer_hasTimePassed(timer, ONE_SECOND_AND_AN_HALF));
 
     Timer_delete(timer);
 }
 
-Test(Robot, given_theRobot_when_askForRisePenAndWaitASecondAnHalfAnd_then_theCommandIsSent
+Test(Robot, given_theRobot_when_askForRisePenAndWaitASecondAHalfAnd_then_theCommandIsSent
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Robot_risePenAndWaitASecondAndAnHalf(robot);
+    Robot_risePenAndWaitASecondAndAHalf(robot);
 
     cr_assert_eq(validation_rise_pen_command_is_sent, PEN_UP_COMMAND_SENT);
 }
 
 Test(Robot,
-     given_theRobot_when_askForRisePenAndWaitASecondAndAnHalf_then_atLeastASecondAndAnHalfHasPassedSinceTheActionWasTriggered
+     given_theRobot_when_askForRisePenAndWaitASecondAndAHalf_then_atLeastASecondAndAHalfHasPassedSinceTheActionWasTriggered
      , .init = setup_robot
      , .fini = teardown_robot)
 {
     struct Timer *timer = Timer_new();
-    Robot_risePenAndWaitASecondAndAnHalf(robot);
+    Robot_risePenAndWaitASecondAndAHalf(robot);
 
     cr_assert(Timer_hasTimePassed(timer, ONE_SECOND_AND_AN_HALF));
 

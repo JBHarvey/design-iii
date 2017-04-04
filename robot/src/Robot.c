@@ -100,7 +100,7 @@ void Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(
     }
 }
 
-void Robot_lowerPenAndWaitASecondAndAnHalf(struct Robot *robot)
+void Robot_lowerPenAndWaitASecondAndAHalf(struct Robot *robot)
 {
     CommandSender_sendLowerPenCommand(robot->command_sender);
     Timer_reset(robot->timer);
@@ -108,7 +108,7 @@ void Robot_lowerPenAndWaitASecondAndAnHalf(struct Robot *robot)
     while(!Timer_hasTimePassed(robot->timer, ONE_SECOND_AND_AN_HALF));
 }
 
-void Robot_risePenAndWaitASecondAndAnHalf(struct Robot *robot)
+void Robot_risePenAndWaitASecondAndAHalf(struct Robot *robot)
 {
     CommandSender_sendRisePenCommand(robot->command_sender);
     Timer_reset(robot->timer);

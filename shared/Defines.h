@@ -41,6 +41,8 @@
 #define STOP_VALUE 0
 #define STOP_DISTANCE 100
 
+#define ANTENNA_MARK_DISTANCE 750
+
 // Units and mesurements related
 
 #define ANGLE_BASE_UNIT 0.00001

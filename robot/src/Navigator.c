@@ -246,7 +246,13 @@ void Navigator_planFetchingManchesterCode(struct Robot *robot)
     RobotBehavior_appendFetchManchesterCodeBehaviorWithChildAction(robot, action);
 }
 
-void Navigator_planLowerPenForAntennaMark(struct Robot *robot) {}
+void Navigator_planLowerPenForAntennaMark(struct Robot *robot)
+{
+    void (*action)(struct Robot *) = &Navigator_planTowardsAntennaMarkEnd;
+    RobotBehavior_appendLowerPenBehaviorWithChildAction(robot, action);
+}
+
+void Navigator_planTowardsAntennaMarkEnd(struct Robot *robot) {}
 
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot)
