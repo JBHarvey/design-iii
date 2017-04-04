@@ -1021,7 +1021,7 @@ Test(Robot,
     robot->current_behavior->action = &Navigator_planTowardsObstacleZoneWestSide;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    void (*planOrientationTowardsDrawingZone)(struct Robot *) = &Navigator_planOrientationTowardsDrawingZone;
+    void (*planOrientationTowardsDrawingZone)(struct Robot *) = &Navigator_planTowardsDrawingZone;
     cr_assert_eq(last_behavior->action, planOrientationTowardsDrawingZone);
 }
 /*
