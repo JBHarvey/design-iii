@@ -36,4 +36,5 @@ void CommandSender_sendRisePenCommand(struct CommandSender *command_sender);
 void CommandSender_sendLowerPenCommand(struct CommandSender *command_sender);
 void CommandSender_sendFetchManchesterCode(struct CommandSender *command_sender);
 void CommandSender_sendStopSendingManchesterSignal(struct CommandSender *command_sender);
+
 #endif // COMMANDSENDER_H_

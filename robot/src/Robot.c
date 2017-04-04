@@ -22,6 +22,7 @@ struct Robot *Robot_new(void)
     struct CommandSender *new_command_sender = CommandSender_new();
     struct Logger *new_logger = Logger_new();
     struct Timer *new_timer = Timer_new();
+    struct CoordinatesSequence *new_drawing_trajectory = NULL;
     struct Robot *pointer =  malloc(sizeof(struct Robot));
 
     pointer->object = new_object;
@@ -35,6 +36,7 @@ struct Robot *Robot_new(void)
     pointer->command_sender = new_command_sender;
     pointer->logger = new_logger;
     pointer->timer = new_timer;
+    pointer->drawing_trajectory = new_drawing_trajectory;
 
     RobotBehaviors_prepareInitialBehaviors(pointer);
     pointer->first_behavior = pointer->current_behavior;
@@ -58,6 +60,11 @@ void Robot_delete(struct Robot *robot)
         CommandSender_delete(robot->command_sender);
         Logger_delete(robot->logger);
         Timer_delete(robot->timer);
+
+        if(robot->drawing_trajectory != NULL) {
+
+            CoordinatesSequence_delete(robot->drawing_trajectory);
+        }
 
         /* DefaultValues destruction */
         Pose_delete(robot->default_values->pose);
@@ -115,10 +122,3 @@ void Robot_penUpAndWaitASecondAndAnHalf(struct Robot *robot)
 
     while(!Timer_hasTimePassed(robot->timer, ONE_SECOND_AND_AN_HALF));
 }
-
-void Robot_takePicture(struct Robot *robot)
-{
-    //TODO : Take the actual picture with the on-board camera;
-    Flags_setPictureTaken(robot->current_state->flags, TRUE);
-}
-
