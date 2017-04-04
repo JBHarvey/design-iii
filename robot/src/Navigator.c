@@ -252,8 +252,24 @@ void Navigator_planLowerPenForAntennaMark(struct Robot *robot)
     RobotBehavior_appendLowerPenBehaviorWithChildAction(robot, action);
 }
 
-void Navigator_planTowardsAntennaMarkEnd(struct Robot *robot) {}
+void Navigator_planTowardsAntennaMarkEnd(struct Robot *robot)
+{
+    struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
+    int mark_end_x = current_coordinates->x;
+    int mark_end_y = current_coordinates->y - ANTENNA_MARK_DISTANCE;
+    struct Coordinates *mark_end = Coordinates_new(mark_end_x, mark_end_y);
+    struct CoordinatesSequence *mark_trajectory = CoordinatesSequence_new(current_coordinates);
+    CoordinatesSequence_append(mark_trajectory, mark_end);
+    Coordinates_delete(mark_end);
 
+    robot->navigator->planned_trajectory = mark_trajectory;
+
+    RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
+    void (*risePenBeforeCrossing)(struct Robot *) = &Navigator_planRisePenForObstacleCrossing;
+    RobotBehaviors_appendTrajectoryBehaviors(robot, mark_trajectory, risePenBeforeCrossing);
+}
+
+void Navigator_planRisePenForObstacleCrossing(struct Robot *robot) {}
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot)
 {
