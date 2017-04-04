@@ -279,7 +279,14 @@ void Navigator_planTowardsAntennaMarkEnd(struct Robot *robot)
     RobotBehaviors_appendTrajectoryBehaviors(robot, mark_trajectory, risePenBeforeCrossing);
 }
 
-void Navigator_planRisePenForObstacleCrossing(struct Robot *robot) {}
+void Navigator_planRisePenForObstacleCrossing(struct Robot *robot)
+{
+    void (*action)(struct Robot *) = &Navigator_planTowardsObstacleZoneEastSide;
+    RobotBehavior_appendRisePenBehaviorWithChildAction(robot, action);
+}
+
+void Navigator_planTowardsObstacleZoneEastSide(struct Robot *robot) {}
+
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot)
 {

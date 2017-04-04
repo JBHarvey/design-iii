@@ -621,6 +621,60 @@ Test(Robot,
     void (*planRisingPen)(struct Robot *) = &Navigator_planRisePenForObstacleCrossing;
     cr_assert_eq(last_behavior->action, planRisingPen);
 }
+
+Test(Robot,
+     given_aBehaviorWithPlanRisePenForObstacleCrossingAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planRisePenForObstacleCrossing;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
+    assertBehaviorHasFreeEntry(before_last_behavior);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanRisePenForObstacleCrossingAction_when_behaviorActs_then_theBeforeLastBehaviorHasARisePenAndWaitAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planRisePenForObstacleCrossing;
+    Behavior_act(robot->current_behavior, robot);
+    void (*risePenAndWait)(struct Robot *) = &Robot_risePenAndWaitASecondAndAHalf;
+    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
+    cr_assert_eq(before_last_behavior->action, risePenAndWait);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanRisePenForObstacleCrossingAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planRisePenForObstacleCrossing;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    assertBehaviorHasFreeEntry(last_behavior);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanRisePenForObstacleCrossingAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsObstacleZoneEastSide
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planRisePenForObstacleCrossing;
+    Behavior_act(robot->current_behavior, robot);
+    void (*planTowardsObstacleZoneEastSide)(struct Robot *) = &Navigator_planTowardsObstacleZoneEastSide;
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    cr_assert_eq(last_behavior->action, planTowardsObstacleZoneEastSide);
+}
 /*
 Test(Robot,
      given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theLastBehaviorOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory

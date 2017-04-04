@@ -208,3 +208,29 @@ void RobotBehavior_appendLowerPenBehaviorWithChildAction(struct Robot *robot, vo
     Behavior_delete(behavior_do_action_with_free_entry);
     Behavior_delete(behavior_lower_pen_with_free_entry);
 }
+
+void RobotBehavior_appendRisePenBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *))
+{
+    struct Behavior *last_behavior = fetchLastBehavior(robot);
+
+    void (*risePen)(struct Robot*) = &Robot_risePenAndWaitASecondAndAHalf;
+    struct Behavior *behavior_rise_pen_with_free_entry;
+    behavior_rise_pen_with_free_entry = BehaviorBuilder_build(
+                                            BehaviorBuilder_withAction(risePen,
+                                                    BehaviorBuilder_withFreeEntry(
+                                                            BehaviorBuilder_end())));
+    Behavior_addChild(last_behavior, behavior_rise_pen_with_free_entry);
+
+    last_behavior = last_behavior->first_child;
+
+    struct Behavior *behavior_do_action_with_free_entry;
+    behavior_do_action_with_free_entry = BehaviorBuilder_build(
+            BehaviorBuilder_withAction(action,
+                                       BehaviorBuilder_withFreeEntry(
+                                           BehaviorBuilder_end())));
+    Behavior_addChild(last_behavior, behavior_do_action_with_free_entry);
+
+
+    Behavior_delete(behavior_do_action_with_free_entry);
+    Behavior_delete(behavior_rise_pen_with_free_entry);
+}
