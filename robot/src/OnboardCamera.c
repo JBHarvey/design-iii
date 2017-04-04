@@ -11,6 +11,7 @@
 static CvCapture *cv_cap;
 CvMat *camera_matrix = 0;
 CvMat *distortion_coeffs = 0;
+static int counter = 0;
 
 void OnboardCamera_init(void)
 {
@@ -139,5 +140,10 @@ void OnboardCamera_takePictureAndIfValidSendAndUpdateDrawingBaseTrajectory(struc
         Flags_setPictureTaken(robot->current_state->flags, TRUE);
         DataSender_sendImage(robot->data_sender, image);
         robot->drawing_trajectory = image_trajectory;
+    } else {
+        char name[20];
+        sprintf(name, "image-%d.jpg", counter);
+        cvSaveImage(name, image, 0);
+        counter++;
     }
 }
