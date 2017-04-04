@@ -14,7 +14,7 @@
 
 #define MAXIMUM_OBSTACLE_NUMBER 3
 #define NUMBER_OF_PAINTING 8
-#define THEORICAL_OBSTACLE_RADIUS 650
+#define THEORICAL_OBSTACLE_RADIUS 700
 #define THEORICAL_ROBOT_RADIUS 1700
 #define THEORICAL_WORLD_LENGTH 23300
 #define THEORICAL_WORLD_HEIGHT 11300
@@ -34,13 +34,13 @@
 
 // Navigation related
 #define SPEEDS_BASE_UNIT 0.001
-#define MEDIUM_SPEED_VALUE 100
+#define MEDIUM_SPEED_VALUE 80
 
 #define LOW_SPEED_VALUE 20
-#define LOW_SPEED_DISTANCE 400
+#define LOW_SPEED_DISTANCE 750
 
 #define STOP_VALUE 0
-#define STOP_DISTANCE 100
+#define STOP_DISTANCE 80
 
 #define ANTENNA_MARK_DISTANCE 750
 
@@ -73,11 +73,11 @@
 #define DEFAULT_GOAL_THETA 0
 
 #define X_TOLERANCE_MIN 0                   // 0 mm
-#define X_TOLERANCE_DEFAULT 100             // 4 mm
+#define X_TOLERANCE_DEFAULT 200             // 4 mm
 #define X_TOLERANCE_MAX 50000               // 5 m
 
 #define Y_TOLERANCE_MIN 0                   // 0 mm
-#define Y_TOLERANCE_DEFAULT 100             // 4 mm
+#define Y_TOLERANCE_DEFAULT 200             // 4 mm
 #define Y_TOLERANCE_MAX 50000               // 5 m
 
 #define THETA_TOLERANCE_MIN 0               // 0 rad
