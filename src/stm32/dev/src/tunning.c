@@ -107,6 +107,45 @@ uint8_t wheelsStartedY2 = 0;
 
 #endif
 
+/*************** VARIABLES POUR ROTATION*****************/
+#ifdef ENABLE_ROTATION
+#define MAX_ROTATION_INDEX 1400
+#define CONSIGNE_ANGLE 30
+#define ROTATION_RAYON 10
+
+#define CONSIGNE_SPEED_MEDIUM 0.08
+#define CONSIGNE_SPEED_LOW 0.02
+
+uint16_t bufferRotationIndex = 0;
+float bufferRotation[MAX_ROTATION_INDEX];
+
+uint16_t bufferRotationPI1[MAX_ROTATION_INDEX];
+uint16_t bufferRotationPI2[MAX_ROTATION_INDEX];
+uint16_t bufferRotationPI3[MAX_ROTATION_INDEX];
+uint16_t bufferRotationPI4[MAX_ROTATION_INDEX];
+
+uint16_t bufferRotationPIIndex1 = 0;
+uint16_t bufferRotationPIIndex2 = 0;
+uint16_t bufferRotationPIIndex3 = 0;
+uint16_t bufferRotationPIIndex4 = 0;
+
+PidType tunningRotationPI1;
+PidType tunningRotationPI2;
+PidType tunningRotationPI3;
+PidType tunningRotationPI4;
+
+PidType tunningRotationPID1;
+PidType tunningRotationPID2;
+PidType tunningRotationPID3;
+PidType tunningRotationPID4;
+
+uint8_t bSendDataRotation = 0;
+uint8_t bFlagSendDataRotation = 0;
+uint8_t bTunningRotationDone = 0;
+uint8_t bFlagTunningRotationDone = 0;
+uint8_t bFlagStartTunningRotation = 0;
+#endif
+
 #ifdef ENABLE_ACQUIS
 void tunningIdentificationWheels() {
 	/***** Motor 1 *****/
@@ -270,41 +309,17 @@ void tunningSendIdenWheels() {
 #ifdef ENABLE_SPEED_PI
 void tunningSpeedPI() {
 
-	// Initialization of wheel 1 PIDs
-	PID_init(&tunningPI1, PID_SPEED1_KP, PID_SPEED1_KI, 0,
-			PID_Direction_Direct, PID_SPEED1_N);
-	PID_SetOutputLimits(&tunningPI1, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
-	tunningPI1.mySetpoint = CONSIGNE_SPEED;
-
-	// Initialization of wheel 2 PIDs
-	PID_init(&tunningPI2, PID_SPEED2_KP, PID_SPEED2_KI, 0,
-			PID_Direction_Direct, PID_SPEED2_N);
-	PID_SetOutputLimits(&tunningPI2, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
-	tunningPI2.mySetpoint = CONSIGNE_SPEED;
-
-	// Initialization of wheel 3 PIDs
-	PID_init(&tunningPI3, PID_SPEED3_KP, PID_SPEED3_KI, 0,
-			PID_Direction_Direct, PID_SPEED3_N);
-	PID_SetOutputLimits(&tunningPI3, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
-	tunningPI3.mySetpoint = CONSIGNE_SPEED;
-
-	// Initialization of wheel 4 PIDs
-	PID_init(&tunningPI4, PID_SPEED4_KP, PID_SPEED4_KI, 0,
-			PID_Direction_Direct, PID_SPEED4_N);
-	PID_SetOutputLimits(&tunningPI4, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
-	tunningPI4.mySetpoint = CONSIGNE_SPEED;
-
 	// Setting of direction for wheels
 	if (CONSIGNE_SPEED > 0) {
 		MotorSetDirection(1, COUNTER_CLOCK);
-		MotorSetDirection(2, COUNTER_CLOCK);
+		MotorSetDirection(2, BRAKE_G);
 		MotorSetDirection(3, CLOCK);
-		MotorSetDirection(4, CLOCK);
+		MotorSetDirection(4, BRAKE_G);
 	} else if (CONSIGNE_SPEED < 0) {
-		MotorSetDirection(1, COUNTER_CLOCK);
-		MotorSetDirection(2, COUNTER_CLOCK);
-		MotorSetDirection(3, CLOCK);
-		MotorSetDirection(4, CLOCK);
+		MotorSetDirection(1, CLOCK);
+		MotorSetDirection(2, BRAKE_G);
+		MotorSetDirection(3, COUNTER_CLOCK);
+		MotorSetDirection(4, BRAKE_G);
 	} else {
 		MotorSetDirection(1, BRAKE_G);
 		MotorSetDirection(2, BRAKE_G);
@@ -312,16 +327,40 @@ void tunningSpeedPI() {
 		MotorSetDirection(4, BRAKE_G);
 	}
 
-	// Redémarre les buffers
-	bufferSpeedPIDIndex1 = 0;
-	bufferSpeedPIDIndex2 = 0;
-	bufferSpeedPIDIndex3 = 0;
-	bufferSpeedPIDIndex4 = 0;
+	// Initialization of wheel 1 PIDs
+	PID_init(&tunningPI1, PID_SPEED1_KP, PID_SPEED1_KI, 0,
+			PID_Direction_Direct, PID_SPEED1_N);
+	PID_SetOutputLimits(&tunningPI1, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
+	tunningPI1.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED);
+
+	// Initialization of wheel 2 PIDs
+	PID_init(&tunningPI2, PID_SPEED2_KP, PID_SPEED2_KI, 0,
+			PID_Direction_Direct, PID_SPEED2_N);
+	PID_SetOutputLimits(&tunningPI2, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
+	tunningPI2.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED);
+
+	// Initialization of wheel 3 PIDs
+	PID_init(&tunningPI3, PID_SPEED3_KP, PID_SPEED3_KI, 0,
+			PID_Direction_Direct, PID_SPEED3_N);
+	PID_SetOutputLimits(&tunningPI3, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
+	tunningPI3.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED);
+
+	// Initialization of wheel 4 PIDs
+	PID_init(&tunningPI4, PID_SPEED4_KP, PID_SPEED4_KI, 0,
+			PID_Direction_Direct, PID_SPEED4_N);
+	PID_SetOutputLimits(&tunningPI4, MIN_SPEED_COMMAND, MAX_SPEED_COMMAND);
+	tunningPI4.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED);
 
 	// Initialise l'état
 	bTunningSpeedDone = 0;
 	bFlagTunningSpeedDone = 0;
 	bFlagStartTunningSpeed = 1;
+
+	// Redémarre les buffers
+	bufferSpeedPIDIndex1 = 0;
+	bufferSpeedPIDIndex2 = 0;
+	bufferSpeedPIDIndex3 = 0;
+	bufferSpeedPIDIndex4 = 0;
 
 	while (bTunningSpeedDone == 0) {
 
@@ -384,21 +423,21 @@ void tunningSendSpeedPI() {
 	/****** ENVOIE DONNÉES MOTEUR 1 ******/
 	VCP_DataTx((uint8_t*) bufferSpeedPID1, MAX_SPEED_PID_INDEX * 2);
 
-	VCP_DataTx((uint8_t*) bufferSpeedCmd1, MAX_SPEED_PID_INDEX);
+	//VCP_DataTx((uint8_t*) bufferSpeedCmd1, MAX_SPEED_PID_INDEX);
 	Delayms(1000);
 	/****** ENVOIE DONNÉES MOTEUR 2 ******/
 	VCP_DataTx((uint8_t*) bufferSpeedPID2, MAX_SPEED_PID_INDEX * 2);
 
-	VCP_DataTx((uint8_t*) bufferSpeedCmd2, MAX_SPEED_PID_INDEX);
+	//VCP_DataTx((uint8_t*) bufferSpeedCmd2, MAX_SPEED_PID_INDEX);
 	Delayms(1000);
 	/****** ENVOIE DONNÉES MOTEUR 3 ******/
 	VCP_DataTx((uint8_t*) bufferSpeedPID3, MAX_SPEED_PID_INDEX * 2);
 
-	VCP_DataTx((uint8_t*) bufferSpeedCmd3, MAX_SPEED_PID_INDEX);
+	//VCP_DataTx((uint8_t*) bufferSpeedCmd3, MAX_SPEED_PID_INDEX);
 	Delayms(1000);
 	/****** ENVOIE DONNÉES MOTEUR 4 ******/
 	VCP_DataTx((uint8_t*) bufferSpeedPID4, MAX_SPEED_PID_INDEX * 2);
-	VCP_DataTx((uint8_t*) bufferSpeedCmd4, MAX_SPEED_PID_INDEX);
+	//VCP_DataTx((uint8_t*) bufferSpeedCmd4, MAX_SPEED_PID_INDEX);
 	bFlagSendDataSpeed = 0;
 	bSendDataSpeed = 0;
 	while(1)
@@ -477,8 +516,8 @@ void tunningPositionPID() {
 	bufferSpeedPIIndex4 = 0;
 	// On boucle tant qu'on a pas fini
 	while (bTunningPositionDone == 0) {
-		float deplacementY = calculatePosition((numberOfPositionEdges2+numberOfPositionEdges4)/2);
-		float deplacementX = calculatePosition((numberOfPositionEdges1+numberOfPositionEdges3)/2);
+		float deplacementY = calculatePosition((numberOfPositionEdges2+numberOfPositionEdges4));
+		float deplacementX = calculatePosition((numberOfPositionEdges1+numberOfPositionEdges3));
 		if ((CONSIGNE_POSITION_Y != 0 && deplacementY < (CONSIGNE_POSITION_Y/2))
 				|| (CONSIGNE_POSITION_X != 0 && deplacementX < (CONSIGNE_POSITION_X/2))) {
 			tunningSpeedPI1.mySetpoint = CONSIGNE_SPEED_MEDIUM;
@@ -487,10 +526,15 @@ void tunningPositionPID() {
 			tunningSpeedPI4.mySetpoint = CONSIGNE_SPEED_MEDIUM;
 		}
 		else {
-			tunningSpeedPI1.mySetpoint = 0;
-			tunningSpeedPI2.mySetpoint = 0;
-			tunningSpeedPI3.mySetpoint = 0;
-			tunningSpeedPI4.mySetpoint = 0;
+			tunningSpeedPI1.mySetpoint = CONSIGNE_SPEED_LOW;
+			tunningSpeedPI2.mySetpoint = CONSIGNE_SPEED_LOW;
+			tunningSpeedPI3.mySetpoint = CONSIGNE_SPEED_LOW;
+			tunningSpeedPI4.mySetpoint = CONSIGNE_SPEED_LOW;
+		}
+
+		if((deplacementX+0.001 >= CONSIGNE_POSITION_X && CONSIGNE_POSITION_X != 0)
+				|| (deplacementY+0.001 >= CONSIGNE_POSITION_Y && CONSIGNE_POSITION_Y != 0)) {
+			motorStopAll();
 		}
 
 		// Apply command for motor 1

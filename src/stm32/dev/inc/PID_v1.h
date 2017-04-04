@@ -138,7 +138,6 @@ FloatType calculatePosition(FloatType positionEdges);
 void initAllPIDS();
 void computeAllPIDS();
 void computeCustomPIDS(uint8_t *mainState);
-void computeSpeedPIDS();
 uint8_t isSetpointReached(float setPoint, FloatType travelledDistance);
 uint8_t areWheelsStopped();
 

@@ -19,18 +19,8 @@ float getYMoveFromBuffer(uint8_t *data) {
 	return yMove;
 }
 
-float getSpeedXSetpointFromData(uint8_t *data) {
-	float speedX = *(float *) data;
-	return speedX;
-}
-
-float getSpeedYSetpointFromData(uint8_t *data) {
-	float speedY = *(float *) (data + Y_SPEED_DATA_BUFFER_INDEX);
-	return speedY;
-}
-
 float getRadianMoveFromBuffer(uint8_t *data) {
-	float radian = *(float *) (data);
+	float radian = *(float *) data;
 	return radian;
 }
 
@@ -112,13 +102,23 @@ void setRotateSetpoints(uint8_t *data) {
 	rotateMoveSetpoint = getMoveFromRadian(radian);
 }
 
-void resetPIDResidualValues() {
+void resetPIDValues() {
 
 	// reset pid values
 	PID_SPEED1.ITerm = 0;
 	PID_SPEED2.ITerm = 0;
 	PID_SPEED3.ITerm = 0;
 	PID_SPEED4.ITerm = 0;
+
+	PID_SPEED1.lastInput = 0;
+	PID_SPEED2.lastInput = 0;
+	PID_SPEED3.lastInput = 0;
+	PID_SPEED4.lastInput = 0;
+
+	PID_SPEED1.myInput = 0;
+	PID_SPEED2.myInput = 0;
+	PID_SPEED3.myInput = 0;
+	PID_SPEED4.myInput = 0;
 
 	PID_SPEED1.error = 0;
 	PID_SPEED2.error = 0;
@@ -414,36 +414,5 @@ void stopMove() {
 	MotorSetSpeed(4, 0);
 
 	isMoveDone = 0;
-}
-
-void setSpeedPidSetpoints(uint8_t *data) {
-	float speedXSetpoint = getSpeedXSetpointFromData(data);
-	float speedYSetpoint = getSpeedYSetpointFromData(data);
-
-	PID_SPEED1.mySetpoint = speedXSetpoint;
-	PID_SPEED2.mySetpoint = speedYSetpoint;
-	PID_SPEED3.mySetpoint = speedXSetpoint;
-	PID_SPEED4.mySetpoint = speedYSetpoint;
-}
-
-void setRotatePidSetpoints(uint8_t *data) {
-	/* get circular distance setpoint */
-	float radian = getRadianMoveFromBuffer(data);
-	if (radian > 0) {
-		PID_SPEED1.mySetpoint = -CONSIGNE_SPEED_LOW;
-		PID_SPEED2.mySetpoint = -CONSIGNE_SPEED_LOW;
-		PID_SPEED3.mySetpoint = CONSIGNE_SPEED_LOW;
-		PID_SPEED4.mySetpoint = CONSIGNE_SPEED_LOW;
-	} else if (radian < 0) {
-		PID_SPEED1.mySetpoint = CONSIGNE_SPEED_LOW;
-		PID_SPEED2.mySetpoint = CONSIGNE_SPEED_LOW;
-		PID_SPEED3.mySetpoint = -CONSIGNE_SPEED_LOW;
-		PID_SPEED4.mySetpoint = -CONSIGNE_SPEED_LOW;
-	} else {
-		PID_SPEED1.mySetpoint = 0;
-		PID_SPEED2.mySetpoint = 0;
-		PID_SPEED3.mySetpoint = 0;
-		PID_SPEED4.mySetpoint = 0;
-	}
 }
 

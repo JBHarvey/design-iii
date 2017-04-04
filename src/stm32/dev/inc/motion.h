@@ -30,16 +30,12 @@ void setRotateSettings(uint8_t *data);
 
 void setCustomRotateSettings(uint8_t *data);
 
-void resetPIDResidualValues();
+void resetPIDValues();
 
 void setSpeedSetpoints();
 
 void setMoveSetpoints(uint8_t *data);
 
 void stopMove();
-
-void setSpeedPidSetpoints(uint8_t *data);
-
-void setRotatePidSetpoints(uint8_t *data);
 
 #endif /* MOTION_H_ */
