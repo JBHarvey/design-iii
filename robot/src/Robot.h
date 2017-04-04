@@ -17,6 +17,7 @@ struct Robot {
     struct CommandSender *command_sender;
     struct Logger *logger;
     struct Timer *timer;
+    struct CoordinatesSequence *drawing_trajectory;
 };
 
 struct Robot *Robot_new();
@@ -27,7 +28,6 @@ void Robot_act(struct Robot *robot);
 void Robot_sendReadyToStartSignal(struct Robot *robot);
 void Robot_sendPlannedTrajectory(struct Robot *robot);
 void Robot_sendPoseEstimate(struct Robot *robot);
-void Robot_takePicture(struct Robot *robot);
 void Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(struct Robot *robot);
 void Robot_penDownAndWaitASecondAndAnHalf(struct Robot *robot);
 void Robot_penUpAndWaitASecondAndAnHalf(struct Robot *robot);

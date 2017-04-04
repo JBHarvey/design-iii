@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "OnboardCamera.h"
 #include "vision.h"
+#include "Robot.h"
 
 #define CALIBRATION_FILE "utils/camera_calibration.xml"
 #define CAMERA_INDEX 0
@@ -119,7 +120,6 @@ struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **
         cvReleaseMemStorage(&opencv_storage);
     }
 
-
     return sequence;
 }
 
@@ -128,3 +128,16 @@ void OnboardCamera_deleteImage(IplImage **image)
     cvReleaseImage(image);
 }
 
+void OnboardCamera_takePictureAndIfValidSendAndUpdateDrawingBaseTrajectory(struct Robot *robot)
+{
+    IplImage *image;
+    struct CoordinatesSequence *image_trajectory;
+    image_trajectory = OnboardCamera_extractTrajectoryFromImage(&image);
+
+    if(image_trajectory != NULL) {
+
+        Flags_setPictureTaken(robot->current_state->flags, TRUE);
+        DataSender_sendImage(robot->data_sender, image);
+        robot->drawing_trajectory = image_trajectory;
+    }
+}

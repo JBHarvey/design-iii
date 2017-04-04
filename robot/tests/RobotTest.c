@@ -509,12 +509,3 @@ Test(Robot,
     Timer_delete(timer);
 }
 
-Test(Robot, given_initialRobot_when_takesAPicture_then_thePicureTakenFlagValueIsOne
-     , .init = setup_robot
-     , .fini = teardown_robot)
-{
-    // TODO: take the actual picture
-    Robot_takePicture(robot);
-    cr_assert(robot->current_state->flags->picture_taken);
-}
-

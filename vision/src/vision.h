@@ -24,16 +24,16 @@ enum ObstacleType {
     OBSTACLE_TRIANGLE
 };
 
-struct Obstacle {
+struct Vision_Obstacle {
     enum ObstacleType type;
     int x;
     int y;
     double angle; /* rads */
 };
 
-void sortObstacles(struct Obstacle *obstacles, unsigned int num_obstacles);
+void sortObstacles(struct Vision_Obstacle *obstacles, unsigned int num_obstacles);
 
-unsigned int findObstacles(CvMemStorage *opencv_storage, struct Obstacle *obstacles_out, unsigned int max_obstacles,
+unsigned int findObstacles(CvMemStorage *opencv_storage, struct Vision_Obstacle *obstacles_out, unsigned int max_obstacles,
                            IplImage *image_yuv);
 
 CvPoint coordinateToTableCoordinate(CvPoint point, double height_cm, CvPoint camera_midpoint);

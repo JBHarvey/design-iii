@@ -574,7 +574,7 @@ static _Bool isPossibleObstacle(CvSeq *in)
     return isCircle(in);
 }
 
-static void findObstaclesRecursive(CvSeq *contours, struct Obstacle *out_obstacles, unsigned int max_obstacles,
+static void findObstaclesRecursive(CvSeq *contours, struct Vision_Obstacle *out_obstacles, unsigned int max_obstacles,
                                    unsigned int *num_obstacles)
 {
     if(*num_obstacles >= max_obstacles) {
@@ -584,7 +584,7 @@ static void findObstaclesRecursive(CvSeq *contours, struct Obstacle *out_obstacl
     CvSeq *horizontal_sequence = contours;
 
     while(horizontal_sequence) {
-        struct Obstacle obstacle;
+        struct Vision_Obstacle obstacle;
         obstacle.type = OBSTACLE_NONE;
         CvSeq *obstacle_seq = horizontal_sequence;
 
@@ -622,7 +622,7 @@ static void findObstaclesRecursive(CvSeq *contours, struct Obstacle *out_obstacl
 
 #define COMPARE_ERROR_PIXELS (5.0)
 
-static int compareObstacles(const struct Obstacle *obstacle1, const struct Obstacle *obstacle2)
+static int compareObstacles(const struct Vision_Obstacle *obstacle1, const struct Vision_Obstacle *obstacle2)
 {
     if(obstacle1->type < obstacle2->type) {
         return -1;
@@ -654,14 +654,15 @@ static int compareObstacles(const struct Obstacle *obstacle1, const struct Obsta
     return 0;
 }
 
-void sortObstacles(struct Obstacle *obstacles, unsigned int num_obstacles)
+void sortObstacles(struct Vision_Obstacle *obstacles, unsigned int num_obstacles)
 {
-    qsort(obstacles, num_obstacles, sizeof(struct Obstacle), compareObstacles);
+    qsort(obstacles, num_obstacles, sizeof(struct Vision_Obstacle), compareObstacles);
 }
 
 #define OBSTACLE_POLY_APPROX 1
 
-unsigned int findObstacles(CvMemStorage *opencv_storage, struct Obstacle *obstacles_out, unsigned int max_obstacles,
+unsigned int findObstacles(CvMemStorage *opencv_storage, struct Vision_Obstacle *obstacles_out,
+                           unsigned int max_obstacles,
                            IplImage *image_yuv)
 {
     IplImage *image_black_white = thresholdImage(image_yuv, OBSTACLES_YUV_LOWER_BOUND, OBSTACLES_YUV_UPPER_BOUND,

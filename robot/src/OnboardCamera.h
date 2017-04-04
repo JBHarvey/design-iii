@@ -8,11 +8,15 @@
 
 #include "CoordinatesSequence.h"
 
+struct Robot;
+
 void OnboardCamera_init(void);
 void OnboardCamera_freeCamera(void);
 
 struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **image_yuv_in_green_square);
 
 void OnboardCamera_deleteImage(IplImage **image);
+
+void OnboardCamera_takePictureAndIfValidSendAndUpdateDrawingBaseTrajectory(struct Robot *robot);
 
 #endif //ONBOARDCAMERA_H

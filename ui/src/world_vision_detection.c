@@ -78,7 +78,7 @@ static void drawMarkerLocationOnImage(IplImage *image, struct Marker marker)
     }
 }
 
-static void drawObstacleOnImage(IplImage *image, struct Obstacle obstacle)
+static void drawObstacleOnImage(IplImage *image, struct Vision_Obstacle obstacle)
 {
     if(obstacle.type == OBSTACLE_CIRCLE) {
         cvCircle(image, cvPoint(obstacle.x, obstacle.y), RADIUS_DRAW_OBSTACLE_CIRCLE / 2, RED, SIZE_DRAW_LINES,
@@ -366,7 +366,7 @@ gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camer
             tryDetectGreenSquare(input_camera);
         }
 
-        struct Obstacle obstacles[MAXIMUM_OBSTACLE_NUMBER];
+        struct Vision_Obstacle obstacles[MAXIMUM_OBSTACLE_NUMBER];
 
         int number_of_obstacles = findObstacles(opencv_storage, obstacles, MAXIMUM_OBSTACLE_NUMBER, image_yuv);
 

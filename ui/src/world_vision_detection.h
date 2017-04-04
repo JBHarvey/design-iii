@@ -14,7 +14,7 @@ struct DetectedThings {
     struct Square green_square;
     struct Marker robot;
     int number_of_obstacles;
-    struct Obstacle obstacles[MAXIMUM_OBSTACLE_NUMBER];
+    struct Vision_Obstacle obstacles[MAXIMUM_OBSTACLE_NUMBER];
     int has_changed;
 };
 

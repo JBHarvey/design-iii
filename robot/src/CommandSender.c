@@ -11,7 +11,7 @@ struct CommandSender_Callbacks CommandSender_fetchCallbacksForRobot(void)
         .sendRisePenCommand = &RobotServer_sendRisePenCommand,
         .sendLowerPenCommand = &RobotServer_sendLowerPenCommand,
         .sendFetchManchesterCodeCommand = &RobotServer_fetchManchesterCodeCommand,
-        .sendStopSendingManchesterSignalCommand = &RobotServer_sendStopSendingManchesterSignalCommand
+        .sendStopSendingManchesterSignalCommand = &RobotServer_sendStopSendingManchesterSignalCommand,
     };
     return commands;
 }

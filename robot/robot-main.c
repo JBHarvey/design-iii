@@ -16,6 +16,7 @@ int main(int argc, char *argv[])
 
     struct PoseFilter_Callbacks callbacks = PoseFilter_fetchCallbacks();
 
+    OnboardCamera_init();
     robot = Robot_new();
     pose_filter = PoseFilter_new(robot);
     robot_server = RobotServer_new(robot, port, ttyACM);
@@ -128,6 +129,7 @@ int main(int argc, char *argv[])
     RobotServer_delete(robot_server);
     Robot_delete(robot);
     PoseFilter_delete(pose_filter);
+    OnboardCamera_freeCamera();
     return 0;
 
 

@@ -219,7 +219,7 @@ Test(Behavior, given_aDefaultBehavior_when_changesItsAction_then_itsActionIsChan
      , .fini = teardown_behavior)
 {
     struct Behavior *behavior = BehaviorBuilder_default();
-    void (*action)(struct Robot *) = &Robot_takePicture;
+    void (*action)(struct Robot *) = &Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset;
     Behavior_changeAction(behavior, action);
 
     cr_assert_eq(behavior->action, action);
@@ -227,9 +227,10 @@ Test(Behavior, given_aDefaultBehavior_when_changesItsAction_then_itsActionIsChan
     Behavior_delete(behavior);
 }
 
+int validation_action;
 void BehaviorActionTest(struct Robot *robot)
 {
-    Robot_takePicture(robot);
+    validation_action++;
 }
 
 Test(Behavior, given_aSpecificFunction_when_acts_then_theActionTakesPlace
@@ -237,7 +238,7 @@ Test(Behavior, given_aSpecificFunction_when_acts_then_theActionTakesPlace
      , .fini = teardown_behavior)
 {
     struct Robot *robot = Robot_new();
-    cr_assert(robot->current_state->flags->picture_taken == FALSE);
+    validation_action = 0;
 
     struct Behavior *behavior = BehaviorBuilder_build(
                                     BehaviorBuilder_withAction(&BehaviorActionTest,
@@ -245,7 +246,7 @@ Test(Behavior, given_aSpecificFunction_when_acts_then_theActionTakesPlace
 
     Behavior_act(behavior, robot);
 
-    cr_assert(robot->current_state->flags->picture_taken == TRUE);
+    cr_assert_eq(validation_action, 1);
 
     Behavior_delete(behavior);
     Robot_delete(robot);
