@@ -168,7 +168,7 @@ void RobotBehavior_appendFetchManchesterCodeBehaviorWithChildAction(struct Robot
     last_behavior = last_behavior->first_child;
 
     struct Flags *manchester_code_received_flags = Flags_irrelevant();
-    Flags_setNavigableMapIsReady(manchester_code_received_flags, 1);
+    Flags_setManchesterCodeReceived(manchester_code_received_flags, 1);
     struct Behavior *behavior_do_action_after_manchester_code_reception;
     behavior_do_action_after_manchester_code_reception = BehaviorBuilder_build(
                 BehaviorBuilder_withAction(action,
