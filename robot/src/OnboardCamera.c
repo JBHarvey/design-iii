@@ -116,6 +116,12 @@ struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **
             Coordinates_copyValuesFrom(first_coordinates, sequence->coordinates);
             CoordinatesSequence_append(sequence, first_coordinates);
             Coordinates_delete(first_coordinates);
+        } else {
+
+            char name[20];
+            sprintf(name, "image-%d.jpg", counter);
+            cvSaveImage(name, image, 0);
+            counter++;
         }
 
         cvReleaseMemStorage(&opencv_storage);
@@ -140,10 +146,5 @@ void OnboardCamera_takePictureAndIfValidSendAndUpdateDrawingBaseTrajectory(struc
         Flags_setPictureTaken(robot->current_state->flags, TRUE);
         DataSender_sendImage(robot->data_sender, image);
         robot->drawing_trajectory = image_trajectory;
-    } else {
-        char name[20];
-        sprintf(name, "image-%d.jpg", counter);
-        cvSaveImage(name, image, 0);
-        counter++;
     }
 }
