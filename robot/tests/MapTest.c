@@ -151,14 +151,14 @@ Test(Map, given_newPaintingZones_when_updatesMap_then_theCorrespondingZonesHaveC
      , .init = setup_Map
      , .fini = teardown_Map)
 {
-    struct Pose *paintingZone0 = Pose_new(4060, 2500, MINUS_HALF_PI);
-    struct Pose *paintingZone1 = Pose_new(1620, 2500, MINUS_HALF_PI);
-    struct Pose *paintingZone2 = Pose_new(2500, 1710, PI);
-    struct Pose *paintingZone3 = Pose_new(2500, 4240, PI);
-    struct Pose *paintingZone4 = Pose_new(2500, 6770, PI);
-    struct Pose *paintingZone5 = Pose_new(2500, 9300, PI);
-    struct Pose *paintingZone6 = Pose_new(1620, 8500, HALF_PI);
-    struct Pose *paintingZone7 = Pose_new(4060, 8500, HALF_PI);
+    struct Pose *paintingZone0 = Pose_new(4060, 2500, 0);
+    struct Pose *paintingZone1 = Pose_new(1620, 2500, 0);
+    struct Pose *paintingZone2 = Pose_new(2500, 1710, MINUS_HALF_PI);
+    struct Pose *paintingZone3 = Pose_new(2500, 4240, MINUS_HALF_PI);
+    struct Pose *paintingZone4 = Pose_new(2500, 6770, MINUS_HALF_PI);
+    struct Pose *paintingZone5 = Pose_new(2500, 9300, MINUS_HALF_PI);
+    struct Pose *paintingZone6 = Pose_new(1620, 8500, PI);
+    struct Pose *paintingZone7 = Pose_new(4060, 8500, PI);
 
     Map_updatePaintingZone(map, paintingZone0, 0);
     Map_updatePaintingZone(map, paintingZone1, 1);
@@ -276,6 +276,25 @@ Test(Map, given_aMapAndARobot_when_askedToFetchNavigableMap_then_theRobotRadiusI
     Coordinates_delete(expected_stop);
     Coordinates_delete(antenna_zone_start);
     Coordinates_delete(antenna_zone_stop);
+    Map_delete(navigable_map);
+}
+
+Test(Map, given_aMapAndARobot_when_askedToFetchNavigableMap_then_thePaintingZonesAreTransfered
+     , .init = setup_Map
+     , .fini = teardown_Map)
+{
+    //TODO: ADD PAINTINGZONE VALUES
+    struct Map *navigable_map = Map_fetchNavigableMap(map, THEORICAL_ROBOT_RADIUS);
+
+    struct Pose *original_painting_pose;
+    struct Pose *navigable_painting_pose;
+
+    for(int i = 0; i < NUMBER_OF_PAINTING; ++i) {
+        original_painting_pose = map->painting_zones[i];
+        navigable_painting_pose = navigable_map->painting_zones[i];
+        cr_assert(Pose_haveTheSameValues(original_painting_pose, navigable_painting_pose));
+    }
+
     Map_delete(navigable_map);
 }
 
