@@ -39,7 +39,6 @@ static struct Marker calculateMarker(std::vector<cv::Point2f> corners, unsigned 
     double distance = distance_points(corners[0].x, corners[0].y, corners[2].x, corners[2].y);
     distance += distance_points(corners[1].x, corners[1].y, corners[3].x, corners[3].y);
     distance /= 2.0;
-    distance *= MARKER_DISTANCE_RATIO;
 
     double corner_angle = marker.angle + ((double)corner_number) * (M_PI /  2.0);
 

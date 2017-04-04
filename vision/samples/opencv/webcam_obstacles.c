@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 
             IplImage *image_yuv = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
             cvCvtColor(image, image_yuv, CV_BGR2YCrCb);
-            struct Obstacle obstacles[20];
+            struct Vision_Obstacle obstacles[20];
             int num_obstacles = findObstacles(opencv_storage, obstacles, 20, image_yuv);
             cvReleaseImage(&image_yuv);
 
