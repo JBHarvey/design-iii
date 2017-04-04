@@ -794,7 +794,6 @@ Test(Robot,
     cr_assert_eq(last_behavior->action, planOrientationTowardsPainting);
 }
 
-
 Test(Robot,
      given_aBehaviorWithPlanOrientationTowardsPaintingAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
@@ -851,7 +850,72 @@ Test(Robot,
     cr_assert_eq(last_behavior->action, planTakingPicture);
 }
 
+Test(Robot,
+     given_aBehaviorWithPlanTakingPictureAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planTakingPicture;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
+    assertBehaviorHasFreeEntry(before_last_behavior);
+}
 
+Test(Robot,
+     given_aBehaviorWithPlanTakingPictureAction_when_behaviorActs_then_theBeforeLastBehaviorHasAnTakePictureAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planTakingPicture;
+    Behavior_act(robot->current_behavior, robot);
+    void (*orientationTowardsAntenna)(struct Robot *) =
+        &OnboardCamera_takePictureAndIfValidSendAndUpdateDrawingBaseTrajectory;
+    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
+    cr_assert_eq(before_last_behavior->action, orientationTowardsAntenna);
+}
+
+void assertBehaviorHasImageReceivedByStationFlagEntry(struct Behavior *behavior)
+{
+    struct Flags *image_received_by_station_flags = Flags_irrelevant();
+    Flags_setImageReceivedByStation(image_received_by_station_flags, 1);
+    assertBehaviorHasFreePoseEntry(behavior);
+    struct Flags *behavior_entry_flags = behavior->entry_conditions->goal_state->flags;
+    cr_assert(Flags_haveTheSameValues(image_received_by_station_flags, behavior_entry_flags));
+    Flags_delete(image_received_by_station_flags);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanTakingPictureAction_when_behaviorActs_then_theLastBehaviorHasAImageReceivedByStationFlagsWithFreePoseEntryGoal
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planTakingPicture;
+    Behavior_act(robot->current_behavior, robot);
+    int painting_number = robot->manchester_code->painting_number;
+    int angle = robot->navigator->navigable_map->painting_zones[painting_number]->angle->theta;
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    assertBehaviorHasImageReceivedByStationFlagEntry(last_behavior);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanTakingPictureAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsObstacleZoneWestSide
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planTakingPicture;
+    Behavior_act(robot->current_behavior, robot);
+    void (*planTowardsObstacleZoneWestSide)(struct Robot *) = &Navigator_planTowardsObstacleZoneWestSide;
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    cr_assert_eq(last_behavior->action, planTowardsObstacleZoneWestSide);
+}
 /*
 Test(Robot,
      given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theLastBehaviorOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory

@@ -234,3 +234,33 @@ void RobotBehavior_appendRisePenBehaviorWithChildAction(struct Robot *robot, voi
     Behavior_delete(behavior_do_action_with_free_entry);
     Behavior_delete(behavior_rise_pen_with_free_entry);
 }
+
+void RobotBehavior_appendTakePictureBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *))
+{
+    struct Behavior *last_behavior = fetchLastBehavior(robot);
+
+    void (*takePicture)(struct Robot*) = &OnboardCamera_takePictureAndIfValidSendAndUpdateDrawingBaseTrajectory;
+    struct Behavior *behavior_take_picture_with_free_entry;
+    behavior_take_picture_with_free_entry = BehaviorBuilder_build(
+            BehaviorBuilder_withAction(takePicture,
+                                       BehaviorBuilder_withFreeEntry(
+                                           BehaviorBuilder_end())));
+    Behavior_addChild(last_behavior, behavior_take_picture_with_free_entry);
+
+    last_behavior = last_behavior->first_child;
+
+    struct Flags *image_received_by_station = Flags_irrelevant();
+    Flags_setNavigableMapIsReady(image_received_by_station, 1);
+    struct Behavior *behavior_do_action_when_image_received_by_station;
+    behavior_do_action_when_image_received_by_station = BehaviorBuilder_build(
+                BehaviorBuilder_withAction(action,
+                                           BehaviorBuilder_withFlags(image_received_by_station,
+                                                   BehaviorBuilder_withFreePoseEntry(
+                                                           BehaviorBuilder_end()))));
+    Behavior_addChild(last_behavior, behavior_do_action_when_image_received_by_station);
+    Flags_delete(image_received_by_station);
+
+    Behavior_delete(behavior_do_action_when_image_received_by_station);
+    Behavior_delete(behavior_take_picture_with_free_entry);
+}
+

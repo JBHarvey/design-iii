@@ -37,6 +37,7 @@ void Navigator_planTowardsPaintingZone(struct Robot *robot);
 void Navigator_planTowardsPainting(struct Robot *robot);
 void Navigator_planOrientationTowardsPainting(struct Robot *robot);
 void Navigator_planTakingPicture(struct Robot *robot);
+void Navigator_planTowardsObstacleZoneWestSide(struct Robot *robot);
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot);
  */

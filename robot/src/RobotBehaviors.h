@@ -12,5 +12,6 @@ void RobotBehavior_appendOrientationBehaviorWithChildAction(struct Robot *robot,
 void RobotBehavior_appendFetchManchesterCodeBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *));
 void RobotBehavior_appendLowerPenBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *));
 void RobotBehavior_appendRisePenBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *));
+void RobotBehavior_appendTakePictureBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *));
 
 #endif // ROBOTBEHAVIORS_H_
