@@ -71,7 +71,7 @@ static int convertToCartesian(double coord)
 
 #define LINE_SIZE  30
 
-struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **image_yuv_in_green_square)
+struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **painting_image)
 {
     CvMemStorage *opencv_storage = cvCreateMemStorage(0);
     IplImage *image = getImage();
@@ -81,16 +81,16 @@ struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **
 
     if(image != NULL) {
 
-        CvSeq *opencv_sequence = findFirstFigure(opencv_storage, image, image_yuv_in_green_square);
+        CvSeq *opencv_sequence = findFirstFigure(opencv_storage, image, painting_image);
 
         if(opencv_sequence) {
-            if(image_yuv_in_green_square && *image_yuv_in_green_square) {
-                cvDrawContours(*image_yuv_in_green_square, opencv_sequence, CV_RGB(255, 0, 0), CV_RGB(255, 0, 0), 0, LINE_SIZE, 8,
+            if(painting_image && *painting_image) {
+                cvDrawContours(*painting_image, opencv_sequence, CV_RGB(255, 0, 0), CV_RGB(255, 0, 0), 0, LINE_SIZE, 8,
                                cvPoint(0, 0));
 
-                IplImage *image_temp = cvCloneImage(*image_yuv_in_green_square);
-                cvCvtColor(*image_yuv_in_green_square, image_temp, CV_YCrCb2RGB);
-                cvCopy(image_temp, *image_yuv_in_green_square, NULL);
+                IplImage *image_temp = cvCloneImage(*painting_image);
+                cvCvtColor(*painting_image, image_temp, CV_YCrCb2RGB);
+                cvCopy(image_temp, *painting_image, NULL);
                 cvReleaseImage(&image_temp);
             }
 

@@ -153,6 +153,14 @@ static void sendRotationCommandForNavigation(struct Robot *robot, int angle_to_t
     sendRotationCommand(robot, theta);
 }
 
+static void resetPlannedTrajectoryFlagsIfNecessary(struct Robot *robot)
+{
+    int flag_value = robot->current_state->flags->planned_trajectory_received_by_station;
+
+    if(flag_value == TRUE) {
+        Flags_setPlannedTrajectoryReceivedByStation(robot->current_state->flags, FALSE);
+    }
+}
 void Navigator_navigateRobotTowardsGoal(struct Robot *robot)
 {
     struct Coordinates *goal_coordinates =
@@ -161,6 +169,8 @@ void Navigator_navigateRobotTowardsGoal(struct Robot *robot)
     int angle_between_robot_and_target = Pose_computeAngleBetween(current_pose, goal_coordinates);
     int was_oriented = robot->navigator->was_oriented_before_last_command;
     int is_oriented = Navigator_isAngleWithinRotationTolerance(angle_between_robot_and_target);
+
+    resetPlannedTrajectoryFlagsIfNecessary(robot);
 
     if(!is_oriented) {
         robot->navigator->was_oriented_before_last_command = 0;
@@ -216,14 +226,60 @@ void Navigator_planTowardsAntennaStart(struct Robot *robot)
 
 void Navigator_planTowardsAntennaMiddle(struct Robot *robot)
 {
+    struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
+    struct Coordinates *start = robot->navigator->navigable_map->antenna_zone_start;
+    struct Coordinates *stop = robot->navigator->navigable_map->antenna_zone_stop;
+    int middle_x = Coordinates_computeMeanX(start, stop);
+    int middle_y = Coordinates_computeMeanY(start, stop);
+    struct Coordinates *antenna_middle_coordinates = Coordinates_new(middle_x, middle_y);
+    struct CoordinatesSequence *trajectory_to_antenna_middle = CoordinatesSequence_new(current_coordinates);
+    CoordinatesSequence_append(trajectory_to_antenna_middle, antenna_middle_coordinates);
+    Coordinates_delete(antenna_middle_coordinates);
+
+    robot->navigator->planned_trajectory = trajectory_to_antenna_middle;
+
+    RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
+    void (*fetchManchester)(struct Robot *) = &Navigator_planFetchingManchesterCode;
+    RobotBehaviors_appendTrajectoryBehaviors(robot, trajectory_to_antenna_middle, fetchManchester);
 }
 
 void Navigator_planOrientationTowardsAntenna(struct Robot *robot)
 {
+    int angle = 0;
     void (*action)(struct Robot *) = &Navigator_planTowardsAntennaMiddle;
-    RobotBehavior_appendOrientationBehaviorWithChildAction(robot, 0, action);
+    RobotBehavior_appendOrientationBehaviorWithChildAction(robot, angle, action);
 }
 
+void Navigator_planFetchingManchesterCode(struct Robot *robot)
+{
+    void (*action)(struct Robot *) = &Navigator_planLowerPenForAntennaMark;
+    RobotBehavior_appendFetchManchesterCodeBehaviorWithChildAction(robot, action);
+}
+
+void Navigator_planLowerPenForAntennaMark(struct Robot *robot)
+{
+    void (*action)(struct Robot *) = &Navigator_planTowardsAntennaMarkEnd;
+    RobotBehavior_appendLowerPenBehaviorWithChildAction(robot, action);
+}
+
+void Navigator_planTowardsAntennaMarkEnd(struct Robot *robot)
+{
+    struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
+    int mark_end_x = current_coordinates->x;
+    int mark_end_y = current_coordinates->y - ANTENNA_MARK_DISTANCE;
+    struct Coordinates *mark_end = Coordinates_new(mark_end_x, mark_end_y);
+    struct CoordinatesSequence *mark_trajectory = CoordinatesSequence_new(current_coordinates);
+    CoordinatesSequence_append(mark_trajectory, mark_end);
+    Coordinates_delete(mark_end);
+
+    robot->navigator->planned_trajectory = mark_trajectory;
+
+    RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
+    void (*risePenBeforeCrossing)(struct Robot *) = &Navigator_planRisePenForObstacleCrossing;
+    RobotBehaviors_appendTrajectoryBehaviors(robot, mark_trajectory, risePenBeforeCrossing);
+}
+
+void Navigator_planRisePenForObstacleCrossing(struct Robot *robot) {}
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot)
 {
