@@ -183,6 +183,8 @@ void RobotBehavior_appendFetchManchesterCodeBehaviorWithChildAction(struct Robot
     Behavior_delete(behavior_do_action_after_manchester_code_reception);
 }
 
+void RobotBehavior_appendTakePictureBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *)) {}
+
 void RobotBehavior_appendLowerPenBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *))
 {
     struct Behavior *last_behavior = fetchLastBehavior(robot);

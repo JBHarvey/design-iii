@@ -352,7 +352,11 @@ void Navigator_planOrientationTowardsPainting(struct Robot *robot)
     RobotBehavior_appendOrientationBehaviorWithChildAction(robot, angle, action);
 }
 
-void Navigator_planTakingPicture(struct Robot *robot) {}
+void Navigator_planTakingPicture(struct Robot *robot)
+{
+    //void (*action)(struct Robot *) =
+}
+
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot)
 {
