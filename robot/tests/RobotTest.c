@@ -301,6 +301,18 @@ Test(Robot,
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
 }
 
+Test(Robot,
+     given_aBehaviorWithPlanTowardsObstacleZoneWestSide_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planTowardsObstacleZoneWestSide;
+    Behavior_act(robot->current_behavior, robot);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+}
+
 /*
 Test(Robot,
      given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
@@ -969,6 +981,48 @@ Test(Robot,
     void (*planTowardsObstacleZoneWestSide)(struct Robot *) = &Navigator_planTowardsObstacleZoneWestSide;
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
     cr_assert_eq(last_behavior->action, planTowardsObstacleZoneWestSide);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanTowardsObstacleZoneWestSideAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planTowardsObstacleZoneWestSide;
+    Behavior_act(robot->current_behavior, robot);
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
+            robot->navigator->planned_trajectory);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanTowardsObstacleZoneWestSideAction_when_behaviorActs_then_theLastBehaviorOfTheRobotHasHasTheMapsGraphWesternNodesCoordinatesAsEntryConditions
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planTowardsObstacleZoneWestSide;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    struct Coordinates *expected_coordinates = robot->navigator->graph->western_node->coordinates;
+    struct Coordinates *goal_coordinates = last_behavior->entry_conditions->goal_state->pose->coordinates;
+    cr_assert(Coordinates_haveTheSameValues(expected_coordinates, goal_coordinates));
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanTowardsObstacleZoneWestSideAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanTowardsDrawingZoneAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planTowardsObstacleZoneWestSide;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    void (*planOrientationTowardsDrawingZone)(struct Robot *) = &Navigator_planOrientationTowardsDrawingZone;
+    cr_assert_eq(last_behavior->action, planOrientationTowardsDrawingZone);
 }
 /*
 Test(Robot,

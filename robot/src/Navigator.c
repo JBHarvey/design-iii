@@ -322,7 +322,6 @@ void Navigator_planTowardsObstacleZoneEastSide(struct Robot *robot)
 
 }
 
-// TODO: TEST THIS FUNCTION
 void Navigator_planTowardsPaintingZone(struct Robot *robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
@@ -337,6 +336,7 @@ void Navigator_planTowardsPaintingZone(struct Robot *robot)
     RobotBehaviors_appendTrajectoryBehaviors(robot, obstacle_crossing_trajectory, planTowardsPainting);
 }
 
+// TODO: TEST THIS FUNCTION
 void Navigator_planTowardsPainting(struct Robot *robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
@@ -375,8 +375,23 @@ void Navigator_planTakingPicture(struct Robot *robot)
     RobotBehavior_appendTakePictureBehaviorWithChildAction(robot, action);
 }
 
-void Navigator_planTowardsObstacleZoneWestSide(struct Robot *robot) {}
+void Navigator_planTowardsObstacleZoneWestSide(struct Robot *robot)
+{
+    deletePlannedTrajectoryIfExistant(robot->navigator);
+    Graph_updateForMap(robot->navigator->graph, robot->navigator->navigable_map);
+    struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
+    struct Coordinates *obstacles_west_zone_coordinates = robot->navigator->graph->western_node->coordinates;
+    struct CoordinatesSequence *obstacles_west_zone_trajectory = CoordinatesSequence_new(current_coordinates);
+    CoordinatesSequence_append(obstacles_west_zone_trajectory, obstacles_west_zone_coordinates);
 
+    robot->navigator->planned_trajectory = obstacles_west_zone_trajectory;
+
+    RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
+    void (*planTowardsDrawingZone)(struct Robot *) = &Navigator_planTowardsDrawingZone;
+    RobotBehaviors_appendTrajectoryBehaviors(robot, obstacles_west_zone_trajectory, planTowardsDrawingZone);
+}
+
+void Navigator_planTowardsDrawingZone(struct Robot *robot) {}
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot)
 {
