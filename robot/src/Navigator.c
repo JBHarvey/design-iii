@@ -167,6 +167,17 @@ static void resetPlannedTrajectoryFlagsIfNecessary(struct Robot *robot)
         Flags_setPlannedTrajectoryReceivedByStation(robot->current_state->flags, FALSE);
     }
 }
+
+void Navigator_stopMovement(struct Robot *robot)
+{
+    sendRotationCommand(robot, 0);
+    struct Command_Speeds speeds_command = {
+        .x = 0,
+        .y = 0
+    };
+    CommandSender_sendSpeedsCommand(robot->command_sender, speeds_command);
+}
+
 void Navigator_navigateRobotTowardsGoal(struct Robot *robot)
 {
     struct Coordinates *goal_coordinates =
@@ -348,8 +359,14 @@ void Navigator_planOrientationTowardsPainting(struct Robot *robot)
     int target_painting = robot->manchester_code->painting_number;
     struct Pose *painting_pose = robot->navigator->navigable_map->painting_zones[target_painting];
     int angle = painting_pose->angle->theta;
-    void (*action)(struct Robot *) = &Navigator_planTakingPicture;
+    void (*action)(struct Robot *) = &Navigator_planStopMotion;
     RobotBehavior_appendOrientationBehaviorWithChildAction(robot, angle, action);
+}
+
+void Navigator_planStopMotion(struct Robot *robot)
+{
+    void (*action)(struct Robot *) = &Navigator_planTakingPicture;
+    RobotBehavior_appendStopMovementBehaviorWithChildAction(robot, action);
 }
 
 void Navigator_planTakingPicture(struct Robot *robot)

@@ -837,13 +837,67 @@ Test(Robot,
 }
 
 Test(Robot,
-     given_aBehaviorWithPlanOrientationTowardsPaintingAction_when_behaviorActs_then_theLastBehaviorHasAPlanTakingPictureAction
+     given_aBehaviorWithPlanOrientationTowardsPaintingAction_when_behaviorActs_then_theLastBehaviorHasAPlanStopMotionAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
     Sensor_receivesData(robot->world_camera->map_sensor);
     Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planOrientationTowardsPainting;
+    Behavior_act(robot->current_behavior, robot);
+    void (*planTakingPicture)(struct Robot *) = &Navigator_planStopMotion;
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    cr_assert_eq(last_behavior->action, planTakingPicture);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanStopMotionAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planStopMotion;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
+    assertBehaviorHasFreeEntry(before_last_behavior);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanStopMotionAction_when_behaviorActs_then_theBeforeLastBehaviorHasAStopMovementAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planStopMotion;
+    Behavior_act(robot->current_behavior, robot);
+    void (*stopMovement)(struct Robot *) = &Navigator_stopMovement;
+    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
+    cr_assert_eq(before_last_behavior->action, stopMovement);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanStopMotionAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planStopMotion;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    assertBehaviorHasFreeEntry(last_behavior);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanStopMotionAction_when_behaviorActs_then_theLastBehaviorHasAPlanTakingPictureAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planStopMotion;
     Behavior_act(robot->current_behavior, robot);
     void (*planTakingPicture)(struct Robot *) = &Navigator_planTakingPicture;
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
