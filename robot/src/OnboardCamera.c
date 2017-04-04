@@ -138,6 +138,7 @@ void OnboardCamera_deleteImage(IplImage **image)
 void OnboardCamera_takePictureAndIfValidSendAndUpdateDrawingBaseTrajectory(struct Robot *robot)
 {
     Flags_setImageReceivedByStation(robot->current_state->flags, 0);
+    Flags_setPictureTaken(robot->current_state->flags, 0);
     IplImage *image;
     struct CoordinatesSequence *image_trajectory;
     image_trajectory = OnboardCamera_extractTrajectoryFromImage(&image);
