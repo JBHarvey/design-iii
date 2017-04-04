@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "Navigator.h"
+#include "Pathfinder.h"
 
 struct Navigator *Navigator_new(void)
 {
@@ -19,6 +20,13 @@ struct Navigator *Navigator_new(void)
     return pointer;
 }
 
+static void deletePlannedTrajectoryIfExistant(struct Navigator *navigator)
+{
+    if(navigator->planned_trajectory != NULL) {
+        CoordinatesSequence_delete(navigator->planned_trajectory);
+    }
+}
+
 void Navigator_delete(struct Navigator *navigator)
 {
     Object_removeOneReference(navigator->object);
@@ -30,9 +38,7 @@ void Navigator_delete(struct Navigator *navigator)
             Map_delete(navigator->navigable_map);
         }
 
-        if(navigator->planned_trajectory != NULL) {
-            CoordinatesSequence_delete(navigator->planned_trajectory);
-        }
+        deletePlannedTrajectoryIfExistant(navigator);
 
         Graph_delete(navigator->graph);
 
@@ -213,6 +219,7 @@ void Navigator_orientRobotTowardsGoal(struct Robot *robot)
 
 void Navigator_planTowardsAntennaStart(struct Robot *robot)
 {
+    deletePlannedTrajectoryIfExistant(robot->navigator);
     struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
     struct Coordinates *antenna_start_coordinates = robot->navigator->navigable_map->antenna_zone_start;
     struct CoordinatesSequence *trajectory_to_antenna_start = CoordinatesSequence_new(current_coordinates);
@@ -226,6 +233,7 @@ void Navigator_planTowardsAntennaStart(struct Robot *robot)
 
 void Navigator_planTowardsAntennaMiddle(struct Robot *robot)
 {
+    deletePlannedTrajectoryIfExistant(robot->navigator);
     struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
     struct Coordinates *start = robot->navigator->navigable_map->antenna_zone_start;
     struct Coordinates *stop = robot->navigator->navigable_map->antenna_zone_stop;
@@ -264,6 +272,7 @@ void Navigator_planLowerPenForAntennaMark(struct Robot *robot)
 
 void Navigator_planTowardsAntennaMarkEnd(struct Robot *robot)
 {
+    deletePlannedTrajectoryIfExistant(robot->navigator);
     struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
     int mark_end_x = current_coordinates->x;
     int mark_end_y = current_coordinates->y - ANTENNA_MARK_DISTANCE;
@@ -287,6 +296,7 @@ void Navigator_planRisePenForObstacleCrossing(struct Robot *robot)
 
 void Navigator_planTowardsObstacleZoneEastSide(struct Robot *robot)
 {
+    deletePlannedTrajectoryIfExistant(robot->navigator);
     Graph_updateForMap(robot->navigator->graph, robot->navigator->navigable_map);
     struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
     struct Coordinates *obstacles_east_zone_coordinates = robot->navigator->graph->eastern_node->coordinates;
@@ -301,7 +311,48 @@ void Navigator_planTowardsObstacleZoneEastSide(struct Robot *robot)
 
 }
 
-void Navigator_planTowardsPaintingZone(struct Robot *robot) {}
+// TODO: TEST THIS FUNCTION
+void Navigator_planTowardsPaintingZone(struct Robot *robot)
+{
+    deletePlannedTrajectoryIfExistant(robot->navigator);
+    struct Graph *graph = robot->navigator->graph;
+    struct CoordinatesSequence *obstacle_crossing_trajectory = Pathfinder_generatePathWithDijkstra(graph,
+            graph->eastern_node, graph->western_node);
+
+    robot->navigator->planned_trajectory = obstacle_crossing_trajectory;
+
+    RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
+    void (*planTowardsPainting)(struct Robot *) = &Navigator_planTowardsPainting;
+    RobotBehaviors_appendTrajectoryBehaviors(robot, obstacle_crossing_trajectory, planTowardsPainting);
+}
+
+void Navigator_planTowardsPainting(struct Robot *robot)
+{
+    deletePlannedTrajectoryIfExistant(robot->navigator);
+    struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
+    int target_painting = robot->manchester_code->painting_number;
+    struct Pose *painting_pose = robot->navigator->navigable_map->painting_zones[target_painting];
+    struct Coordinates *painting_coordinates = painting_pose->coordinates;
+    struct CoordinatesSequence *target_painting_trajectory = CoordinatesSequence_new(current_coordinates);
+    CoordinatesSequence_append(target_painting_trajectory, painting_coordinates);
+
+    robot->navigator->planned_trajectory = target_painting_trajectory;
+
+    RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
+    void (*planOrientationTowardsPainting)(struct Robot *) = &Navigator_planOrientationTowardsPainting;
+    RobotBehaviors_appendTrajectoryBehaviors(robot, target_painting_trajectory, planOrientationTowardsPainting);
+}
+
+void Navigator_planOrientationTowardsPainting(struct Robot *robot)
+{
+    int target_painting = robot->manchester_code->painting_number;
+    struct Pose *painting_pose = robot->navigator->navigable_map->painting_zones[target_painting];
+    int angle = painting_pose->angle->theta;
+    void (*action)(struct Robot *) = &Navigator_planTakingPicture;
+    RobotBehavior_appendOrientationBehaviorWithChildAction(robot, angle, action);
+}
+
+void Navigator_planTakingPicture(struct Robot *robot) {}
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot)
 {
