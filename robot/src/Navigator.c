@@ -153,6 +153,14 @@ static void sendRotationCommandForNavigation(struct Robot *robot, int angle_to_t
     sendRotationCommand(robot, theta);
 }
 
+static void resetPlannedTrajectoryFlagsIfNecessary(struct Robot *robot)
+{
+    int flag_value = robot->current_state->flags->planned_trajectory_received_by_station;
+
+    if(flag_value == TRUE) {
+        Flags_setPlannedTrajectoryReceivedByStation(robot->current_state->flags, FALSE);
+    }
+}
 void Navigator_navigateRobotTowardsGoal(struct Robot *robot)
 {
     struct Coordinates *goal_coordinates =
@@ -161,6 +169,8 @@ void Navigator_navigateRobotTowardsGoal(struct Robot *robot)
     int angle_between_robot_and_target = Pose_computeAngleBetween(current_pose, goal_coordinates);
     int was_oriented = robot->navigator->was_oriented_before_last_command;
     int is_oriented = Navigator_isAngleWithinRotationTolerance(angle_between_robot_and_target);
+
+    resetPlannedTrajectoryFlagsIfNecessary(robot);
 
     if(!is_oriented) {
         robot->navigator->was_oriented_before_last_command = 0;

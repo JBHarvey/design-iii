@@ -312,6 +312,22 @@ Test(Navigator,
 }
 
 Test(Navigator,
+     given_aRobotWithAPlannedTrajectoryReceivedByStationFlagValueOfOne_when_askedToNavigateTowardsGoal_then_theFlagsValueIsSetToZero
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+    Flags_setPlannedTrajectoryReceivedByStation(robot->current_state->flags, 1);
+
+    struct Coordinates *target_coordinates = Coordinates_new(NAVIGATOR_ROBOT_X + TARGET_DELTA_X, NAVIGATOR_ROBOT_Y);
+    updateRobotGoalCoordinatesTo(target_coordinates);
+
+    Navigator_navigateRobotTowardsGoal(robot);
+
+    cr_assert_eq(robot->current_state->flags->planned_trajectory_received_by_station, FALSE);
+    Coordinates_delete(target_coordinates);
+}
+
+Test(Navigator,
      given_aRobotThatWasNotOrientedTowardsItsGoalAndIsNow_when_askedToNavigateTowardsGoal_then_aRotationCommandIsSentWithAValueOfZero
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
