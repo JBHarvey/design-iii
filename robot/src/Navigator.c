@@ -391,7 +391,20 @@ void Navigator_planTowardsObstacleZoneWestSide(struct Robot *robot)
     RobotBehaviors_appendTrajectoryBehaviors(robot, obstacles_west_zone_trajectory, planTowardsDrawingZone);
 }
 
-void Navigator_planTowardsDrawingZone(struct Robot *robot) {}
+void Navigator_planTowardsDrawingZone(struct Robot *robot)
+{
+    deletePlannedTrajectoryIfExistant(robot->navigator);
+    struct Graph *graph = robot->navigator->graph;
+    struct CoordinatesSequence *obstacle_crossing_trajectory = Pathfinder_generatePathWithDijkstra(graph,
+            graph->western_node, graph->eastern_node);
+
+    robot->navigator->planned_trajectory = obstacle_crossing_trajectory;
+
+    RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
+    void (*planTowardsPainting)(struct Robot *) = &Navigator_planStopMotion;
+    RobotBehaviors_appendTrajectoryBehaviors(robot, obstacle_crossing_trajectory, planTowardsPainting);
+}
+
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot)
 {
