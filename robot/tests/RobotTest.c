@@ -349,6 +349,8 @@ Test(RobotBehaviors,
 assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsAntennaStop);
 }
 */
+/* tahoeuaoheusnoheustaohseuhaonse hasoneh usnaothe usnaothe usnhto usnatohesu aho
+ * ta oheuhaoe usnthaoeus thaosnehu snaothe usnathoeu snathoeus ntahosehtua */
 
 void assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(void (*action)(struct Robot *))
 {
@@ -1153,15 +1155,36 @@ Test(RobotBehaviors,
     assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planRisePenBeforeGoingToAntennaStop,
             &Navigator_planTowardsAntennaStop);
 }
-/*
+
 Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theLastBehaviorOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsAntennaStop);
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsAntennaStop);
 }
-*/
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theLastBehaviorOfTheRobotHasTheAntennaStopCoordinatesAsEntryConditions
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    robot->current_behavior->action = &Navigator_planTowardsAntennaStop;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    struct Coordinates *expected_coordinates = robot->navigator->navigable_map->antenna_zone_stop;
+    struct Coordinates *goal_coordinates = last_behavior->entry_conditions->goal_state->pose->coordinates;
+    cr_assert(Coordinates_haveTheSameValues(expected_coordinates, goal_coordinates));
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theLastBehaviorHasAPlanStopMotionForEndOfCycleAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsAntennaStop,
+            &Navigator_planStopMotionForEndOfCycle);
+}
 
 Test(Robot,
      given_theRobot_when_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset_then_theCommandIsSend

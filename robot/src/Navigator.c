@@ -488,7 +488,24 @@ void Navigator_planRisePenBeforeGoingToAntennaStop(struct Robot *robot)
     RobotBehavior_appendLowerPenBehaviorWithChildAction(robot, action);
 }
 
-void Navigator_planTowardsAntennaStop(struct Robot *robot) {}
+void Navigator_planTowardsAntennaStop(struct Robot *robot)
+{
+    deletePlannedTrajectoryIfExistant(robot->navigator);
+    struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
+    struct Coordinates *antenna_stop_coordinates = robot->navigator->navigable_map->antenna_zone_stop;
+    struct CoordinatesSequence *antenna_stop_trajectory = CoordinatesSequence_new(current_coordinates);
+    CoordinatesSequence_append(antenna_stop_trajectory, antenna_stop_coordinates);
+
+    robot->navigator->planned_trajectory = antenna_stop_trajectory;
+
+    RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
+    void (*planStopMotionForEndOfCycle)(struct Robot *) = &Navigator_planStopMotionForEndOfCycle;
+    RobotBehaviors_appendTrajectoryBehaviors(robot, antenna_stop_trajectory, planStopMotionForEndOfCycle);
+}
+
+void Navigator_planStopMotionForEndOfCycle(struct Robot *robot)
+{
+}
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot)
 {
