@@ -346,9 +346,12 @@ assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsAntenna
 }
 */
 
-void assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(struct Behavior *behavior,
-        struct CoordinatesSequence *trajectory)
+void assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(void (*action)(struct Robot *))
 {
+    struct Behavior *behavior = robot->current_behavior;
+    behavior->action = action;
+    Behavior_act(behavior, robot);
+    struct CoordinatesSequence *trajectory = robot->navigator->planned_trajectory;
 
     // Fetches the sendPlannedTrajectory behavior
     void (*sendPlannedTrajectory) = &Robot_sendPlannedTrajectory;
@@ -364,7 +367,7 @@ void assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(struct Behavi
     struct Coordinates *point_in_trajectory;
     struct Coordinates *behavior_goal_coordinates;
 
-    struct Flags *flags_planned_trajectory_received = Flags_new();
+    struct Flags *flags_planned_trajectory_received = Flags_irrelevant();
     Flags_setPlannedTrajectoryReceivedByStation(flags_planned_trajectory_received, 1);
 
     point_in_trajectory = trajectory->coordinates;
@@ -414,10 +417,7 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsAntennaStart;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
-            robot->navigator->planned_trajectory);
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsAntennaStart);
 }
 
 Test(Robot,
@@ -437,10 +437,7 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsAntennaMiddle;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
-            robot->navigator->planned_trajectory);
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsAntennaMiddle);
 }
 
 Test(Robot,
@@ -609,10 +606,7 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsAntennaMarkEnd;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
-            robot->navigator->planned_trajectory);
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsAntennaMarkEnd);
 }
 
 Test(Robot,
@@ -694,10 +688,7 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsObstacleZoneEastSide;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
-            robot->navigator->planned_trajectory);
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsObstacleZoneEastSide);
 }
 
 Test(Robot,
@@ -734,10 +725,7 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsPainting;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
-            robot->navigator->planned_trajectory);
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsPainting);
 }
 
 Test(Robot,
@@ -923,10 +911,7 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsObstacleZoneWestSide;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
-            robot->navigator->planned_trajectory);
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsObstacleZoneWestSide);
 }
 
 Test(Robot,
@@ -959,10 +944,7 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsCenterOfDrawingZone;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
-            robot->navigator->planned_trajectory);
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsCenterOfDrawingZone);
 }
 
 Test(Robot,
@@ -1055,10 +1037,7 @@ Test(Robot,
      , .fini = teardown_robot)
 {
     giveADummyDrawingTrajectoryToTheRobot(robot);
-    robot->current_behavior->action = &Navigator_planTowardsDrawingStart;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
-            robot->navigator->planned_trajectory);
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsDrawingStart);
 }
 
 Test(Robot,
@@ -1185,10 +1164,7 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsAntennaStop;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
-            robot->navigator->planned_trajectory);
+assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsAntennaStop);
 }
 */
 
