@@ -20,6 +20,13 @@ const int PEN_UP_COMMAND_SENT = 1;
 const int PEN_UP_COMMAND_NOT_SENT = 0;
 int manchester_code_command_count;
 
+void giveADummyDrawingTrajectoryToTheRobot(struct Robot *robot)
+{
+    struct Coordinates *zero = Coordinates_zero();
+    struct CoordinatesSequence *dummy_trajectory = CoordinatesSequence_new(zero);
+    robot->drawing_trajectory = dummy_trajectory;
+    Coordinates_delete(zero);
+}
 void assertBehaviorHasFreeFlagsEntry(struct Behavior *behavior)
 {
     struct Flags *irrelevant_flags = Flags_irrelevant();
@@ -32,6 +39,7 @@ void assertBehaviorHasAngleEntry(struct Behavior *behavior, int angle)
     cr_assert_eq(angle, behavior->entry_conditions->goal_state->pose->angle->theta);
     assertBehaviorHasFreeFlagsEntry(behavior);
 }
+
 void assertBehaviorHasOrientationEntry(struct Behavior *behavior, enum CardinalDirection orientation)
 {
     struct Pose *angle_tolerance = Pose_new(X_TOLERANCE_MAX, Y_TOLERANCE_MAX, THETA_TOLERANCE_DEFAULT);
@@ -337,6 +345,19 @@ Test(Robot,
     Sensor_receivesData(robot->world_camera->map_sensor);
     Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsCenterOfDrawingZone;
+    Behavior_act(robot->current_behavior, robot);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanTowardsDrawingStart_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    giveADummyDrawingTrajectoryToTheRobot(robot);
+    robot->current_behavior->action = &Navigator_planTowardsDrawingStart;
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
 }
@@ -1158,6 +1179,51 @@ Test(Robot,
     void (*planTowardsDrawingStart)(struct Robot *) = &Navigator_planTowardsDrawingStart;
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
     cr_assert_eq(last_behavior->action, planTowardsDrawingStart);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanTowardsDrawingStartAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    giveADummyDrawingTrajectoryToTheRobot(robot);
+    robot->current_behavior->action = &Navigator_planTowardsDrawingStart;
+    Behavior_act(robot->current_behavior, robot);
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
+            robot->navigator->planned_trajectory);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanTowardsDrawingStartAction_when_behaviorActs_then_theLastBehaviorOfTheRobotHasTheCenterOfTheDrawingZoneAsEntryConditions
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    giveADummyDrawingTrajectoryToTheRobot(robot);
+    robot->current_behavior->action = &Navigator_planTowardsDrawingStart;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    struct Coordinates *expected_coordinates = robot->drawing_trajectory->coordinates;
+    struct Coordinates *goal_coordinates = last_behavior->entry_conditions->goal_state->pose->coordinates;
+    cr_assert(Coordinates_haveTheSameValues(expected_coordinates, goal_coordinates));
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanTowardsDrawingStartAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanLowerPenBeforeDrawing
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    giveADummyDrawingTrajectoryToTheRobot(robot);
+    robot->current_behavior->action = &Navigator_planTowardsDrawingStart;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    void (*planLowerPenBeforeDrawing)(struct Robot *) = &Navigator_planLowerPenBeforeDrawing;
+    cr_assert_eq(last_behavior->action, planLowerPenBeforeDrawing);
 }
 
 /*

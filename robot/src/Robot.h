@@ -33,4 +33,5 @@ void Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(
 void Robot_lowerPenAndWaitASecondAndAHalf(struct Robot *robot);
 void Robot_risePenAndWaitASecondAndAHalf(struct Robot *robot);
 
+
 #endif // ROBOT_H_

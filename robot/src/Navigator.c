@@ -430,7 +430,26 @@ void Navigator_planToTellReadyToDraw(struct Robot *robot)
     RobotBehavior_appendSendReadyToDrawBehaviorWithChildAction(robot, action);
 }
 
-void Navigator_planTowardsDrawingStart(struct Robot *robot) {}
+void Navigator_planTowardsDrawingStart(struct Robot *robot)
+{
+    deletePlannedTrajectoryIfExistant(robot->navigator);
+    struct Map *map = robot->navigator->navigable_map;
+    struct ManchesterCode *manchester_code = robot->manchester_code;
+    struct CoordinatesSequence *drawing_trajectory = robot->drawing_trajectory;
+    Map_createDrawingTrajectory(map, manchester_code, drawing_trajectory);
+    struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
+    struct Coordinates *drawing_start_coordinates = robot->drawing_trajectory->coordinates;
+    struct CoordinatesSequence *start_of_drawing_trajectory = CoordinatesSequence_new(current_coordinates);
+    CoordinatesSequence_append(start_of_drawing_trajectory, drawing_start_coordinates);
+
+    robot->navigator->planned_trajectory = start_of_drawing_trajectory;
+
+    RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
+    void (*planLowerPenBeforeDrawing)(struct Robot *) = &Navigator_planLowerPenBeforeDrawing;
+    RobotBehaviors_appendTrajectoryBehaviors(robot, start_of_drawing_trajectory, planLowerPenBeforeDrawing);
+}
+
+void Navigator_planLowerPenBeforeDrawing(struct Robot *robot) {}
 
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot)

@@ -44,6 +44,7 @@ void Navigator_planTowardsDrawingZone(struct Robot *robot);
 void Navigator_planTowardsCenterOfDrawingZone(struct Robot *robot);
 void Navigator_planToTellReadyToDraw(struct Robot *robot);
 void Navigator_planTowardsDrawingStart(struct Robot *robot);
+void Navigator_planLowerPenBeforeDrawing(struct Robot *robot);
 
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot);
