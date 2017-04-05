@@ -3,13 +3,11 @@
 
 #include "Robot.h"
 
-
 struct PoseFilter {
     struct Object *object;
     struct Robot *robot;
     struct Pose **particles;
-    int number_of_particles;
-    int is_initialized;
+    int *particles_status;
 };
 
 struct PoseFilter_Callbacks {

@@ -14,7 +14,7 @@ struct Wheels *Wheels_new(void)
     struct Angle *new_rotation_data_speed = Angle_new(0);
     struct Coordinates *new_translation_command = Coordinates_zero();
     struct Angle *new_rotation_command = Angle_new(0);
-    struct Wheels *pointer = (struct Wheels *) malloc(sizeof(struct Wheels));
+    struct Wheels *pointer = malloc(sizeof(struct Wheels));
 
     pointer->object = new_object;
     pointer->translation_sensor = new_translation_sensor;

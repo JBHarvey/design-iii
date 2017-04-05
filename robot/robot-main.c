@@ -27,7 +27,11 @@ int main(int argc, char *argv[])
 
     while(1) {
         RobotServer_communicate(robot_server);
-        PoseFilter_executeFilter(pose_filter, callbacks.updateFromCameraOnly);
+
+        if(pose_filter->robot->current_state->flags->navigable_map_is_ready) {
+            PoseFilter_executeFilter(pose_filter, callbacks.updateFromCameraOnly);
+        }
+
         Robot_updateBehaviorIfNeeded(robot);
         Robot_act(robot);
 
