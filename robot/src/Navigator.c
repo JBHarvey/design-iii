@@ -455,7 +455,19 @@ void Navigator_planLowerPenBeforeDrawing(struct Robot *robot)
     RobotBehavior_appendLowerPenBehaviorWithChildAction(robot, action);
 }
 
-void Navigator_planDrawing(struct Robot *robot) {}
+//TODO: test this function
+void Navigator_planDrawing(struct Robot *robot)
+{
+    struct CoordinatesSequence *drawing_trajectory = robot->drawing_trajectory;
+
+    robot->navigator->planned_trajectory = drawing_trajectory;
+
+    RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
+    void (*planRisePenBeforeGoingToAntennaStop)(struct Robot *) = &Navigator_planRisePenBeforeGoingToAntennaStop;
+    RobotBehaviors_appendTrajectoryBehaviors(robot, drawing_trajectory, RisePenBeforeGoingToAntennaStop);
+}
+
+void Navigator_planRisePenBeforeGoingToAntennaStop(struct Robot *robot) {}
 
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot)
