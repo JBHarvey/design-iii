@@ -8,6 +8,7 @@ struct DataSender_Callbacks validation_data_sender_callbacks;
 struct CommandSender_Callbacks validation_command_sender_callbacks;
 int validation_ready_to_start_is_sent;
 int validation_ready_to_draw_is_sent;
+int validation_end_of_cycle_is_sent;
 int validation_planned_trajectory_is_sent;
 int validation_pose_estimate_is_sent;
 int validation_light_green_led_command_is_sent;
@@ -154,6 +155,11 @@ void validateReadyToDrawIsSent(void)
     validation_ready_to_draw_is_sent = SENT;
 }
 
+void validateEndOfCycleIsSent(void)
+{
+    validation_end_of_cycle_is_sent = SENT;
+}
+
 void validatePlannedTrajectoryIsSent(struct CoordinatesSequence *sequence)
 {
     validation_planned_trajectory_is_sent = SENT;
@@ -189,6 +195,7 @@ void setup_robot(void)
     robot = Robot_new();
     validation_ready_to_start_is_sent = NOT_SENT;
     validation_ready_to_draw_is_sent = NOT_SENT;
+    validation_end_of_cycle_is_sent = NOT_SENT;
     validation_planned_trajectory_is_sent = NOT_SENT;
     validation_pose_estimate_is_sent = NOT_SENT;
     validation_light_green_led_command_is_sent = NOT_SENT;
@@ -199,6 +206,7 @@ void setup_robot(void)
     validation_data_sender_callbacks.sendSignalReadyToDraw = &validateReadyToDrawIsSent;
     validation_data_sender_callbacks.sendPlannedTrajectory = &validatePlannedTrajectoryIsSent;
     validation_data_sender_callbacks.sendRobotPoseEstimate = &validatePoseEstimateIsSent;
+    validation_data_sender_callbacks.sendSignalEndOfCycle = &validateEndOfCycleIsSent;
     validation_command_sender_callbacks.sendFetchManchesterCodeCommand = &validateFetchManchesterCodeIsSent;
     validation_command_sender_callbacks.sendLightGreenLEDCommand = &validateLightGreenLedIsSent;
     validation_command_sender_callbacks.sendLowerPenCommand = &validateLowerPenIsSent;
@@ -1379,3 +1387,24 @@ Test(Robot,
     Timer_delete(timer);
 }
 
+Test(Robot,
+     given_aRobot_when_askedToCloseCycleAndSendEndOfCycleSignal_then_theRobotFlagsAreAllZeroedExpectHasCompletedACycle
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    struct Flags *expected_flags = Flags_new();
+    Flags_setHasCompletedACycle(expected_flags, TRUE);
+    Robot_closeCycleAndSendEndOfCycleSignal(robot);
+
+    cr_assert(Flags_haveTheSameValues(expected_flags, robot->current_state->flags));
+    Flags_delete(expected_flags);
+}
+
+Test(Robot,
+     given_aRobot_when_askedToCloseCycleAndSendEndOfCycleSignal_then_theEndOfCycleSignalIsSent
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Robot_closeCycleAndSendEndOfCycleSignal(robot);
+    cr_assert_eq(validation_end_of_cycle_is_sent, SENT);
+}

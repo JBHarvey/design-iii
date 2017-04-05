@@ -137,11 +137,10 @@ void Robot_risePenAndWaitASecondAndAHalf(struct Robot *robot)
 
 void Robot_closeCycleAndSendEndOfCycleSignal(struct Robot *robot)
 {
-    /*
+    struct Flags *new_flags = Flags_new();
+    Flags_setHasCompletedACycle(new_flags, TRUE);
 
-    reset all flags
-    set has completed a cycle flag true
-    send end of cycle signal
-
-     */
+    Flags_copyValuesFrom(robot->current_state->flags, new_flags);
+    Flags_delete(new_flags);
+    DataSender_sendSignalEndOfCycle(robot->data_sender);
 }
