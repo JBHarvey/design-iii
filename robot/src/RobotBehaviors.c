@@ -290,3 +290,32 @@ void RobotBehavior_appendTakePictureBehaviorWithChildAction(struct Robot *robot,
     Behavior_delete(behavior_take_picture_with_free_entry);
 }
 
+void RobotBehavior_appendSendReadyToDrawBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *))
+{
+    struct Behavior *last_behavior = fetchLastBehavior(robot);
+
+    void (*sendReadyToDraw)(struct Robot*) = &Robot_sendReadyToDrawSignal;
+    struct Behavior *behavior_send_ready_to_draw_with_free_entry;
+    behavior_send_ready_to_draw_with_free_entry = BehaviorBuilder_build(
+                BehaviorBuilder_withAction(sendReadyToDraw,
+                                           BehaviorBuilder_withFreeEntry(
+                                                   BehaviorBuilder_end())));
+    Behavior_addChild(last_behavior, behavior_send_ready_to_draw_with_free_entry);
+
+    last_behavior = last_behavior->first_child;
+
+    struct Flags *ready_to_draw_received_flags = Flags_irrelevant();
+    Flags_setReadyToDrawReceivedByStation(ready_to_draw_received_flags, 1);
+    struct Behavior *behavior_do_action_after_ready_to_draw_received;
+    behavior_do_action_after_ready_to_draw_received = BehaviorBuilder_build(
+                BehaviorBuilder_withAction(action,
+                                           BehaviorBuilder_withFlags(ready_to_draw_received_flags,
+                                                   BehaviorBuilder_withFreePoseEntry(
+                                                           BehaviorBuilder_end()))));
+    Behavior_addChild(last_behavior, behavior_do_action_after_ready_to_draw_received);
+
+    Flags_delete(ready_to_draw_received_flags);
+
+    Behavior_delete(behavior_do_action_after_ready_to_draw_received);
+    Behavior_delete(behavior_send_ready_to_draw_with_free_entry);
+}

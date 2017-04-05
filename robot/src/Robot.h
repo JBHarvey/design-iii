@@ -26,6 +26,7 @@ void Robot_delete(struct Robot *robot);
 void Robot_updateBehaviorIfNeeded(struct Robot *robot);
 void Robot_act(struct Robot *robot);
 void Robot_sendReadyToStartSignal(struct Robot *robot);
+void Robot_sendReadyToDrawSignal(struct Robot *robot);
 void Robot_sendPlannedTrajectory(struct Robot *robot);
 void Robot_sendPoseEstimate(struct Robot *robot);
 void Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(struct Robot *robot);

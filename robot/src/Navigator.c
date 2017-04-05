@@ -391,6 +391,7 @@ void Navigator_planTowardsObstacleZoneWestSide(struct Robot *robot)
     RobotBehaviors_appendTrajectoryBehaviors(robot, obstacles_west_zone_trajectory, planTowardsDrawingZone);
 }
 
+// TODO: TEST THIS FUNCTION
 void Navigator_planTowardsDrawingZone(struct Robot *robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
@@ -401,9 +402,35 @@ void Navigator_planTowardsDrawingZone(struct Robot *robot)
     robot->navigator->planned_trajectory = obstacle_crossing_trajectory;
 
     RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
-    void (*planTowardsPainting)(struct Robot *) = &Navigator_planStopMotion;
+    void (*planTowardsPainting)(struct Robot *) = &Navigator_planTowardsCenterOfDrawingZone;
     RobotBehaviors_appendTrajectoryBehaviors(robot, obstacle_crossing_trajectory, planTowardsPainting);
 }
+
+void Navigator_planTowardsCenterOfDrawingZone(struct Robot *robot)
+{
+    deletePlannedTrajectoryIfExistant(robot->navigator);
+    struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
+    int center_x = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_X - THEORICAL_DRAWING_ZONE_SIDE;
+    int center_y = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_Y + THEORICAL_DRAWING_ZONE_SIDE;
+    struct Coordinates *center_of_drawing_zone = Coordinates_new(center_x, center_y);
+    struct CoordinatesSequence *center_of_drawing_trajectory = CoordinatesSequence_new(current_coordinates);
+    CoordinatesSequence_append(center_of_drawing_trajectory, center_of_drawing_zone);
+
+    robot->navigator->planned_trajectory = center_of_drawing_trajectory;
+
+    RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
+    void (*planToTellReadyToDraw)(struct Robot *) = &Navigator_planToTellReadyToDraw;
+    RobotBehaviors_appendTrajectoryBehaviors(robot, center_of_drawing_trajectory, planToTellReadyToDraw);
+    Coordinates_delete(center_of_drawing_zone);
+}
+
+void Navigator_planToTellReadyToDraw(struct Robot *robot)
+{
+    void (*action)(struct Robot *) = &Navigator_planTowardsDrawingStart;
+    RobotBehavior_appendSendReadyToDrawBehaviorWithChildAction(robot, action);
+}
+
+void Navigator_planTowardsDrawingStart(struct Robot *robot) {}
 
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot)
