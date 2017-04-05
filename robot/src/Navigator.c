@@ -464,11 +464,16 @@ void Navigator_planDrawing(struct Robot *robot)
 
     RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
     void (*planRisePenBeforeGoingToAntennaStop)(struct Robot *) = &Navigator_planRisePenBeforeGoingToAntennaStop;
-    RobotBehaviors_appendTrajectoryBehaviors(robot, drawing_trajectory, RisePenBeforeGoingToAntennaStop);
+    RobotBehaviors_appendTrajectoryBehaviors(robot, drawing_trajectory, planRisePenBeforeGoingToAntennaStop);
 }
 
-void Navigator_planRisePenBeforeGoingToAntennaStop(struct Robot *robot) {}
+void Navigator_planRisePenBeforeGoingToAntennaStop(struct Robot *robot)
+{
+    void (*action)(struct Robot *) = &Navigator_planTowardsAntennaStop;
+    RobotBehavior_appendLowerPenBehaviorWithChildAction(robot, action);
+}
 
+void Navigator_planTowardsAntennaStop(struct Robot *robot) {}
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot)
 {
