@@ -340,15 +340,14 @@ Test(RobotBehaviors,
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsDrawingStart);
 }
 
-/*
 Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsAntennaStop);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsAntennaStop);
 }
-*/
+
 /* tahoeuaoheusnoheustaohseuhaonse hasoneh usnaothe usnaothe usnhto usnatohesu aho
  * ta oheuhaoe usnthaoeus thaosnehu snaothe usnathoeu snathoeus ntahosehtua */
 
@@ -576,6 +575,7 @@ Test(RobotBehaviors,
     assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planStopMotionBeforeFetchingManchester,
             &Navigator_planFetchingManchesterCode);
 }
+
 Test(RobotBehaviors,
      given_aBehaviorWithPlanFetchingManchesterCodeAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
@@ -1185,6 +1185,42 @@ Test(RobotBehaviors,
     assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsAntennaStop,
             &Navigator_planStopMotionForEndOfCycle);
 }
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanStopMotionForEndOfCycleAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planStopMotionForEndOfCycle);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanStopMotionForEndOfCycleAction_when_behaviorActs_then_theBeforeLastBehaviorHasAStopMovementAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planStopMotionForEndOfCycle,
+            &Navigator_stopMovement);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanStopMotionForEndOfCycleAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planStopMotionForEndOfCycle);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanStopMotionForEndOfCycleAction_when_behaviorActs_then_theLastBehaviorHasAPlanEndOfCycleAndSendSignalAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planStopMotionForEndOfCycle,
+            &Navigator_planEndOfCycleAndSendSignal);
+}
+
+/*END OF BEHAVIORS*/
 
 Test(Robot,
      given_theRobot_when_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset_then_theCommandIsSend
