@@ -376,3 +376,34 @@ void RobotBehavior_appendCloseCycleAndSendSignalBehaviorWithChildAction(struct R
     Behavior_delete(behavior_do_action_after_end_of_cycle_received);
     Behavior_delete(behavior_close_cycle_and_send_signal_with_free_entry);
 }
+
+void RobotBehavior_appendLightRedLedBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *))
+{
+    struct Behavior *last_behavior = fetchLastBehavior(robot);
+
+    void (*lightRedLed)(struct Robot*) = &Robot_lightRedLedAndWaitASecond;
+    struct Behavior *behavior_light_red_led_with_free_entry;
+    behavior_light_red_led_with_free_entry = BehaviorBuilder_build(
+                BehaviorBuilder_withAction(lightRedLed,
+                                           BehaviorBuilder_withFreeEntry(
+                                                   BehaviorBuilder_end())));
+    Behavior_addChild(last_behavior, behavior_light_red_led_with_free_entry);
+
+    last_behavior = last_behavior->first_child;
+
+    struct Flags *start_cycle_signal_received_flags = Flags_irrelevant();
+    Flags_setStartCycleSignalReceived(start_cycle_signal_received_flags, 1);
+    struct Behavior *behavior_do_action_when_start_cycle_signal_is_received;
+    behavior_do_action_when_start_cycle_signal_is_received = BehaviorBuilder_build(
+                BehaviorBuilder_withAction(action,
+                                           BehaviorBuilder_withFlags(start_cycle_signal_received_flags,
+                                                   BehaviorBuilder_withFreePoseEntry(
+                                                           BehaviorBuilder_end()))));
+    Behavior_addChild(last_behavior, behavior_do_action_when_start_cycle_signal_is_received);
+
+    Flags_delete(start_cycle_signal_received_flags);
+
+
+    Behavior_delete(behavior_do_action_when_start_cycle_signal_is_received);
+    Behavior_delete(behavior_light_red_led_with_free_entry);
+}

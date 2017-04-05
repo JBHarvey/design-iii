@@ -517,6 +517,12 @@ void Navigator_planEndOfCycleAndSendSignal(struct Robot *robot)
 
 void Navigator_planLightingRedLedUntilNewCycle(struct Robot *robot)
 {
+    void(*action)(struct Robot *) = &Navigator_planUpdateMapForNewCycle;
+    RobotBehavior_appendLightRedLedBehaviorWithChildAction(robot, action);
+}
+
+void Navigator_planUpdateMapForNewCycle(struct Robot *robot)
+{
 }
 
 int Navigator_computeRotationToleranceForPrecisionMovement(int planned_distance)

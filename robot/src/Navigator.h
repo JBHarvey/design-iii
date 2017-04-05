@@ -53,6 +53,7 @@ void Navigator_planTowardsAntennaStop(struct Robot *robot);
 void Navigator_planStopMotionForEndOfCycle(struct Robot *robot);
 void Navigator_planEndOfCycleAndSendSignal(struct Robot *robot);
 void Navigator_planLightingRedLedUntilNewCycle(struct Robot *robot);
+void Navigator_planUpdateMapForNewCycle(struct Robot *robot);
 
 int Navigator_computeRotationToleranceForPrecisionMovement(int planned_distance);
 

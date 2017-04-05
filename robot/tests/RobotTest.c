@@ -12,6 +12,7 @@ int validation_end_of_cycle_is_sent;
 int validation_planned_trajectory_is_sent;
 int validation_pose_estimate_is_sent;
 int validation_light_green_led_command_is_sent;
+int validation_light_red_led_command_is_sent;
 int validation_lower_pen_command_is_sent;
 int validation_rise_pen_command_is_sent;
 const int SENT = 1;
@@ -175,6 +176,11 @@ void validateLightGreenLedIsSent(void)
     validation_light_green_led_command_is_sent = SENT;
 }
 
+void validateLightRedLedIsSent(void)
+{
+    validation_light_red_led_command_is_sent = SENT;
+}
+
 void validateLowerPenIsSent(void)
 {
     validation_lower_pen_command_is_sent = SENT;
@@ -199,6 +205,7 @@ void setup_robot(void)
     validation_planned_trajectory_is_sent = NOT_SENT;
     validation_pose_estimate_is_sent = NOT_SENT;
     validation_light_green_led_command_is_sent = NOT_SENT;
+    validation_light_red_led_command_is_sent = NOT_SENT;
     validation_lower_pen_command_is_sent = NOT_SENT;
     validation_rise_pen_command_is_sent = NOT_SENT;
     manchester_code_command_count = 0;
@@ -209,6 +216,7 @@ void setup_robot(void)
     validation_data_sender_callbacks.sendSignalEndOfCycle = &validateEndOfCycleIsSent;
     validation_command_sender_callbacks.sendFetchManchesterCodeCommand = &validateFetchManchesterCodeIsSent;
     validation_command_sender_callbacks.sendLightGreenLEDCommand = &validateLightGreenLedIsSent;
+    validation_command_sender_callbacks.sendLightRedLEDCommand = &validateLightRedLedIsSent;
     validation_command_sender_callbacks.sendLowerPenCommand = &validateLowerPenIsSent;
     validation_command_sender_callbacks.sendRisePenCommand = &validateRisePenIsSent;
     DataSender_changeTarget(robot->data_sender, validation_data_sender_callbacks);
@@ -1275,6 +1283,52 @@ Test(RobotBehaviors,
             &Navigator_planLightingRedLedUntilNewCycle);
 }
 
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanLightingRedLedUntilNewCycleAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planLightingRedLedUntilNewCycle);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanLightingRedLedUntilNewCycleAction_when_behaviorActs_then_theBeforeLastBehaviorHasALightRedLedAndWaitAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planLightingRedLedUntilNewCycle,
+            &Robot_lightRedLedAndWaitASecond);
+}
+
+void assertBehaviorHasStartCycleFlagEntry(struct Behavior *behavior)
+{
+    struct Flags *start_signal_received_flags = Flags_irrelevant();
+    Flags_setStartCycleSignalReceived(start_signal_received_flags, 1);
+    assertBehaviorHasFreePoseEntry(behavior);
+    struct Flags *behavior_entry_flags = behavior->entry_conditions->goal_state->flags;
+    cr_assert(Flags_haveTheSameValues(start_signal_received_flags, behavior_entry_flags));
+    Flags_delete(start_signal_received_flags);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanLightingRedLedUntilNewCycleAction_when_behaviorActs_then_theLastBehaviorHasAStartCycleReceivedByStationFlagsWithFreePoseEntryGoal
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    robot->current_behavior->action = &Navigator_planLightingRedLedUntilNewCycle;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    assertBehaviorHasEndOfCycleReceivedByStationEntry(last_behavior);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanLightingRedLedUntilNewCycleAction_when_behaviorActs_then_theLastBehaviorHasAPlanTakingPictureAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planLightingRedLedUntilNewCycle,
+            &Navigator_planUpdateMapForNewCycle);
+}
 
 /*END OF BEHAVIORS*/
 
@@ -1337,6 +1391,28 @@ Test(Robot,
 {
     struct Timer *timer = Timer_new();
     Robot_lightGreenLedAndWaitASecond(robot);
+
+    cr_assert(Timer_hasTimePassed(timer, ONE_SECOND));
+
+    Timer_delete(timer);
+}
+
+Test(Robot, given_theRobot_when_askedToLightRedLedAndWaitASecond_then_theCommandIsSent
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Robot_lightRedLedAndWaitASecond(robot);
+
+    cr_assert_eq(validation_light_red_led_command_is_sent, SENT);
+}
+
+Test(Robot,
+     given_theRobot_when_askedToLightRedLedAndWaitASecond_then_atLeastASecondHasPassedSinceTheActionWasTriggered
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    struct Timer *timer = Timer_new();
+    Robot_lightRedLedAndWaitASecond(robot);
 
     cr_assert(Timer_hasTimePassed(timer, ONE_SECOND));
 
