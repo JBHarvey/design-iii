@@ -192,6 +192,16 @@ void teardown_robot(void)
     Robot_delete(robot);
 }
 
+Test(Robot, given_aRobot_when_askedToResetAllActuators_then_hasPrepareCommandStatusOfAllActuatorsAreSetToZero
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Robot_resetAllActuators(robot);
+
+    cr_assert_eq(robot->wheels->translation_actuator->has_prepared_new_command, 0);
+    cr_assert_eq(robot->wheels->rotation_actuator->has_prepared_new_command, 0);
+}
+
 Test(Robot, given_aRobot_when_askedToSendAReadyToStartSignal_then_theSignalIsSent
      , .init = setup_robot
      , .fini = teardown_robot)

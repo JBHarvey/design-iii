@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
             PoseFilter_executeFilter(pose_filter, callbacks.updateFromCameraOnly);
         }
 
+        Robot_resetAllActuators(robot);
         Robot_updateBehaviorIfNeeded(robot);
         Robot_act(robot);
 

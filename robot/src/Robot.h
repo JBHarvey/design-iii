@@ -23,6 +23,7 @@ struct Robot {
 struct Robot *Robot_new();
 void Robot_delete(struct Robot *robot);
 
+void Robot_resetAllActuators(struct Robot *robot);
 void Robot_updateBehaviorIfNeeded(struct Robot *robot);
 void Robot_act(struct Robot *robot);
 void Robot_sendReadyToStartSignal(struct Robot *robot);

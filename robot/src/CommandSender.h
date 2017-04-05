@@ -27,9 +27,12 @@ struct CommandSender_Callbacks CommandSender_fetchCallbacksForRobot(void);
 
 void CommandSender_changeTarget(struct CommandSender *command_sender, struct CommandSender_Callbacks new_callbacks);
 
-void CommandSender_sendTranslateCommand(struct CommandSender *command_sender, struct Command_Translate translate_command);
-void CommandSender_sendSpeedsCommand(struct CommandSender *command_sender, struct Command_Speeds speeds_command);
-void CommandSender_sendRotateCommand(struct CommandSender *command_sender, struct Command_Rotate rotate_command);
+void CommandSender_sendTranslateCommand(struct CommandSender *command_sender, struct Command_Translate translate_command, 
+                                        struct Actuator *wheels_actuator);
+void CommandSender_sendSpeedsCommand(struct CommandSender *command_sender, struct Command_Speeds speeds_command,
+                                     struct Actuator *wheels_actuator);
+void CommandSender_sendRotateCommand(struct CommandSender *command_sender, struct Command_Rotate rotate_command,
+                                     struct Actuator *wheels_actuator);
 void CommandSender_sendLightRedLEDCommand(struct CommandSender *command_sender);
 void CommandSender_sendLightGreenLEDCommand(struct CommandSender *command_sender);
 void CommandSender_sendRisePenCommand(struct CommandSender *command_sender);

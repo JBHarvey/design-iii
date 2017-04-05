@@ -87,7 +87,12 @@ static void populateParticles(struct Map *map, struct Pose **particles, int *par
 static void predict(struct Pose **particles, struct Pose *robot_current_pose, struct Wheels *wheels,
                     struct WorldCamera *world_camera)
 {
-    int new_command_for_wheels = wheels->translation_actuator->has_prepared_new_command;
+    int new_command_for_wheels = 0;
+
+    if(wheels->translation_actuator->has_prepared_new_command || wheels->rotation_actuator->has_prepared_new_command) {
+        new_command_for_wheels = 1;
+    }
+
 
 }
 

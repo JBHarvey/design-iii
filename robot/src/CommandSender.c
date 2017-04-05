@@ -46,19 +46,26 @@ void CommandSender_changeTarget(struct CommandSender *command_sender, struct Com
 }
 
 void CommandSender_sendTranslateCommand(struct CommandSender *command_sender,
-                                        struct Command_Translate translate_command)
+                                        struct Command_Translate translate_command,
+                                        struct Actuator *wheels_actuator)
 {
+    Actuator_preparesCommand(wheels_actuator);
     (*(command_sender->command_callbacks.sendTranslateCommand))(translate_command);
 }
 
 void CommandSender_sendSpeedsCommand(struct CommandSender *command_sender,
-                                     struct Command_Speeds speeds_command)
+                                     struct Command_Speeds speeds_command,
+                                     struct Actuator *wheels_actuator)
 {
+    Actuator_preparesCommand(wheels_actuator);
     (*(command_sender->command_callbacks.sendSpeedsCommand))(speeds_command);
 }
 
-void CommandSender_sendRotateCommand(struct CommandSender *command_sender, struct Command_Rotate rotate_command)
+void CommandSender_sendRotateCommand(struct CommandSender *command_sender,
+                                     struct Command_Rotate rotate_command,
+                                     struct Actuator *wheels_actuator)
 {
+    Actuator_preparesCommand(wheels_actuator);
     (*(command_sender->command_callbacks.sendRotateCommand))(rotate_command);
 }
 

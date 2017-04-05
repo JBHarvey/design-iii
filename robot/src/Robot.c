@@ -74,6 +74,11 @@ void Robot_delete(struct Robot *robot)
     }
 }
 
+void Robot_resetAllActuators(struct Robot *robot)
+{
+
+}
+
 void Robot_updateBehaviorIfNeeded(struct Robot *robot)
 {
     robot->current_behavior = Behavior_fetchFirstReachedChildOrReturnSelf(robot->current_behavior, robot->current_state);
