@@ -145,6 +145,9 @@ Test(Robot, creation_destruction)
     Robot_delete(robot);
     Pose_delete(zero);
     State_delete(default_state);
+
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
 }
 
 void validateReadyToStartIsSent(void)
@@ -270,8 +273,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsAntennaStart;
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
@@ -282,8 +283,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsAntennaMiddle;
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
@@ -294,8 +293,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsAntennaMarkEnd;
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
@@ -306,8 +303,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsObstacleZoneEastSide;
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
@@ -318,8 +313,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsPainting;
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
@@ -330,8 +323,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsObstacleZoneWestSide;
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
@@ -342,8 +333,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsCenterOfDrawingZone;
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
@@ -354,8 +343,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     giveADummyDrawingTrajectoryToTheRobot(robot);
     robot->current_behavior->action = &Navigator_planTowardsDrawingStart;
     Behavior_act(robot->current_behavior, robot);
@@ -368,8 +355,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsAntennaStop;
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
@@ -444,8 +429,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsAntennaStart;
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
@@ -457,8 +440,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsAntennaStart;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -471,8 +452,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsAntennaMiddle;
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
@@ -484,8 +463,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsAntennaMiddle;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -498,8 +475,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planOrientationTowardsAntenna;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
@@ -511,8 +486,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planOrientationTowardsAntenna;
     Behavior_act(robot->current_behavior, robot);
     void (*orientationTowardsAntenna)(struct Robot *) = &Navigator_orientRobotTowardsGoal;
@@ -525,8 +498,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planOrientationTowardsAntenna;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -538,8 +509,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planOrientationTowardsAntenna;
     Behavior_act(robot->current_behavior, robot);
     void (*planTowardsAntennaMiddle)(struct Robot *) = &Navigator_planTowardsAntennaMiddle;
@@ -552,8 +521,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planFetchingManchesterCode;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
@@ -565,8 +532,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planFetchingManchesterCode;
     Behavior_act(robot->current_behavior, robot);
     void (*fetchManchesterCode)(struct Robot *) =
@@ -590,8 +555,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planFetchingManchesterCode;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -603,8 +566,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planFetchingManchesterCode;
     Behavior_act(robot->current_behavior, robot);
     void (*planLowerPenForAntennaMark)(struct Robot *) = &Navigator_planLowerPenForAntennaMark;
@@ -617,8 +578,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planLowerPenForAntennaMark;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
@@ -630,8 +589,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planLowerPenForAntennaMark;
     Behavior_act(robot->current_behavior, robot);
     void (*lowerPenAndWait)(struct Robot *) = &Robot_lowerPenAndWaitASecondAndAHalf;
@@ -644,8 +601,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planLowerPenForAntennaMark;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -657,8 +612,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planLowerPenForAntennaMark;
     Behavior_act(robot->current_behavior, robot);
     void (*planTowardsAntennaEnd)(struct Robot *) = &Navigator_planTowardsAntennaMarkEnd;
@@ -671,8 +624,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsAntennaMarkEnd;
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
@@ -684,8 +635,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsAntennaMarkEnd;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -702,8 +651,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsAntennaMarkEnd;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -716,8 +663,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planRisePenForObstacleCrossing;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
@@ -729,8 +674,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planRisePenForObstacleCrossing;
     Behavior_act(robot->current_behavior, robot);
     void (*risePenAndWait)(struct Robot *) = &Robot_risePenAndWaitASecondAndAHalf;
@@ -743,8 +686,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planRisePenForObstacleCrossing;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -756,8 +697,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planRisePenForObstacleCrossing;
     Behavior_act(robot->current_behavior, robot);
     void (*planTowardsObstacleZoneEastSide)(struct Robot *) = &Navigator_planTowardsObstacleZoneEastSide;
@@ -770,8 +709,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsObstacleZoneEastSide;
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
@@ -783,8 +720,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsObstacleZoneEastSide;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -798,8 +733,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsObstacleZoneEastSide;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -816,8 +749,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsPainting;
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
@@ -829,8 +760,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsPainting;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -846,8 +775,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsPainting;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -860,8 +787,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planOrientationTowardsPainting;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
@@ -873,8 +798,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planOrientationTowardsPainting;
     Behavior_act(robot->current_behavior, robot);
     void (*orientationTowardsAntenna)(struct Robot *) = &Navigator_orientRobotTowardsGoal;
@@ -887,8 +810,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planOrientationTowardsPainting;
     Behavior_act(robot->current_behavior, robot);
     int painting_number = robot->manchester_code->painting_number;
@@ -902,8 +823,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planOrientationTowardsPainting;
     Behavior_act(robot->current_behavior, robot);
     void (*planTakingPicture)(struct Robot *) = &Navigator_planStopMotion;
@@ -916,8 +835,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planStopMotion;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
@@ -929,8 +846,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planStopMotion;
     Behavior_act(robot->current_behavior, robot);
     void (*stopMovement)(struct Robot *) = &Navigator_stopMovement;
@@ -943,8 +858,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planStopMotion;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -956,8 +869,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planStopMotion;
     Behavior_act(robot->current_behavior, robot);
     void (*planTakingPicture)(struct Robot *) = &Navigator_planTakingPicture;
@@ -970,8 +881,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTakingPicture;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
@@ -983,8 +892,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTakingPicture;
     Behavior_act(robot->current_behavior, robot);
     void (*orientationTowardsAntenna)(struct Robot *) =
@@ -1008,8 +915,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTakingPicture;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -1021,8 +926,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTakingPicture;
     Behavior_act(robot->current_behavior, robot);
     void (*planTowardsObstacleZoneWestSide)(struct Robot *) = &Navigator_planTowardsObstacleZoneWestSide;
@@ -1035,8 +938,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsObstacleZoneWestSide;
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
@@ -1048,8 +949,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsObstacleZoneWestSide;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -1063,8 +962,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsObstacleZoneWestSide;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -1077,8 +974,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsCenterOfDrawingZone;
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
@@ -1090,8 +985,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsCenterOfDrawingZone;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -1108,8 +1001,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsCenterOfDrawingZone;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -1122,8 +1013,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planToTellReadyToDraw;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
@@ -1135,8 +1024,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planToTellReadyToDraw;
     Behavior_act(robot->current_behavior, robot);
     void (*readyToDrawSignal)(struct Robot *) = &Robot_sendReadyToDrawSignal;
@@ -1159,8 +1046,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planToTellReadyToDraw;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -1172,8 +1057,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planToTellReadyToDraw;
     Behavior_act(robot->current_behavior, robot);
     void (*planTowardsDrawingStart)(struct Robot *) = &Navigator_planTowardsDrawingStart;
@@ -1186,8 +1069,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     giveADummyDrawingTrajectoryToTheRobot(robot);
     robot->current_behavior->action = &Navigator_planTowardsDrawingStart;
     Behavior_act(robot->current_behavior, robot);
@@ -1200,8 +1081,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     giveADummyDrawingTrajectoryToTheRobot(robot);
     robot->current_behavior->action = &Navigator_planTowardsDrawingStart;
     Behavior_act(robot->current_behavior, robot);
@@ -1216,8 +1095,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     giveADummyDrawingTrajectoryToTheRobot(robot);
     robot->current_behavior->action = &Navigator_planTowardsDrawingStart;
     Behavior_act(robot->current_behavior, robot);
@@ -1231,8 +1108,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planLowerPenBeforeDrawing;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
@@ -1244,8 +1119,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planLowerPenBeforeDrawing;
     Behavior_act(robot->current_behavior, robot);
     void (*lowerPenAndWait)(struct Robot *) = &Robot_lowerPenAndWaitASecondAndAHalf;
@@ -1258,8 +1131,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planLowerPenBeforeDrawing;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -1271,8 +1142,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planLowerPenBeforeDrawing;
     Behavior_act(robot->current_behavior, robot);
     void (*planDrawing)(struct Robot *) = &Navigator_planDrawing;
@@ -1285,8 +1154,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planRisePenBeforeGoingToAntennaStop;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
@@ -1298,8 +1165,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planRisePenBeforeGoingToAntennaStop;
     Behavior_act(robot->current_behavior, robot);
     void (*risePenAndWait)(struct Robot *) = &Robot_lowerPenAndWaitASecondAndAHalf;
@@ -1312,8 +1177,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planRisePenBeforeGoingToAntennaStop;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -1325,8 +1188,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planRisePenBeforeGoingToAntennaStop;
     Behavior_act(robot->current_behavior, robot);
     void (*planTowardsAntennaStop)(struct Robot *) = &Navigator_planTowardsAntennaStop;
@@ -1339,8 +1200,6 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsAntennaStop;
     Behavior_act(robot->current_behavior, robot);
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
