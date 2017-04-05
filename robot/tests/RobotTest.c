@@ -420,6 +420,16 @@ Test(RobotBehaviors,
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsAntennaStart);
 }
 
+void assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(void (*firstAction)(struct Robot *),
+        void (*expectedAction)(struct Robot *))
+{
+    struct Behavior *current_behavior = robot->current_behavior;
+    current_behavior->action = firstAction;
+    Behavior_act(current_behavior, robot);
+    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(current_behavior);
+    cr_assert_eq(before_last_behavior->action, expectedAction);
+}
+
 void assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(void (*firstAction)(struct Robot *),
         void (*expectedAction)(struct Robot *))
 {
@@ -485,11 +495,8 @@ Test(RobotBehaviors,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planOrientationTowardsAntenna;
-    Behavior_act(robot->current_behavior, robot);
-    void (*orientationTowardsAntenna)(struct Robot *) = &Navigator_orientRobotTowardsGoal;
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    cr_assert_eq(before_last_behavior->action, orientationTowardsAntenna);
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planOrientationTowardsAntenna,
+            &Navigator_orientRobotTowardsGoal);
 }
 
 Test(RobotBehaviors,
@@ -508,11 +515,8 @@ Test(RobotBehaviors,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planOrientationTowardsAntenna;
-    Behavior_act(robot->current_behavior, robot);
-    void (*planTowardsAntennaMiddle)(struct Robot *) = &Navigator_planTowardsAntennaMiddle;
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    cr_assert_eq(last_behavior->action, planTowardsAntennaMiddle);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planOrientationTowardsAntenna,
+            &Navigator_planTowardsAntennaMiddle);
 }
 
 Test(RobotBehaviors,
@@ -528,12 +532,8 @@ Test(RobotBehaviors,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planFetchingManchesterCode;
-    Behavior_act(robot->current_behavior, robot);
-    void (*fetchManchesterCode)(struct Robot *) =
-        &Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset;
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    cr_assert_eq(before_last_behavior->action, fetchManchesterCode);
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planFetchingManchesterCode,
+            &Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset);
 }
 
 void assertBehaviorHasManchesterCodeIsReceivedFlagEntry(struct Behavior *behavior)
@@ -579,11 +579,8 @@ Test(RobotBehaviors,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planLowerPenForAntennaMark;
-    Behavior_act(robot->current_behavior, robot);
-    void (*lowerPenAndWait)(struct Robot *) = &Robot_lowerPenAndWaitASecondAndAHalf;
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    cr_assert_eq(before_last_behavior->action, lowerPenAndWait);
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planLowerPenForAntennaMark,
+            &Robot_lowerPenAndWaitASecondAndAHalf);
 }
 
 Test(RobotBehaviors,
@@ -632,11 +629,8 @@ Test(RobotBehaviors,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsAntennaMarkEnd;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    void (*planRisingPen)(struct Robot *) = &Navigator_planRisePenForObstacleCrossing;
-    cr_assert_eq(last_behavior->action, planRisingPen);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsAntennaMarkEnd,
+            &Navigator_planRisePenForObstacleCrossing);
 }
 
 Test(RobotBehaviors,
@@ -652,11 +646,8 @@ Test(RobotBehaviors,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planRisePenForObstacleCrossing;
-    Behavior_act(robot->current_behavior, robot);
-    void (*risePenAndWait)(struct Robot *) = &Robot_risePenAndWaitASecondAndAHalf;
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    cr_assert_eq(before_last_behavior->action, risePenAndWait);
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planRisePenForObstacleCrossing,
+            &Robot_risePenAndWaitASecondAndAHalf);
 }
 
 Test(RobotBehaviors,
@@ -702,11 +693,8 @@ Test(RobotBehaviors,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsObstacleZoneEastSide;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    void (*planTowardsPaintingZone)(struct Robot *) = &Navigator_planTowardsPaintingZone;
-    cr_assert_eq(last_behavior->action, planTowardsPaintingZone);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsObstacleZoneEastSide,
+            &Navigator_planTowardsPaintingZone);
 }
 
 /*
@@ -758,11 +746,8 @@ Test(RobotBehaviors,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planOrientationTowardsPainting;
-    Behavior_act(robot->current_behavior, robot);
-    void (*orientationTowardsAntenna)(struct Robot *) = &Navigator_orientRobotTowardsGoal;
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    cr_assert_eq(before_last_behavior->action, orientationTowardsAntenna);
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planOrientationTowardsPainting,
+            &Navigator_orientRobotTowardsGoal);
 }
 
 Test(RobotBehaviors,
@@ -800,11 +785,7 @@ Test(RobotBehaviors,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planStopMotion;
-    Behavior_act(robot->current_behavior, robot);
-    void (*stopMovement)(struct Robot *) = &Navigator_stopMovement;
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    cr_assert_eq(before_last_behavior->action, stopMovement);
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planStopMotion, &Navigator_stopMovement);
 }
 
 Test(RobotBehaviors,
@@ -836,12 +817,8 @@ Test(RobotBehaviors,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTakingPicture;
-    Behavior_act(robot->current_behavior, robot);
-    void (*orientationTowardsAntenna)(struct Robot *) =
-        &OnboardCamera_takePictureAndIfValidSendAndUpdateDrawingBaseTrajectory;
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    cr_assert_eq(before_last_behavior->action, orientationTowardsAntenna);
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTakingPicture,
+            &OnboardCamera_takePictureAndIfValidSendAndUpdateDrawingBaseTrajectory);
 }
 
 void assertBehaviorHasImageReceivedByStationFlagEntry(struct Behavior *behavior)
@@ -950,11 +927,8 @@ Test(RobotBehaviors,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planToTellReadyToDraw;
-    Behavior_act(robot->current_behavior, robot);
-    void (*readyToDrawSignal)(struct Robot *) = &Robot_sendReadyToDrawSignal;
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    cr_assert_eq(before_last_behavior->action, readyToDrawSignal);
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planToTellReadyToDraw,
+            &Robot_sendReadyToDrawSignal);
 }
 
 void assertBehaviorHasReadyToDrawReceivedByStationEntry(struct Behavior *behavior)
@@ -1033,11 +1007,8 @@ Test(RobotBehaviors,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planLowerPenBeforeDrawing;
-    Behavior_act(robot->current_behavior, robot);
-    void (*lowerPenAndWait)(struct Robot *) = &Robot_lowerPenAndWaitASecondAndAHalf;
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    cr_assert_eq(before_last_behavior->action, lowerPenAndWait);
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planLowerPenBeforeDrawing,
+            &Robot_lowerPenAndWaitASecondAndAHalf);
 }
 
 Test(RobotBehaviors,
@@ -1069,11 +1040,8 @@ Test(RobotBehaviors,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planRisePenBeforeGoingToAntennaStop;
-    Behavior_act(robot->current_behavior, robot);
-    void (*risePenAndWait)(struct Robot *) = &Robot_lowerPenAndWaitASecondAndAHalf;
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    cr_assert_eq(before_last_behavior->action, risePenAndWait);
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planRisePenBeforeGoingToAntennaStop,
+            &Robot_lowerPenAndWaitASecondAndAHalf);
 }
 
 Test(RobotBehaviors,
