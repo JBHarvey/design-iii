@@ -7,7 +7,6 @@ void RobotBehaviors_prepareInitialBehaviors(struct Robot *robot)
                                   BehaviorBuilder_withAction(initial_action,
                                           BehaviorBuilder_end()));
 
-
     void (*sendReadyToStart)(struct Robot *) = &Robot_sendReadyToStartSignal;
     struct Flags *map_is_ready_flags = Flags_irrelevant();
     Flags_setNavigableMapIsReady(map_is_ready_flags, 1);
