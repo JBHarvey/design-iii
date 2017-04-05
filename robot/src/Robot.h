@@ -33,6 +33,7 @@ void Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(
 void Robot_lightGreenLedAndWaitASecond(struct Robot *robot);
 void Robot_lowerPenAndWaitASecondAndAHalf(struct Robot *robot);
 void Robot_risePenAndWaitASecondAndAHalf(struct Robot *robot);
+void Robot_closeCycleAndSendEndOfCycleSignal(struct Robot *robot);
 
 
 #endif // ROBOT_H_

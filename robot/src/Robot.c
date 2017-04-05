@@ -134,3 +134,14 @@ void Robot_risePenAndWaitASecondAndAHalf(struct Robot *robot)
 
     while(!Timer_hasTimePassed(robot->timer, ONE_SECOND_AND_AN_HALF));
 }
+
+void Robot_closeCycleAndSendEndOfCycleSignal(struct Robot *robot)
+{
+    /*
+
+    reset all flags
+    set has completed a cycle flag true
+    send end of cycle signal
+
+     */
+}

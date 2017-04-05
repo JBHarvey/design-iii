@@ -1220,6 +1220,54 @@ Test(RobotBehaviors,
             &Navigator_planEndOfCycleAndSendSignal);
 }
 
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanEndOfCycleAndSendSignalAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planEndOfCycleAndSendSignal);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanEndOfCycleAndSendSignalAction_when_behaviorActs_then_theBeforeLastBehaviorHasACloseCycleAndSendEndOfCycleSignalAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planEndOfCycleAndSendSignal,
+            &Robot_closeCycleAndSendEndOfCycleSignal);
+}
+
+void assertBehaviorHasEndOfCycleReceivedByStationEntry(struct Behavior *behavior)
+{
+    struct Flags *end_of_cycle_received_by_station = Flags_irrelevant();
+    Flags_setEndOfCycleReceivedByStation(end_of_cycle_received_by_station, 1);
+    assertBehaviorHasFreePoseEntry(behavior);
+    struct Flags *behavior_entry_flags = behavior->entry_conditions->goal_state->flags;
+    cr_assert(Flags_haveTheSameValues(end_of_cycle_received_by_station, behavior_entry_flags));
+    Flags_delete(end_of_cycle_received_by_station);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanEndOfCycleAndSendSignalAction_when_behaviorActs_then_theLastBehaviorHasAEndOfCycleReceivedByStationFlagsWithFreePoseEntryGoal
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    robot->current_behavior->action = &Navigator_planEndOfCycleAndSendSignal;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    assertBehaviorHasEndOfCycleReceivedByStationEntry(last_behavior);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanEndOfCycleAndSendSignalAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsDrawingStartAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planEndOfCycleAndSendSignal,
+            &Navigator_planLightingRedLedUntilNewCycle);
+}
+
+
 /*END OF BEHAVIORS*/
 
 Test(Robot,

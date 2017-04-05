@@ -345,3 +345,34 @@ void RobotBehavior_appendSendReadyToDrawBehaviorWithChildAction(struct Robot *ro
     Behavior_delete(behavior_do_action_after_ready_to_draw_received);
     Behavior_delete(behavior_send_ready_to_draw_with_free_entry);
 }
+
+void RobotBehavior_appendCloseCycleAndSendSignalBehaviorWithChildAction(struct Robot *robot,
+        void (*action)(struct Robot *))
+{
+    struct Behavior *last_behavior = fetchLastBehavior(robot);
+
+    void (*closeCycleAndSendSignal)(struct Robot*) = &Robot_closeCycleAndSendEndOfCycleSignal;
+    struct Behavior *behavior_close_cycle_and_send_signal_with_free_entry;
+    behavior_close_cycle_and_send_signal_with_free_entry = BehaviorBuilder_build(
+                BehaviorBuilder_withAction(closeCycleAndSendSignal,
+                                           BehaviorBuilder_withFreeEntry(
+                                                   BehaviorBuilder_end())));
+    Behavior_addChild(last_behavior, behavior_close_cycle_and_send_signal_with_free_entry);
+
+    last_behavior = last_behavior->first_child;
+
+    struct Flags *end_of_cycle_received_flags = Flags_irrelevant();
+    Flags_setEndOfCycleReceivedByStation(end_of_cycle_received_flags, 1);
+    struct Behavior *behavior_do_action_after_end_of_cycle_received;
+    behavior_do_action_after_end_of_cycle_received = BehaviorBuilder_build(
+                BehaviorBuilder_withAction(action,
+                                           BehaviorBuilder_withFlags(end_of_cycle_received_flags,
+                                                   BehaviorBuilder_withFreePoseEntry(
+                                                           BehaviorBuilder_end()))));
+    Behavior_addChild(last_behavior, behavior_do_action_after_end_of_cycle_received);
+
+    Flags_delete(end_of_cycle_received_flags);
+
+    Behavior_delete(behavior_do_action_after_end_of_cycle_received);
+    Behavior_delete(behavior_close_cycle_and_send_signal_with_free_entry);
+}
