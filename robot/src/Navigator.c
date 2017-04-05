@@ -410,8 +410,10 @@ void Navigator_planTowardsCenterOfDrawingZone(struct Robot *robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
     struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
-    int center_x = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_X - THEORICAL_DRAWING_ZONE_SIDE;
-    int center_y = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_Y + THEORICAL_DRAWING_ZONE_SIDE;
+    struct Coordinates *south_west_corner = robot->navigator->navigable_map->south_western_drawing_corner;
+    struct Coordinates *north_east_corner = robot->navigator->navigable_map->north_eastern_drawing_corner;
+    int center_x = Coordinates_computeMeanX(south_west_corner, north_east_corner);
+    int center_y = Coordinates_computeMeanY(south_west_corner, north_east_corner);
     struct Coordinates *center_of_drawing_zone = Coordinates_new(center_x, center_y);
     struct CoordinatesSequence *center_of_drawing_trajectory = CoordinatesSequence_new(current_coordinates);
     CoordinatesSequence_append(center_of_drawing_trajectory, center_of_drawing_zone);

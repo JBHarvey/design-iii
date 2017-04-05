@@ -897,8 +897,10 @@ Test(RobotBehaviors,
     robot->current_behavior->action = &Navigator_planTowardsCenterOfDrawingZone;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    int center_x = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_X - THEORICAL_DRAWING_ZONE_SIDE;
-    int center_y = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_Y + THEORICAL_DRAWING_ZONE_SIDE;
+    struct Coordinates *south_west_corner = robot->navigator->navigable_map->south_western_drawing_corner;
+    struct Coordinates *north_east_corner = robot->navigator->navigable_map->north_eastern_drawing_corner;
+    int center_x = Coordinates_computeMeanX(south_west_corner, north_east_corner);
+    int center_y = Coordinates_computeMeanY(south_west_corner, north_east_corner);
     struct Coordinates *expected_coordinates = Coordinates_new(center_x, center_y);
     struct Coordinates *goal_coordinates = last_behavior->entry_conditions->goal_state->pose->coordinates;
     cr_assert(Coordinates_haveTheSameValues(expected_coordinates, goal_coordinates));

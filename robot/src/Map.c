@@ -165,6 +165,10 @@ struct Map *Map_fetchNavigableMap(struct Map *original_map, int robot_radius)
     new_map->north_western_table_corner->y = original_map->north_western_table_corner->y - robot_radius;
     new_map->north_eastern_table_corner->x = original_map->north_eastern_table_corner->x - robot_radius;
     new_map->north_eastern_table_corner->y = original_map->north_eastern_table_corner->y - robot_radius;
+    Coordinates_copyValuesFrom(new_map->north_eastern_drawing_corner, original_map->north_eastern_drawing_corner);
+    Coordinates_copyValuesFrom(new_map->south_eastern_drawing_corner, original_map->south_eastern_drawing_corner);
+    Coordinates_copyValuesFrom(new_map->north_western_drawing_corner, original_map->north_western_drawing_corner);
+    Coordinates_copyValuesFrom(new_map->south_western_drawing_corner, original_map->south_western_drawing_corner);
     new_map->antenna_zone_start->x = original_map->antenna_zone_start->x;
     new_map->antenna_zone_start->y = original_map->antenna_zone_start->y - robot_radius;
     new_map->antenna_zone_stop->x = original_map->antenna_zone_stop->x;
