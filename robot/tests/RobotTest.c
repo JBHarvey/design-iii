@@ -271,7 +271,7 @@ void assertBehaviorIsAFreeEntrySendingPlannedTrajectory(void (*action)(struct Ro
     Behavior_delete(expected);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -279,7 +279,7 @@ Test(Robot,
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsAntennaStart);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaMiddleAction_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -287,7 +287,7 @@ Test(Robot,
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsAntennaMiddle);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaMarkEndAction_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -295,7 +295,7 @@ Test(Robot,
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsAntennaMarkEnd);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsObstacleZoneEastSide_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -303,7 +303,7 @@ Test(Robot,
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsObstacleZoneEastSide);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsPainting_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -311,7 +311,7 @@ Test(Robot,
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsPainting);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsObstacleZoneWestSide_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -319,7 +319,7 @@ Test(Robot,
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsObstacleZoneWestSide);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsCenterOfDrawingZone_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -327,7 +327,7 @@ Test(Robot,
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsCenterOfDrawingZone);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsDrawingStart_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -337,7 +337,7 @@ Test(Robot,
 }
 
 /*
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -412,7 +412,7 @@ struct Behavior *fetchLastBehavior(struct Behavior *behavior)
     return current->first_child;
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -420,19 +420,26 @@ Test(Robot,
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsAntennaStart);
 }
 
-Test(Robot,
+void assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(void (*firstAction)(struct Robot *),
+        void (*expectedAction)(struct Robot *))
+{
+    struct Behavior *current_behavior = robot->current_behavior;
+    current_behavior->action = firstAction;
+    Behavior_act(current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(current_behavior);
+    cr_assert_eq(last_behavior->action, expectedAction);
+}
+
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanToOrientTowardsTheAntenna
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsAntennaStart;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    void (*planOrientationTowardsAntenna)(struct Robot *) = &Navigator_planOrientationTowardsAntenna;
-    cr_assert_eq(last_behavior->action, planOrientationTowardsAntenna);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsAntennaStart,
+            &Navigator_planOrientationTowardsAntenna);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaMiddleAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -440,30 +447,40 @@ Test(Robot,
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsAntennaMiddle);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaMiddleAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanFetchingManchesterCode
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsAntennaMiddle;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    void (*planFetchingManchesterCode)(struct Robot *) = &Navigator_planFetchingManchesterCode;
-    cr_assert_eq(last_behavior->action, planFetchingManchesterCode);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsAntennaMiddle,
+            &Navigator_planFetchingManchesterCode);
 }
 
-Test(Robot,
-     given_aBehaviorWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
-     , .init = setup_robot
-     , .fini = teardown_robot)
+void assertBeforeLastBehaviorHasFreeEntryAfterAction(void (*action)(struct Robot *))
 {
-    robot->current_behavior->action = &Navigator_planOrientationTowardsAntenna;
+    robot->current_behavior->action = action;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
     assertBehaviorHasFreeEntry(before_last_behavior);
 }
 
-Test(Robot,
+void assertLastBehaviorHasFreeEntryAfterAction(void (*action)(struct Robot *))
+{
+    robot->current_behavior->action = action;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    assertBehaviorHasFreeEntry(last_behavior);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planOrientationTowardsAntenna);
+}
+
+Test(RobotBehaviors,
      given_aBehaviorWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theBeforeLastBehaviorHasAnOrientRobotTowardsGoalAction
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -475,7 +492,7 @@ Test(Robot,
     cr_assert_eq(before_last_behavior->action, orientationTowardsAntenna);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theLastBehaviorHasAThetaZeroEntryGoal
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -486,7 +503,7 @@ Test(Robot,
     assertBehaviorHasOrientationEntry(last_behavior, EAST);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsAntennaMiddleAction
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -498,18 +515,15 @@ Test(Robot,
     cr_assert_eq(last_behavior->action, planTowardsAntennaMiddle);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanFetchingManchesterCodeAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planFetchingManchesterCode;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(before_last_behavior);
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planFetchingManchesterCode);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanFetchingManchesterCodeAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFetchManchesterCodeIfAtLeastASecondHasPassedSingeLastRobotTimerResetAction
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -532,7 +546,7 @@ void assertBehaviorHasManchesterCodeIsReceivedFlagEntry(struct Behavior *behavio
     Flags_delete(manchester_code_is_received_flags);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanFetchingManchesterCodeAction_when_behaviorActs_then_theLastBehaviorHasAManchesterCodeIsReceivedFlagsEntryGoal
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -543,30 +557,24 @@ Test(Robot,
     assertBehaviorHasManchesterCodeIsReceivedFlagEntry(last_behavior);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanFetchingManchesterCodeAction_when_behaviorActs_then_theLastBehaviorHasAPlanLowerPenForAntennaMarkAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planFetchingManchesterCode;
-    Behavior_act(robot->current_behavior, robot);
-    void (*planLowerPenForAntennaMark)(struct Robot *) = &Navigator_planLowerPenForAntennaMark;
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    cr_assert_eq(last_behavior->action, planLowerPenForAntennaMark);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planFetchingManchesterCode,
+            &Navigator_planLowerPenForAntennaMark);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanLoweringPenForAntennaMarkAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planLowerPenForAntennaMark;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(before_last_behavior);
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planLowerPenForAntennaMark);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanLoweringPenForAntennaMarkAction_when_behaviorActs_then_theBeforeLastBehaviorHasALowerPenAndWaitAction
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -578,30 +586,24 @@ Test(Robot,
     cr_assert_eq(before_last_behavior->action, lowerPenAndWait);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanLoweringPenForAntennaMarkAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planLowerPenForAntennaMark;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(last_behavior);
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planLowerPenForAntennaMark);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanLoweringPenForAntennaMarkAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsAntennaMarkEndAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planLowerPenForAntennaMark;
-    Behavior_act(robot->current_behavior, robot);
-    void (*planTowardsAntennaEnd)(struct Robot *) = &Navigator_planTowardsAntennaMarkEnd;
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    cr_assert_eq(last_behavior->action, planTowardsAntennaEnd);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planLowerPenForAntennaMark,
+            &Navigator_planTowardsAntennaMarkEnd);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaMarkEndAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -609,7 +611,7 @@ Test(Robot,
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsAntennaMarkEnd);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaMarkEndAction_when_behaviorActs_then_theLastBehaviorOfTheRobotHasItsCurrentCoordinatesMinusTheMarkDistanceInYAsEntryConditions
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -625,7 +627,7 @@ Test(Robot,
     Coordinates_delete(expected_coordinates);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaMarkEndAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanRisingThePenForObstacleCrossing
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -637,18 +639,15 @@ Test(Robot,
     cr_assert_eq(last_behavior->action, planRisingPen);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanRisePenForObstacleCrossingAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planRisePenForObstacleCrossing;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(before_last_behavior);
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planRisePenForObstacleCrossing);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanRisePenForObstacleCrossingAction_when_behaviorActs_then_theBeforeLastBehaviorHasARisePenAndWaitAction
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -660,30 +659,24 @@ Test(Robot,
     cr_assert_eq(before_last_behavior->action, risePenAndWait);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanRisePenForObstacleCrossingAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planRisePenForObstacleCrossing;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(last_behavior);
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planRisePenForObstacleCrossing);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanRisePenForObstacleCrossingAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsObstacleZoneEastSide
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planRisePenForObstacleCrossing;
-    Behavior_act(robot->current_behavior, robot);
-    void (*planTowardsObstacleZoneEastSide)(struct Robot *) = &Navigator_planTowardsObstacleZoneEastSide;
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    cr_assert_eq(last_behavior->action, planTowardsObstacleZoneEastSide);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planRisePenForObstacleCrossing,
+            &Navigator_planTowardsObstacleZoneEastSide);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsObstacleZoneEastSideAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -691,7 +684,7 @@ Test(Robot,
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsObstacleZoneEastSide);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsObstacleZoneEastSideAction_when_behaviorActs_then_theLastBehaviorOfTheRobotHasTheMapsGraphEasternNodesCoordinatesAsEntryConditions
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -704,7 +697,7 @@ Test(Robot,
     cr_assert(Coordinates_haveTheSameValues(expected_coordinates, goal_coordinates));
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsObstacleZoneEastSideAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanTowardsPaintingZone
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -720,7 +713,7 @@ Test(Robot,
  *  TODO : Add a map and its setup and test the obstacle crossing
  */
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsPaintingAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -728,7 +721,7 @@ Test(Robot,
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsPainting);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsPaintingAction_when_behaviorActs_then_theLastBehaviorOfTheRobotHasThePaintingCoordinatesCorrespondingToThePaintingNumberInTheRobotsManchesterCodeAsEntryConditions
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -743,30 +736,24 @@ Test(Robot,
     cr_assert(Coordinates_haveTheSameValues(expected_coordinates, goal_coordinates));
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsPaintingAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanOrientationTowardsPainting
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsPainting;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    void (*planOrientationTowardsPainting)(struct Robot *) = &Navigator_planOrientationTowardsPainting;
-    cr_assert_eq(last_behavior->action, planOrientationTowardsPainting);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsPainting,
+            &Navigator_planOrientationTowardsPainting);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanOrientationTowardsPaintingAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planOrientationTowardsPainting;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(before_last_behavior);
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planOrientationTowardsPainting);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanOrientationTowardsPaintingAction_when_behaviorActs_then_theBeforeLastBehaviorHasAnOrientRobotTowardsGoalAction
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -778,7 +765,7 @@ Test(Robot,
     cr_assert_eq(before_last_behavior->action, orientationTowardsAntenna);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanOrientationTowardsPaintingAction_when_behaviorActs_then_theLastBehaviorHasAThetaEquivalentToTheCorrectPaintingOrientationEntryGoal
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -791,30 +778,24 @@ Test(Robot,
     assertBehaviorHasAngleEntry(last_behavior, angle);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanOrientationTowardsPaintingAction_when_behaviorActs_then_theLastBehaviorHasAPlanStopMotionAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planOrientationTowardsPainting;
-    Behavior_act(robot->current_behavior, robot);
-    void (*planTakingPicture)(struct Robot *) = &Navigator_planStopMotion;
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    cr_assert_eq(last_behavior->action, planTakingPicture);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planOrientationTowardsPainting,
+            &Navigator_planStopMotion);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanStopMotionAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planStopMotion;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(before_last_behavior);
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planStopMotion);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanStopMotionAction_when_behaviorActs_then_theBeforeLastBehaviorHasAStopMovementAction
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -826,41 +807,31 @@ Test(Robot,
     cr_assert_eq(before_last_behavior->action, stopMovement);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanStopMotionAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planStopMotion;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(last_behavior);
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planStopMotion);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanStopMotionAction_when_behaviorActs_then_theLastBehaviorHasAPlanTakingPictureAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planStopMotion;
-    Behavior_act(robot->current_behavior, robot);
-    void (*planTakingPicture)(struct Robot *) = &Navigator_planTakingPicture;
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    cr_assert_eq(last_behavior->action, planTakingPicture);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planStopMotion, &Navigator_planTakingPicture);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTakingPictureAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTakingPicture;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(before_last_behavior);
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planTakingPicture);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTakingPictureAction_when_behaviorActs_then_theBeforeLastBehaviorHasAnTakePictureAction
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -883,7 +854,7 @@ void assertBehaviorHasImageReceivedByStationFlagEntry(struct Behavior *behavior)
     Flags_delete(image_received_by_station_flags);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTakingPictureAction_when_behaviorActs_then_theLastBehaviorHasAImageReceivedByStationFlagsWithFreePoseEntryGoal
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -894,19 +865,16 @@ Test(Robot,
     assertBehaviorHasImageReceivedByStationFlagEntry(last_behavior);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTakingPictureAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsObstacleZoneWestSide
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTakingPicture;
-    Behavior_act(robot->current_behavior, robot);
-    void (*planTowardsObstacleZoneWestSide)(struct Robot *) = &Navigator_planTowardsObstacleZoneWestSide;
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    cr_assert_eq(last_behavior->action, planTowardsObstacleZoneWestSide);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTakingPicture,
+            &Navigator_planTowardsObstacleZoneWestSide);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsObstacleZoneWestSideAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -914,7 +882,7 @@ Test(Robot,
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsObstacleZoneWestSide);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsObstacleZoneWestSideAction_when_behaviorActs_then_theLastBehaviorOfTheRobotHasHasTheMapsGraphWesternNodesCoordinatesAsEntryConditions
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -927,19 +895,16 @@ Test(Robot,
     cr_assert(Coordinates_haveTheSameValues(expected_coordinates, goal_coordinates));
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsObstacleZoneWestSideAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanTowardsDrawingZoneAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsObstacleZoneWestSide;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    void (*planOrientationTowardsDrawingZone)(struct Robot *) = &Navigator_planTowardsDrawingZone;
-    cr_assert_eq(last_behavior->action, planOrientationTowardsDrawingZone);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsObstacleZoneWestSide,
+            &Navigator_planTowardsDrawingZone);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsCenterOfDrawingZoneAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -947,7 +912,7 @@ Test(Robot,
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsCenterOfDrawingZone);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsCenterOfDrawingZoneAction_when_behaviorActs_then_theLastBehaviorOfTheRobotHasTheCenterOfTheDrawingZoneAsEntryConditions
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -963,30 +928,24 @@ Test(Robot,
     Coordinates_delete(expected_coordinates);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsCenterOfDrawingZoneAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanToTellReadyToDraw
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsCenterOfDrawingZone;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    void (*planToTellReadyToDraw)(struct Robot *) = &Navigator_planToTellReadyToDraw;
-    cr_assert_eq(last_behavior->action, planToTellReadyToDraw);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsCenterOfDrawingZone,
+            &Navigator_planToTellReadyToDraw);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanToTellReadyToDrawAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planToTellReadyToDraw;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(before_last_behavior);
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planToTellReadyToDraw);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanToTellReadyToDrawAction_when_behaviorActs_then_theBeforeLastBehaviorHasASendReadyToDrawSignalAction
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -1008,7 +967,7 @@ void assertBehaviorHasReadyToDrawReceivedByStationEntry(struct Behavior *behavio
     Flags_delete(ready_to_draw_received_by_station);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanToTellReadyToDrawAction_when_behaviorActs_then_theLastBehaviorHasAReadyToDrawReceivedByStationFlagsWithFreePoseEntryGoal
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -1019,19 +978,16 @@ Test(Robot,
     assertBehaviorHasReadyToDrawReceivedByStationEntry(last_behavior);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanToTellReadyToDrawAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsDrawingStartAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planToTellReadyToDraw;
-    Behavior_act(robot->current_behavior, robot);
-    void (*planTowardsDrawingStart)(struct Robot *) = &Navigator_planTowardsDrawingStart;
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    cr_assert_eq(last_behavior->action, planTowardsDrawingStart);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planToTellReadyToDraw,
+            &Navigator_planTowardsDrawingStart);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsDrawingStartAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -1040,7 +996,7 @@ Test(Robot,
     assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsDrawingStart);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsDrawingStartAction_when_behaviorActs_then_theLastBehaviorOfTheRobotHasTheCenterOfTheDrawingZoneAsEntryConditions
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -1054,31 +1010,25 @@ Test(Robot,
     cr_assert(Coordinates_haveTheSameValues(expected_coordinates, goal_coordinates));
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsDrawingStartAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanLowerPenBeforeDrawing
      , .init = setup_robot
      , .fini = teardown_robot)
 {
     giveADummyDrawingTrajectoryToTheRobot(robot);
-    robot->current_behavior->action = &Navigator_planTowardsDrawingStart;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    void (*planLowerPenBeforeDrawing)(struct Robot *) = &Navigator_planLowerPenBeforeDrawing;
-    cr_assert_eq(last_behavior->action, planLowerPenBeforeDrawing);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsDrawingStart,
+            &Navigator_planLowerPenBeforeDrawing);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanLoweringPenBeforeDrawingAntennaMarkAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planLowerPenBeforeDrawing;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(before_last_behavior);
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planLowerPenBeforeDrawing);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanLoweringPenBeforeDrawingAntennaMarkAction_when_behaviorActs_then_theBeforeLastBehaviorHasALowerPenAndWaitAction
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -1090,41 +1040,31 @@ Test(Robot,
     cr_assert_eq(before_last_behavior->action, lowerPenAndWait);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanLoweringPenBeforeDrawingAntennaMarkAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planLowerPenBeforeDrawing;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(last_behavior);
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planLowerPenBeforeDrawing);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanLoweringPenBeforeDrawingAntennaMarkAction_when_behaviorActs_then_theLastBehaviorHasAPlanDrawingAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planLowerPenBeforeDrawing;
-    Behavior_act(robot->current_behavior, robot);
-    void (*planDrawing)(struct Robot *) = &Navigator_planDrawing;
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    cr_assert_eq(last_behavior->action, planDrawing);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planLowerPenBeforeDrawing, &Navigator_planDrawing);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanRisePenBeforeGoingToAntennaStopAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planRisePenBeforeGoingToAntennaStop;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(before_last_behavior);
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planRisePenBeforeGoingToAntennaStop);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanRisePenBeforeGoingToAntennaStopAction_when_behaviorActs_then_theBeforeLastBehaviorHasARisePenAndWaitAction
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -1136,30 +1076,24 @@ Test(Robot,
     cr_assert_eq(before_last_behavior->action, risePenAndWait);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanRisePenBeforeGoingToAntennaStopAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planRisePenBeforeGoingToAntennaStop;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(last_behavior);
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planRisePenBeforeGoingToAntennaStop);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanRisePenBeforeGoingToAntennaStopAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsAntennaStopAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planRisePenBeforeGoingToAntennaStop;
-    Behavior_act(robot->current_behavior, robot);
-    void (*planTowardsAntennaStop)(struct Robot *) = &Navigator_planTowardsAntennaStop;
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    cr_assert_eq(last_behavior->action, planTowardsAntennaStop);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planRisePenBeforeGoingToAntennaStop,
+            &Navigator_planTowardsAntennaStop);
 }
 /*
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theLastBehaviorOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
