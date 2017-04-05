@@ -449,23 +449,6 @@ Test(RobotBehaviors,
             &Navigator_planOrientationTowardsAntenna);
 }
 
-Test(RobotBehaviors,
-     given_aBehaviorWithPlanTowardsAntennaMiddleAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
-     , .init = setup_robot
-     , .fini = teardown_robot)
-{
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsAntennaMiddle);
-}
-
-Test(RobotBehaviors,
-     given_aBehaviorWithPlanTowardsAntennaMiddleAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanFetchingManchesterCode
-     , .init = setup_robot
-     , .fini = teardown_robot)
-{
-    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsAntennaMiddle,
-            &Navigator_planFetchingManchesterCode);
-}
-
 void assertBeforeLastBehaviorHasFreeEntryAfterAction(void (*action)(struct Robot *))
 {
     robot->current_behavior->action = action;
@@ -519,6 +502,74 @@ Test(RobotBehaviors,
             &Navigator_planTowardsAntennaMiddle);
 }
 
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanTowardsAntennaMiddleAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsAntennaMiddle);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanTowardsAntennaMiddleAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotHasTheMiddleOfTheAntennaZoneCoordinatesAsEntryConditions
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    robot->current_behavior->action = &Navigator_planTowardsObstacleZoneEastSide;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    struct Coordinates *start = robot->navigator->navigable_map->antenna_zone_start;
+    struct Coordinates *stop = robot->navigator->navigable_map->antenna_zone_stop;
+    int center_x = Coordinates_computeMeanX(start, stop);
+    int center_y = Coordinates_computeMeanY(start, stop);
+    struct Coordinates *expected_coordinates = Coordinates_new(center_x, center_y);
+    struct Coordinates *goal_coordinates = last_behavior->entry_conditions->goal_state->pose->coordinates;
+    cr_assert(Coordinates_haveTheSameValues(expected_coordinates, goal_coordinates));
+    Coordinates_delete(expected_coordinates);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanTowardsAntennaMiddleAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanStopMotionBeforeFetchingManchesterCode
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsAntennaMiddle,
+            &Navigator_planStopMotionBeforeFetchingManchester);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanStopMotionBeforeFetchingManchesterAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planStopMotionBeforeFetchingManchester);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanStopMotionBeforeFetchingManchesterAction_when_behaviorActs_then_theBeforeLastBehaviorHasAStopMovementAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planStopMotionBeforeFetchingManchester,
+            &Navigator_stopMovement);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanStopMotionBeforeFetchingManchesterAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planStopMotionBeforeFetchingManchester);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanStopMotionBeforeFetchingManchesterAction_when_behaviorActs_then_theLastBehaviorHasAPlanFetchingManchesterAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planStopMotionBeforeFetchingManchester,
+            &Navigator_planFetchingManchesterCode);
+}
 Test(RobotBehaviors,
      given_aBehaviorWithPlanFetchingManchesterCodeAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
@@ -769,39 +820,41 @@ Test(RobotBehaviors,
      , .fini = teardown_robot)
 {
     assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planOrientationTowardsPainting,
-            &Navigator_planStopMotion);
+            &Navigator_planStopMotionBeforePicture);
 }
 
 Test(RobotBehaviors,
-     given_aBehaviorWithPlanStopMotionAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     given_aBehaviorWithPlanStopMotionBeforePictureAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planStopMotion);
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planStopMotionBeforePicture);
 }
 
 Test(RobotBehaviors,
-     given_aBehaviorWithPlanStopMotionAction_when_behaviorActs_then_theBeforeLastBehaviorHasAStopMovementAction
+     given_aBehaviorWithPlanStopMotionBeforePictureAction_when_behaviorActs_then_theBeforeLastBehaviorHasAStopMovementAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planStopMotion, &Navigator_stopMovement);
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planStopMotionBeforePicture,
+            &Navigator_stopMovement);
 }
 
 Test(RobotBehaviors,
-     given_aBehaviorWithPlanStopMotionAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
+     given_aBehaviorWithPlanStopMotionBeforePictureAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planStopMotion);
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planStopMotionBeforePicture);
 }
 
 Test(RobotBehaviors,
-     given_aBehaviorWithPlanStopMotionAction_when_behaviorActs_then_theLastBehaviorHasAPlanTakingPictureAction
+     given_aBehaviorWithPlanStopMotionBeforePictureAction_when_behaviorActs_then_theLastBehaviorHasAPlanTakingPictureAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planStopMotion, &Navigator_planTakingPicture);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planStopMotionBeforePicture,
+            &Navigator_planTakingPicture);
 }
 
 Test(RobotBehaviors,

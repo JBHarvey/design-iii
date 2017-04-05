@@ -242,6 +242,13 @@ void Navigator_planTowardsAntennaStart(struct Robot *robot)
     RobotBehaviors_appendTrajectoryBehaviors(robot, trajectory_to_antenna_start, orientationAction);
 }
 
+void Navigator_planOrientationTowardsAntenna(struct Robot *robot)
+{
+    int angle = 0;
+    void (*action)(struct Robot *) = &Navigator_planTowardsAntennaMiddle;
+    RobotBehavior_appendOrientationBehaviorWithChildAction(robot, angle, action);
+}
+
 void Navigator_planTowardsAntennaMiddle(struct Robot *robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
@@ -258,16 +265,16 @@ void Navigator_planTowardsAntennaMiddle(struct Robot *robot)
     robot->navigator->planned_trajectory = trajectory_to_antenna_middle;
 
     RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
-    void (*fetchManchester)(struct Robot *) = &Navigator_planFetchingManchesterCode;
-    RobotBehaviors_appendTrajectoryBehaviors(robot, trajectory_to_antenna_middle, fetchManchester);
+    void (*stopMotionBeforeManchester)(struct Robot *) = &Navigator_planStopMotionBeforeFetchingManchester;
+    RobotBehaviors_appendTrajectoryBehaviors(robot, trajectory_to_antenna_middle, stopMotionBeforeManchester);
 }
 
-void Navigator_planOrientationTowardsAntenna(struct Robot *robot)
+void Navigator_planStopMotionBeforeFetchingManchester(struct Robot *robot)
 {
-    int angle = 0;
-    void (*action)(struct Robot *) = &Navigator_planTowardsAntennaMiddle;
-    RobotBehavior_appendOrientationBehaviorWithChildAction(robot, angle, action);
+    void (*action)(struct Robot *) = &Navigator_planFetchingManchesterCode;
+    RobotBehavior_appendStopMovementBehaviorWithChildAction(robot, action);
 }
+
 
 void Navigator_planFetchingManchesterCode(struct Robot *robot)
 {
@@ -359,11 +366,11 @@ void Navigator_planOrientationTowardsPainting(struct Robot *robot)
     int target_painting = robot->manchester_code->painting_number;
     struct Pose *painting_pose = robot->navigator->navigable_map->painting_zones[target_painting];
     int angle = painting_pose->angle->theta;
-    void (*action)(struct Robot *) = &Navigator_planStopMotion;
+    void (*action)(struct Robot *) = &Navigator_planStopMotionBeforePicture;
     RobotBehavior_appendOrientationBehaviorWithChildAction(robot, angle, action);
 }
 
-void Navigator_planStopMotion(struct Robot *robot)
+void Navigator_planStopMotionBeforePicture(struct Robot *robot)
 {
     void (*action)(struct Robot *) = &Navigator_planTakingPicture;
     RobotBehavior_appendStopMovementBehaviorWithChildAction(robot, action);
