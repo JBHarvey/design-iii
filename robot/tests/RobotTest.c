@@ -145,9 +145,6 @@ Test(Robot, creation_destruction)
     Robot_delete(robot);
     Pose_delete(zero);
     State_delete(default_state);
-
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
 }
 
 void validateReadyToStartIsSent(void)
@@ -204,6 +201,9 @@ void setup_robot(void)
     validation_command_sender_callbacks.sendRisePenCommand = &validateRisePenIsSent;
     DataSender_changeTarget(robot->data_sender, validation_data_sender_callbacks);
     CommandSender_changeTarget(robot->command_sender, validation_command_sender_callbacks);
+
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
 }
 
 void teardown_robot(void)
@@ -243,13 +243,16 @@ Test(Robot, given_aRobot_when_askedToSendAPoseEstimate_then_theSignalIsSent
     cr_assert(validation_pose_estimate_is_sent);
 }
 
-void assertBehaviorIsAFreeEntrySendingPlannedTrajectory(struct Behavior *received)
+void assertBehaviorIsAFreeEntrySendingPlannedTrajectory(void (*action)(struct Robot *))
 {
+    struct Behavior *behavior = robot->current_behavior;
+    behavior->action = action;
+    Behavior_act(behavior, robot);
 
     void (*sendPlannedTrajectory) = &Robot_sendPlannedTrajectory;
 
-    while(received->action != sendPlannedTrajectory) {
-        received = received->first_child;
+    while(behavior->action != sendPlannedTrajectory) {
+        behavior = behavior->first_child;
     }
 
     struct Behavior *expected = BehaviorBuilder_build(
@@ -258,12 +261,12 @@ void assertBehaviorIsAFreeEntrySendingPlannedTrajectory(struct Behavior *receive
                                                     BehaviorBuilder_end())));
 
     cr_assert(Pose_haveTheSameValues(expected->entry_conditions->tolerances->pose,
-                                     received->entry_conditions->tolerances->pose),);
+                                     behavior->entry_conditions->tolerances->pose));
 
     cr_assert(Flags_haveTheSameValues(expected->entry_conditions->goal_state->flags,
-                                      received->entry_conditions->goal_state->flags));
+                                      behavior->entry_conditions->goal_state->flags));
 
-    cr_assert_eq(expected->action, received->action);
+    cr_assert_eq(expected->action, behavior->action);
 
     Behavior_delete(expected);
 }
@@ -273,9 +276,7 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsAntennaStart;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsAntennaStart);
 }
 
 Test(Robot,
@@ -283,9 +284,7 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsAntennaMiddle;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsAntennaMiddle);
 }
 
 Test(Robot,
@@ -293,9 +292,7 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsAntennaMarkEnd;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsAntennaMarkEnd);
 }
 
 Test(Robot,
@@ -303,9 +300,7 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsObstacleZoneEastSide;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsObstacleZoneEastSide);
 }
 
 Test(Robot,
@@ -313,9 +308,7 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsPainting;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsPainting);
 }
 
 Test(Robot,
@@ -323,9 +316,7 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsObstacleZoneWestSide;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsObstacleZoneWestSide);
 }
 
 Test(Robot,
@@ -333,9 +324,7 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsCenterOfDrawingZone;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsCenterOfDrawingZone);
 }
 
 Test(Robot,
@@ -344,9 +333,7 @@ Test(Robot,
      , .fini = teardown_robot)
 {
     giveADummyDrawingTrajectoryToTheRobot(robot);
-    robot->current_behavior->action = &Navigator_planTowardsDrawingStart;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsDrawingStart);
 }
 
 /*
@@ -355,9 +342,7 @@ Test(Robot,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsAntennaStop;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsAntennaStop);
 }
 */
 
