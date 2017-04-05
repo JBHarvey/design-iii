@@ -302,7 +302,7 @@ void RobotBehavior_appendTakePictureBehaviorWithChildAction(struct Robot *robot,
     last_behavior = last_behavior->first_child;
 
     struct Flags *image_received_by_station = Flags_irrelevant();
-    Flags_setNavigableMapIsReady(image_received_by_station, 1);
+    Flags_setImageReceivedByStation(image_received_by_station, 1);
     struct Behavior *behavior_do_action_when_image_received_by_station;
     behavior_do_action_when_image_received_by_station = BehaviorBuilder_build(
                 BehaviorBuilder_withAction(action,
