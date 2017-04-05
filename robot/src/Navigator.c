@@ -449,7 +449,13 @@ void Navigator_planTowardsDrawingStart(struct Robot *robot)
     RobotBehaviors_appendTrajectoryBehaviors(robot, start_of_drawing_trajectory, planLowerPenBeforeDrawing);
 }
 
-void Navigator_planLowerPenBeforeDrawing(struct Robot *robot) {}
+void Navigator_planLowerPenBeforeDrawing(struct Robot *robot)
+{
+    void (*action)(struct Robot *) = &Navigator_planDrawing;
+    RobotBehavior_appendLowerPenBehaviorWithChildAction(robot, action);
+}
+
+void Navigator_planDrawing(struct Robot *robot) {}
 
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot)

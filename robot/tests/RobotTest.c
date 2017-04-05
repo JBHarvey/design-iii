@@ -1226,6 +1226,60 @@ Test(Robot,
     cr_assert_eq(last_behavior->action, planLowerPenBeforeDrawing);
 }
 
+
+Test(Robot,
+     given_aBehaviorWithPlanLoweringPenBeforeDrawingAntennaMarkAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planLowerPenBeforeDrawing;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
+    assertBehaviorHasFreeEntry(before_last_behavior);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanLoweringPenBeforeDrawingAntennaMarkAction_when_behaviorActs_then_theBeforeLastBehaviorHasALowerPenAndWaitAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planLowerPenBeforeDrawing;
+    Behavior_act(robot->current_behavior, robot);
+    void (*lowerPenAndWait)(struct Robot *) = &Robot_lowerPenAndWaitASecondAndAHalf;
+    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
+    cr_assert_eq(before_last_behavior->action, lowerPenAndWait);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanLoweringPenBeforeDrawingAntennaMarkAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planLowerPenBeforeDrawing;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    assertBehaviorHasFreeEntry(last_behavior);
+}
+
+Test(Robot,
+     given_aBehaviorWithPlanLoweringPenBeforeDrawingAntennaMarkAction_when_behaviorActs_then_theLastBehaviorHasAPlanDrawingAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
+    robot->current_behavior->action = &Navigator_planLowerPenBeforeDrawing;
+    Behavior_act(robot->current_behavior, robot);
+    void (*planDrawing)(struct Robot *) = &Navigator_planDrawing;
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    cr_assert_eq(last_behavior->action, planDrawing);
+}
 /*
 Test(Robot,
      given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theLastBehaviorOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
