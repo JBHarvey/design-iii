@@ -10,14 +10,11 @@ int validation_ready_to_start_is_sent;
 int validation_ready_to_draw_is_sent;
 int validation_planned_trajectory_is_sent;
 int validation_pose_estimate_is_sent;
+int validation_light_green_led_command_is_sent;
 int validation_lower_pen_command_is_sent;
 int validation_rise_pen_command_is_sent;
-const int SIGNAL_SENT = 1;
-const int SIGNAL_NOT_SENT = 0;
-const int PEN_DOWN_COMMAND_SENT = 1;
-const int PEN_DOWN_COMMAND_NOT_SENT = 0;
-const int PEN_UP_COMMAND_SENT = 1;
-const int PEN_UP_COMMAND_NOT_SENT = 0;
+const int SENT = 1;
+const int NOT_SENT = 0;
 int manchester_code_command_count;
 
 void giveADummyDrawingTrajectoryToTheRobot(struct Robot *robot)
@@ -149,32 +146,37 @@ Test(Robot, creation_destruction)
 
 void validateReadyToStartIsSent(void)
 {
-    validation_ready_to_start_is_sent = SIGNAL_SENT;
+    validation_ready_to_start_is_sent = SENT;
 }
 
 void validateReadyToDrawIsSent(void)
 {
-    validation_ready_to_draw_is_sent = SIGNAL_SENT;
+    validation_ready_to_draw_is_sent = SENT;
 }
 
 void validatePlannedTrajectoryIsSent(struct CoordinatesSequence *sequence)
 {
-    validation_planned_trajectory_is_sent = SIGNAL_SENT;
+    validation_planned_trajectory_is_sent = SENT;
 }
 
 void validatePoseEstimateIsSent(struct Pose *pose)
 {
-    validation_pose_estimate_is_sent = SIGNAL_SENT;
+    validation_pose_estimate_is_sent = SENT;
+}
+
+void validateLightGreenLedIsSent(void)
+{
+    validation_light_green_led_command_is_sent = SENT;
 }
 
 void validateLowerPenIsSent(void)
 {
-    validation_lower_pen_command_is_sent = PEN_DOWN_COMMAND_SENT;
+    validation_lower_pen_command_is_sent = SENT;
 }
 
 void validateRisePenIsSent(void)
 {
-    validation_rise_pen_command_is_sent = PEN_UP_COMMAND_SENT;
+    validation_rise_pen_command_is_sent = SENT;
 }
 
 void validateFetchManchesterCodeIsSent(void)
@@ -185,18 +187,20 @@ void validateFetchManchesterCodeIsSent(void)
 void setup_robot(void)
 {
     robot = Robot_new();
-    validation_ready_to_start_is_sent = SIGNAL_NOT_SENT;
-    validation_ready_to_draw_is_sent = SIGNAL_NOT_SENT;
-    validation_planned_trajectory_is_sent = SIGNAL_NOT_SENT;
-    validation_pose_estimate_is_sent = SIGNAL_NOT_SENT;
-    validation_lower_pen_command_is_sent = PEN_DOWN_COMMAND_NOT_SENT;
-    validation_rise_pen_command_is_sent = PEN_UP_COMMAND_NOT_SENT;
+    validation_ready_to_start_is_sent = NOT_SENT;
+    validation_ready_to_draw_is_sent = NOT_SENT;
+    validation_planned_trajectory_is_sent = NOT_SENT;
+    validation_pose_estimate_is_sent = NOT_SENT;
+    validation_light_green_led_command_is_sent = NOT_SENT;
+    validation_lower_pen_command_is_sent = NOT_SENT;
+    validation_rise_pen_command_is_sent = NOT_SENT;
     manchester_code_command_count = 0;
     validation_data_sender_callbacks.sendSignalReadyToStart = &validateReadyToStartIsSent;
     validation_data_sender_callbacks.sendSignalReadyToDraw = &validateReadyToDrawIsSent;
     validation_data_sender_callbacks.sendPlannedTrajectory = &validatePlannedTrajectoryIsSent;
     validation_data_sender_callbacks.sendRobotPoseEstimate = &validatePoseEstimateIsSent;
     validation_command_sender_callbacks.sendFetchManchesterCodeCommand = &validateFetchManchesterCodeIsSent;
+    validation_command_sender_callbacks.sendLightGreenLEDCommand = &validateLightGreenLedIsSent;
     validation_command_sender_callbacks.sendLowerPenCommand = &validateLowerPenIsSent;
     validation_command_sender_callbacks.sendRisePenCommand = &validateRisePenIsSent;
     DataSender_changeTarget(robot->data_sender, validation_data_sender_callbacks);
@@ -849,11 +853,45 @@ Test(RobotBehaviors,
 }
 
 Test(RobotBehaviors,
-     given_aBehaviorWithPlanStopMotionBeforePictureAction_when_behaviorActs_then_theLastBehaviorHasAPlanTakingPictureAction
+     given_aBehaviorWithPlanStopMotionBeforePictureAction_when_behaviorActs_then_theLastBehaviorHasAPlanLightingGreenLedAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
     assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planStopMotionBeforePicture,
+            &Navigator_planLightingGreenLedBeforePicture);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanLightingGreenLedBeforePictureAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planLightingGreenLedBeforePicture);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanLightingGreenLedBeforePictureAction_when_behaviorActs_then_theBeforeLastBehaviorHasALightGreenLedAndWaitAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planLightingGreenLedBeforePicture,
+            &Robot_lightGreenLedAndWaitASecond);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanLightingGreenLedBeforePictureAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planLightingGreenLedBeforePicture);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanLightingGreenLedBeforePictureAction_when_behaviorActs_then_theLastBehaviorHasAPlanTakingPictureAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planLightingGreenLedBeforePicture,
             &Navigator_planTakingPicture);
 }
 
@@ -1168,17 +1206,39 @@ Test(Robot,
     cr_assert_eq(manchester_code_command_count, 2);
 }
 
-Test(Robot, given_theRobot_when_askForLowerPenAndWaitASecondAndAHalf_then_theCommandIsSent
+Test(Robot, given_theRobot_when_askedToLightGreenLedAndWaitASecond_then_theCommandIsSent
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Robot_lightGreenLedAndWaitASecond(robot);
+
+    cr_assert_eq(validation_light_green_led_command_is_sent, SENT);
+}
+
+Test(Robot,
+     given_theRobot_when_askedToLightGreenLedAndWaitASecond_then_atLeastASecondHasPassedSinceTheActionWasTriggered
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    struct Timer *timer = Timer_new();
+    Robot_lightGreenLedAndWaitASecond(robot);
+
+    cr_assert(Timer_hasTimePassed(timer, ONE_SECOND));
+
+    Timer_delete(timer);
+}
+
+Test(Robot, given_theRobot_when_askedToLowerPenAndWaitASecondAndAHalf_then_theCommandIsSent
      , .init = setup_robot
      , .fini = teardown_robot)
 {
     Robot_lowerPenAndWaitASecondAndAHalf(robot);
 
-    cr_assert_eq(validation_lower_pen_command_is_sent, PEN_DOWN_COMMAND_SENT);
+    cr_assert_eq(validation_lower_pen_command_is_sent, SENT);
 }
 
 Test(Robot,
-     given_theRobot_when_askForLowerPenAndWaitASecondAndAHalf_then_atLeastASecondAndAHalfHasPassedSinceTheActionWasTriggered
+     given_theRobot_when_askedToLowerPenAndWaitASecondAndAHalf_then_atLeastASecondAndAHalfHasPassedSinceTheActionWasTriggered
      , .init = setup_robot
      , .fini = teardown_robot)
 {
@@ -1190,17 +1250,17 @@ Test(Robot,
     Timer_delete(timer);
 }
 
-Test(Robot, given_theRobot_when_askForRisePenAndWaitASecondAHalfAnd_then_theCommandIsSent
+Test(Robot, given_theRobot_when_askedToRisePenAndWaitASecondAHalfAnd_then_theCommandIsSent
      , .init = setup_robot
      , .fini = teardown_robot)
 {
     Robot_risePenAndWaitASecondAndAHalf(robot);
 
-    cr_assert_eq(validation_rise_pen_command_is_sent, PEN_UP_COMMAND_SENT);
+    cr_assert_eq(validation_rise_pen_command_is_sent, SENT);
 }
 
 Test(Robot,
-     given_theRobot_when_askForRisePenAndWaitASecondAndAHalf_then_atLeastASecondAndAHalfHasPassedSinceTheActionWasTriggered
+     given_theRobot_when_askedToRisePenAndWaitASecondAndAHalf_then_atLeastASecondAndAHalfHasPassedSinceTheActionWasTriggered
      , .init = setup_robot
      , .fini = teardown_robot)
 {

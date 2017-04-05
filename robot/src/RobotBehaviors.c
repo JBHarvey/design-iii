@@ -261,6 +261,32 @@ void RobotBehavior_appendStopMovementBehaviorWithChildAction(struct Robot *robot
     Behavior_delete(behavior_stop_motion_with_free_entry);
 }
 
+void RobotBehavior_appendLightGreenLedBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *))
+{
+    struct Behavior *last_behavior = fetchLastBehavior(robot);
+
+    void (*lightGreenLed)(struct Robot*) = &Robot_lightGreenLedAndWaitASecond;
+    struct Behavior *behavior_light_green_led_with_free_entry;
+    behavior_light_green_led_with_free_entry = BehaviorBuilder_build(
+                BehaviorBuilder_withAction(lightGreenLed,
+                                           BehaviorBuilder_withFreeEntry(
+                                                   BehaviorBuilder_end())));
+    Behavior_addChild(last_behavior, behavior_light_green_led_with_free_entry);
+
+    last_behavior = last_behavior->first_child;
+
+    struct Behavior *behavior_do_action_with_free_entry;
+    behavior_do_action_with_free_entry = BehaviorBuilder_build(
+            BehaviorBuilder_withAction(action,
+                                       BehaviorBuilder_withFreeEntry(
+                                           BehaviorBuilder_end())));
+    Behavior_addChild(last_behavior, behavior_do_action_with_free_entry);
+
+
+    Behavior_delete(behavior_do_action_with_free_entry);
+    Behavior_delete(behavior_light_green_led_with_free_entry);
+}
+
 void RobotBehavior_appendTakePictureBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *))
 {
     struct Behavior *last_behavior = fetchLastBehavior(robot);

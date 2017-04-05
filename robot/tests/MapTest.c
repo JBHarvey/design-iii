@@ -223,18 +223,10 @@ Test(Map, given_aMapAndARobotRadius_when_askedToFetchNavigableMap_then_theDrawin
 
     cr_assert(Coordinates_haveTheSameValues(navigable_map->south_western_drawing_corner,
                                             map->south_western_drawing_corner));
-    cr_assert(Coordinates_haveTheSameValues(navigable_map->south_western_drawing_corner,
-                                            map->south_western_drawing_corner));
-    cr_assert(Coordinates_haveTheSameValues(navigable_map->south_eastern_drawing_corner,
-                                            map->south_eastern_drawing_corner));
     cr_assert(Coordinates_haveTheSameValues(navigable_map->south_eastern_drawing_corner,
                                             map->south_eastern_drawing_corner));
     cr_assert(Coordinates_haveTheSameValues(navigable_map->north_western_drawing_corner,
                                             map->north_western_drawing_corner));
-    cr_assert(Coordinates_haveTheSameValues(navigable_map->north_western_drawing_corner,
-                                            map->north_western_drawing_corner));
-    cr_assert(Coordinates_haveTheSameValues(navigable_map->north_eastern_drawing_corner,
-                                            map->north_eastern_drawing_corner));
     cr_assert(Coordinates_haveTheSameValues(navigable_map->north_eastern_drawing_corner,
                                             map->north_eastern_drawing_corner));
 

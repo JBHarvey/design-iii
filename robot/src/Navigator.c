@@ -372,8 +372,14 @@ void Navigator_planOrientationTowardsPainting(struct Robot *robot)
 
 void Navigator_planStopMotionBeforePicture(struct Robot *robot)
 {
-    void (*action)(struct Robot *) = &Navigator_planTakingPicture;
+    void (*action)(struct Robot *) = &Navigator_planLightingGreenLedBeforePicture;
     RobotBehavior_appendStopMovementBehaviorWithChildAction(robot, action);
+}
+
+void Navigator_planLightingGreenLedBeforePicture(struct Robot *robot)
+{
+    void (*action)(struct Robot *) = &Navigator_planTakingPicture;
+    RobotBehavior_appendLightGreenLedBehaviorWithChildAction(robot, action);
 }
 
 void Navigator_planTakingPicture(struct Robot *robot)

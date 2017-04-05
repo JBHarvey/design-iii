@@ -111,6 +111,14 @@ void Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(
     }
 }
 
+void Robot_lightGreenLedAndWaitASecond(struct Robot *robot)
+{
+    CommandSender_sendLightGreenLEDCommand(robot->command_sender);
+    Timer_reset(robot->timer);
+
+    while(!Timer_hasTimePassed(robot->timer, ONE_SECOND));
+}
+
 void Robot_lowerPenAndWaitASecondAndAHalf(struct Robot *robot)
 {
     CommandSender_sendLowerPenCommand(robot->command_sender);
