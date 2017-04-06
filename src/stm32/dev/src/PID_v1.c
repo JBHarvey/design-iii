@@ -82,7 +82,7 @@ bool PID_Compute_Speed(PidType* pid) {
 		pid->ITerm = pid->outMax;
 	else if (pid->ITerm < pid->outMin)
 		pid->ITerm = pid->outMin;
-	FloatType dInput = (input - pid->lastInput); // (input - calculateSpeed(pid->lastInput));
+	FloatType dInput = (input - pid->lastInput);
 
 	/*Compute PID Output*/
 	FloatType output = pid->kp * pid->error + pid->ITerm - pid->kd * dInput;
@@ -295,11 +295,12 @@ FloatType calculateSpeed(FloatType speedEdges) {
 
 	FloatType speedResult = (speedEdges * METERS_PER_TICK)
 			/ SPEED_CALC_TIME_DELAY;
+
 	return speedResult;
 }
 
 uint16_t calculateSpeedToTicks(FloatType speedInMeters) {
-	if (speedInMeters < 0) {
+	if (speedInMeters < 0.0) {
 		speedInMeters = -speedInMeters;
 	}
 	uint16_t ticksResult = (speedInMeters * SPEED_CALC_TIME_DELAY)
@@ -310,7 +311,14 @@ uint16_t calculateSpeedToTicks(FloatType speedInMeters) {
 
 FloatType calculatePosition(FloatType positionEdges) {
 	FloatType positionResult = (positionEdges * METERS_PER_TICK);
+
 	return positionResult;
+}
+
+FloatType calculateRadianFromMeters(FloatType perimeterInMeters) {
+	FloatType radian = perimeterInMeters / WHEEL_RADIUS;
+
+	return radian;
 }
 
 /*******************************************************
@@ -370,20 +378,6 @@ void computeAllPIDS() {
 			MotorSetSpeed(1, cmdMotor1);
 			PID_SetMode(&PID_SPEED1, PID_Mode_Manual);
 			PID_SetMode(&PID_POSITION1, PID_Mode_Manual);
-
-			/*char numberString[MAX_DISPLAY_CHARACTERS];
-			 sprintf(numberString, "%d", numberOfSpeedEdges1);
-			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-			 TM_HD44780_Puts(0, 0, numberString);
-			 sprintf(numberString, "%d", cmdMotor1);
-			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-			 TM_HD44780_Puts(3, 0, numberString);*/
-
-			/* send position to USB */
-			/*TM_USB_VCP_Putc(2);
-			 TM_USB_VCP_Putc(8);
-			 VCP_DataTx((uint8_t*) &positionOutput, sizeof(float));
-			 VCP_DataTx((uint8_t*) &positionOutput, sizeof(float));*/
 		}
 	}
 
@@ -408,13 +402,6 @@ void computeAllPIDS() {
 			PID_SetMode(&PID_SPEED2, PID_Mode_Manual);
 			PID_SetMode(&PID_POSITION2, PID_Mode_Manual);
 
-			/*char numberString[MAX_DISPLAY_CHARACTERS];
-			 sprintf(numberString, "%d", numberOfSpeedEdges2);
-			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-			 TM_HD44780_Puts(0, 0, numberString);
-			 sprintf(numberString, "%d", cmdMotor2);
-			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-			 TM_HD44780_Puts(3, 0, numberString);*/
 		}
 	}
 
@@ -440,13 +427,6 @@ void computeAllPIDS() {
 			PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
 			PID_SetMode(&PID_POSITION3, PID_Mode_Manual);
 
-			/*char numberString[MAX_DISPLAY_CHARACTERS];
-			 sprintf(numberString, "%d", numberOfSpeedEdges3);
-			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-			 TM_HD44780_Puts(0, 0, numberString);
-			 sprintf(numberString, "%d", cmdMotor3);
-			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-			 TM_HD44780_Puts(3, 0, numberString);*/
 		}
 	}
 
@@ -473,13 +453,6 @@ void computeAllPIDS() {
 			PID_SetMode(&PID_SPEED4, PID_Mode_Manual);
 			PID_SetMode(&PID_POSITION4, PID_Mode_Manual);
 
-			/*char numberString[MAX_DISPLAY_CHARACTERS];
-			 sprintf(numberString, "%d", numberOfSpeedEdges4);
-			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-			 TM_HD44780_Puts(0, 0, numberString);
-			 sprintf(numberString, "%d", cmdMotor4);
-			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-			 TM_HD44780_Puts(3, 0, numberString);*/
 		}
 	}
 }
@@ -548,6 +521,36 @@ void computeCustomPIDS(uint8_t *mainState) {
 			stopMove();
 			setState(mainState, MAIN_IDLE);
 		}
+	}
+}
+
+void computeSpeedPIDS() {
+
+	if (PID_Compute_Speed(&PID_SPEED1)) {
+		int cmdMotor1 = PID_SPEED1.myOutput;
+
+		MotorSetSpeed(1, cmdMotor1);
+		PID_SetMode(&PID_SPEED1, PID_Mode_Manual);
+	}
+
+	if (PID_Compute_Speed(&PID_SPEED2)) {
+		int cmdMotor2 = PID_SPEED2.myOutput;
+
+		MotorSetSpeed(2, cmdMotor2);
+		PID_SetMode(&PID_SPEED2, PID_Mode_Manual);
+	}
+
+	if (PID_Compute_Speed(&PID_SPEED3)) {
+		int cmdMotor3 = PID_SPEED3.myOutput;
+
+		MotorSetSpeed(3, cmdMotor3);
+		PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
+	}
+
+	if (PID_Compute_Speed(&PID_SPEED4)) {
+		int cmdMotor4 = PID_SPEED4.myOutput;
+		MotorSetSpeed(4, cmdMotor4);
+		PID_SetMode(&PID_SPEED4, PID_Mode_Manual);
 	}
 }
 

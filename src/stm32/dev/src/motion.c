@@ -19,8 +19,18 @@ float getYMoveFromBuffer(uint8_t *data) {
 	return yMove;
 }
 
+float getSpeedXSetpointFromData(uint8_t *data) {
+	float speedX = *(float *) data;
+	return speedX;
+}
+
+float getSpeedYSetpointFromData(uint8_t *data) {
+	float speedY = *(float *) (data + Y_SPEED_DATA_BUFFER_INDEX);
+	return speedY;
+}
+
 float getRadianMoveFromBuffer(uint8_t *data) {
-	float radian = *(float *) data;
+	float radian = *(float *) (data);
 	return radian;
 }
 
@@ -102,23 +112,13 @@ void setRotateSetpoints(uint8_t *data) {
 	rotateMoveSetpoint = getMoveFromRadian(radian);
 }
 
-void resetPIDValues() {
+void resetPIDResidualValues() {
 
 	// reset pid values
 	PID_SPEED1.ITerm = 0;
 	PID_SPEED2.ITerm = 0;
 	PID_SPEED3.ITerm = 0;
 	PID_SPEED4.ITerm = 0;
-
-	PID_SPEED1.lastInput = 0;
-	PID_SPEED2.lastInput = 0;
-	PID_SPEED3.lastInput = 0;
-	PID_SPEED4.lastInput = 0;
-
-	PID_SPEED1.myInput = 0;
-	PID_SPEED2.myInput = 0;
-	PID_SPEED3.myInput = 0;
-	PID_SPEED4.myInput = 0;
 
 	PID_SPEED1.error = 0;
 	PID_SPEED2.error = 0;
@@ -414,5 +414,71 @@ void stopMove() {
 	MotorSetSpeed(4, 0);
 
 	isMoveDone = 0;
+}
+
+void setSpeedPidSetpoints(uint8_t *data) {
+	float speedXSetpoint = getSpeedXSetpointFromData(data);
+	float speedYSetpoint = getSpeedYSetpointFromData(data);
+
+	// Setting of direction for wheels
+	if (speedXSetpoint > 0.0) {
+		MotorSetDirection(1, COUNTER_CLOCK);
+		MotorSetDirection(3, CLOCK);
+	} else if (speedXSetpoint < 0.0) {
+		MotorSetDirection(1, CLOCK);
+		MotorSetDirection(3, COUNTER_CLOCK);
+	} else {
+		MotorSetDirection(1, BRAKE_G);
+		MotorSetDirection(3, BRAKE_G);
+	}
+
+	if (speedYSetpoint > 0.0) {
+		MotorSetDirection(2, COUNTER_CLOCK);
+		MotorSetDirection(4, CLOCK);
+	} else if (speedYSetpoint < 0.0) {
+		MotorSetDirection(2, CLOCK);
+		MotorSetDirection(4, COUNTER_CLOCK);
+	} else {
+		MotorSetDirection(2, BRAKE_G);
+		MotorSetDirection(4, BRAKE_G);
+	}
+
+	PID_SPEED1.mySetpoint = calculateSpeedToTicks(speedXSetpoint);
+	PID_SPEED2.mySetpoint = calculateSpeedToTicks(speedYSetpoint);
+	PID_SPEED3.mySetpoint = calculateSpeedToTicks(speedXSetpoint);
+	PID_SPEED4.mySetpoint = calculateSpeedToTicks(speedYSetpoint);
+}
+
+void setRotatePidSetpoints(uint8_t *data) {
+	/* get circular distance setpoint */
+	float radian = getRadianMoveFromBuffer(data);
+	if (radian > 0.0) {
+		MotorSetDirection(1, CLOCK);
+		MotorSetDirection(2, CLOCK);
+		MotorSetDirection(3, CLOCK);
+		MotorSetDirection(4, CLOCK);
+
+	} else if (radian < 0.0) {
+		MotorSetDirection(1, COUNTER_CLOCK);
+		MotorSetDirection(2, COUNTER_CLOCK);
+		MotorSetDirection(3, COUNTER_CLOCK);
+		MotorSetDirection(4, COUNTER_CLOCK);
+
+	} else {
+		MotorSetDirection(1, BRAKE_G);
+		MotorSetDirection(2, BRAKE_G);
+		MotorSetDirection(3, BRAKE_G);
+		MotorSetDirection(4, BRAKE_G);
+
+		PID_SPEED1.mySetpoint = 0;
+		PID_SPEED2.mySetpoint = 0;
+		PID_SPEED3.mySetpoint = 0;
+		PID_SPEED4.mySetpoint = 0;
+	}
+
+	PID_SPEED1.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED_LOW);
+	PID_SPEED2.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED_LOW);
+	PID_SPEED3.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED_LOW);
+	PID_SPEED4.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED_LOW);
 }
 

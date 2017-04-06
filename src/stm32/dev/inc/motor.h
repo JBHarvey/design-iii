@@ -24,6 +24,5 @@ void setDir(GPIO_TypeDef* GPIOx, uint16_t Pin1, uint16_t Pin2,
 		uint8_t direction);
 void MotorSetDirection(uint8_t noMotor, uint8_t direction);
 void motorRoutine();
-void motorStopAll();
 
 #endif

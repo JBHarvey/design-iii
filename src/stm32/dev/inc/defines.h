@@ -122,9 +122,10 @@
 #define MAX_POS_COMMAND 0.2
 
 #define CONSIGNE_SPEED_MEDIUM 0.08
-#define CONSIGNE_SPEED_LOW 0.04
+#define CONSIGNE_SPEED_LOW 0.02
 
 #define Y_MOVE_DATA_BUFFER_INDEX 4
+#define Y_SPEED_DATA_BUFFER_INDEX 4
 
 // Pour utiliser la librairie sans que sa plante
 #define ARM_CORTEX_M3
@@ -135,6 +136,6 @@
 #define MAX_SPEED_INDEX 2000
 #define TICKS_BUFFER_SIZE 100
 #define MAXIMUM_CHARACTERS_BUFFER_SIZE 100
-#define WHEEL_RADIUS 0.1057
+#define WHEEL_RADIUS 0.10
 
 #endif

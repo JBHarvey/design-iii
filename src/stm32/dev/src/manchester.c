@@ -29,6 +29,11 @@ uint8_t findIndexOfBeginningCycle(uint16_t analyserIndex,
 	return 0;
 }
 
+/********************************************************
+ * param: manchesterBuffer contenant les bits doubles
+ * return l'index d'un début de cycle.
+ *
+ *********************************************************/
 uint8_t findAValidCycle(uint8_t *manchesterBuffer) {
 	uint8_t analyserIndex = 0;
 	uint8_t beginningCycleIndex = 0;
@@ -63,6 +68,13 @@ uint8_t decodeInformationBits(uint8_t indexOfBeginningCycle,
 	}
 	return VALID_INFORMATION;
 }
+
+/*******************************************************************
+ * param: informationBits : buffer contenant les bits simples
+ * param: manchesterBuffer: buffer contenant les bits doubles captés par la pin.
+ * return: VALID_INFORMATION OU BAD_INFORMATION
+ *
+ *******************************************************************/
 
 uint8_t decodeManchester(uint8_t * informationBits, uint8_t *manchesterBuffer) {
 	uint8_t indexOfBeginningCycle = findAValidCycle(manchesterBuffer);
@@ -150,8 +162,9 @@ void setMessageToDisplay(uint8_t figure, char *orientation, uint8_t factor,
 
 void displayManchesterMessage(char *messageToDisplay) {
 	TM_HD44780_Init(16, 2);
+	TM_HD44780_Clear();
 	TM_HD44780_Puts(0, 1, messageToDisplay);
-	TM_HD44780_Puts(0, 0, "Manchester Code");
+	TM_HD44780_Puts(0, 0, "Manchester code");
 }
 
 uint8_t isFigureEqual(uint8_t *figure, uint8_t *figureVerification) {
@@ -185,43 +198,40 @@ void tryToDecodeManchesterCode(uint8_t *manchesterState,
 		char *manchesterOrientationVerification,
 		uint8_t *manchesterFactorVerification) {
 
+	// check if state is ready to decode
 	if (*manchesterState == MANCHESTER_DECODE) {
 
-		// les 8 bits contenant l'information
+		// buffer contenant l'information compressée 10 devient 1 et 01 devient 0
 		uint8_t informationBits[INFORMATION_BITS_LENGTH];
+
+		// décode le code manchester et retourne VALID_INFORMATION si valide
 		if (decodeManchester(informationBits, manchesterBuffer)
 				== VALID_INFORMATION) {
 
-			uint8_t figure = getFigureFromInformationBits(informationBits);
+			*manchesterFigureVerification = getFigureFromInformationBits(
+					informationBits);
 
-			char orientation[ORIENTATION_LENGTH];
-			setOrientationFromInformationBits(informationBits, orientation);
+			setOrientationFromInformationBits(informationBits,
+					manchesterOrientationVerification);
 
-			uint8_t factor = getFactorFromInformationBits(informationBits);
+			*manchesterFactorVerification = getFactorFromInformationBits(
+					informationBits);
 
-			if (isSameDataThanPreviousIteration(&figure,
-					manchesterFigureVerification, orientation,
-					manchesterOrientationVerification, &factor,
-					manchesterFactorVerification)) {
-				char messageToDisplay[MESSAGE_TO_DISPLAY_LENGTH];
+			char messageToDisplay[MESSAGE_TO_DISPLAY_LENGTH];
 
-				setMessageToDisplay(figure, orientation, factor,
-						messageToDisplay);
-				displayManchesterMessage(messageToDisplay);
-				disableExternalInterruptLine4();
-				disableTimer5Interrupt();
-				*manchesterState = MANCHESTER_IDLE;
-				GPIO_SetBits(GPIOD, GPIO_Pin_13);
-			} else {
-				*manchesterFigureVerification = figure;
-				strcpy(manchesterOrientationVerification, orientation);
-				*manchesterFactorVerification = factor;
-				disableTimer5Interrupt();
-				*manchesterState = MANCHESTER_WAIT_FOR_DECODING;
-				initializeExternalInterruptLine4();
-			}
+			setMessageToDisplay(*manchesterFigureVerification,
+					manchesterOrientationVerification,
+					*manchesterFactorVerification, messageToDisplay);
 
+			displayManchesterMessage(messageToDisplay);
+			disableExternalInterruptLine4();
+			disableTimer5Interrupt();
+			*manchesterState = MANCHESTER_IDLE;
+			GPIO_SetBits(GPIOD, GPIO_Pin_13);
+
+			// recommence l'acquisition si le code décodé est non-valide
 		} else {
+			// On désactive l'interruption pour qu'il recommence
 			disableTimer5Interrupt();
 			*manchesterState = MANCHESTER_WAIT_FOR_DECODING;
 			initializeExternalInterruptLine4();

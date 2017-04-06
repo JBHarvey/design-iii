@@ -23,47 +23,48 @@ uint8_t readUSB() {
 	return 0;
 }
 
-void sendMoveMeasures(int numberOfPositionEdges1, int numberOfPositionEdges2,
-		int numberOfPositionEdges3, int numberOfPositionEdges4,
-		int numberOfSpeedEdges1, int numberOfSpeedEdges2,
-		int numberOfSpeedEdges3, int numberOfSpeedEdges4) {
-	uint8_t dataToSend[34];
+void sendMoveMeasures(float positionX, float positionY, float speedX,
+		float speedY, float radian, float radianSpeed) {
+	uint8_t dataToSend[18];
 	uint8_t *dataToSendPointer = dataToSend;
 
 	if (isRobotRotating) {
+
 		dataToSend[0] = COMMAND_SEND_ROTATION_MEASURES;
+
+		dataToSend[1] = 8;
+		dataToSendPointer += 2;
+
+		memcpy(dataToSendPointer, &radian, 4);
+		dataToSendPointer += 4;
+
+		memcpy(dataToSendPointer, &radianSpeed, 4);
+		dataToSendPointer += 4;
+
+		/* il faut envoyer les données par USART, sinon, ca crash ici. */
+		VCP_DataTx(dataToSend, 10);
+
 	} else {
 		dataToSend[0] = COMMAND_SEND_MOVE_MEASURES;
+
+		dataToSend[1] = 16;
+		dataToSendPointer += 2;
+
+		memcpy(dataToSendPointer, &positionX, 4);
+		dataToSendPointer += 4;
+
+		memcpy(dataToSendPointer, &positionY, 4);
+		dataToSendPointer += 4;
+
+		memcpy(dataToSendPointer, &speedX, 4);
+		dataToSendPointer += 4;
+
+		memcpy(dataToSendPointer, &speedY, 4);
+		dataToSendPointer += 4;
+
+		/* il faut envoyer les données par USART, sinon, ca crash ici. */
+		VCP_DataTx(dataToSend, 18);
 	}
-
-	dataToSend[1] = 32;
-	dataToSendPointer += 2;
-
-	memcpy(dataToSendPointer, &numberOfPositionEdges1, 4);
-	dataToSendPointer += 4;
-
-	memcpy(dataToSendPointer, &numberOfPositionEdges2, 4);
-	dataToSendPointer += 4;
-
-	memcpy(dataToSendPointer, &numberOfPositionEdges3, 4);
-	dataToSendPointer += 4;
-
-	memcpy(dataToSendPointer, &numberOfPositionEdges4, 4);
-	dataToSendPointer += 4;
-
-	memcpy(dataToSendPointer, &numberOfSpeedEdges1, 4);
-	dataToSendPointer += 4;
-
-	memcpy(dataToSendPointer, &numberOfSpeedEdges2, 4);
-	dataToSendPointer += 4;
-
-	memcpy(dataToSendPointer, &numberOfSpeedEdges3, 4);
-	dataToSendPointer += 4;
-
-	memcpy(dataToSendPointer, &numberOfSpeedEdges4, 4);
-	dataToSendPointer += 4;
-
-	VCP_DataTx(dataToSend, 34);
 }
 
 void sendRedLightConfirmation() {
@@ -105,8 +106,8 @@ void sendManchesterCode(uint8_t figure, uint8_t factor, uint8_t *orientation) {
 	uint8_t dataToSend[5];
 	dataToSend[0] = COMMAND_DECODED_MANCHESTER;
 	dataToSend[1] = 3;
-	dataToSend[2] = 1;
-	dataToSend[3] = 4;
+	dataToSend[2] = figure;
+	dataToSend[3] = factor;
 
 	switch (orientation[2]) {
 	case 'o':
@@ -119,11 +120,11 @@ void sendManchesterCode(uint8_t figure, uint8_t factor, uint8_t *orientation) {
 		dataToSend[4] = 'S';
 		break;
 	case 'e':
-		dataToSend[4] = 'e';
+		dataToSend[4] = 'W';
 		break;
 	}
 
-	dataToSend[4] = 'N';
+	//dataToSend[4] = 'N';
 
 	VCP_DataTx(dataToSend, 5);
 }

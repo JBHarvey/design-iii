@@ -130,6 +130,8 @@ uint16_t calculateSpeedToTicks(FloatType speedInMeters);
 
 FloatType calculatePosition(FloatType positionEdges);
 
+FloatType calculateRadianFromMeters(FloatType perimeterInMeters);
+
 //void PID_Initialize(PidType* pid);
 
 /*******************************************************
@@ -138,6 +140,7 @@ FloatType calculatePosition(FloatType positionEdges);
 void initAllPIDS();
 void computeAllPIDS();
 void computeCustomPIDS(uint8_t *mainState);
+void computeSpeedPIDS();
 uint8_t isSetpointReached(float setPoint, FloatType travelledDistance);
 uint8_t areWheelsStopped();
 

@@ -7,8 +7,10 @@
 
 #include "tm_stm32f4_adc.h"
 
-void initAdcAntenne();
+void initAdcIR();
 
-uint16_t getAdcAntenne();
+uint16_t getAdcIR1();
+uint16_t getAdcIR2();
+uint16_t getAdcIR3();
 
 #endif
