@@ -437,8 +437,9 @@ void Navigator_planTowardsCenterOfDrawingZone(struct Robot *robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
     struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
-    struct Coordinates *south_west_corner = robot->navigator->navigable_map->south_western_drawing_corner;
-    struct Coordinates *north_east_corner = robot->navigator->navigable_map->north_eastern_drawing_corner;
+    struct Map *map = robot->navigator->navigable_map;
+    struct Coordinates *south_west_corner = map->south_western_drawing_corner;
+    struct Coordinates *north_east_corner = map->north_eastern_drawing_corner;
     int center_x = Coordinates_computeMeanX(south_west_corner, north_east_corner);
     int center_y = Coordinates_computeMeanY(south_west_corner, north_east_corner);
     struct Coordinates *center_of_drawing_zone = Coordinates_new(center_x, center_y);
