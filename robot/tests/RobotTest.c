@@ -1173,7 +1173,7 @@ Test(RobotBehaviors,
      , .fini = teardown_robot)
 {
     assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planRisePenBeforeGoingToAntennaStop,
-            &Robot_lowerPenAndWaitASecondAndAHalf);
+            &Robot_risePenAndWaitASecondAndAHalf);
 }
 
 Test(RobotBehaviors,

@@ -494,7 +494,7 @@ void Navigator_planDrawing(struct Robot *robot)
 void Navigator_planRisePenBeforeGoingToAntennaStop(struct Robot *robot)
 {
     void (*action)(struct Robot *) = &Navigator_planTowardsAntennaStop;
-    RobotBehavior_appendLowerPenBehaviorWithChildAction(robot, action);
+    RobotBehavior_appendRisePenBehaviorWithChildAction(robot, action);
 }
 
 void Navigator_planTowardsAntennaStop(struct Robot *robot)
