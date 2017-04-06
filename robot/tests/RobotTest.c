@@ -1003,47 +1003,14 @@ Test(RobotBehaviors,
 }
 
 Test(RobotBehaviors,
-     given_aBehaviorWithPlanTowardsObstacleZoneWestSideAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanUpdateMapBeforeGoingToDrawingZoneAction
+     given_aBehaviorWithPlanTowardsObstacleZoneWestSideAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanTowardsDrawingZoneAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
     assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsObstacleZoneWestSide,
-            &Navigator_planUpdateMapBeforeGoingToDrawingZone);
-}
-
-Test(RobotBehaviors,
-     given_aBehaviorWithPlanUpdateMapBeforeGoingToDrawingZone_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
-     , .init = setup_robot
-     , .fini = teardown_robot)
-{
-    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planUpdateMapBeforeGoingToDrawingZone);
-}
-
-Test(RobotBehaviors,
-     given_aBehaviorWithUpdateMapBeforeGoingToDrawingZone_when_behaviorActs_then_theBeforeLastBehaviorHasAnUpdateNavigableMapAction
-     , .init = setup_robot
-     , .fini = teardown_robot)
-{
-    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planUpdateMapBeforeGoingToDrawingZone,
-            &Navigator_updateNavigableMap);
-}
-
-Test(RobotBehaviors,
-     given_aBehaviorWithUpdateMapBeforeGoingToDrawingZone_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
-     , .init = setup_robot
-     , .fini = teardown_robot)
-{
-    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planUpdateMapBeforeGoingToDrawingZone);
-}
-
-Test(RobotBehaviors,
-     given_aBehaviorWithUpdateMapBeforeGoingToDrawingZone_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsDrawingZoneAction
-     , .init = setup_robot
-     , .fini = teardown_robot)
-{
-    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planUpdateMapBeforeGoingToDrawingZone,
             &Navigator_planTowardsDrawingZone);
 }
+
 Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsCenterOfDrawingZoneAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
