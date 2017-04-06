@@ -30,9 +30,9 @@ int main(int argc, char *argv[])
 
         if(pose_filter->robot->current_state->flags->navigable_map_is_ready) {
             PoseFilter_executeFilter(pose_filter, callbacks.updateFromCameraOnly);
+            Robot_resetAllActuators(robot);
         }
 
-        Robot_resetAllActuators(robot);
         Robot_updateBehaviorIfNeeded(robot);
         Robot_act(robot);
 

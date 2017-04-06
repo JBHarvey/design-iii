@@ -310,18 +310,6 @@ Test(Wheels, given_anAngle_when_preparesRotationCommand_then_theWheelsRotationAc
     Angle_delete(angle);
 }
 
-Test(Wheels, given_aZeroAngle_when_preparesRotationCommand_then_theWheelsRotationActuatorHasNotPreparedACommand
-     , .init = setup_wheels
-     , .fini = teardown_wheels)
-{
-    struct Angle *angle = Angle_new(0);
-
-    Wheels_prepareRotationCommand(wheels, angle);
-    cr_assert(!wheels->rotation_actuator->has_prepared_new_command);
-
-    Angle_delete(angle);
-}
-
 Test(Wheels, given_aSpeedVector_when_preparesSpeedCommand_then_theSpeedCommandContainsTheSpeedVector
      , .init = setup_wheels
      , .fini = teardown_wheels)

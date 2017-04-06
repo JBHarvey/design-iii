@@ -111,9 +111,7 @@ void Wheels_prepareSpeedCommand(struct Wheels *wheels, struct Coordinates *speed
 
 void Wheels_prepareRotationCommand(struct Wheels *wheels, struct Angle *angle)
 {
-    if(angle->theta != 0) {
-        Actuator_preparesCommand(wheels->rotation_actuator);
-    }
+    Actuator_preparesCommand(wheels->rotation_actuator);
 
     wheels->rotation_command->theta = angle->theta;
 }

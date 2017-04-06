@@ -17,6 +17,11 @@ const int PEN_DOWN_COMMAND_SENT = 1;
 const int PEN_DOWN_COMMAND_NOT_SENT = 0;
 const int PEN_UP_COMMAND_SENT = 1;
 const int PEN_UP_COMMAND_NOT_SENT = 0;
+const int NON_ZERO_X_VALUE = 10;
+const int NON_ZERO_Y_VALUE = 15;
+const int NON_ZERO_X_SPEED_VALUE = 10000;
+const int NON_ZERO_Y_SPEED_VALUE = 15000;
+int NON_ZERO_THETA_VALUE = 21000;
 int manchester_code_command_count;
 
 void assertBehaviorHasFreeFlagsEntry(struct Behavior *behavior)
@@ -57,7 +62,6 @@ void assertBehaviorHasOrientationEntry(struct Behavior *behavior, enum CardinalD
     }
 
     assertBehaviorHasAngleEntry(behavior, angle);
-
 }
 
 void assertBehaviorHasFreePoseEntry(struct Behavior *behavior)
@@ -192,14 +196,34 @@ void teardown_robot(void)
     Robot_delete(robot);
 }
 
-Test(Robot, given_aRobot_when_askedToResetAllActuators_then_hasPrepareCommandStatusOfAllActuatorsAreSetToZero
+Test(Robot, given_aRobot_when_askedToResetAllActuators_then_hasPrepareCommandStatusOfRotationActuatorIsSetToZero
      , .init = setup_robot
      , .fini = teardown_robot)
 {
+    Actuator_preparesCommand(robot->wheels->rotation_actuator);
+    Robot_resetAllActuators(robot);
+
+    cr_assert_eq(robot->wheels->rotation_actuator->has_prepared_new_command, 0);
+}
+
+Test(Robot, given_aRobot_when_askedToResetAllActuators_then_hasPrepareCommandStatusOfTranslationActuatorIsSetToZero
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Actuator_preparesCommand(robot->wheels->translation_actuator);
     Robot_resetAllActuators(robot);
 
     cr_assert_eq(robot->wheels->translation_actuator->has_prepared_new_command, 0);
-    cr_assert_eq(robot->wheels->rotation_actuator->has_prepared_new_command, 0);
+}
+
+Test(Robot, given_aRobot_when_askedToResetAllActuators_then_hasPrepareCommandStatusOfSpeedActuatorIsSetToZero
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Actuator_preparesCommand(robot->wheels->speed_actuator);
+    Robot_resetAllActuators(robot);
+
+    cr_assert_eq(robot->wheels->speed_actuator->has_prepared_new_command, 0);
 }
 
 Test(Robot, given_aRobot_when_askedToSendAReadyToStartSignal_then_theSignalIsSent
