@@ -364,8 +364,7 @@ Test(RobotBehaviors,
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsAntennaStop);
 }
 
-/* tahoeuaoheusnoheustaohseuhaonse hasoneh usnaothe usnaothe usnhto usnatohesu aho
- * ta oheuhaoe usnthaoeus thaosnehu snaothe usnathoeu snathoeus ntahosehtua */
+/* End of first action for navigable behaviors */
 
 void assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(void (*action)(struct Robot *))
 {
@@ -630,14 +629,27 @@ Test(RobotBehaviors,
     assertBehaviorHasManchesterCodeIsReceivedFlagEntry(last_behavior);
 }
 
+/**/
 Test(RobotBehaviors,
-     given_aBehaviorWithPlanFetchingManchesterCodeAction_when_behaviorActs_then_theLastBehaviorHasAPlanLowerPenForAntennaMarkAction
+     given_aBehaviorWithPlanFetchingManchesterCodeActionAndNoCycleCompleted_when_behaviorActs_then_theLastBehaviorHasAPlanLowerPenForAntennaMarkAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
+    Flags_setHasCompletedACycle(robot->current_state->flags, FALSE);
     assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planFetchingManchesterCode,
             &Navigator_planLowerPenForAntennaMark);
 }
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanFetchingManchesterCodeActionAndACycleHasBeenCompleted_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsObstacleZoneEastSideAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Flags_setHasCompletedACycle(robot->current_state->flags, TRUE);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planFetchingManchesterCode,
+            &Navigator_planTowardsObstacleZoneEastSide);
+}
+/**/
 
 Test(RobotBehaviors,
      given_aBehaviorWithPlanLoweringPenForAntennaMarkAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry

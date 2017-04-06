@@ -278,7 +278,15 @@ void Navigator_planStopMotionBeforeFetchingManchester(struct Robot *robot)
 
 void Navigator_planFetchingManchesterCode(struct Robot *robot)
 {
-    void (*action)(struct Robot *) = &Navigator_planLowerPenForAntennaMark;
+
+    void (*action)(struct Robot *);
+
+    if(robot->current_state->flags->has_completed_a_cycle) {
+        action = &Navigator_planTowardsObstacleZoneEastSide;
+    } else {
+        action = &Navigator_planLowerPenForAntennaMark;
+    }
+
     RobotBehavior_appendFetchManchesterCodeBehaviorWithChildAction(robot, action);
 }
 
