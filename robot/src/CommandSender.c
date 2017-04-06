@@ -47,26 +47,44 @@ void CommandSender_changeTarget(struct CommandSender *command_sender, struct Com
 
 void CommandSender_sendTranslateCommand(struct CommandSender *command_sender,
                                         struct Command_Translate translate_command,
-                                        struct Actuator *wheels_actuator)
+                                        struct Wheels *wheels)
 {
-    Actuator_preparesCommand(wheels_actuator);
+    struct Coordinates *translation_vector = Coordinates_new(translate_command.x, translate_command.y);
+
+    /* TODO: If it is wanted to use the PoseFilter that uses the wheels as well as the world camera
+     * with a position servoing, Command_translate will need an angle attribute in order to work
+     * properly. */
+    struct Angle *current_angle = Angle_new(0);
+
+    Wheels_prepareTranslationCommand(wheels, translation_vector, current_angle);
     (*(command_sender->command_callbacks.sendTranslateCommand))(translate_command);
+
+    Coordinates_delete(translation_vector);
+    Angle_delete(current_angle);
 }
 
 void CommandSender_sendSpeedsCommand(struct CommandSender *command_sender,
                                      struct Command_Speeds speeds_command,
-                                     struct Actuator *wheels_actuator)
+                                     struct Wheels *wheels)
 {
-    Actuator_preparesCommand(wheels_actuator);
+    struct Coordinates *speed_vector = Coordinates_new(speeds_command.x, speeds_command.y);
+
+    Wheels_prepareSpeedCommand(wheels, speed_vector);
     (*(command_sender->command_callbacks.sendSpeedsCommand))(speeds_command);
+
+    Coordinates_delete(speed_vector);
 }
 
 void CommandSender_sendRotateCommand(struct CommandSender *command_sender,
                                      struct Command_Rotate rotate_command,
-                                     struct Actuator *wheels_actuator)
+                                     struct Wheels *wheels)
 {
-    Actuator_preparesCommand(wheels_actuator);
+    struct Angle *angle = Angle_new(rotate_command.theta);
+
+    Wheels_prepareRotationCommand(wheels, angle);
     (*(command_sender->command_callbacks.sendRotateCommand))(rotate_command);
+
+    Angle_delete(angle);
 }
 
 void CommandSender_sendLightRedLEDCommand(struct CommandSender *command_sender)

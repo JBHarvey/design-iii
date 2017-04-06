@@ -31,14 +31,12 @@ Test(Wheels, creation_destruction
     cr_assert(wheels->rotation_sensor->has_received_new_data == 0);
     cr_assert(wheels->translation_actuator->has_prepared_new_command == 0);
     cr_assert(wheels->rotation_actuator->has_prepared_new_command == 0);
-
-    // Actuator_preparesCommand();
-    // Actuator_sendsCommand();
     cr_assert(Coordinates_haveTheSameValues(wheels->translation_data_movement, coordinates_zero));
     cr_assert(Coordinates_haveTheSameValues(wheels->translation_data_speed, coordinates_zero));
     cr_assert(Angle_smallestAngleBetween(wheels->rotation_data_movement, angle_zero) == 0);
     cr_assert(Angle_smallestAngleBetween(wheels->rotation_data_speed, angle_zero) == 0);
     cr_assert(Coordinates_haveTheSameValues(wheels->translation_command, coordinates_zero));
+    cr_assert(Coordinates_haveTheSameValues(wheels->speed_command, coordinates_zero));
     cr_assert(Angle_smallestAngleBetween(wheels->rotation_command, angle_zero) == 0);
 
     Coordinates_delete(coordinates_zero);
@@ -134,6 +132,49 @@ Test(Wheels, given_receivedData_when_readsRotationData_then_rotationSensorHasNoM
     Angle_delete(rotation_speed);
 
 }
+
+Test(Wheels, given_receivedData_when_readsSpeedData_then_theSpeedVectorIsModifiedToCorrespondTheReceivedOne
+     , .init = setup_wheels
+     , .fini = teardown_wheels)
+{
+    struct Coordinates *received_translation_movement = Coordinates_new(WHEELS_COMMMAND_X, WHEELS_COMMMAND_Y);
+    struct Coordinates *received_translation_speed = Coordinates_new(WHEELS_COMMMAND_X_SPEED, WHEELS_COMMMAND_Y_SPEED);
+    struct Angle *received_angle = Angle_new(0);
+
+    Wheels_receiveTranslationData(wheels, received_translation_movement, received_translation_speed);
+
+    struct Coordinates *translation_speed = Coordinates_zero();
+    Wheels_readSpeedData(wheels, translation_speed);
+
+    cr_assert(Coordinates_haveTheSameValues(received_translation_speed, translation_speed));
+
+    Angle_delete(received_angle);
+    Coordinates_delete(received_translation_speed);
+    Coordinates_delete(received_translation_movement);
+    Coordinates_delete(translation_speed);
+}
+
+Test(Wheels, given_receivedData_when_readsSpeedData_then_translationSensorHasNoMoreNewData
+     , .init = setup_wheels
+     , .fini = teardown_wheels)
+{
+    struct Coordinates *received_translation_movement = Coordinates_new(WHEELS_COMMMAND_X, WHEELS_COMMMAND_Y);
+    struct Coordinates *received_translation_speed = Coordinates_new(WHEELS_COMMMAND_X_SPEED, WHEELS_COMMMAND_Y_SPEED);
+    struct Angle *received_angle = Angle_new(0);
+
+    Wheels_receiveTranslationData(wheels, received_translation_movement, received_translation_speed);
+
+    struct Coordinates *translation_speed = Coordinates_zero();
+    Wheels_readSpeedData(wheels, translation_speed);
+
+    cr_assert(!wheels->translation_sensor->has_received_new_data);
+
+    Angle_delete(received_angle);
+    Coordinates_delete(received_translation_speed);
+    Coordinates_delete(received_translation_movement);
+    Coordinates_delete(translation_speed);
+}
+
 
 Test(Wheels, given_noReceivedDataAndAZeroAngle_when_readsTranslationData_then_coordinatesZeroIsReturned
      , .init = setup_wheels
@@ -279,6 +320,31 @@ Test(Wheels, given_aZeroAngle_when_preparesRotationCommand_then_theWheelsRotatio
     cr_assert(!wheels->rotation_actuator->has_prepared_new_command);
 
     Angle_delete(angle);
+}
+
+Test(Wheels, given_aSpeedVector_when_preparesSpeedCommand_then_theSpeedCommandContainsTheSpeedVector
+     , .init = setup_wheels
+     , .fini = teardown_wheels)
+{
+    struct Coordinates *speed_vector = Coordinates_new(WHEELS_COMMMAND_X_SPEED, WHEELS_COMMMAND_Y_SPEED);
+
+    Wheels_prepareSpeedCommand(wheels, speed_vector);
+    cr_assert(Coordinates_haveTheSameValues(speed_vector, wheels->speed_command));
+
+    Coordinates_delete(speed_vector);
+}
+
+
+Test(Wheels, given_aSpeedVector_when_preparesSpeedCommand_then_theWheelsSpeedActuatorHasPreparedACommand
+     , .init = setup_wheels
+     , .fini = teardown_wheels)
+{
+    struct Coordinates *speed_vector = Coordinates_new(WHEELS_COMMMAND_X_SPEED, WHEELS_COMMMAND_Y_SPEED);
+
+    Wheels_prepareSpeedCommand(wheels, speed_vector);
+    cr_assert(wheels->speed_actuator->has_prepared_new_command);
+
+    Coordinates_delete(speed_vector);
 }
 
 Test(Wheels,

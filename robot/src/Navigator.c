@@ -123,7 +123,7 @@ static void sendSpeedsCommand(struct Robot *robot, int angular_distance_to_targe
         .y = y
     };
 
-    CommandSender_sendSpeedsCommand(robot->command_sender, speeds_command, robot->wheels->translation_actuator);
+    CommandSender_sendSpeedsCommand(robot->command_sender, speeds_command, robot->wheels);
 }
 
 static void sendRotationCommand(struct Robot *robot, int value)
@@ -132,7 +132,7 @@ static void sendRotationCommand(struct Robot *robot, int value)
         .theta = value
     };
 
-    CommandSender_sendRotateCommand(robot->command_sender, rotate_command, robot->wheels->rotation_actuator);
+    CommandSender_sendRotateCommand(robot->command_sender, rotate_command, robot->wheels);
 }
 
 static void sendRotationCommandForNavigation(struct Robot *robot, int angle_to_target)
@@ -174,7 +174,7 @@ void Navigator_stopMovement(struct Robot *robot)
         .x = 0,
         .y = 0
     };
-    CommandSender_sendSpeedsCommand(robot->command_sender, speeds_command, robot->wheels->rotation_actuator);
+    CommandSender_sendSpeedsCommand(robot->command_sender, speeds_command, robot->wheels);
 }
 
 void Navigator_navigateRobotTowardsGoal(struct Robot *robot)

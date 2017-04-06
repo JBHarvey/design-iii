@@ -39,6 +39,11 @@ int manchester_code_validator;
 int manchester_signal_validator;
 
 const int EXPECTED_VALIDATOR_VALUE = 1;
+const int X_VALUE = 10;
+const int Y_VALUE = 15;
+const int X_SPEED_VALUE = 10000;
+const int Y_SPEED_VALUE = 15000;
+const int THETA_VALUE = 21000;
 
 struct CommandSender *command_sender;
 
@@ -155,19 +160,35 @@ Test(CommandSender, given_aCommandSenderCallbacks_when_changesCommandSenderTarge
 }
 
 Test(CommandSender,
-     given_aTranslateCallback_when_askedToSendCommand_then_theWheelsActuatorHasPrepareCommandStatusIsSetToOne
+     given_aTranslateCallbackWithANonZeroCoordinateTranslateCommand_when_askedToSendCommand_then_theWheelsActuatorHasPrepareCommandStatusIsSetToOne
      , .init = setup_CommandSender
      , .fini = teardown_CommandSender)
 {
     struct CommandSender_Callbacks test_callbacks = generateCommandSenderTestTarget();
     CommandSender_changeTarget(command_sender, test_callbacks);
-    struct Command_Translate translate_command = { .x = 0, . y = 0};
-    struct Actuator *wheels_actuator = Actuator_new();
+    struct Command_Translate translate_command = { .x = X_VALUE, . y = Y_VALUE};
+    struct Wheels *wheels = Wheels_new();
 
-    CommandSender_sendTranslateCommand(command_sender, translate_command, wheels_actuator);
-    cr_assert_eq(wheels_actuator->has_prepared_new_command, 1);
+    CommandSender_sendTranslateCommand(command_sender, translate_command, wheels);
+    cr_assert_eq(wheels->translation_actuator->has_prepared_new_command, 1);
 
-    Actuator_delete(wheels_actuator);
+    Wheels_delete(wheels);
+}
+
+Test(CommandSender, given_aTranslateCallback_when_askedToSendCommand_then_theCommandIsStoredIntoTheWheels
+     , .init = setup_CommandSender
+     , .fini = teardown_CommandSender)
+{
+    struct CommandSender_Callbacks test_callbacks = generateCommandSenderTestTarget();
+    CommandSender_changeTarget(command_sender, test_callbacks);
+    struct Command_Translate translate_command = { .x = X_VALUE, .y = Y_VALUE};
+    struct Wheels *wheels = Wheels_new();
+
+    CommandSender_sendTranslateCommand(command_sender, translate_command, wheels);
+    cr_assert_eq(wheels->translation_command->x, X_VALUE);
+    cr_assert_eq(wheels->translation_command->y, Y_VALUE);
+
+    Wheels_delete(wheels);
 }
 
 Test(CommandSender, given_aTranslateCallback_when_askedToSendCommand_then_theCallbackIsCalled
@@ -177,12 +198,12 @@ Test(CommandSender, given_aTranslateCallback_when_askedToSendCommand_then_theCal
     struct CommandSender_Callbacks test_callbacks = generateCommandSenderTestTarget();
     CommandSender_changeTarget(command_sender, test_callbacks);
     struct Command_Translate translate_command = { .x = 0, . y = 0};
-    struct Actuator *wheels_actuator = Actuator_new();
+    struct Wheels *wheels = Wheels_new();
 
-    CommandSender_sendTranslateCommand(command_sender, translate_command, wheels_actuator);
+    CommandSender_sendTranslateCommand(command_sender, translate_command, wheels);
     cr_assert_eq(translate_validator, EXPECTED_VALIDATOR_VALUE);
 
-    Actuator_delete(wheels_actuator);
+    Wheels_delete(wheels);
 }
 
 Test(CommandSender,
@@ -193,12 +214,29 @@ Test(CommandSender,
     struct CommandSender_Callbacks test_callbacks = generateCommandSenderTestTarget();
     CommandSender_changeTarget(command_sender, test_callbacks);
     struct Command_Speeds speeds_command = { .x = 0, . y = 0};
-    struct Actuator *wheels_actuator = Actuator_new();
+    struct Wheels *wheels = Wheels_new();
 
-    CommandSender_sendSpeedsCommand(command_sender, speeds_command, wheels_actuator);
-    cr_assert_eq(wheels_actuator->has_prepared_new_command, 1);
+    CommandSender_sendSpeedsCommand(command_sender, speeds_command, wheels);
+    cr_assert_eq(wheels->speed_actuator->has_prepared_new_command, 1);
 
-    Actuator_delete(wheels_actuator);
+    Wheels_delete(wheels);
+}
+
+Test(CommandSender,
+     given_aSpeedsCallback_when_askedToSendCommand_then_theCommandIsStoredIntoTheWheels
+     , .init = setup_CommandSender
+     , .fini = teardown_CommandSender)
+{
+    struct CommandSender_Callbacks test_callbacks = generateCommandSenderTestTarget();
+    CommandSender_changeTarget(command_sender, test_callbacks);
+    struct Command_Speeds speeds_command = { .x = X_SPEED_VALUE, .y = Y_SPEED_VALUE};
+    struct Wheels *wheels = Wheels_new();
+
+    CommandSender_sendSpeedsCommand(command_sender, speeds_command, wheels);
+    cr_assert_eq(wheels->speed_command->x, X_SPEED_VALUE);
+    cr_assert_eq(wheels->speed_command->y, Y_SPEED_VALUE);
+
+    Wheels_delete(wheels);
 }
 
 Test(CommandSender, given_aSpeedsCallback_when_askedToSendCommand_then_theCallbackIsCalled
@@ -208,28 +246,45 @@ Test(CommandSender, given_aSpeedsCallback_when_askedToSendCommand_then_theCallba
     struct CommandSender_Callbacks test_callbacks = generateCommandSenderTestTarget();
     CommandSender_changeTarget(command_sender, test_callbacks);
     struct Command_Speeds speeds_command = { .x = 0, . y = 0};
-    struct Actuator *wheels_actuator = Actuator_new();
+    struct Wheels *wheels = Wheels_new();
 
-    CommandSender_sendSpeedsCommand(command_sender, speeds_command, wheels_actuator);
+    CommandSender_sendSpeedsCommand(command_sender, speeds_command, wheels);
     cr_assert_eq(speeds_validator, EXPECTED_VALIDATOR_VALUE);
 
-    Actuator_delete(wheels_actuator);
+    Wheels_delete(wheels);
+
 }
 
 Test(CommandSender,
-     given_aRotateCallback_when_askedToSendCommand_then_theWheelsActuatorHasPrepareCommandStatusIsSetToOne
+     given_aRotateCallbackWithANonZeroAngleRotateCommand_when_askedToSendCommand_then_theWheelsActuatorHasPrepareCommandStatusIsSetToOne
      , .init = setup_CommandSender
      , .fini = teardown_CommandSender)
 {
     struct CommandSender_Callbacks test_callbacks = generateCommandSenderTestTarget();
     CommandSender_changeTarget(command_sender, test_callbacks);
-    struct Command_Rotate rotate_command = { .theta = 0 };
-    struct Actuator *wheels_actuator = Actuator_new();
+    struct Command_Rotate rotate_command = { .theta = THETA_VALUE };
+    struct Wheels *wheels = Wheels_new();
 
-    CommandSender_sendRotateCommand(command_sender, rotate_command, wheels_actuator);
-    cr_assert_eq(wheels_actuator->has_prepared_new_command, 1);
+    CommandSender_sendRotateCommand(command_sender, rotate_command, wheels);
+    cr_assert_eq(wheels->rotation_actuator->has_prepared_new_command, 1);
 
-    Actuator_delete(wheels_actuator);
+    Wheels_delete(wheels);
+}
+
+Test(CommandSender,
+     given_aRotateCallback_when_askedToSendCommand_then_theCommandIsStoredIntoTheWheels
+     , .init = setup_CommandSender
+     , .fini = teardown_CommandSender)
+{
+    struct CommandSender_Callbacks test_callbacks = generateCommandSenderTestTarget();
+    CommandSender_changeTarget(command_sender, test_callbacks);
+    struct Command_Rotate rotate_command = { .theta = THETA_VALUE };
+    struct Wheels *wheels = Wheels_new();
+
+    CommandSender_sendRotateCommand(command_sender, rotate_command, wheels);
+    cr_assert_eq(wheels->rotation_command->theta, THETA_VALUE);
+
+    Wheels_delete(wheels);
 }
 
 Test(CommandSender, given_aRotateCallback_when_askedToSendCommand_then_theCallbackIsCalled
@@ -239,12 +294,12 @@ Test(CommandSender, given_aRotateCallback_when_askedToSendCommand_then_theCallba
     struct CommandSender_Callbacks test_callbacks = generateCommandSenderTestTarget();
     CommandSender_changeTarget(command_sender, test_callbacks);
     struct Command_Rotate rotate_command = { .theta = 0 };
-    struct Actuator *wheels_actuator = Actuator_new();
+    struct Wheels *wheels = Wheels_new();
 
-    CommandSender_sendRotateCommand(command_sender, rotate_command, wheels_actuator);
+    CommandSender_sendRotateCommand(command_sender, rotate_command, wheels);
     cr_assert_eq(rotate_validator, EXPECTED_VALIDATOR_VALUE);
 
-    Actuator_delete(wheels_actuator);
+    Wheels_delete(wheels);
 }
 
 Test(CommandSender, given_aLightRedLEDCallback_when_askedToSendCommand_then_theCallbackIsCalled

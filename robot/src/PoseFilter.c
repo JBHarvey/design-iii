@@ -87,13 +87,31 @@ static void populateParticles(struct Map *map, struct Pose **particles, int *par
 static void predict(struct Pose **particles, struct Pose *robot_current_pose, struct Wheels *wheels,
                     struct WorldCamera *world_camera)
 {
-    int new_command_for_wheels = 0;
+    int new_commands_for_wheels = 0;
+    int new_speed_command = wheels->speed_actuator->has_prepared_new_command;
+    int new_rotation_command = wheels->rotation_actuator->has_prepared_new_command;
+    struct Pose *new_command = Pose_zero();
 
-    if(wheels->translation_actuator->has_prepared_new_command || wheels->rotation_actuator->has_prepared_new_command) {
-        new_command_for_wheels = 1;
+    if(new_speed_command || new_rotation_command) {
+        new_commands_for_wheels = 1;
     }
 
+    if(new_commands_for_wheels) {
 
+        if(new_speed_command) {
+            Coordinates_copyValuesFrom(new_command->coordinates, wheels->speed_command);
+        }
+
+        if(new_rotation_command) {
+            new_command->angle->theta = wheels->rotation_command->theta;
+        }
+
+        for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
+
+        }
+    }
+
+    Pose_delete(new_command);
 }
 
 void PoseFilter_updateFromCameraAndWheels(struct PoseFilter * pose_filter)

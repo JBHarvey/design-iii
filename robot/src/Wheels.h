@@ -12,11 +12,13 @@ struct Wheels {
     struct Sensor *rotation_sensor;
     struct Actuator *translation_actuator;
     struct Actuator *rotation_actuator;
+    struct Actuator *speed_actuator;
     struct Coordinates *translation_data_movement;
     struct Coordinates *translation_data_speed;
     struct Angle *rotation_data_movement;
     struct Angle *rotation_data_speed;
     struct Coordinates *translation_command;
+    struct Coordinates *speed_command;
     struct Angle *rotation_command;
 };
 
@@ -28,8 +30,10 @@ void Wheels_receiveRotationData(struct Wheels *wheels, struct Angle *rotation_an
 
 void Wheels_readRotationData(struct Wheels *wheels, struct Angle *rotation_delta, struct Angle *rotation_speed);
 void Wheels_readTranslationData(struct Wheels *wheels, struct Angle *current_angle, struct Coordinates *translation_delta, struct Coordinates *translation_speed);
+void Wheels_readSpeedData(struct Wheels *wheels, struct Coordinates *translation_speed);
 
 void Wheels_prepareRotationCommand(struct Wheels *wheels, struct Angle *angle);
+void Wheels_prepareSpeedCommand(struct Wheels *wheels, struct Coordinates *speeds_vector);
 void Wheels_prepareTranslationCommand(struct Wheels *wheels, struct Coordinates *translation_vector, struct Angle *current_angle);
 
 #endif // WHEELS_H_
