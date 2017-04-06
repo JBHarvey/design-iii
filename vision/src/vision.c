@@ -705,7 +705,7 @@ CvPoint coordinateToTableCoordinate(CvPoint point, double height_cm, CvPoint cam
 
 #define MIN_TABLE_CORNER_DISTANCE_FROM_SIDE 25
 #define MAX_TABLE_CORNER_DISTANCE_FROM_SIDE 100
-#define MIN_CORNER_DISTANCE 10
+#define MIN_CORNER_DISTANCE 30
 
 #define TABLE_WIDTH 1507
 #define TABLE_HEIGHT_RIGHT 723
@@ -762,7 +762,7 @@ _Bool findTableCorners(IplImage *image_yuv, struct Square *square)
 
     int max_corners = MAX_DETECTED_CORNERS;
     CvPoint2D32f corners[max_corners];
-    cvGoodFeaturesToTrack(image_grayscale, NULL, NULL, corners, &max_corners, 0.01, MIN_CORNER_DISTANCE, image_mask, 10, 1,
+    cvGoodFeaturesToTrack(image_grayscale, NULL, NULL, corners, &max_corners, 0.001, MIN_CORNER_DISTANCE, image_mask, 10, 1,
                           0.15);
 
     _Bool success = 0;

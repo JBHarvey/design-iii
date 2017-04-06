@@ -65,7 +65,7 @@ _Bool in_range_pixels(double value, double expected, double pixels)
 }
 
 
-void obstacle_exists(enum ObstacleType type, int x, int y, double angle, struct Obstacle *obstacles,
+void obstacle_exists(enum ObstacleType type, int x, int y, double angle, struct Vision_Obstacle *obstacles,
                      unsigned int num_obstacles)
 {
     unsigned int i, count = 0;
@@ -92,7 +92,7 @@ Test(vision, findObstacles)
     IplImage *image_yuv = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
     cvCvtColor(image, image_yuv, CV_BGR2YCrCb);
 
-    struct Obstacle obstacles[20];
+    struct Vision_Obstacle obstacles[20];
     int num_obstacles = findObstacles(storage, obstacles, 20, image_yuv);
 
     cr_assert(num_obstacles == 2);
@@ -111,7 +111,7 @@ Test(vision, findObstacles_noObstacles)
     IplImage *image_yuv = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
     cvCvtColor(image, image_yuv, CV_BGR2YCrCb);
 
-    struct Obstacle obstacles[20];
+    struct Vision_Obstacle obstacles[20];
     int num_obstacles = findObstacles(storage, obstacles, 20, image_yuv);
 
     cr_assert(num_obstacles == 0);
@@ -123,7 +123,7 @@ Test(vision, findObstacles_noObstacles)
 
 Test(vision, sortObstacles)
 {
-    struct Obstacle obstacles[4] = {{.type = OBSTACLE_TRIANGLE, .x = 2, .y = 2}, {.type = OBSTACLE_CIRCLE, .x = 200, .y = 200}, {.type = OBSTACLE_TRIANGLE, .x = 200, .y = 2}, {.type = OBSTACLE_CIRCLE, .x = 500, .y = 203}};
+    struct Vision_Obstacle obstacles[4] = {{.type = OBSTACLE_TRIANGLE, .x = 2, .y = 2}, {.type = OBSTACLE_CIRCLE, .x = 200, .y = 200}, {.type = OBSTACLE_TRIANGLE, .x = 200, .y = 2}, {.type = OBSTACLE_CIRCLE, .x = 500, .y = 203}};
 
     sortObstacles(obstacles, 4);
 
@@ -250,12 +250,12 @@ Test(vision, findTableCorners)
     cvReleaseImage(&image);
     cvReleaseImage(&image_yuv);
 
-    cr_assert(in_range_pixels(square.corner[0].x, 41, 1));
-    cr_assert(in_range_pixels(square.corner[0].y, 225, 1));
-    cr_assert(in_range_pixels(square.corner[1].x, 1551, 1));
-    cr_assert(in_range_pixels(square.corner[1].y, 223, 1));
-    cr_assert(in_range_pixels(square.corner[2].x, 1553, 1));
-    cr_assert(in_range_pixels(square.corner[2].y, 954, 1));
-    cr_assert(in_range_pixels(square.corner[3].x, 45, 1));
-    cr_assert(in_range_pixels(square.corner[3].y, 956, 1));
+    cr_assert(in_range_pixels(square.corner[0].x, 41, 20));
+    cr_assert(in_range_pixels(square.corner[0].y, 225, 20));
+    cr_assert(in_range_pixels(square.corner[1].x, 1551, 5));
+    cr_assert(in_range_pixels(square.corner[1].y, 223, 5));
+    cr_assert(in_range_pixels(square.corner[2].x, 1553, 5));
+    cr_assert(in_range_pixels(square.corner[2].y, 954, 5));
+    cr_assert(in_range_pixels(square.corner[3].x, 45, 20));
+    cr_assert(in_range_pixels(square.corner[3].y, 956, 20));
 }
