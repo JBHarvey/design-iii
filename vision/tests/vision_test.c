@@ -259,3 +259,68 @@ Test(vision, findTableCorners)
     cr_assert(in_range_pixels(square.corner[3].x, 45, 20));
     cr_assert(in_range_pixels(square.corner[3].y, 956, 20));
 }
+
+void assertTable3(struct Square square)
+{
+    cr_assert(in_range_pixels(square.corner[1].x, 1577, 10));
+    cr_assert(in_range_pixels(square.corner[1].y, 258, 10));
+    cr_assert(in_range_pixels(square.corner[2].x, 1554, 10));
+    cr_assert(in_range_pixels(square.corner[2].y, 1001, 10));
+}
+
+void assertTable2(struct Square square)
+{
+    cr_assert(in_range_pixels(square.corner[1].x, 1556, 10));
+    cr_assert(in_range_pixels(square.corner[1].y, 167, 10));
+    cr_assert(in_range_pixels(square.corner[2].x, 1566, 10));
+    cr_assert(in_range_pixels(square.corner[2].y, 913, 10));
+}
+
+void assertTable1(struct Square square)
+{
+    cr_assert(in_range_pixels(square.corner[1].x, 1578, 10));
+    cr_assert(in_range_pixels(square.corner[1].y, 194, 10));
+    cr_assert(in_range_pixels(square.corner[2].x, 1572, 10));
+    cr_assert(in_range_pixels(square.corner[2].y, 934, 10));
+}
+
+void tableTest(char *filename, void (*assertFunction)(struct Square))
+{
+    CvMemStorage *opencv_storage = cvCreateMemStorage(0);
+    IplImage *image = cvLoadImage(filename, CV_LOAD_IMAGE_COLOR);
+    IplImage *image_yuv = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
+    cvCvtColor(image, image_yuv, CV_BGR2YCrCb);
+
+    struct Square square;
+    cr_assert(findTableCorners(image_yuv, &square));
+
+    cvReleaseMemStorage(&opencv_storage);
+    cvReleaseImage(&image);
+    cvReleaseImage(&image_yuv);
+
+    assertFunction(square);
+}
+
+Test(vision, findTableCorners_table3)
+{
+    tableTest("table3.jpg", assertTable3);
+    tableTest("table3-1.jpg", assertTable3);
+    tableTest("table3-2.jpg", assertTable3);
+    tableTest("table3-3.jpg", assertTable3);
+}
+
+Test(vision, findTableCorners_table2)
+{
+    tableTest("table2.jpg", assertTable2);
+    tableTest("table2-1.jpg", assertTable2);
+    tableTest("table2-2.jpg", assertTable2);
+    tableTest("table2-3.jpg", assertTable2);
+}
+
+Test(vision, findTableCorners_table1)
+{
+    tableTest("table1.jpg", assertTable1);
+    tableTest("table1-1.jpg", assertTable1);
+    tableTest("table1-2.jpg", assertTable1);
+    tableTest("table1-3.jpg", assertTable1);
+}
