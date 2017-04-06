@@ -90,7 +90,10 @@ void Robot_sendReadyToStartSignal(struct Robot *robot)
 
 void Robot_sendReadyToDrawSignal(struct Robot *robot)
 {
-    DataSender_sendSignalReadyToDraw(robot->data_sender);
+    if(Timer_hasTimePassed(robot->timer, THREE_SECONDS)) {
+        DataSender_sendSignalReadyToDraw(robot->data_sender);
+        Timer_reset(robot->timer);
+    }
 }
 
 void Robot_sendPlannedTrajectory(struct Robot *robot)

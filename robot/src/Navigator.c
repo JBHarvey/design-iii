@@ -408,8 +408,14 @@ void Navigator_planTowardsObstacleZoneWestSide(struct Robot *robot)
     robot->navigator->planned_trajectory = obstacles_west_zone_trajectory;
 
     RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
-    void (*planTowardsDrawingZone)(struct Robot *) = &Navigator_planTowardsDrawingZone;
-    RobotBehaviors_appendTrajectoryBehaviors(robot, obstacles_west_zone_trajectory, planTowardsDrawingZone);
+    void (*planUpdateMapBeforeGoingToDrawingZone)(struct Robot *) = &Navigator_planUpdateMapBeforeGoingToDrawingZone;
+    RobotBehaviors_appendTrajectoryBehaviors(robot, obstacles_west_zone_trajectory, planUpdateMapBeforeGoingToDrawingZone);
+}
+
+void Navigator_planUpdateMapBeforeGoingToDrawingZone(struct Robot *robot)
+{
+    void(*action)(struct Robot *) = &Navigator_planTowardsDrawingZone;
+    RobotBehavior_appendUpdateNavgableMapBehaviorWithChildAction(robot, action);
 }
 
 // TODO: TEST THIS FUNCTION

@@ -42,6 +42,7 @@ void Navigator_planStopMotionBeforePicture(struct Robot *robot);
 void Navigator_planLightingGreenLedBeforePicture(struct Robot *robot);
 void Navigator_planTakingPicture(struct Robot *robot);
 void Navigator_planTowardsObstacleZoneWestSide(struct Robot *robot);
+void Navigator_planUpdateMapBeforeGoingToDrawingZone(struct Robot *robot);
 void Navigator_planTowardsDrawingZone(struct Robot *robot);
 void Navigator_planTowardsCenterOfDrawingZone(struct Robot *robot);
 void Navigator_planToTellReadyToDraw(struct Robot *robot);

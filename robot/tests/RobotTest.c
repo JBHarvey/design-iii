@@ -18,6 +18,7 @@ int validation_rise_pen_command_is_sent;
 const int SENT = 1;
 const int NOT_SENT = 0;
 int manchester_code_command_count;
+int ready_to_draw_signal_count;
 
 void giveADummyDrawingTrajectoryToTheRobot(struct Robot *robot)
 {
@@ -118,6 +119,11 @@ Test(Robot, creation_destruction)
 
     struct Behavior *third_behavior = second_behavior->first_child;
     void (*idle_action)(struct Robot *) = &Behavior_idle;
+
+    while(!Timer_hasTimePassed(robot->timer, THREE_SECONDS));
+
+    while(!Timer_hasTimePassed(robot->timer, THREE_SECONDS));
+
     struct Flags *third_flags = third_behavior->entry_conditions->goal_state->flags;
     struct Flags *ready_to_start_received_flags = Flags_new();
     Flags_setReadyToStartReceivedByStation(ready_to_start_received_flags, 1);
@@ -154,6 +160,7 @@ void validateReadyToStartIsSent(void)
 void validateReadyToDrawIsSent(void)
 {
     validation_ready_to_draw_is_sent = SENT;
+    ++ready_to_draw_signal_count;
 }
 
 void validateEndOfCycleIsSent(void)
@@ -243,6 +250,8 @@ Test(Robot, given_aRobot_when_askedToSendAReadyToDrawSignal_then_theSignalIsSent
      , .init = setup_robot
      , .fini = teardown_robot)
 {
+    while(!Timer_hasTimePassed(robot->timer, THREE_SECONDS));
+
     Robot_sendReadyToDrawSignal(robot);
     cr_assert(validation_ready_to_draw_is_sent);
 }
@@ -994,14 +1003,47 @@ Test(RobotBehaviors,
 }
 
 Test(RobotBehaviors,
-     given_aBehaviorWithPlanTowardsObstacleZoneWestSideAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanTowardsDrawingZoneAction
+     given_aBehaviorWithPlanTowardsObstacleZoneWestSideAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanUpdateMapBeforeGoingToDrawingZoneAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
     assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsObstacleZoneWestSide,
-            &Navigator_planTowardsDrawingZone);
+            &Navigator_planUpdateMapBeforeGoingToDrawingZone);
 }
 
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanUpdateMapBeforeGoingToDrawingZone_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planUpdateMapBeforeGoingToDrawingZone);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithUpdateMapBeforeGoingToDrawingZone_when_behaviorActs_then_theBeforeLastBehaviorHasAnUpdateNavigableMapAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planUpdateMapBeforeGoingToDrawingZone,
+            &Navigator_updateNavigableMap);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithUpdateMapBeforeGoingToDrawingZone_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planUpdateMapBeforeGoingToDrawingZone);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithUpdateMapBeforeGoingToDrawingZone_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsDrawingZoneAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planUpdateMapBeforeGoingToDrawingZone,
+            &Navigator_planTowardsDrawingZone);
+}
 Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsCenterOfDrawingZoneAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
@@ -1379,6 +1421,35 @@ Test(RobotBehaviors,
 /*END OF BEHAVIORS*/
 
 Test(Robot,
+     given_theRobot_when_sendReadyToDrawIsCalledTwiceUnderThreeSeconds_then_theCommandIsSendOnlyOnce
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    while(!Timer_hasTimePassed(robot->timer, THREE_SECONDS));
+
+    Robot_sendReadyToDrawSignal(robot);
+    Robot_sendReadyToDrawSignal(robot);
+
+    cr_assert_eq(ready_to_draw_signal_count, 1);
+}
+
+Test(Robot,
+     given_theRobot_when_sendReadyToDrawIsCalledAndIsCalledAgainAfterThreeSeconds_then_theCommandIsSendTwice
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    while(!Timer_hasTimePassed(robot->timer, THREE_SECONDS));
+
+    Robot_sendReadyToDrawSignal(robot);
+
+    while(!Timer_hasTimePassed(robot->timer, THREE_SECONDS));
+
+    Robot_sendReadyToDrawSignal(robot);
+
+    cr_assert_eq(ready_to_draw_signal_count, 2);
+}
+
+Test(Robot,
      given_theRobot_when_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset_then_theCommandIsSend
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -1409,8 +1480,6 @@ Test(Robot,
      , .fini = teardown_robot)
 {
     while(!Timer_hasTimePassed(robot->timer, ONE_SECOND));
-
-    double current_time = Timer_elapsedTime(robot->timer);
 
     Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(robot);
 
