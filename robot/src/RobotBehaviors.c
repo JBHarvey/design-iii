@@ -407,3 +407,28 @@ void RobotBehavior_appendLightRedLedBehaviorWithChildAction(struct Robot *robot,
     Behavior_delete(behavior_do_action_when_start_cycle_signal_is_received);
     Behavior_delete(behavior_light_red_led_with_free_entry);
 }
+
+void RobotBehavior_appendUpdateNavgableMapBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *))
+{
+    struct Behavior *last_behavior = fetchLastBehavior(robot);
+
+    void (*updateNavigableMap)(struct Robot*) = &Navigator_updateNavigableMap;
+    struct Behavior *behavior_update_navigable_map_with_free_entry;
+    behavior_update_navigable_map_with_free_entry = BehaviorBuilder_build(
+                BehaviorBuilder_withAction(updateNavigableMap,
+                                           BehaviorBuilder_withFreeEntry(
+                                                   BehaviorBuilder_end())));
+    Behavior_addChild(last_behavior, behavior_update_navigable_map_with_free_entry);
+
+    last_behavior = last_behavior->first_child;
+
+    struct Behavior *behavior_do_action_with_free_entry;
+    behavior_do_action_with_free_entry = BehaviorBuilder_build(
+            BehaviorBuilder_withAction(action,
+                                       BehaviorBuilder_withFreeEntry(
+                                           BehaviorBuilder_end())));
+    Behavior_addChild(last_behavior, behavior_do_action_with_free_entry);
+
+    Behavior_delete(behavior_do_action_with_free_entry);
+    Behavior_delete(behavior_update_navigable_map_with_free_entry);
+}

@@ -1330,6 +1330,40 @@ Test(RobotBehaviors,
             &Navigator_planUpdateMapForNewCycle);
 }
 
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanUpdateMapForNewCycleAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planUpdateMapForNewCycle);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithUpdateMapForNewCycleAction_when_behaviorActs_then_theBeforeLastBehaviorHasAnUpdateNavigableMapAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planUpdateMapForNewCycle,
+            &Navigator_updateNavigableMap);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithUpdateMapForNewCycleAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planUpdateMapForNewCycle);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithUpdateMapForNewCycleAction_when_behaviorActs_then_theLastBehaviorHasAPlanOrientTowardsAntennaAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planUpdateMapForNewCycle,
+            &Navigator_planOrientationTowardsAntenna);
+}
+
 /*END OF BEHAVIORS*/
 
 Test(Robot,

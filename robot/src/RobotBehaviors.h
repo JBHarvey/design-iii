@@ -18,6 +18,7 @@ void RobotBehavior_appendLightGreenLedBehaviorWithChildAction(struct Robot *robo
 void RobotBehavior_appendSendReadyToDrawBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *));
 void RobotBehavior_appendCloseCycleAndSendSignalBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *));
 void RobotBehavior_appendLightRedLedBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *));
+void RobotBehavior_appendUpdateNavgableMapBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *));
 
 
 #endif // ROBOTBEHAVIORS_H_

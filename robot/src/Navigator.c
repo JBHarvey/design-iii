@@ -523,6 +523,8 @@ void Navigator_planLightingRedLedUntilNewCycle(struct Robot *robot)
 
 void Navigator_planUpdateMapForNewCycle(struct Robot *robot)
 {
+    void(*action)(struct Robot *) = &Navigator_planOrientationTowardsAntenna;
+    RobotBehavior_appendUpdateNavgableMapBehaviorWithChildAction(robot, action);
 }
 
 int Navigator_computeRotationToleranceForPrecisionMovement(int planned_distance)
