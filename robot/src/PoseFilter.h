@@ -1,13 +1,17 @@
 #ifndef POSEFILTER_H_
 #define POSEFILTER_H_
 
+#include "gsl/gsl_randist.h"
 #include "Robot.h"
+#include "Timer.h"
 
 struct PoseFilter {
     struct Object *object;
     struct Robot *robot;
     struct Pose **particles;
     int *particles_status;
+    struct Timer *command_timer;
+    gsl_rng *random_number_generator;
 };
 
 struct PoseFilter_Callbacks {
