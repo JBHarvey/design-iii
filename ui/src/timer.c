@@ -26,6 +26,11 @@ void Timer_stop(void)
     g_timer_stop(timer);
 }
 
+void Timer_resume(void)
+{
+    g_timer_continue(timer);
+}
+
 void Timer_release(void)
 {
     g_timer_destroy(timer);

@@ -10,6 +10,8 @@ def raw_mode(file):
     old_attrs = termios.tcgetattr(file.fileno())
     new_attrs = old_attrs[:]
     new_attrs[3] = new_attrs[3] & ~(termios.ECHO | termios.ICANON)
+    new_attrs[6][termios.VMIN] = 0  # cc
+    new_attrs[6][termios.VTIME] = 0 # cc
     try:
         termios.tcsetattr(file.fileno(), termios.TCSADRAIN, new_attrs)
         yield
@@ -47,18 +49,30 @@ def pencil_up(sock):
     packet = struct.pack("BB", 17, 4)
     send_packet(sock, packet)
 
+def get_image(sock):
+    packet = struct.pack("B", 18)
+    send_packet(sock, packet)
+
 def main():
     print 'exit with ^C or ^D'
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect(("10.42.0.1", 35794))
     #sock.connect(("127.0.0.1", 35794))
+    sock.setblocking(0)
 
     with raw_mode(sys.stdin):
         try:
             while True:
+                try:
+                    data = sock.recv(1024)
+                    if (len(data) > 0):
+                        print "data:" + data
+                except socket.error:
+                    pass
+
                 ch = sys.stdin.read(1)
                 if not ch or ch == chr(4):
-                    break
+                    continue
 
                 if ch == chr(0x41):
                     send_direction(sock, 0.1, 0.0)
@@ -101,6 +115,11 @@ def main():
                 if ch == chr(0x36):
                     print "page down"
                     send_rotate(sock, -1.0)
+
+                if ch == chr(0x20):
+                    print "space"
+                    get_image(sock)
+
 
                 print '%02x' % ord(ch),
         except (KeyboardInterrupt, EOFError):

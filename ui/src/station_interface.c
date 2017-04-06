@@ -25,6 +25,7 @@ GMutex robot_connection_status_mutex;
 enum ThreadStatus main_loop_status;
 enum ConnectionStatus robot_connection_status;
 gint timer_tag;
+int is_first_cycle = 1;
 struct StationClient *station_client = NULL;
 GtkWidget *start_cycle_button_widget = NULL;
 
@@ -42,9 +43,17 @@ void startCycleClickedEventCallback(GtkWidget *widget, gpointer data)
 {
     WorldVision_resetRobotPosition();
     StationClientSender_sendStartCycleCommand();
+
+    if(!is_first_cycle) {
+        WorldVision_recalibrateForMoving();
+        Timer_resume();
+    } else {
+        Timer_start();
+        is_first_cycle = 0;
+    }
+
     Logger_startMessageSectionAndAppend("Cycle started!");
     StationInterface_deactivateStartCycleButton();
-    Timer_start();
 }
 
 static gboolean timeHandler(GtkWidget *widget)

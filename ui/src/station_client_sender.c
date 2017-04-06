@@ -59,7 +59,8 @@ void StationClientSender_sendReceiveData(struct StationClient *station_client)
 }
 
 void StationClientSender_sendWorldInformationsToRobot(struct Communication_Object *obstacles,
-        unsigned int num_obstacles, struct Communication_Object robot, int environment_has_changed)
+        unsigned int num_obstacles, struct Communication_Object robot, int environment_has_changed,
+        struct Communication_Coordinates *green_square_corners)
 {
     uint8_t data[1 + sizeof(struct Communication_World)];
     data[0] = DATA_WORLD;
@@ -71,20 +72,20 @@ void StationClientSender_sendWorldInformationsToRobot(struct Communication_Objec
             .south_eastern_table_corner = {.x = THEORICAL_WORLD_LENGTH, .y = 0},
             .south_western_table_corner = {.x = 0, .y = 0},
             .north_eastern_drawing_corner = {
-                .x = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_X,
-                .y = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_Y + THEORICAL_DRAWING_ZONE_SIDE
+                .x = green_square_corners[2].x,
+                .y = green_square_corners[2].y
             },
             .north_western_drawing_corner = {
-                .x = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_X - THEORICAL_DRAWING_ZONE_SIDE,
-                .y = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_Y + THEORICAL_DRAWING_ZONE_SIDE
+                .x = green_square_corners[1].x,
+                .y = green_square_corners[1].y
             },
             .south_eastern_drawing_corner = {
-                .x = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_X,
-                .y = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_Y
+                .x = green_square_corners[3].x,
+                .y = green_square_corners[3].y
             },
             .south_western_drawing_corner = {
-                .x = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_X - THEORICAL_DRAWING_ZONE_SIDE,
-                .y = THEORICAL_DRAWING_ZONE_SOUTH_EASTERN_Y
+                .x = green_square_corners[0].x,
+                .y = green_square_corners[0].y
             },
             .antenna_zone_start = {.x = THEORICAL_ANTENNA_ZONE_START_X, .y = THEORICAL_ANTENNA_ZONE_Y},
             .antenna_zone_stop = {.x = THEORICAL_ANTENNA_ZONE_STOP_X, .y = THEORICAL_ANTENNA_ZONE_Y},

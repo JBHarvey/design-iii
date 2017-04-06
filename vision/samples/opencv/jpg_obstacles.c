@@ -26,8 +26,6 @@ int main(int argc, char *argv[])
         img = cvLoadImage(argv[1], CV_LOAD_IMAGE_COLOR);
 
         if(img != 0) {
-            cvShowImage("Video-orig", img);
-
             if(camera_matrix) {
                 IplImage *image_temp = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
                 cvUndistort2(img, image_temp, camera_matrix, distortion_coeffs, 0);
@@ -39,10 +37,19 @@ int main(int argc, char *argv[])
             cvCvtColor(img, img_yuv, CV_BGR2YCrCb);
             struct Vision_Obstacle obstacles[20];
             int num_obstacles = findObstacles(opencv_storage, obstacles, 20, img_yuv);
+
+            struct Square square;
+            if (findTableCorners(img_yuv, &square)) {
+                unsigned int i;
+
+                for(i = 0; i < 4; ++i) {
+                    cvLine(img, fixedCvPointFrom32f(square.corner[i]), fixedCvPointFrom32f(square.corner[(i + 1) % 4]), CV_RGB(255, 0, 255), 1, 8, 0);
+                }
+            }
+
             cvReleaseImage(&img_yuv);
 
-            IplImage *im_square_image = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
-
+            IplImage *im_square_image = img;
             if(num_obstacles) {
                 printf("num_obstacles %i\n", num_obstacles);
                 unsigned int i;
@@ -67,7 +74,7 @@ int main(int argc, char *argv[])
             //cvReleaseImage(&img);
 
             //if(camera_matrix)
-            cvReleaseImage(&img);
+            //cvReleaseImage(&img);
         }
 
         c = cvWaitKey(0); // wait inf ms or for key stroke

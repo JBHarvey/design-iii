@@ -27,7 +27,7 @@
 #define YELLOW CV_RGB(0, 255, 255)
 
 #define ANGLE_TOLERANCE 0.0872665
-#define POSITION_TOLERANCE 2
+#define POSITION_TOLERANCE 1
 
 #define ONE_SECOND_IN_MICROSECONDS 1000000
 
@@ -145,6 +145,7 @@ static void packageWorldInformationsAndSendToRobot(struct Camera *input_camera, 
 {
     struct Communication_Object robot;
     struct Communication_Object obstacles[MAXIMUM_OBSTACLE_NUMBER] = {};
+    struct Communication_Coordinates green_square_corners[NUM_SQUARE_CORNERS] = {};
 
     robot.radius = convertCMToRobot(ROBOT_RADIUS_CM);
     robot.zone.index = 0;
@@ -166,8 +167,14 @@ static void packageWorldInformationsAndSendToRobot(struct Camera *input_camera, 
             obstacles[i].zone.pose.theta = convertObstacleAngleToRobotAngle(detected->obstacles[i].angle);
         }
 
-        obstacles[i].zone.pose.coordinates.x = convertMMToRobot(detected->obstacles[i].x);
-        obstacles[i].zone.pose.coordinates.y = convertMMToRobot(detected->obstacles[i].y);
+        struct Point3D point_obstacle = WorldVisionCalibration_convertImageCoordinatesToWorldCoordinates(
+                                            PointTypes_createPoint2D(detected->obstacles[i].x,
+                                                    detected->obstacles[i].y), input_camera);
+
+
+        obstacles[i].zone.pose.coordinates.x = convertMMToRobot(point_obstacle.x);
+
+        obstacles[i].zone.pose.coordinates.y = convertMMToRobot(point_obstacle.y);
     }
 
     for(; i < MAXIMUM_OBSTACLE_NUMBER; ++i) {
@@ -175,7 +182,16 @@ static void packageWorldInformationsAndSendToRobot(struct Camera *input_camera, 
         obstacles[i].zone.pose.coordinates.y = INVALID_OBSTACLE_COORDINATE;
     }
 
-    WorldVision_sendWorldInformationToRobot(robot, obstacles, environment_has_changed);
+    for(i = 0; i < NUM_SQUARE_CORNERS; i++) {
+
+        struct Point3D point_corner = WorldVisionCalibration_convertImageCoordinatesToWorldCoordinates(
+                                          PointTypes_createPoint2D(detected->green_square.corner[i].x,
+                                                  detected->green_square.corner[i].y), input_camera);
+        green_square_corners[i].x = convertMMToRobot(point_corner.x);
+        green_square_corners[i].y = convertMMToRobot(point_corner.y);
+    }
+
+    WorldVision_sendWorldInformationToRobot(robot, obstacles, environment_has_changed, green_square_corners);
 }
 
 void WorldVisionDetection_initialize(void)
@@ -329,12 +345,15 @@ int WorldVisionDetection_detectGreenSquareCorners(struct Camera *input_camera)
     return green_square_detected;
 }
 
-static void tryDetectGreenSquare(struct Camera *input_camera)
+static int tryDetectGreenSquare(struct Camera *input_camera)
 {
     if(!WorldVisionDetection_detectGreenSquareCorners(input_camera)) {
 
         detected->green_square_detected = 0;
+        return 0;
     }
+
+    return 1;
 }
 
 static int isRobotDrawing(void)
@@ -363,7 +382,7 @@ gpointer WorldVisionDetection_detectObstaclesAndRobot(struct Camera *input_camer
         cvSmooth(image_yuv, image_yuv, CV_GAUSSIAN, 3, 0, 0, 0);
 
         if(!detected->green_square_detected) {
-            tryDetectGreenSquare(input_camera);
+            environment_has_changed = tryDetectGreenSquare(input_camera);
         }
 
         struct Vision_Obstacle obstacles[MAXIMUM_OBSTACLE_NUMBER];
