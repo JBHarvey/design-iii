@@ -643,5 +643,40 @@ Test(Graph,
     Coordinates_delete(southern_point_of_b);
 }
 
+Test(Graph, given_twoObstacleWithOverlappingInYCenterCenter_when_updatesGraph_then_theActualNumberOfNodesIsEleven
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    setup_TwoObstaclesOverlappingInY(CENTER, CENTER);
+    assertActualNumberOfNodeIs(11);
+}
+
+Test(Graph,
+     given_twoObstacleWithOverlappingInYCenterNorth_when_updatesGraph_then_theMiddleNodeIsInTheCenterOfTheObstaclesPassingNodes
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    setup_TwoObstaclesOverlappingInY(CENTER, NORTH);
+
+    int center_x = Coordinates_computeMeanX(obstacle_a->coordinates, obstacle_b->coordinates);
+
+    struct Coordinates *northern_point_of_a = Obstacle_retrieveNorthernPointOf(obstacle_a);
+    struct Coordinates *southern_point_of_a = Obstacle_retrieveSouthernPointOf(obstacle_a);
+    struct Coordinates *northern_point_of_b = Obstacle_retrieveNorthernPointOf(obstacle_b);
+    struct Coordinates *northern_navigable_point = graph_map->north_eastern_table_corner;
+    struct Coordinates *southern_navigable_point = graph_map->south_eastern_table_corner;
+    int north_a_y = Coordinates_computeMeanY(northern_point_of_a, northern_navigable_point);
+    int south_a_y = Coordinates_computeMeanY(southern_point_of_a, southern_navigable_point);
+    int north_b_y = Coordinates_computeMeanY(northern_point_of_b, northern_navigable_point);
+    int center_a = (int)((north_a_y + south_a_y) / 2);
+    int center_y = (int)((center_a + north_b_y) / 2);
+
+    struct Node *center_node = graph->nodes[2];
+    assertNodeCoordinatesAreAbout(center_node, center_x, center_y);
+
+    Coordinates_delete(northern_point_of_a);
+    Coordinates_delete(southern_point_of_a);
+    Coordinates_delete(northern_point_of_b);
+}
 
 /* -- END OF TWO OBSTACLE GRAPH -- */

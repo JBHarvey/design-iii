@@ -258,7 +258,7 @@ void Graph_updateForMap(struct Graph *graph, struct Map* map)
             int are_overlapping_in_x = Obstacle_areOverlappingInX(first, last);
             int are_overlapping_in_y = Obstacle_areOverlappingInX(first, last);
 
-            if(!are_overlapping_in_x && !are_overlapping_in_y) {
+            if(!are_overlapping_in_x) {
                 establishEasternNodeSolo(graph, first, map);
                 establishWesternNodeSolo(graph, last, map);
                 graph->actual_number_of_nodes = 2;
