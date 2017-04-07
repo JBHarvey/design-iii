@@ -162,8 +162,9 @@ void setMessageToDisplay(uint8_t figure, char *orientation, uint8_t factor,
 
 void displayManchesterMessage(char *messageToDisplay) {
 	TM_HD44780_Init(16, 2);
+	TM_HD44780_Clear();
 	TM_HD44780_Puts(0, 1, messageToDisplay);
-	TM_HD44780_Puts(0, 0, "Manchester Code");
+	TM_HD44780_Puts(0, 0, "Manchester code");
 }
 
 uint8_t isFigureEqual(uint8_t *figure, uint8_t *figureVerification) {

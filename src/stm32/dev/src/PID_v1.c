@@ -378,20 +378,6 @@ void computeAllPIDS() {
 			MotorSetSpeed(1, cmdMotor1);
 			PID_SetMode(&PID_SPEED1, PID_Mode_Manual);
 			PID_SetMode(&PID_POSITION1, PID_Mode_Manual);
-
-			/*char numberString[MAX_DISPLAY_CHARACTERS];
-			 sprintf(numberString, "%d", numberOfSpeedEdges1);
-			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-			 TM_HD44780_Puts(0, 0, numberString);
-			 sprintf(numberString, "%d", cmdMotor1);
-			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-			 TM_HD44780_Puts(3, 0, numberString);*/
-
-			/* send position to USB */
-			/*TM_USB_VCP_Putc(2);
-			 TM_USB_VCP_Putc(8);
-			 VCP_DataTx((uint8_t*) &positionOutput, sizeof(float));
-			 VCP_DataTx((uint8_t*) &positionOutput, sizeof(float));*/
 		}
 	}
 
@@ -416,13 +402,6 @@ void computeAllPIDS() {
 			PID_SetMode(&PID_SPEED2, PID_Mode_Manual);
 			PID_SetMode(&PID_POSITION2, PID_Mode_Manual);
 
-			/*char numberString[MAX_DISPLAY_CHARACTERS];
-			 sprintf(numberString, "%d", numberOfSpeedEdges2);
-			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-			 TM_HD44780_Puts(0, 0, numberString);
-			 sprintf(numberString, "%d", cmdMotor2);
-			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-			 TM_HD44780_Puts(3, 0, numberString);*/
 		}
 	}
 
@@ -448,13 +427,6 @@ void computeAllPIDS() {
 			PID_SetMode(&PID_SPEED3, PID_Mode_Manual);
 			PID_SetMode(&PID_POSITION3, PID_Mode_Manual);
 
-			/*char numberString[MAX_DISPLAY_CHARACTERS];
-			 sprintf(numberString, "%d", numberOfSpeedEdges3);
-			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-			 TM_HD44780_Puts(0, 0, numberString);
-			 sprintf(numberString, "%d", cmdMotor3);
-			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-			 TM_HD44780_Puts(3, 0, numberString);*/
 		}
 	}
 
@@ -481,13 +453,6 @@ void computeAllPIDS() {
 			PID_SetMode(&PID_SPEED4, PID_Mode_Manual);
 			PID_SetMode(&PID_POSITION4, PID_Mode_Manual);
 
-			/*char numberString[MAX_DISPLAY_CHARACTERS];
-			 sprintf(numberString, "%d", numberOfSpeedEdges4);
-			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-			 TM_HD44780_Puts(0, 0, numberString);
-			 sprintf(numberString, "%d", cmdMotor4);
-			 cleanNumberString(numberString, MAX_DISPLAY_CHARACTERS);
-			 TM_HD44780_Puts(3, 0, numberString);*/
 		}
 	}
 }

@@ -102,6 +102,7 @@ void initAll(void) {
 	SystemInit();
 	// LCD initialization
 	TM_HD44780_Init(16, 2);
+	TM_HD44780_Clear();
 	// Intern LEDs initialization
 	TM_DISCO_LedInit();
 	// COM port initialization
@@ -111,8 +112,7 @@ void initAll(void) {
 	// Encoder initialization
 	initEncoders();
 	// Push button initialization
-	initBtn();
-
+	//initBtn();
 // Initialisation des variables
 	mainState = MAIN_IDLE;
 //setState(&mainState, MAIN_MOVE);
@@ -124,18 +124,11 @@ void initAll(void) {
 
 // initializations for manchester signal
 	// ADC antenne initialization
-	initAdcAntenne();
+	initAdcIR();
 	// Manchester initialization
 	InitializeManchesterInput();
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 	//initializeExternalInterruptLine4();
-}
-
-int main(void) {
-	initAll();
-	// Initialisation des variables
-	//mainState = MAIN_ACQUIS_ALL;
-
 	/* Initialization of PIDs */
 	initAllPIDS();
 
@@ -143,7 +136,12 @@ int main(void) {
 
 	turnOffLEDs();
 
-	TM_HD44780_Puts(0, 0, "Captain ready");
+}
+
+int main(void) {
+	initAll();
+	// Initialisation des variables
+	TM_HD44780_Puts(0, 0, "Captain Ready");
 
 	/* Test routine LEDs */
 	//startLEDsRoutine();
