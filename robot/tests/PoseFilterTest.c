@@ -16,17 +16,20 @@ Test(PoseFilter, creation_destruction)
     Robot_delete(robot);
 }
 
-Test(PoseFilter, given__when_fetchPoseFilterCallbacks_then_theCorrectSturctureIsReturned)
+Test(PoseFilter, given__when_fetchPoseFilterCallbacks_then_theCorrectStructureIsReturned)
 {
     void (*updateFromCameraOnly)(struct PoseFilter *) = &PoseFilter_updateFromCameraOnly;
+    void (*particlesFilterUsingWorldCameraAndWheels)(struct PoseFilter *) =
+        &PoseFilter_particlesFilterUsingWorldCameraAndWheels;
 
     struct PoseFilter_Callbacks callbacks = PoseFilter_fetchCallbacks();
     cr_assert_eq(callbacks.updateFromCameraOnly, updateFromCameraOnly);
+    cr_assert_eq(callbacks.particlesFilterUsingWorldCameraAndWheels, particlesFilterUsingWorldCameraAndWheels);
 }
 
 int POSEFILTER_X = 9001;
 int POSEFILTER_Y = 4200;
-struct Coordinates * coordinates;
+struct Coordinates *coordinates;
 void setup_PoseFilter(void)
 {
     coordinates = Coordinates_new(POSEFILTER_X, POSEFILTER_Y);
@@ -119,3 +122,4 @@ Test(PoseFilter,
     Pose_delete(current_robot_pose);
     Pose_delete(old_robot_pose);
 }
+

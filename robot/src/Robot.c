@@ -73,6 +73,13 @@ void Robot_delete(struct Robot *robot)
     }
 }
 
+void Robot_resetAllActuators(struct Robot *robot)
+{
+    Actuator_sendsCommand(robot->wheels->speed_actuator);
+    Actuator_sendsCommand(robot->wheels->rotation_actuator);
+    Actuator_sendsCommand(robot->wheels->translation_actuator);
+}
+
 void Robot_updateBehaviorIfNeeded(struct Robot *robot)
 {
     robot->current_behavior = Behavior_fetchFirstReachedChildOrReturnSelf(robot->current_behavior, robot->current_state);

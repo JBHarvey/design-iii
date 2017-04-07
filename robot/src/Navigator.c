@@ -59,8 +59,6 @@ void Navigator_updateNavigableMap(struct Robot *robot)
         // TODO: add validation that map is navigable && robot can go through the obstacles
         Flags_setNavigableMapIsReady(robot->current_state->flags, 1);
     }
-
-
 }
 
 int Navigator_isAngleWithinRotationTolerance(int angle)
@@ -125,15 +123,16 @@ static void sendSpeedsCommand(struct Robot *robot, int angular_distance_to_targe
         .y = y
     };
 
-    CommandSender_sendSpeedsCommand(robot->command_sender, speeds_command);
+    CommandSender_sendSpeedsCommand(robot->command_sender, speeds_command, robot->wheels);
 }
+
 static void sendRotationCommand(struct Robot *robot, int value)
 {
     struct Command_Rotate rotate_command = {
         .theta = value
     };
 
-    CommandSender_sendRotateCommand(robot->command_sender, rotate_command);
+    CommandSender_sendRotateCommand(robot->command_sender, rotate_command, robot->wheels);
 }
 
 static void sendRotationCommandForNavigation(struct Robot *robot, int angle_to_target)
@@ -175,7 +174,7 @@ void Navigator_stopMovement(struct Robot *robot)
         .x = 0,
         .y = 0
     };
-    CommandSender_sendSpeedsCommand(robot->command_sender, speeds_command);
+    CommandSender_sendSpeedsCommand(robot->command_sender, speeds_command, robot->wheels);
 }
 
 void Navigator_navigateRobotTowardsGoal(struct Robot *robot)

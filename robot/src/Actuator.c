@@ -5,7 +5,7 @@
 struct Actuator *Actuator_new(void)
 {
     struct Object *new_object = Object_new();
-    struct Actuator *pointer = (struct Actuator *) malloc(sizeof(struct Actuator));
+    struct Actuator *pointer = malloc(sizeof(struct Actuator));
 
     pointer->object = new_object;
     pointer->has_prepared_new_command = 0;

@@ -62,3 +62,21 @@ int Pose_computeAngleBetween(struct Pose *pose, struct Coordinates *coordinates)
     Angle_delete(angle);
     return final_angle;
 }
+
+void Pose_translate(struct Pose *pose, int x, int y)
+{
+    if(x && !y) {
+        pose->coordinates->x += x * cos(pose->angle->theta * ANGLE_BASE_UNIT);
+        pose->coordinates->y += x * sin(pose->angle->theta * ANGLE_BASE_UNIT);
+    } else if(!x && y) {
+        pose->coordinates->x += y * cos((pose->angle->theta + HALF_PI) * ANGLE_BASE_UNIT);
+        pose->coordinates->y += y * sin((pose->angle->theta + HALF_PI) * ANGLE_BASE_UNIT);
+    }
+}
+
+void Pose_rotate(struct Pose *pose, int theta)
+{
+    struct Angle *new_angle = Angle_new(pose->angle->theta + theta);
+    pose->angle->theta = new_angle->theta;
+    Angle_delete(new_angle);
+}

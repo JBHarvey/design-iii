@@ -5,7 +5,7 @@
 struct BehaviorBuilder *BehaviorBuilder_end(void)
 {
     struct Flags *default_flags = Flags_new();
-    struct BehaviorBuilder *pointer = (struct BehaviorBuilder *) malloc(sizeof(struct BehaviorBuilder));
+    struct BehaviorBuilder *pointer = malloc(sizeof(struct BehaviorBuilder));
     pointer->goalX = DEFAULT_GOAL_X ;
     pointer->goalY = DEFAULT_GOAL_Y ;
     pointer->goal_theta = DEFAULT_GOAL_THETA ;
