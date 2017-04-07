@@ -115,7 +115,7 @@ static void populateParticles(struct Map *map, struct Pose **particles, int *par
         }
     }
 }
-
+marc.antoine.fortier.
 static void predictParticlesPoseFromSentCommands(struct Pose **particles, struct Timer *command_timer,
         gsl_rng *random_number_generator, struct Wheels *wheels)
 {
@@ -300,7 +300,24 @@ void resampleParticles(double *normalized_particles_weight, int *particles_statu
     initializeParticlesWeight(normalized_particles_weight);
 }
 
-void PoseFilter_particlesFilterUsingWorldCameraAndWheels(struct PoseFilter * pose_filter)
+static struct Pose *calculateNewRobotPoseForParticlesFilter(struct Pose **particles, double *particles_weight)
+{
+    double new_theta = 0;
+    double new_x = 0;
+    double new_y = 0;
+
+    for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
+        new_x += particles_weight[i] * (double) particles[i]->coordinates->x;
+        new_y += particles_weight[i] * (double) particles[i]->coordinates->y;
+        new_theta += particles_weight[i] * (double) particles[i]->angle->theta;
+    }
+
+    struct Pose *new_robot_pose = Pose_new((int) new_x, (int) new_y, (int) new_theta);
+
+    return new_robot_pose;
+}
+
+void PoseFilter_particlesFilterUsingWorldCameraAndWheels(struct PoseFilter *pose_filter)
 {
     struct Robot *robot = pose_filter->robot;
     int number_of_effective_particles;
@@ -318,5 +335,10 @@ void PoseFilter_particlesFilterUsingWorldCameraAndWheels(struct PoseFilter * pos
     if(number_of_effective_particles < DEPLETION_THRESHOLD) {
         resampleParticles(pose_filter->particles_weight, pose_filter->particles_status,
                           pose_filter->random_number_generator);
+    } else {
+        struct Pose *new_robot_pose = calculateNewRobotPoseForParticlesFilter(pose_filter->particles,
+                                      pose_filter->particles_weight);
+        Pose_copyValuesFrom(robot->current_state->pose, new_robot_pose);
+        Pose_delete(new_robot_pose);
     }
 }
