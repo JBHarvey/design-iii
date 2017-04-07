@@ -21,7 +21,7 @@ static int Angle_wrap(int theta)
 struct Angle *Angle_new(int new_theta)
 {
     struct Object *new_object = Object_new();
-    struct Angle *pointer = (struct Angle *) malloc(sizeof(struct Angle));
+    struct Angle *pointer = malloc(sizeof(struct Angle));
     int wrapped_theta = Angle_wrap(new_theta);
 
     pointer->object = new_object;

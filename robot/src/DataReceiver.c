@@ -281,16 +281,3 @@ struct Mesurements DataReceiver_fetchInputs(struct Mesurements(*communication_ca
     return mesurements;
 }
 
-/*
- * CURRENTLY UNUSED FUNCTION BUT IS THE BASE OF A DEBUGGING/LOGGING TOOL FOR INPUTS
-void DataReceiver_updateMesurements(struct Robot *robot, struct Mesurements mesurements)
-{
-    // TODO: Integrate the handle_recv_packet function to call these callbacks:
-    DataReceiver_updateWorld(robot->world_camera, mesurements.world);
-
-    // THESE DON'T EXIST YET
-    //update_wheels(robot->wheels);
-    //update_other_sensor??
-    //update_pen(robot->pen);
-}
-*/

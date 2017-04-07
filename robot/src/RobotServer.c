@@ -406,8 +406,14 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
                 if(length == sizeof(struct TransitionRotation)) {
                     struct TransitionRotation transition_rotation;
                     memcpy(&transition_rotation, data, sizeof(struct TransitionRotation));
+                    struct Communication_Rotation communication_rotation = {
+                        .gamma = transition_rotation.travelled_radiants / ANGLE_BASE_UNIT,
+                        .theta = transition_rotation.speed_radiants_second / ANGLE_BASE_UNIT
+                    };
 
-                    printf("feedback rotation: %f %f\n", transition_rotation.travelled_radiants, transition_rotation.speed_radiants_second);
+                    reception_callbacks.updateWheelsRotation(robot_server->robot->wheels, communication_rotation);
+                } else {
+                    printf("wrong struct Communication_Rotation length\n");
                 }
 
                 break;

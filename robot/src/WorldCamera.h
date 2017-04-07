@@ -15,5 +15,6 @@ struct WorldCamera {
 
 struct WorldCamera *WorldCamera_new(void);
 void WorldCamera_delete(struct WorldCamera *world_camera);
+void WorldCamera_readPoseData(struct WorldCamera *world_camera, struct Pose *robot_pose);
 
 #endif // WORLD_CAMERA_H_
