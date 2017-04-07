@@ -1,7 +1,7 @@
 #ifndef POSEFILTER_H_
 #define POSEFILTER_H_
 
-#include "gsl/gsl_randist.h"
+#include "gsl_randist.h"
 #include "Robot.h"
 #include "Timer.h"
 
