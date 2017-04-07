@@ -1,5 +1,6 @@
 #include <time.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
 #include "gsl/gsl_sort.h"
 #include "PoseFilter.h"
@@ -12,6 +13,7 @@ const double ABSOLUTE_POSITION_NOISE_VARIANCE = 0.002 / SPEEDS_BASE_UNIT;
 const double ABSOLUTE_ANGLE_NOISE_VARIANCE = 0.0349066 / ANGLE_BASE_UNIT;
 
 const gsl_rng_type * RANDOM_NUMBER_GENERATOR_TYPE;
+FILE *new_log_file;
 
 static void initializeParticlesWeight(double *particles_weight)
 {
@@ -46,6 +48,10 @@ struct PoseFilter *PoseFilter_new(struct Robot *new_robot)
     pointer->data_timer = new_data_timer;
     pointer->random_number_generator = new_random_number_generator;
 
+    new_log_file = fopen("FilterLogs.log", "a+"); // a+ (create + append)
+    fprintf(new_log_file, "\n\n\n\t\t------------ NEW EXECUTION ------------\n");
+    setbuf(new_log_file, NULL);
+
     Object_addOneReference(new_robot->object);
     return pointer;
 }
@@ -71,6 +77,8 @@ void PoseFilter_delete(struct PoseFilter *pose_filter)
         free(pose_filter->particles);
         gsl_rng_free(pose_filter->random_number_generator);
         free(pose_filter);
+
+        fclose(new_log_file);
     }
 }
 
@@ -197,6 +205,8 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                 double theta_rotation_induced_weight =
                     gsl_ran_gaussian_pdf(particles[i]->angle->theta - new_data_from_world_camera->angle->theta,
                                          sqrt(ABSOLUTE_ANGLE_NOISE_VARIANCE));
+                fprintf(new_log_file, "\ntheta w: %f, x w: %f, y w: %f.", theta_rotation_induced_weight, x_translation_induced_weight,
+                        y_translation_induced_weight);
                 particles_weight[i] = fmin(fmin(x_translation_induced_weight, y_translation_induced_weight),
                                            theta_rotation_induced_weight);
 
