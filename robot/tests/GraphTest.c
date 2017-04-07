@@ -552,7 +552,7 @@ Test(Graph,
 
 /* -- END OF SOLO GRAPH --  */
 
-Test(Graph, given_aNavigableMapWithTwoNonOverlappingObstacles_when_updatesGrah_then_theGraphTypeIsSOLO_SOLO
+Test(Graph, given_aNavigableMapWithTwoNonOverlappingObstacles_when_updatesGraph_then_theGraphTypeIsSOLO_SOLO
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -571,7 +571,7 @@ Test(Graph, given_aNavigableMapWithTwoNonOverlappingObstacles_when_updatesGrah_t
     Coordinates_delete(west);
 }
 
-Test(Graph, given_aNavigableMapWithTwoOverlappingObstacles_when_updatesGrah_then_theGraphTypeIsDUO
+Test(Graph, given_aNavigableMapWithTwoOverlappingObstacles_when_updatesGraph_then_theGraphTypeIsDUO
      , .init = setup_Graph, .fini = teardown_Graph)
 {
     struct Coordinates *south = Coordinates_new(GRAPH_CENTER_OBSTACLE_X, GRAPH_SOUTHERN_OBSTACLE_Y);
@@ -589,7 +589,7 @@ Test(Graph, given_aNavigableMapWithTwoOverlappingObstacles_when_updatesGrah_then
     Coordinates_delete(north);
 }
 
-Test(Graph, given_aNavigableMapWithThreeNonOverlappingObstacles_when_updatesGrah_then_theGraphTypeIsSOLO_SOLO_SOLO
+Test(Graph, given_aNavigableMapWithThreeNonOverlappingObstacles_when_updatesGraph_then_theGraphTypeIsSOLO_SOLO_SOLO
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -612,7 +612,7 @@ Test(Graph, given_aNavigableMapWithThreeNonOverlappingObstacles_when_updatesGrah
 }
 
 Test(Graph,
-     given_aNavigableMapWithTwoEasternOverlappingObstaclesAndAWesternOneNotOverlapping_when_updatesGrah_then_theGraphTypeIsDUO_SOLO
+     given_aNavigableMapWithTwoEasternOverlappingObstaclesAndAWesternOneNotOverlapping_when_updatesGraph_then_theGraphTypeIsDUO_SOLO
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -635,7 +635,7 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_aNavigableMapWithTwoWesternOverlappingObstaclesAndAnEasternOneNotOverlapping_when_updatesGrah_then_theGraphTypeIsSOLO_DUO
+     given_aNavigableMapWithTwoWesternOverlappingObstaclesAndAnEasternOneNotOverlapping_when_updatesGraph_then_theGraphTypeIsSOLO_DUO
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -658,7 +658,7 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_aNavigableMapWithThreeOverlappingObstacles_when_updatesGrah_then_theGraphTypeIsTRIO
+     given_aNavigableMapWithThreeOverlappingObstacles_when_updatesGraph_then_theGraphTypeIsTRIO
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {

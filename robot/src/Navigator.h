@@ -22,6 +22,7 @@ void Navigator_delete(struct Navigator *navigator);
 void Navigator_updateNavigableMap(struct Robot *robot);
 
 int Navigator_isAngleWithinRotationTolerance(int angle);
+void Navigator_stopMovement(struct Robot *robot);
 void Navigator_navigateRobotTowardsGoal(struct Robot *robot);
 void Navigator_orientRobotTowardsGoal(struct Robot *robot);
 
@@ -32,6 +33,14 @@ void Navigator_planFetchingManchesterCode(struct Robot *robot);
 void Navigator_planLowerPenForAntennaMark(struct Robot *robot);
 void Navigator_planTowardsAntennaMarkEnd(struct Robot *robot);
 void Navigator_planRisePenForObstacleCrossing(struct Robot *robot);
+void Navigator_planTowardsObstacleZoneEastSide(struct Robot *robot);
+void Navigator_planTowardsPaintingZone(struct Robot *robot);
+void Navigator_planTowardsPainting(struct Robot *robot);
+void Navigator_planOrientationTowardsPainting(struct Robot *robot);
+void Navigator_planStopMotion(struct Robot *robot);
+void Navigator_planTakingPicture(struct Robot *robot);
+void Navigator_planTowardsObstacleZoneWestSide(struct Robot *robot);
+void Navigator_planTowardsDrawingZone(struct Robot *robot);
 /*
 void Navigator_planTowardsAntennaStop(struct Robot *robot);
  */

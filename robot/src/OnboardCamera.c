@@ -11,6 +11,7 @@
 static CvCapture *cv_cap;
 CvMat *camera_matrix = 0;
 CvMat *distortion_coeffs = 0;
+static int counter = 0;
 
 void OnboardCamera_init(void)
 {
@@ -115,6 +116,12 @@ struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **
             Coordinates_copyValuesFrom(first_coordinates, sequence->coordinates);
             CoordinatesSequence_append(sequence, first_coordinates);
             Coordinates_delete(first_coordinates);
+        } else {
+
+            char name[20];
+            sprintf(name, "image-%d.jpg", counter);
+            cvSaveImage(name, image, 0);
+            counter++;
         }
 
         cvReleaseMemStorage(&opencv_storage);
@@ -130,6 +137,7 @@ void OnboardCamera_deleteImage(IplImage **image)
 
 void OnboardCamera_takePictureAndIfValidSendAndUpdateDrawingBaseTrajectory(struct Robot *robot)
 {
+    Flags_setImageReceivedByStation(robot->current_state->flags, 0);
     IplImage *image;
     struct CoordinatesSequence *image_trajectory;
     image_trajectory = OnboardCamera_extractTrajectoryFromImage(&image);

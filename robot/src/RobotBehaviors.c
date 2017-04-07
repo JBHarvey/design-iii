@@ -7,7 +7,6 @@ void RobotBehaviors_prepareInitialBehaviors(struct Robot *robot)
                                   BehaviorBuilder_withAction(initial_action,
                                           BehaviorBuilder_end()));
 
-
     void (*sendReadyToStart)(struct Robot *) = &Robot_sendReadyToStartSignal;
     struct Flags *map_is_ready_flags = Flags_irrelevant();
     Flags_setNavigableMapIsReady(map_is_ready_flags, 1);
@@ -168,7 +167,7 @@ void RobotBehavior_appendFetchManchesterCodeBehaviorWithChildAction(struct Robot
     last_behavior = last_behavior->first_child;
 
     struct Flags *manchester_code_received_flags = Flags_irrelevant();
-    Flags_setNavigableMapIsReady(manchester_code_received_flags, 1);
+    Flags_setManchesterCodeReceived(manchester_code_received_flags, 1);
     struct Behavior *behavior_do_action_after_manchester_code_reception;
     behavior_do_action_after_manchester_code_reception = BehaviorBuilder_build(
                 BehaviorBuilder_withAction(action,
@@ -208,3 +207,85 @@ void RobotBehavior_appendLowerPenBehaviorWithChildAction(struct Robot *robot, vo
     Behavior_delete(behavior_do_action_with_free_entry);
     Behavior_delete(behavior_lower_pen_with_free_entry);
 }
+
+void RobotBehavior_appendRisePenBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *))
+{
+    struct Behavior *last_behavior = fetchLastBehavior(robot);
+
+    void (*risePen)(struct Robot*) = &Robot_risePenAndWaitASecondAndAHalf;
+    struct Behavior *behavior_rise_pen_with_free_entry;
+    behavior_rise_pen_with_free_entry = BehaviorBuilder_build(
+                                            BehaviorBuilder_withAction(risePen,
+                                                    BehaviorBuilder_withFreeEntry(
+                                                            BehaviorBuilder_end())));
+    Behavior_addChild(last_behavior, behavior_rise_pen_with_free_entry);
+
+    last_behavior = last_behavior->first_child;
+
+    struct Behavior *behavior_do_action_with_free_entry;
+    behavior_do_action_with_free_entry = BehaviorBuilder_build(
+            BehaviorBuilder_withAction(action,
+                                       BehaviorBuilder_withFreeEntry(
+                                           BehaviorBuilder_end())));
+    Behavior_addChild(last_behavior, behavior_do_action_with_free_entry);
+
+
+    Behavior_delete(behavior_do_action_with_free_entry);
+    Behavior_delete(behavior_rise_pen_with_free_entry);
+}
+
+void RobotBehavior_appendStopMovementBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *))
+{
+    struct Behavior *last_behavior = fetchLastBehavior(robot);
+
+    void (*stopMotion)(struct Robot*) = &Navigator_stopMovement;
+    struct Behavior *behavior_stop_motion_with_free_entry;
+    behavior_stop_motion_with_free_entry = BehaviorBuilder_build(
+            BehaviorBuilder_withAction(stopMotion,
+                                       BehaviorBuilder_withFreeEntry(
+                                           BehaviorBuilder_end())));
+    Behavior_addChild(last_behavior, behavior_stop_motion_with_free_entry);
+
+    last_behavior = last_behavior->first_child;
+
+    struct Behavior *behavior_do_action_with_free_entry;
+    behavior_do_action_with_free_entry = BehaviorBuilder_build(
+            BehaviorBuilder_withAction(action,
+                                       BehaviorBuilder_withFreeEntry(
+                                           BehaviorBuilder_end())));
+    Behavior_addChild(last_behavior, behavior_do_action_with_free_entry);
+
+
+    Behavior_delete(behavior_do_action_with_free_entry);
+    Behavior_delete(behavior_stop_motion_with_free_entry);
+}
+
+void RobotBehavior_appendTakePictureBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *))
+{
+    struct Behavior *last_behavior = fetchLastBehavior(robot);
+
+    void (*takePicture)(struct Robot*) = &OnboardCamera_takePictureAndIfValidSendAndUpdateDrawingBaseTrajectory;
+    struct Behavior *behavior_take_picture_with_free_entry;
+    behavior_take_picture_with_free_entry = BehaviorBuilder_build(
+            BehaviorBuilder_withAction(takePicture,
+                                       BehaviorBuilder_withFreeEntry(
+                                           BehaviorBuilder_end())));
+    Behavior_addChild(last_behavior, behavior_take_picture_with_free_entry);
+
+    last_behavior = last_behavior->first_child;
+
+    struct Flags *image_received_by_station = Flags_irrelevant();
+    Flags_setNavigableMapIsReady(image_received_by_station, 1);
+    struct Behavior *behavior_do_action_when_image_received_by_station;
+    behavior_do_action_when_image_received_by_station = BehaviorBuilder_build(
+                BehaviorBuilder_withAction(action,
+                                           BehaviorBuilder_withFlags(image_received_by_station,
+                                                   BehaviorBuilder_withFreePoseEntry(
+                                                           BehaviorBuilder_end()))));
+    Behavior_addChild(last_behavior, behavior_do_action_when_image_received_by_station);
+    Flags_delete(image_received_by_station);
+
+    Behavior_delete(behavior_do_action_when_image_received_by_station);
+    Behavior_delete(behavior_take_picture_with_free_entry);
+}
+
