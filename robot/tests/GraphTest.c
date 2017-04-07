@@ -7,7 +7,6 @@ Test(Graph, given_aMapWithNoObstacles_when_createsGraph_then_theGraphTypeIsZero)
     struct Graph *graph = Graph_new();
 
     struct Coordinates *coordinates_zero = Coordinates_zero();
-    enum ObstaclePlacementType expected_type = NONE;
 
     cr_assert(graph->type == expected_type);
     cr_assert(graph->actual_number_of_nodes == 0);
@@ -121,20 +120,6 @@ void generateSoloCenterSouthMap(void)
     Map_updateObstacle(graph_map, south, CENTER, 0);
 
     Coordinates_delete(south);
-}
-
-Test(Graph, given_aNavigableMapWithOneObstacle_when_updatesGraph_then_theGraphTypeIsSOLO
-     , .init = setup_Graph
-     , .fini = teardown_Graph)
-{
-    generateSoloMap(CENTER);
-    Graph_updateForMap(graph, graph_map);
-
-    enum ObstaclePlacementType actual_type = graph->type;
-    enum ObstaclePlacementType expected_type = SOLO;
-
-    cr_assert_eq(expected_type, actual_type);
-
 }
 
 Test(Graph,
@@ -551,131 +536,58 @@ Test(Graph,
 }
 
 /* -- END OF SOLO GRAPH --  */
+/* -- START OF TWO OBSTACLE GRAPH -- */
+struct Obstacle *obstacle_a;
+struct Obstacle *obstacle_b;
 
-Test(Graph, given_aNavigableMapWithTwoNonOverlappingObstacles_when_updatesGrah_then_theGraphTypeIsSOLO_SOLO
-     , .init = setup_Graph
-     , .fini = teardown_Graph)
+void setup_TwoObstaclesNoOverlap(enum CardinalDirection orientation_a, enum CardinalDirection orientation_b)
 {
-    struct Coordinates *center = Coordinates_new(GRAPH_CENTER_OBSTACLE_X, GRAPH_CENTER_OBSTACLE_Y);
-    struct Coordinates *west = Coordinates_new(GRAPH_WESTERN_OBSTACLE_X, GRAPH_CENTER_OBSTACLE_Y);
-    Map_updateObstacle(graph_map, center, CENTER, 0);
-    Map_updateObstacle(graph_map, west, CENTER, 1);
-    Graph_updateForMap(graph, graph_map);
+    struct Coordinates *coordinates_a = Coordinates_new(GRAPH_EAST_OBSTACLE_X, GRAPH_NORTH_OBSTACLE_Y);
+    struct Coordinates *coordinates_b = Coordinates_new(GRAPH_WEST_OBSTACLE_X, GRAPH_SOUTH_OBSTACLE_Y);
+    Map_updateObstacle(graph_map, coordinates_a, orientation_a, 0);
+    Map_updateObstacle(graph_map, coordinates_b, orientation_b, 1);
+    obstacle_a = graph_map->obstacles[0];
+    obstacle_b = graph_map->obstacles[1];
 
-    enum ObstaclePlacementType actual_type = graph->type;
-    enum ObstaclePlacementType expected_type = SOLO_SOLO;
-
-    cr_assert_eq(expected_type, actual_type);
-
-    Coordinates_delete(center);
-    Coordinates_delete(west);
+    Coordinates_delete(coordinates_a);
+    Coordinates_delete(coordinates_b);
 }
 
-Test(Graph, given_aNavigableMapWithTwoOverlappingObstacles_when_updatesGrah_then_theGraphTypeIsDUO
-     , .init = setup_Graph, .fini = teardown_Graph)
+void setup_TwoObstaclesOverlappingInY(enum CardinalDirection orientation_a, enum CardinalDirection orientation_b)
 {
-    struct Coordinates *south = Coordinates_new(GRAPH_CENTER_OBSTACLE_X, GRAPH_SOUTHERN_OBSTACLE_Y);
-    struct Coordinates *north = Coordinates_new(GRAPH_CENTER_OBSTACLE_X, GRAPH_NORTHERN_OBSTACLE_Y);
-    Map_updateObstacle(graph_map, south, CENTER, 0);
-    Map_updateObstacle(graph_map, north, CENTER, 1);
-    Graph_updateForMap(graph, graph_map);
+    struct Coordinates *coordinates_a = Coordinates_new(GRAPH_EAST_OBSTACLE_X, GRAPH_CENTER_OBSTACLE_Y);
+    struct Coordinates *coordinates_b = Coordinates_new(GRAPH_WEST_OBSTACLE_X, GRAPH_CENTER_OBSTACLE_Y);
+    Map_updateObstacle(graph_map, coordinates_a, orientation_a, 0);
+    Map_updateObstacle(graph_map, coordinates_b, orientation_b, 1);
+    obstacle_a = graph_map->obstacles[0];
+    obstacle_b = graph_map->obstacles[1];
 
-    enum ObstaclePlacementType actual_type = graph->type;
-    enum ObstaclePlacementType expected_type = DUO;
-
-    cr_assert_eq(expected_type, actual_type);
-
-    Coordinates_delete(south);
-    Coordinates_delete(north);
+    Coordinates_delete(coordinates_a);
+    Coordinates_delete(coordinates_b);
 }
 
-Test(Graph, given_aNavigableMapWithThreeNonOverlappingObstacles_when_updatesGrah_then_theGraphTypeIsSOLO_SOLO_SOLO
-     , .init = setup_Graph
-     , .fini = teardown_Graph)
+void setup_TwoObstaclesOverlappingInX(enum CardinalDirection orientation_a, enum CardinalDirection orientation_b)
 {
-    struct Coordinates *east = Coordinates_new(GRAPH_EASTERN_OBSTACLE_X, GRAPH_CENTER_OBSTACLE_Y);
-    struct Coordinates *center = Coordinates_new(GRAPH_CENTER_OBSTACLE_X, GRAPH_CENTER_OBSTACLE_Y);
-    struct Coordinates *west = Coordinates_new(GRAPH_WESTERN_OBSTACLE_X, GRAPH_CENTER_OBSTACLE_Y);
-    Map_updateObstacle(graph_map, east, CENTER, 0);
-    Map_updateObstacle(graph_map, center, CENTER, 1);
-    Map_updateObstacle(graph_map, west, CENTER, 2);
-    Graph_updateForMap(graph, graph_map);
+    struct Coordinates *coordinates_a = Coordinates_new(GRAPH_CENTER_OBSTACLE_X, GRAPH_NORTH_OBSTACLE_Y);
+    struct Coordinates *coordinates_b = Coordinates_new(GRAPH_CENTER_OBSTACLE_X, GRAPH_SOUTH_OBSTACLE_Y);
+    Map_updateObstacle(graph_map, coordinates_a, orientation_a, 0);
+    Map_updateObstacle(graph_map, coordinates_b, orientation_b, 1);
+    obstacle_a = graph_map->obstacles[0];
+    obstacle_b = graph_map->obstacles[1];
 
-    enum ObstaclePlacementType actual_type = graph->type;
-    enum ObstaclePlacementType expected_type = SOLO_SOLO_SOLO;
-
-    cr_assert_eq(expected_type, actual_type);
-
-    Coordinates_delete(east);
-    Coordinates_delete(center);
-    Coordinates_delete(west);
+    Coordinates_delete(coordinates_a);
+    Coordinates_delete(coordinates_b);
 }
 
-Test(Graph,
-     given_aNavigableMapWithTwoEasternOverlappingObstaclesAndAWesternOneNotOverlapping_when_updatesGrah_then_theGraphTypeIsDUO_SOLO
-     , .init = setup_Graph
-     , .fini = teardown_Graph)
+void setup_TwoObstaclesOverlappingInXAndY(enum CardinalDirection orientation_a, enum CardinalDirection orientation_b)
 {
-    struct Coordinates *north_eastern = Coordinates_new(GRAPH_EASTERN_OBSTACLE_X, GRAPH_SOUTH_OBSTACLE_Y);
-    struct Coordinates *western = Coordinates_new(GRAPH_WESTERN_OBSTACLE_X, GRAPH_CENTER_OBSTACLE_Y);
-    struct Coordinates *south_east = Coordinates_new(GRAPH_EAST_OBSTACLE_X, GRAPH_NORTH_OBSTACLE_Y);
-    Map_updateObstacle(graph_map, north_eastern, CENTER, 0);
-    Map_updateObstacle(graph_map, western, CENTER, 1);
-    Map_updateObstacle(graph_map, south_east, CENTER, 2);
-    Graph_updateForMap(graph, graph_map);
+    struct Coordinates *coordinates_a = Coordinates_new(GRAPH_CENTER_OBSTACLE_X, GRAPH_CENTER_OBSTACLE_Y);
+    struct Coordinates *coordinates_b = Coordinates_new(GRAPH_WEST_OBSTACLE_X, GRAPH_CENTER_OBSTACLE_Y);
+    Map_updateObstacle(graph_map, coordinates_a, orientation_a, 0);
+    Map_updateObstacle(graph_map, coordinates_b, orientation_b, 1);
+    obstacle_a = graph_map->obstacles[0];
+    obstacle_b = graph_map->obstacles[1];
 
-    enum ObstaclePlacementType actual_type = graph->type;
-    enum ObstaclePlacementType expected_type = DUO_SOLO;
-
-    cr_assert_eq(expected_type, actual_type);
-
-    Coordinates_delete(north_eastern);
-    Coordinates_delete(western);
-    Coordinates_delete(south_east);
-}
-
-Test(Graph,
-     given_aNavigableMapWithTwoWesternOverlappingObstaclesAndAnEasternOneNotOverlapping_when_updatesGrah_then_theGraphTypeIsSOLO_DUO
-     , .init = setup_Graph
-     , .fini = teardown_Graph)
-{
-    struct Coordinates *north_western = Coordinates_new(GRAPH_WESTERN_OBSTACLE_X, GRAPH_SOUTH_OBSTACLE_Y);
-    struct Coordinates *eastern = Coordinates_new(GRAPH_EASTERN_OBSTACLE_X, GRAPH_CENTER_OBSTACLE_Y);
-    struct Coordinates *south_west = Coordinates_new(GRAPH_WEST_OBSTACLE_X, GRAPH_NORTH_OBSTACLE_Y);
-    Map_updateObstacle(graph_map, north_western, CENTER, 0);
-    Map_updateObstacle(graph_map, eastern, CENTER, 1);
-    Map_updateObstacle(graph_map, south_west, CENTER, 2);
-    Graph_updateForMap(graph, graph_map);
-
-    enum ObstaclePlacementType actual_type = graph->type;
-    enum ObstaclePlacementType expected_type = SOLO_DUO;
-
-    cr_assert_eq(expected_type, actual_type);
-
-    Coordinates_delete(north_western);
-    Coordinates_delete(eastern);
-    Coordinates_delete(south_west);
-}
-
-Test(Graph,
-     given_aNavigableMapWithThreeOverlappingObstacles_when_updatesGrah_then_theGraphTypeIsTRIO
-     , .init = setup_Graph
-     , .fini = teardown_Graph)
-{
-    struct Coordinates *east = Coordinates_new(GRAPH_EAST_OBSTACLE_X, GRAPH_CENTER_OBSTACLE_Y);
-    struct Coordinates *north = Coordinates_new(GRAPH_CENTER_OBSTACLE_X, GRAPH_NORTH_OBSTACLE_Y);
-    struct Coordinates *south_west = Coordinates_new(GRAPH_WEST_OBSTACLE_X, GRAPH_SOUTH_OBSTACLE_Y);
-    Map_updateObstacle(graph_map, east, CENTER, 0);
-    Map_updateObstacle(graph_map, north, CENTER, 1);
-    Map_updateObstacle(graph_map, south_west, CENTER, 2);
-    Graph_updateForMap(graph, graph_map);
-
-    enum ObstaclePlacementType actual_type = graph->type;
-    enum ObstaclePlacementType expected_type = TRIO;
-
-    cr_assert_eq(expected_type, actual_type);
-
-    Coordinates_delete(east);
-    Coordinates_delete(north);
-    Coordinates_delete(south_west);
+    Coordinates_delete(coordinates_a);
+    Coordinates_delete(coordinates_b);
 }

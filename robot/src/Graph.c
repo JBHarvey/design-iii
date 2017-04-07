@@ -6,7 +6,6 @@ struct Graph *Graph_new(void)
     struct Object *new_object = Object_new();
     struct Node *new_eastern_node = Node_new();
     struct Node *new_western_node = Node_new();
-    enum ObstaclePlacementType new_type = NONE;
     int new_actual_number_of_nodes = 0;
     struct Graph *pointer =  malloc(sizeof(struct Graph));
 
@@ -15,7 +14,6 @@ struct Graph *Graph_new(void)
     pointer->western_node = new_western_node;
     pointer->nodes[0] = new_eastern_node;
     pointer->nodes[1] = new_western_node;
-    pointer->type = new_type;
     pointer->actual_number_of_nodes = new_actual_number_of_nodes;
 
     return pointer;
@@ -215,11 +213,9 @@ void Graph_updateForMap(struct Graph *graph, struct Map* map)
 
     switch(number_of_obstacle) {
         case 0:
-            graph->type = NONE;
             break;
 
         case 1:
-            graph->type = SOLO;
             first = Map_retrieveFirstObstacle(map);
             establishEasternNodeSolo(graph, first, map);
             establishWesternNodeSolo(graph, first, map);
@@ -233,12 +229,6 @@ void Graph_updateForMap(struct Graph *graph, struct Map* map)
             last = Map_retrieveLastObstacle(map);
             int are_overlapping = Obstacle_areOverlappingInX(first, last);
 
-            if(are_overlapping) {
-                graph->type = DUO;
-            } else {
-                graph->type = SOLO_SOLO;
-            }
-
             break;
 
         case 3:
@@ -247,16 +237,6 @@ void Graph_updateForMap(struct Graph *graph, struct Map* map)
             struct Obstacle *middle = Map_retrieveMiddleObstacle(map, first, last);
             int eastern_are_overlapping = Obstacle_areOverlappingInX(first, middle);
             int western_are_overlapping = Obstacle_areOverlappingInX(last, middle);
-
-            if(eastern_are_overlapping && ! western_are_overlapping) {
-                graph->type = DUO_SOLO;
-            } else if(!eastern_are_overlapping && western_are_overlapping) {
-                graph->type = SOLO_DUO;
-            } else if(eastern_are_overlapping && western_are_overlapping) {
-                graph->type = TRIO;
-            } else {
-                graph->type = SOLO_SOLO_SOLO;
-            }
 
             break;
 
