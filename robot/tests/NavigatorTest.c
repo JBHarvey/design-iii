@@ -230,6 +230,31 @@ const int TARGET_DELTA_X = 1000;
 const int TARGET_DELTA_Y = 1000;
 
 Test(Navigator,
+     given__when_askedToStopMovement_then_aRotationCommandWithValueZeroIsSentAndASpeedCommandWithAllZeroValuesIsSent
+     , .init = setup_Navigator
+     , .fini = teardown_Navigator)
+{
+
+    struct Pose *robot_pose = Pose_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y, 0);
+    Pose_copyValuesFrom(robot->current_state->pose, robot_pose);
+
+    struct Coordinates *target_coordinates = Coordinates_new(NAVIGATOR_ROBOT_X + TARGET_DELTA_X, NAVIGATOR_ROBOT_Y);
+    updateRobotGoalCoordinatesTo(target_coordinates);
+
+    navigator->was_oriented_before_last_command = 1;
+    Navigator_stopMovement(robot);
+
+    cr_assert(speeds_validator == COMMAND_SENT);
+    cr_assert(rotation_validator == COMMAND_SENT);
+    cr_assert(sent_speeds_command_x == 0);
+    cr_assert(sent_speeds_command_y == 0);
+    cr_assert(sent_rotation_command_theta == 0);
+
+    Coordinates_delete(target_coordinates);
+    Pose_delete(robot_pose);
+}
+
+Test(Navigator,
      given_aRobotThatWasAndIsOrientedTowardsItsGoal_when_askedToNavigateTowardsGoal_then_aSpeedsCommandIsSent
      , .init = setup_Navigator
      , .fini = teardown_Navigator)

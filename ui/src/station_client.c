@@ -21,9 +21,8 @@
 const int MAX_IP_ADDRESS_LENGTH = 45;
 const int FIVE_SECONDS_IN_MICROSECONDS = 5000000;
 
-/* Flag definitions */
-
 static struct ev_io *watcher;
+int readyToDrawReceived = 0;
 
 struct StationClient *StationClient_new(int new_port, const char *server_ip)
 {
@@ -123,13 +122,13 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             break;
 
         case DATA_IMAGE: {
+                Logger_startRobotConnectionHandlerSectionAndAppend("Image received.");
                 CvMat *image_data = cvCreateMat(1, length - 1, CV_8UC1);
                 memcpy(image_data->data.ptr, data + 1, length - 1);
                 IplImage *image = cvDecodeImage(image_data, CV_LOAD_IMAGE_COLOR);
                 cvReleaseMat(&image_data);
                 RobotVision_setImage(image);
                 cvReleaseImage(&image);
-                Logger_startRobotConnectionHandlerSectionAndAppend("Image received.");
                 StationClientSender_sendImageReceivedAck();
                 break;
             }
@@ -184,16 +183,20 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             }
 
         case SIGNAL_READY_TO_DRAW: {
-                Logger_startRobotConnectionHandlerSectionAndAppend("Robot signaled that he is ready to draw.");
-                WorldVision_recalibrateForDrawing();
-                StationClientSender_sendReadyToDrawSignalReceivedAck();
+                if(!readyToDrawReceived) {
+                    readyToDrawReceived = 1;
+                    Logger_startRobotConnectionHandlerSectionAndAppend("Robot signaled that he is ready to draw.");
+                    WorldVision_recalibrateForMoving();
+                    StationClientSender_sendReadyToDrawSignalReceivedAck();
+                    readyToDrawReceived = 0;
+                }
+
                 break;
             }
 
         case SIGNAL_END_OF_CYCLE: {
                 Logger_startRobotConnectionHandlerSectionAndAppend("Robot signaled that the cycle is completed.");
                 Timer_stop();
-                WorldVision_recalibrateForMoving();
                 StationInterface_activateStartCycleButton();
                 StationClientSender_sendEndOfCycleSignalReceivedAck();
                 break;

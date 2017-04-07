@@ -25,8 +25,6 @@ int main(int argc, char *argv[])
 
     Logger_startLoggingRobot(robot);
 
-    CommandSender_sendFetchManchesterCode(robot->command_sender);
-
     while(1) {
         RobotServer_communicate(robot_server);
         PoseFilter_executeFilter(pose_filter, callbacks.updateFromCameraOnly);

@@ -301,7 +301,23 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
                     printf("send tty packet %u: %u\n", data[1], length - 2);
                     writeTTYACMPacket(data[1], data + 2, length - 2);
                 }
+
+                break;
             }
+
+        case DEBUG_CAMERA_GET_FIGURE: {
+            IplImage *image;
+            struct CoordinatesSequence *coordinates_sequence;
+            coordinates_sequence = OnboardCamera_extractTrajectoryFromImage(&image);
+
+            if (coordinates_sequence) {
+                RobotServer_sendImageToStation(image);
+                OnboardCamera_deleteImage(&image);
+                CoordinatesSequence_delete(coordinates_sequence);
+            }
+
+            break;
+        }
     }
 
 }

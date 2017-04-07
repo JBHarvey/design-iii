@@ -11,6 +11,7 @@
 
 #define WORLD_CAMERA_WIDTH 1600
 #define WORLD_CAMERA_HEIGHT 1200
+#define SQUARE_NUMBER_CORNER 4
 
 /* Type definitions */
 
@@ -50,7 +51,8 @@ void WorldVision_applyWorldCameraBackFrame(void);
 void WorldVision_createWorldCameraFrameSafeCopy(void);
 
 void WorldVision_sendWorldInformationToRobot(struct Communication_Object robot,
-        struct Communication_Object obstacles[MAXIMUM_OBSTACLE_NUMBER], int environment_has_changed);
+        struct Communication_Object obstacles[MAXIMUM_OBSTACLE_NUMBER], int environment_has_changed,
+        struct Communication_Coordinates green_square_corners[SQUARE_NUMBER_CORNER]);
 
 void WorldVision_setPlannedTrajectory(struct Point3DSet *world_trajectory);
 

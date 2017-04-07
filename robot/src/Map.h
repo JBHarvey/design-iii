@@ -19,7 +19,7 @@ struct Map {
     struct Coordinates *antenna_zone_start;
     struct Coordinates *antenna_zone_stop;
     struct Obstacle *obstacles[MAXIMUM_OBSTACLE_NUMBER];
-    struct Pose *painting_zones[8];
+    struct Pose *painting_zones[NUMBER_OF_PAINTING];
 };
 
 struct Map *Map_new(void);
