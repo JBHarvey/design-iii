@@ -54,7 +54,16 @@ volatile uint8_t readyToSendData = 0;
 
 volatile uint8_t initializeManchesterFlag = 0;
 
-float volatile lastRadian = 0;
+volatile float lastRadian = 0;
+
+/* routine to test rotation */
+/*volatile float radianForDebug = 0;
+
+ volatile float positionLine1 = 0;
+
+ volatile float positionLine2 = 0;
+
+ volatile uint8_t line2Flag = 0;*/
 
 extern void TIM5_IRQHandler() {
 	if (TIM_GetITStatus(TIM5, TIM_IT_Update) != RESET) {
@@ -138,6 +147,29 @@ int main(void) {
 
 	/* Test routine LEDs */
 	//startLEDsRoutine();
+	/* to test rotation */
+
+	/*moveDownPrehensor();
+	 Delayms(800);
+
+	 uint8_t rotationIsFinished = 0;
+	 uint8_t routineIsFinished = 0;
+
+	 isRobotRotating = 0;
+	 resetPositionEncoderVariables();
+
+	 float speedX = 0.02;
+	 float speedY = 0.0;
+	 uint8_t data[8];
+
+	 memcpy(data, &speedX, sizeof(float));
+
+	 memcpy(data + 4, &speedY, sizeof(float));
+
+	 setSpeedPidSetpoints(data);
+
+	 setState(&mainState, MAIN_PID);*/
+
 	while (1) {
 		/* Main state machine */
 		switch (mainState) {
@@ -306,6 +338,75 @@ int main(void) {
 
 			readyToSendMoveMeasures = 0;
 		}
+
+		/* to Test rotation */
+		/*float position = calculatePosition(
+		 (numberOfPositionEdges1 + numberOfPositionEdges3) / 2.0);
+
+		 if (isRobotRotating) {
+		 float perimeterInMeters = calculatePosition(
+		 (-numberOfPositionEdges1 + numberOfPositionEdges3
+		 - numberOfPositionEdges2 + numberOfPositionEdges4)
+		 / 4);
+
+		 radianForDebug = calculateRadianFromMeters(perimeterInMeters);
+		 }
+
+		 if (!line2Flag && position > 0.10) {
+
+		 if (!rotationIsFinished) {
+
+		 stopMove();
+
+		 positionLine1 = position;
+
+		 isRobotRotating = 1;
+
+		 resetPositionEncoderVariables();
+
+		 float radianToRotate = 1.0;
+
+		 uint8_t data[4];
+
+		 memcpy(data, &radianToRotate, sizeof(float));
+
+		 setRotatePidSetpoints(data);
+
+		 setState(&mainState, MAIN_PID);
+		 }
+		 }
+
+		 if (line2Flag && position > 0.10) {
+		 stopMove();
+		 positionLine2 = position;
+		 resetPositionEncoderVariables();
+		 setState(&mainState, MAIN_IDLE);
+		 }
+
+		 if (radianForDebug > PI / 4.0) {
+		 rotationIsFinished = 1;
+
+		 stopMove();
+		 isRobotRotating = 0;
+		 resetPositionEncoderVariables();
+
+		 float speedX = 0.02;
+		 float speedY = 0.0;
+		 uint8_t data[8];
+
+		 memcpy(data, &speedX, sizeof(float));
+
+		 memcpy(data + 4, &speedY, sizeof(float));
+
+		 setSpeedPidSetpoints(data);
+
+		 line2Flag = 1;
+
+		 radianForDebug = 0;
+
+		 setState(&mainState, MAIN_PID);
+		 }*/
+
 	}
 }
 
@@ -351,7 +452,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		EXTI_ClearITPendingBit (EXTI_Line5);
 	}
 
-	// wheel 1 channel 2
+// wheel 1 channel 2
 	if (EXTI_GetITStatus(EXTI_Line6) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges1++;
@@ -374,7 +475,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		EXTI_ClearITPendingBit (EXTI_Line6);
 	}
 
-	// wheel 2 channel 1
+// wheel 2 channel 1
 	if (EXTI_GetITStatus(EXTI_Line8) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges2++;
@@ -399,7 +500,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		EXTI_ClearITPendingBit (EXTI_Line8);
 	}
 
-	// wheel 2 channel 2
+// wheel 2 channel 2
 	if (EXTI_GetITStatus(EXTI_Line9) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges2++;
@@ -426,7 +527,7 @@ extern void EXTI9_5_IRQHandler(void) {
 
 extern void EXTI15_10_IRQHandler(void) {
 	/* Make sure that interrupt flag is set */
-	// wheel 3 channel 1
+// wheel 3 channel 1
 	if (EXTI_GetITStatus(EXTI_Line10) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges3++;
@@ -471,7 +572,7 @@ extern void EXTI15_10_IRQHandler(void) {
 		EXTI_ClearITPendingBit (EXTI_Line11);
 	}
 
-	// wheel 3 channel 2
+// wheel 3 channel 2
 	if (EXTI_GetITStatus(EXTI_Line12) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges4++;
@@ -494,7 +595,7 @@ extern void EXTI15_10_IRQHandler(void) {
 		EXTI_ClearITPendingBit (EXTI_Line12);
 	}
 
-	// wheel 4 channel 2
+// wheel 4 channel 2
 	if (EXTI_GetITStatus(EXTI_Line13) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges4++;
