@@ -204,6 +204,34 @@ static void establishWesternNodeSolo(struct Graph *graph, struct Obstacle *obsta
     Coordinates_delete(new_western_node_coordinates);
 }
 
+static struct Node *createMiddleNode(struct Obstacle *east_obstacle, struct Obstacle *west_obstacle, struct Map *map)
+{
+    struct Node *middle_node = Node_new();
+    int x = Coordinates_computeMeanX(east_obstacle->coordinates, west_obstacle->coordinates);
+    int east_y = computeOptimalYValueForSideSoloObstacleNode(east_obstacle, map);
+    int west_y = computeOptimalYValueForSideSoloObstacleNode(west_obstacle, map);
+    int y = (int)((east_y + west_y) / 2);
+
+    struct Coordinates *middle_coordinates = Coordinates_new(x, y);
+    Coordinates_copyValuesFrom(middle_node->coordinates, middle_coordinates);
+    Coordinates_delete(middle_coordinates);
+
+    return middle_node;
+}
+
+static void linkNodesForDuoObstacleNoOverlap(struct Graph *graph, struct Node *east_node, struct Node *west_node,
+        struct Obstacle *east_obstacle, struct Obstacle *west_obstacle, struct Map *map)
+{
+    struct Node *middle_node = createMiddleNode(east_obstacle, west_obstacle, map);
+
+    int next_node_index = graph->actual_number_of_nodes;
+    graph->nodes[next_node_index++] = middle_node;
+    graph->actual_number_of_nodes = next_node_index;
+
+    linkNodesForSoloObstacle(graph, east_node, middle_node, east_obstacle, map);
+    linkNodesForSoloObstacle(graph, middle_node, west_node, west_obstacle, map);
+}
+
 void Graph_updateForMap(struct Graph *graph, struct Map* map)
 {
     int number_of_obstacle = Map_fetchNumberOfObstacles(map);
@@ -227,7 +255,15 @@ void Graph_updateForMap(struct Graph *graph, struct Map* map)
         case 2:
             first = Map_retrieveFirstObstacle(map);
             last = Map_retrieveLastObstacle(map);
-            int are_overlapping = Obstacle_areOverlappingInX(first, last);
+            int are_overlapping_in_x = Obstacle_areOverlappingInX(first, last);
+            int are_overlapping_in_y = Obstacle_areOverlappingInX(first, last);
+
+            if(!are_overlapping_in_x && !are_overlapping_in_y) {
+                establishEasternNodeSolo(graph, first, map);
+                establishWesternNodeSolo(graph, last, map);
+                graph->actual_number_of_nodes = 2;
+                linkNodesForDuoObstacleNoOverlap(graph, graph->eastern_node, graph->western_node, first, last, map);
+            }
 
             break;
 

@@ -8,7 +8,6 @@ Test(Graph, given_aMapWithNoObstacles_when_createsGraph_then_theGraphTypeIsZero)
 
     struct Coordinates *coordinates_zero = Coordinates_zero();
 
-    cr_assert(graph->type == expected_type);
     cr_assert(graph->actual_number_of_nodes == 0);
     cr_assert(graph->eastern_node->actual_number_of_neighbours == 0);
     cr_assert(Coordinates_haveTheSameValues(graph->eastern_node->coordinates, coordinates_zero));
@@ -551,6 +550,7 @@ void setup_TwoObstaclesNoOverlap(enum CardinalDirection orientation_a, enum Card
 
     Coordinates_delete(coordinates_a);
     Coordinates_delete(coordinates_b);
+    Graph_updateForMap(graph, graph_map);
 }
 
 void setup_TwoObstaclesOverlappingInY(enum CardinalDirection orientation_a, enum CardinalDirection orientation_b)
@@ -564,6 +564,7 @@ void setup_TwoObstaclesOverlappingInY(enum CardinalDirection orientation_a, enum
 
     Coordinates_delete(coordinates_a);
     Coordinates_delete(coordinates_b);
+    Graph_updateForMap(graph, graph_map);
 }
 
 void setup_TwoObstaclesOverlappingInX(enum CardinalDirection orientation_a, enum CardinalDirection orientation_b)
@@ -577,6 +578,7 @@ void setup_TwoObstaclesOverlappingInX(enum CardinalDirection orientation_a, enum
 
     Coordinates_delete(coordinates_a);
     Coordinates_delete(coordinates_b);
+    Graph_updateForMap(graph, graph_map);
 }
 
 void setup_TwoObstaclesOverlappingInXAndY(enum CardinalDirection orientation_a, enum CardinalDirection orientation_b)
@@ -590,4 +592,56 @@ void setup_TwoObstaclesOverlappingInXAndY(enum CardinalDirection orientation_a, 
 
     Coordinates_delete(coordinates_a);
     Coordinates_delete(coordinates_b);
+    Graph_updateForMap(graph, graph_map);
 }
+
+void assertActualNumberOfNodeIs(int expected_number)
+{
+    int total_number_of_nodes = graph->actual_number_of_nodes;
+    cr_assert_eq(total_number_of_nodes, expected_number, "\nNumber of Nodes do not match.\nExpected: %d - Got: %d",
+                 expected_number, total_number_of_nodes);
+}
+
+Test(Graph, given_twoObstacleWithNoOverlapNorthSouth_when_updatesGraph_then_theActualNumberOfNodesIsSeven
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    setup_TwoObstaclesNoOverlap(NORTH, SOUTH);
+    assertActualNumberOfNodeIs(7);
+}
+
+void assertNodeCoordinatesAreAbout(struct Node *node, int expected_x, int expected_y)
+{
+    struct Coordinates *expected_coordinates = Coordinates_new(expected_x, expected_y);
+    cr_assert(Coordinates_distanceBetween(node->coordinates, expected_coordinates) <= 2,
+              "\nNode coordinates are wrong.\nExpected: (%d,%d) - Got: (%d,%d)",
+              expected_x, expected_y, node->coordinates->x, node->coordinates->y);
+    Coordinates_delete(expected_coordinates);
+}
+
+Test(Graph,
+     given_twoObstacleWithNoOverlapSouthNorth_when_updatesGraph_then_theMiddleNodeIsInTheCenterOfTheObstaclesPassingNodes
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    setup_TwoObstaclesNoOverlap(SOUTH, NORTH);
+
+    int center_x = Coordinates_computeMeanX(obstacle_a->coordinates, obstacle_b->coordinates);
+
+    struct Coordinates *northern_point_of_a = Obstacle_retrieveNorthernPointOf(obstacle_a);
+    struct Coordinates *southern_point_of_b = Obstacle_retrieveSouthernPointOf(obstacle_b);
+    struct Coordinates *northern_navigable_point = graph_map->north_eastern_table_corner;
+    struct Coordinates *southern_navigable_point = graph_map->south_eastern_table_corner;
+    int north_y = Coordinates_computeMeanY(northern_point_of_a, northern_navigable_point);
+    int south_y = Coordinates_computeMeanY(southern_point_of_b, southern_navigable_point);
+    int center_y = (int)((north_y + south_y) / 2);
+
+    struct Node *center_node = graph->nodes[2];
+    assertNodeCoordinatesAreAbout(center_node, center_x, center_y);
+
+    Coordinates_delete(northern_point_of_a);
+    Coordinates_delete(southern_point_of_b);
+}
+
+
+/* -- END OF TWO OBSTACLE GRAPH -- */
