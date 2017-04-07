@@ -27,10 +27,15 @@ void Robot_resetAllActuators(struct Robot *robot);
 void Robot_updateBehaviorIfNeeded(struct Robot *robot);
 void Robot_act(struct Robot *robot);
 void Robot_sendReadyToStartSignal(struct Robot *robot);
+void Robot_sendReadyToDrawSignal(struct Robot *robot);
 void Robot_sendPlannedTrajectory(struct Robot *robot);
 void Robot_sendPoseEstimate(struct Robot *robot);
 void Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(struct Robot *robot);
+void Robot_lightGreenLedAndWaitASecond(struct Robot *robot);
+void Robot_lightRedLedAndWaitASecond(struct Robot *robot);
 void Robot_lowerPenAndWaitASecondAndAHalf(struct Robot *robot);
 void Robot_risePenAndWaitASecondAndAHalf(struct Robot *robot);
+void Robot_closeCycleAndSendEndOfCycleSignal(struct Robot *robot);
+
 
 #endif // ROBOT_H_

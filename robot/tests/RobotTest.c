@@ -7,12 +7,16 @@ struct Robot *robot;
 struct DataSender_Callbacks validation_data_sender_callbacks;
 struct CommandSender_Callbacks validation_command_sender_callbacks;
 int validation_ready_to_start_is_sent;
+int validation_ready_to_draw_is_sent;
+int validation_end_of_cycle_is_sent;
 int validation_planned_trajectory_is_sent;
 int validation_pose_estimate_is_sent;
+int validation_light_green_led_command_is_sent;
+int validation_light_red_led_command_is_sent;
 int validation_lower_pen_command_is_sent;
 int validation_rise_pen_command_is_sent;
-const int SIGNAL_SENT = 1;
-const int SIGNAL_NOT_SENT = 0;
+const int SENT = 1;
+const int NOT_SENT = 0;
 const int PEN_DOWN_COMMAND_SENT = 1;
 const int PEN_DOWN_COMMAND_NOT_SENT = 0;
 const int PEN_UP_COMMAND_SENT = 1;
@@ -23,7 +27,15 @@ const int NON_ZERO_X_SPEED_VALUE = 10000;
 const int NON_ZERO_Y_SPEED_VALUE = 15000;
 int NON_ZERO_THETA_VALUE = 21000;
 int manchester_code_command_count;
+int ready_to_draw_signal_count;
 
+void giveADummyDrawingTrajectoryToTheRobot(struct Robot *robot)
+{
+    struct Coordinates *zero = Coordinates_zero();
+    struct CoordinatesSequence *dummy_trajectory = CoordinatesSequence_new(zero);
+    robot->drawing_trajectory = dummy_trajectory;
+    Coordinates_delete(zero);
+}
 void assertBehaviorHasFreeFlagsEntry(struct Behavior *behavior)
 {
     struct Flags *irrelevant_flags = Flags_irrelevant();
@@ -36,6 +48,7 @@ void assertBehaviorHasAngleEntry(struct Behavior *behavior, int angle)
     cr_assert_eq(angle, behavior->entry_conditions->goal_state->pose->angle->theta);
     assertBehaviorHasFreeFlagsEntry(behavior);
 }
+
 void assertBehaviorHasOrientationEntry(struct Behavior *behavior, enum CardinalDirection orientation)
 {
     struct Pose *angle_tolerance = Pose_new(X_TOLERANCE_MAX, Y_TOLERANCE_MAX, THETA_TOLERANCE_DEFAULT);
@@ -114,6 +127,11 @@ Test(Robot, creation_destruction)
 
     struct Behavior *third_behavior = second_behavior->first_child;
     void (*idle_action)(struct Robot *) = &Behavior_idle;
+
+    while(!Timer_hasTimePassed(robot->timer, THREE_SECONDS));
+
+    while(!Timer_hasTimePassed(robot->timer, THREE_SECONDS));
+
     struct Flags *third_flags = third_behavior->entry_conditions->goal_state->flags;
     struct Flags *ready_to_start_received_flags = Flags_new();
     Flags_setReadyToStartReceivedByStation(ready_to_start_received_flags, 1);
@@ -144,27 +162,48 @@ Test(Robot, creation_destruction)
 
 void validateReadyToStartIsSent(void)
 {
-    validation_ready_to_start_is_sent = SIGNAL_SENT;
+    validation_ready_to_start_is_sent = SENT;
+}
+
+void validateReadyToDrawIsSent(void)
+{
+    validation_ready_to_draw_is_sent = SENT;
+    ++ready_to_draw_signal_count;
+}
+
+void validateEndOfCycleIsSent(void)
+{
+    validation_end_of_cycle_is_sent = SENT;
 }
 
 void validatePlannedTrajectoryIsSent(struct CoordinatesSequence *sequence)
 {
-    validation_planned_trajectory_is_sent = SIGNAL_SENT;
+    validation_planned_trajectory_is_sent = SENT;
 }
 
 void validatePoseEstimateIsSent(struct Pose *pose)
 {
-    validation_pose_estimate_is_sent = SIGNAL_SENT;
+    validation_pose_estimate_is_sent = SENT;
+}
+
+void validateLightGreenLedIsSent(void)
+{
+    validation_light_green_led_command_is_sent = SENT;
+}
+
+void validateLightRedLedIsSent(void)
+{
+    validation_light_red_led_command_is_sent = SENT;
 }
 
 void validateLowerPenIsSent(void)
 {
-    validation_lower_pen_command_is_sent = PEN_DOWN_COMMAND_SENT;
+    validation_lower_pen_command_is_sent = SENT;
 }
 
 void validateRisePenIsSent(void)
 {
-    validation_rise_pen_command_is_sent = PEN_UP_COMMAND_SENT;
+    validation_rise_pen_command_is_sent = SENT;
 }
 
 void validateFetchManchesterCodeIsSent(void)
@@ -175,20 +214,31 @@ void validateFetchManchesterCodeIsSent(void)
 void setup_robot(void)
 {
     robot = Robot_new();
-    validation_ready_to_start_is_sent = SIGNAL_NOT_SENT;
-    validation_planned_trajectory_is_sent = SIGNAL_NOT_SENT;
-    validation_pose_estimate_is_sent = SIGNAL_NOT_SENT;
-    validation_lower_pen_command_is_sent = PEN_DOWN_COMMAND_NOT_SENT;
-    validation_rise_pen_command_is_sent = PEN_UP_COMMAND_NOT_SENT;
+    validation_ready_to_start_is_sent = NOT_SENT;
+    validation_ready_to_draw_is_sent = NOT_SENT;
+    validation_end_of_cycle_is_sent = NOT_SENT;
+    validation_planned_trajectory_is_sent = NOT_SENT;
+    validation_pose_estimate_is_sent = NOT_SENT;
+    validation_light_green_led_command_is_sent = NOT_SENT;
+    validation_light_red_led_command_is_sent = NOT_SENT;
+    validation_lower_pen_command_is_sent = NOT_SENT;
+    validation_rise_pen_command_is_sent = NOT_SENT;
     manchester_code_command_count = 0;
     validation_data_sender_callbacks.sendSignalReadyToStart = &validateReadyToStartIsSent;
+    validation_data_sender_callbacks.sendSignalReadyToDraw = &validateReadyToDrawIsSent;
     validation_data_sender_callbacks.sendPlannedTrajectory = &validatePlannedTrajectoryIsSent;
     validation_data_sender_callbacks.sendRobotPoseEstimate = &validatePoseEstimateIsSent;
+    validation_data_sender_callbacks.sendSignalEndOfCycle = &validateEndOfCycleIsSent;
     validation_command_sender_callbacks.sendFetchManchesterCodeCommand = &validateFetchManchesterCodeIsSent;
+    validation_command_sender_callbacks.sendLightGreenLEDCommand = &validateLightGreenLedIsSent;
+    validation_command_sender_callbacks.sendLightRedLEDCommand = &validateLightRedLedIsSent;
     validation_command_sender_callbacks.sendLowerPenCommand = &validateLowerPenIsSent;
     validation_command_sender_callbacks.sendRisePenCommand = &validateRisePenIsSent;
     DataSender_changeTarget(robot->data_sender, validation_data_sender_callbacks);
     CommandSender_changeTarget(robot->command_sender, validation_command_sender_callbacks);
+
+    Sensor_receivesData(robot->world_camera->map_sensor);
+    Navigator_updateNavigableMap(robot);
 }
 
 void teardown_robot(void)
@@ -234,6 +284,16 @@ Test(Robot, given_aRobot_when_askedToSendAReadyToStartSignal_then_theSignalIsSen
     cr_assert(validation_ready_to_start_is_sent);
 }
 
+Test(Robot, given_aRobot_when_askedToSendAReadyToDrawSignal_then_theSignalIsSent
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    while(!Timer_hasTimePassed(robot->timer, THREE_SECONDS));
+
+    Robot_sendReadyToDrawSignal(robot);
+    cr_assert(validation_ready_to_draw_is_sent);
+}
+
 Test(Robot, given_aRobot_when_askedToSendAPlannedTrajectory_then_theSignalIsSent
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -250,13 +310,16 @@ Test(Robot, given_aRobot_when_askedToSendAPoseEstimate_then_theSignalIsSent
     cr_assert(validation_pose_estimate_is_sent);
 }
 
-void assertBehaviorIsAFreeEntrySendingPlannedTrajectory(struct Behavior *received)
+void assertBehaviorIsAFreeEntrySendingPlannedTrajectory(void (*action)(struct Robot *))
 {
+    struct Behavior *behavior = robot->current_behavior;
+    behavior->action = action;
+    Behavior_act(behavior, robot);
 
     void (*sendPlannedTrajectory) = &Robot_sendPlannedTrajectory;
 
-    while(received->action != sendPlannedTrajectory) {
-        received = received->first_child;
+    while(behavior->action != sendPlannedTrajectory) {
+        behavior = behavior->first_child;
     }
 
     struct Behavior *expected = BehaviorBuilder_build(
@@ -265,105 +328,97 @@ void assertBehaviorIsAFreeEntrySendingPlannedTrajectory(struct Behavior *receive
                                                     BehaviorBuilder_end())));
 
     cr_assert(Pose_haveTheSameValues(expected->entry_conditions->tolerances->pose,
-                                     received->entry_conditions->tolerances->pose),);
+                                     behavior->entry_conditions->tolerances->pose));
 
     cr_assert(Flags_haveTheSameValues(expected->entry_conditions->goal_state->flags,
-                                      received->entry_conditions->goal_state->flags));
+                                      behavior->entry_conditions->goal_state->flags));
 
-    cr_assert_eq(expected->action, received->action);
+    cr_assert_eq(expected->action, behavior->action);
 
     Behavior_delete(expected);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTowardsAntennaStart;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsAntennaStart);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaMiddleAction_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTowardsAntennaMiddle;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsAntennaMiddle);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaMarkEndAction_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTowardsAntennaMarkEnd;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsAntennaMarkEnd);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsObstacleZoneEastSide_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTowardsObstacleZoneEastSide;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsObstacleZoneEastSide);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsPainting_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTowardsPainting;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsPainting);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsObstacleZoneWestSide_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTowardsObstacleZoneWestSide;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsObstacleZoneWestSide);
 }
 
-/*
-Test(Robot,
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanTowardsCenterOfDrawingZone_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsCenterOfDrawingZone);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanTowardsDrawingStart_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    giveADummyDrawingTrajectoryToTheRobot(robot);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsDrawingStart);
+}
+
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTowardsAntennaStop;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(robot->current_behavior);
+    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsAntennaStop);
 }
-*/
 
-void assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(struct Behavior *behavior,
-        struct CoordinatesSequence *trajectory)
+/* End of first action for navigable behaviors */
+
+void assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(void (*action)(struct Robot *))
 {
+    struct Behavior *behavior = robot->current_behavior;
+    behavior->action = action;
+    Behavior_act(behavior, robot);
+    struct CoordinatesSequence *trajectory = robot->navigator->planned_trajectory;
 
     // Fetches the sendPlannedTrajectory behavior
     void (*sendPlannedTrajectory) = &Robot_sendPlannedTrajectory;
@@ -379,7 +434,7 @@ void assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(struct Behavi
     struct Coordinates *point_in_trajectory;
     struct Coordinates *behavior_goal_coordinates;
 
-    struct Flags *flags_planned_trajectory_received = Flags_new();
+    struct Flags *flags_planned_trajectory_received = Flags_irrelevant();
     Flags_setPlannedTrajectoryReceivedByStation(flags_planned_trajectory_received, 1);
 
     point_in_trajectory = trajectory->coordinates;
@@ -424,140 +479,180 @@ struct Behavior *fetchLastBehavior(struct Behavior *behavior)
     return current->first_child;
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTowardsAntennaStart;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
-            robot->navigator->planned_trajectory);
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsAntennaStart);
 }
 
-Test(Robot,
+void assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(void (*firstAction)(struct Robot *),
+        void (*expectedAction)(struct Robot *))
+{
+    struct Behavior *current_behavior = robot->current_behavior;
+    current_behavior->action = firstAction;
+    Behavior_act(current_behavior, robot);
+    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(current_behavior);
+    cr_assert_eq(before_last_behavior->action, expectedAction);
+}
+
+void assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(void (*firstAction)(struct Robot *),
+        void (*expectedAction)(struct Robot *))
+{
+    struct Behavior *current_behavior = robot->current_behavior;
+    current_behavior->action = firstAction;
+    Behavior_act(current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(current_behavior);
+    cr_assert_eq(last_behavior->action, expectedAction);
+}
+
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanToOrientTowardsTheAntenna
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTowardsAntennaStart;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    void (*planOrientationTowardsAntenna)(struct Robot *) = &Navigator_planOrientationTowardsAntenna;
-    cr_assert_eq(last_behavior->action, planOrientationTowardsAntenna);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsAntennaStart,
+            &Navigator_planOrientationTowardsAntenna);
 }
 
-Test(Robot,
-     given_aBehaviorWithPlanTowardsAntennaMiddleAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
-     , .init = setup_robot
-     , .fini = teardown_robot)
+void assertBeforeLastBehaviorHasFreeEntryAfterAction(void (*action)(struct Robot *))
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTowardsAntennaMiddle;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
-            robot->navigator->planned_trajectory);
-}
-
-Test(Robot,
-     given_aBehaviorWithPlanTowardsAntennaMiddleAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanFetchingManchesterCode
-     , .init = setup_robot
-     , .fini = teardown_robot)
-{
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTowardsAntennaMiddle;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    void (*planFetchingManchesterCode)(struct Robot *) = &Navigator_planFetchingManchesterCode;
-    cr_assert_eq(last_behavior->action, planFetchingManchesterCode);
-}
-
-Test(Robot,
-     given_aBehaviorWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
-     , .init = setup_robot
-     , .fini = teardown_robot)
-{
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planOrientationTowardsAntenna;
+    robot->current_behavior->action = action;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
     assertBehaviorHasFreeEntry(before_last_behavior);
 }
 
-Test(Robot,
+void assertLastBehaviorHasFreeEntryAfterAction(void (*action)(struct Robot *))
+{
+    robot->current_behavior->action = action;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    assertBehaviorHasFreeEntry(last_behavior);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planOrientationTowardsAntenna);
+}
+
+Test(RobotBehaviors,
      given_aBehaviorWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theBeforeLastBehaviorHasAnOrientRobotTowardsGoalAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planOrientationTowardsAntenna;
-    Behavior_act(robot->current_behavior, robot);
-    void (*orientationTowardsAntenna)(struct Robot *) = &Navigator_orientRobotTowardsGoal;
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    cr_assert_eq(before_last_behavior->action, orientationTowardsAntenna);
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planOrientationTowardsAntenna,
+            &Navigator_orientRobotTowardsGoal);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theLastBehaviorHasAThetaZeroEntryGoal
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planOrientationTowardsAntenna;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
     assertBehaviorHasOrientationEntry(last_behavior, EAST);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsAntennaMiddleAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planOrientationTowardsAntenna;
-    Behavior_act(robot->current_behavior, robot);
-    void (*planTowardsAntennaMiddle)(struct Robot *) = &Navigator_planTowardsAntennaMiddle;
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    cr_assert_eq(last_behavior->action, planTowardsAntennaMiddle);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planOrientationTowardsAntenna,
+            &Navigator_planTowardsAntennaMiddle);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanTowardsAntennaMiddleAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsAntennaMiddle);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanTowardsAntennaMiddleAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotHasTheMiddleOfTheAntennaZoneCoordinatesAsEntryConditions
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    robot->current_behavior->action = &Navigator_planTowardsObstacleZoneEastSide;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    struct Coordinates *start = robot->navigator->navigable_map->antenna_zone_start;
+    struct Coordinates *stop = robot->navigator->navigable_map->antenna_zone_stop;
+    int center_x = Coordinates_computeMeanX(start, stop);
+    int center_y = Coordinates_computeMeanY(start, stop);
+    struct Coordinates *expected_coordinates = Coordinates_new(center_x, center_y);
+    struct Coordinates *goal_coordinates = last_behavior->entry_conditions->goal_state->pose->coordinates;
+    cr_assert(Coordinates_haveTheSameValues(expected_coordinates, goal_coordinates));
+    Coordinates_delete(expected_coordinates);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanTowardsAntennaMiddleAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanStopMotionBeforeFetchingManchesterCode
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsAntennaMiddle,
+            &Navigator_planStopMotionBeforeFetchingManchester);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanStopMotionBeforeFetchingManchesterAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planStopMotionBeforeFetchingManchester);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanStopMotionBeforeFetchingManchesterAction_when_behaviorActs_then_theBeforeLastBehaviorHasAStopMovementAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planStopMotionBeforeFetchingManchester,
+            &Navigator_stopMovement);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanStopMotionBeforeFetchingManchesterAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planStopMotionBeforeFetchingManchester);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanStopMotionBeforeFetchingManchesterAction_when_behaviorActs_then_theLastBehaviorHasAPlanFetchingManchesterAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planStopMotionBeforeFetchingManchester,
+            &Navigator_planFetchingManchesterCode);
+}
+
+Test(RobotBehaviors,
      given_aBehaviorWithPlanFetchingManchesterCodeAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planFetchingManchesterCode;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(before_last_behavior);
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planFetchingManchesterCode);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanFetchingManchesterCodeAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFetchManchesterCodeIfAtLeastASecondHasPassedSingeLastRobotTimerResetAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planFetchingManchesterCode;
-    Behavior_act(robot->current_behavior, robot);
-    void (*fetchManchesterCode)(struct Robot *) =
-        &Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset;
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    cr_assert_eq(before_last_behavior->action, fetchManchesterCode);
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planFetchingManchesterCode,
+            &Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset);
 }
 
 void assertBehaviorHasManchesterCodeIsReceivedFlagEntry(struct Behavior *behavior)
@@ -570,107 +665,86 @@ void assertBehaviorHasManchesterCodeIsReceivedFlagEntry(struct Behavior *behavio
     Flags_delete(manchester_code_is_received_flags);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanFetchingManchesterCodeAction_when_behaviorActs_then_theLastBehaviorHasAManchesterCodeIsReceivedFlagsEntryGoal
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planFetchingManchesterCode;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
     assertBehaviorHasManchesterCodeIsReceivedFlagEntry(last_behavior);
 }
 
-Test(Robot,
-     given_aBehaviorWithPlanFetchingManchesterCodeAction_when_behaviorActs_then_theLastBehaviorHasAPlanLowerPenForAntennaMarkAction
+/**/
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanFetchingManchesterCodeActionAndNoCycleCompleted_when_behaviorActs_then_theLastBehaviorHasAPlanLowerPenForAntennaMarkAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planFetchingManchesterCode;
-    Behavior_act(robot->current_behavior, robot);
-    void (*planLowerPenForAntennaMark)(struct Robot *) = &Navigator_planLowerPenForAntennaMark;
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    cr_assert_eq(last_behavior->action, planLowerPenForAntennaMark);
+    Flags_setHasCompletedACycle(robot->current_state->flags, FALSE);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planFetchingManchesterCode,
+            &Navigator_planLowerPenForAntennaMark);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanFetchingManchesterCodeActionAndACycleHasBeenCompleted_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsObstacleZoneEastSideAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Flags_setHasCompletedACycle(robot->current_state->flags, TRUE);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planFetchingManchesterCode,
+            &Navigator_planTowardsObstacleZoneEastSide);
+}
+/**/
+
+Test(RobotBehaviors,
      given_aBehaviorWithPlanLoweringPenForAntennaMarkAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planLowerPenForAntennaMark;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(before_last_behavior);
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planLowerPenForAntennaMark);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanLoweringPenForAntennaMarkAction_when_behaviorActs_then_theBeforeLastBehaviorHasALowerPenAndWaitAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planLowerPenForAntennaMark;
-    Behavior_act(robot->current_behavior, robot);
-    void (*lowerPenAndWait)(struct Robot *) = &Robot_lowerPenAndWaitASecondAndAHalf;
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    cr_assert_eq(before_last_behavior->action, lowerPenAndWait);
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planLowerPenForAntennaMark,
+            &Robot_lowerPenAndWaitASecondAndAHalf);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanLoweringPenForAntennaMarkAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planLowerPenForAntennaMark;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(last_behavior);
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planLowerPenForAntennaMark);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanLoweringPenForAntennaMarkAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsAntennaMarkEndAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planLowerPenForAntennaMark;
-    Behavior_act(robot->current_behavior, robot);
-    void (*planTowardsAntennaEnd)(struct Robot *) = &Navigator_planTowardsAntennaMarkEnd;
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    cr_assert_eq(last_behavior->action, planTowardsAntennaEnd);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planLowerPenForAntennaMark,
+            &Navigator_planTowardsAntennaMarkEnd);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaMarkEndAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTowardsAntennaMarkEnd;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
-            robot->navigator->planned_trajectory);
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsAntennaMarkEnd);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaMarkEndAction_when_behaviorActs_then_theLastBehaviorOfTheRobotHasItsCurrentCoordinatesMinusTheMarkDistanceInYAsEntryConditions
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsAntennaMarkEnd;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -682,94 +756,62 @@ Test(Robot,
     Coordinates_delete(expected_coordinates);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaMarkEndAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanRisingThePenForObstacleCrossing
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTowardsAntennaMarkEnd;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    void (*planRisingPen)(struct Robot *) = &Navigator_planRisePenForObstacleCrossing;
-    cr_assert_eq(last_behavior->action, planRisingPen);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsAntennaMarkEnd,
+            &Navigator_planRisePenForObstacleCrossing);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanRisePenForObstacleCrossingAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planRisePenForObstacleCrossing;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(before_last_behavior);
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planRisePenForObstacleCrossing);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanRisePenForObstacleCrossingAction_when_behaviorActs_then_theBeforeLastBehaviorHasARisePenAndWaitAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planRisePenForObstacleCrossing;
-    Behavior_act(robot->current_behavior, robot);
-    void (*risePenAndWait)(struct Robot *) = &Robot_risePenAndWaitASecondAndAHalf;
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    cr_assert_eq(before_last_behavior->action, risePenAndWait);
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planRisePenForObstacleCrossing,
+            &Robot_risePenAndWaitASecondAndAHalf);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanRisePenForObstacleCrossingAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planRisePenForObstacleCrossing;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(last_behavior);
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planRisePenForObstacleCrossing);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanRisePenForObstacleCrossingAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsObstacleZoneEastSide
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planRisePenForObstacleCrossing;
-    Behavior_act(robot->current_behavior, robot);
-    void (*planTowardsObstacleZoneEastSide)(struct Robot *) = &Navigator_planTowardsObstacleZoneEastSide;
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    cr_assert_eq(last_behavior->action, planTowardsObstacleZoneEastSide);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planRisePenForObstacleCrossing,
+            &Navigator_planTowardsObstacleZoneEastSide);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsObstacleZoneEastSideAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTowardsObstacleZoneEastSide;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
-            robot->navigator->planned_trajectory);
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsObstacleZoneEastSide);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsObstacleZoneEastSideAction_when_behaviorActs_then_theLastBehaviorOfTheRobotHasTheMapsGraphEasternNodesCoordinatesAsEntryConditions
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsObstacleZoneEastSide;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -778,44 +820,32 @@ Test(Robot,
     cr_assert(Coordinates_haveTheSameValues(expected_coordinates, goal_coordinates));
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsObstacleZoneEastSideAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanTowardsPaintingZone
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTowardsObstacleZoneEastSide;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    void (*planTowardsPaintingZone)(struct Robot *) = &Navigator_planTowardsPaintingZone;
-    cr_assert_eq(last_behavior->action, planTowardsPaintingZone);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsObstacleZoneEastSide,
+            &Navigator_planTowardsPaintingZone);
 }
 
 /*
  *  TODO : Add a map and its setup and test the obstacle crossing
  */
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsPaintingAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTowardsPainting;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
-            robot->navigator->planned_trajectory);
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsPainting);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsPaintingAction_when_behaviorActs_then_theLastBehaviorOfTheRobotHasThePaintingCoordinatesCorrespondingToThePaintingNumberInTheRobotsManchesterCodeAsEntryConditions
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsPainting;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -826,54 +856,37 @@ Test(Robot,
     cr_assert(Coordinates_haveTheSameValues(expected_coordinates, goal_coordinates));
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsPaintingAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanOrientationTowardsPainting
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTowardsPainting;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    void (*planOrientationTowardsPainting)(struct Robot *) = &Navigator_planOrientationTowardsPainting;
-    cr_assert_eq(last_behavior->action, planOrientationTowardsPainting);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsPainting,
+            &Navigator_planOrientationTowardsPainting);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanOrientationTowardsPaintingAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planOrientationTowardsPainting;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(before_last_behavior);
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planOrientationTowardsPainting);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanOrientationTowardsPaintingAction_when_behaviorActs_then_theBeforeLastBehaviorHasAnOrientRobotTowardsGoalAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planOrientationTowardsPainting;
-    Behavior_act(robot->current_behavior, robot);
-    void (*orientationTowardsAntenna)(struct Robot *) = &Navigator_orientRobotTowardsGoal;
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    cr_assert_eq(before_last_behavior->action, orientationTowardsAntenna);
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planOrientationTowardsPainting,
+            &Navigator_orientRobotTowardsGoal);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanOrientationTowardsPaintingAction_when_behaviorActs_then_theLastBehaviorHasAThetaEquivalentToTheCorrectPaintingOrientationEntryGoal
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planOrientationTowardsPainting;
     Behavior_act(robot->current_behavior, robot);
     int painting_number = robot->manchester_code->painting_number;
@@ -882,100 +895,98 @@ Test(Robot,
     assertBehaviorHasAngleEntry(last_behavior, angle);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanOrientationTowardsPaintingAction_when_behaviorActs_then_theLastBehaviorHasAPlanStopMotionAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planOrientationTowardsPainting;
-    Behavior_act(robot->current_behavior, robot);
-    void (*planTakingPicture)(struct Robot *) = &Navigator_planStopMotion;
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    cr_assert_eq(last_behavior->action, planTakingPicture);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planOrientationTowardsPainting,
+            &Navigator_planStopMotionBeforePicture);
 }
 
-Test(Robot,
-     given_aBehaviorWithPlanStopMotionAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanStopMotionBeforePictureAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planStopMotion;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(before_last_behavior);
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planStopMotionBeforePicture);
 }
 
-Test(Robot,
-     given_aBehaviorWithPlanStopMotionAction_when_behaviorActs_then_theBeforeLastBehaviorHasAStopMovementAction
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanStopMotionBeforePictureAction_when_behaviorActs_then_theBeforeLastBehaviorHasAStopMovementAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planStopMotion;
-    Behavior_act(robot->current_behavior, robot);
-    void (*stopMovement)(struct Robot *) = &Navigator_stopMovement;
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    cr_assert_eq(before_last_behavior->action, stopMovement);
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planStopMotionBeforePicture,
+            &Navigator_stopMovement);
 }
 
-Test(Robot,
-     given_aBehaviorWithPlanStopMotionAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanStopMotionBeforePictureAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planStopMotion;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(last_behavior);
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planStopMotionBeforePicture);
 }
 
-Test(Robot,
-     given_aBehaviorWithPlanStopMotionAction_when_behaviorActs_then_theLastBehaviorHasAPlanTakingPictureAction
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanStopMotionBeforePictureAction_when_behaviorActs_then_theLastBehaviorHasAPlanLightingGreenLedAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planStopMotion;
-    Behavior_act(robot->current_behavior, robot);
-    void (*planTakingPicture)(struct Robot *) = &Navigator_planTakingPicture;
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    cr_assert_eq(last_behavior->action, planTakingPicture);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planStopMotionBeforePicture,
+            &Navigator_planLightingGreenLedBeforePicture);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanLightingGreenLedBeforePictureAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planLightingGreenLedBeforePicture);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanLightingGreenLedBeforePictureAction_when_behaviorActs_then_theBeforeLastBehaviorHasALightGreenLedAndWaitAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planLightingGreenLedBeforePicture,
+            &Robot_lightGreenLedAndWaitASecond);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanLightingGreenLedBeforePictureAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planLightingGreenLedBeforePicture);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanLightingGreenLedBeforePictureAction_when_behaviorActs_then_theLastBehaviorHasAPlanTakingPictureAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planLightingGreenLedBeforePicture,
+            &Navigator_planTakingPicture);
+}
+
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTakingPictureAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTakingPicture;
-    Behavior_act(robot->current_behavior, robot);
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    assertBehaviorHasFreeEntry(before_last_behavior);
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planTakingPicture);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTakingPictureAction_when_behaviorActs_then_theBeforeLastBehaviorHasAnTakePictureAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTakingPicture;
-    Behavior_act(robot->current_behavior, robot);
-    void (*orientationTowardsAntenna)(struct Robot *) =
-        &OnboardCamera_takePictureAndIfValidSendAndUpdateDrawingBaseTrajectory;
-    struct Behavior *before_last_behavior = fetchBeforeLastBehavior(robot->current_behavior);
-    cr_assert_eq(before_last_behavior->action, orientationTowardsAntenna);
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTakingPicture,
+            &OnboardCamera_takePictureAndIfValidSendAndUpdateDrawingBaseTrajectory);
 }
 
 void assertBehaviorHasImageReceivedByStationFlagEntry(struct Behavior *behavior)
@@ -988,55 +999,39 @@ void assertBehaviorHasImageReceivedByStationFlagEntry(struct Behavior *behavior)
     Flags_delete(image_received_by_station_flags);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTakingPictureAction_when_behaviorActs_then_theLastBehaviorHasAImageReceivedByStationFlagsWithFreePoseEntryGoal
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTakingPicture;
     Behavior_act(robot->current_behavior, robot);
-    int painting_number = robot->manchester_code->painting_number;
-    int angle = robot->navigator->navigable_map->painting_zones[painting_number]->angle->theta;
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
     assertBehaviorHasImageReceivedByStationFlagEntry(last_behavior);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTakingPictureAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsObstacleZoneWestSide
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTakingPicture;
-    Behavior_act(robot->current_behavior, robot);
-    void (*planTowardsObstacleZoneWestSide)(struct Robot *) = &Navigator_planTowardsObstacleZoneWestSide;
-    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    cr_assert_eq(last_behavior->action, planTowardsObstacleZoneWestSide);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTakingPicture,
+            &Navigator_planTowardsObstacleZoneWestSide);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsObstacleZoneWestSideAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTowardsObstacleZoneWestSide;
-    Behavior_act(robot->current_behavior, robot);
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
-            robot->navigator->planned_trajectory);
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsObstacleZoneWestSide);
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsObstacleZoneWestSideAction_when_behaviorActs_then_theLastBehaviorOfTheRobotHasHasTheMapsGraphWesternNodesCoordinatesAsEntryConditions
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
     robot->current_behavior->action = &Navigator_planTowardsObstacleZoneWestSide;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
@@ -1045,33 +1040,419 @@ Test(Robot,
     cr_assert(Coordinates_haveTheSameValues(expected_coordinates, goal_coordinates));
 }
 
-Test(Robot,
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsObstacleZoneWestSideAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanTowardsDrawingZoneAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    robot->current_behavior->action = &Navigator_planTowardsObstacleZoneWestSide;
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsObstacleZoneWestSide,
+            &Navigator_planTowardsDrawingZone);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanTowardsCenterOfDrawingZoneAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsCenterOfDrawingZone);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanTowardsCenterOfDrawingZoneAction_when_behaviorActs_then_theLastBehaviorOfTheRobotHasTheCenterOfTheDrawingZoneAsEntryConditions
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    robot->current_behavior->action = &Navigator_planTowardsCenterOfDrawingZone;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    void (*planOrientationTowardsDrawingZone)(struct Robot *) = &Navigator_planTowardsDrawingZone;
-    cr_assert_eq(last_behavior->action, planOrientationTowardsDrawingZone);
+    struct Coordinates *south_west_corner = robot->navigator->navigable_map->south_western_drawing_corner;
+    struct Coordinates *north_east_corner = robot->navigator->navigable_map->north_eastern_drawing_corner;
+    int center_x = Coordinates_computeMeanX(south_west_corner, north_east_corner);
+    int center_y = Coordinates_computeMeanY(south_west_corner, north_east_corner);
+    struct Coordinates *expected_coordinates = Coordinates_new(center_x, center_y);
+    struct Coordinates *goal_coordinates = last_behavior->entry_conditions->goal_state->pose->coordinates;
+    cr_assert(Coordinates_haveTheSameValues(expected_coordinates, goal_coordinates));
+    Coordinates_delete(expected_coordinates);
 }
-/*
-Test(Robot,
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanTowardsCenterOfDrawingZoneAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanToTellReadyToDraw
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsCenterOfDrawingZone,
+            &Navigator_planToTellReadyToDraw);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanToTellReadyToDrawAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planToTellReadyToDraw);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanToTellReadyToDrawAction_when_behaviorActs_then_theBeforeLastBehaviorHasASendReadyToDrawSignalAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planToTellReadyToDraw,
+            &Robot_sendReadyToDrawSignal);
+}
+
+void assertBehaviorHasReadyToDrawReceivedByStationEntry(struct Behavior *behavior)
+{
+    struct Flags *ready_to_draw_received_by_station = Flags_irrelevant();
+    Flags_setReadyToStartReceivedByStation(ready_to_draw_received_by_station, 1);
+    assertBehaviorHasFreePoseEntry(behavior);
+    struct Flags *behavior_entry_flags = behavior->entry_conditions->goal_state->flags;
+    cr_assert(Flags_haveTheSameValues(ready_to_draw_received_by_station, behavior_entry_flags));
+    Flags_delete(ready_to_draw_received_by_station);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanToTellReadyToDrawAction_when_behaviorActs_then_theLastBehaviorHasAReadyToDrawReceivedByStationFlagsWithFreePoseEntryGoal
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    robot->current_behavior->action = &Navigator_planToTellReadyToDraw;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    assertBehaviorHasReadyToDrawReceivedByStationEntry(last_behavior);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanToTellReadyToDrawAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsDrawingStartAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planToTellReadyToDraw,
+            &Navigator_planTowardsDrawingStart);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanTowardsDrawingStartAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    giveADummyDrawingTrajectoryToTheRobot(robot);
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsDrawingStart);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanTowardsDrawingStartAction_when_behaviorActs_then_theLastBehaviorOfTheRobotHasTheCenterOfTheDrawingZoneAsEntryConditions
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    giveADummyDrawingTrajectoryToTheRobot(robot);
+    robot->current_behavior->action = &Navigator_planTowardsDrawingStart;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    struct Coordinates *expected_coordinates = robot->drawing_trajectory->coordinates;
+    struct Coordinates *goal_coordinates = last_behavior->entry_conditions->goal_state->pose->coordinates;
+    cr_assert(Coordinates_haveTheSameValues(expected_coordinates, goal_coordinates));
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanTowardsDrawingStartAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanLowerPenBeforeDrawing
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    giveADummyDrawingTrajectoryToTheRobot(robot);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsDrawingStart,
+            &Navigator_planLowerPenBeforeDrawing);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanLoweringPenBeforeDrawingAntennaMarkAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planLowerPenBeforeDrawing);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanLoweringPenBeforeDrawingAntennaMarkAction_when_behaviorActs_then_theBeforeLastBehaviorHasALowerPenAndWaitAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planLowerPenBeforeDrawing,
+            &Robot_lowerPenAndWaitASecondAndAHalf);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanLoweringPenBeforeDrawingAntennaMarkAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planLowerPenBeforeDrawing);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanLoweringPenBeforeDrawingAntennaMarkAction_when_behaviorActs_then_theLastBehaviorHasAPlanDrawingAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planLowerPenBeforeDrawing, &Navigator_planDrawing);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanRisePenBeforeGoingToAntennaStopAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planRisePenBeforeGoingToAntennaStop);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanRisePenBeforeGoingToAntennaStopAction_when_behaviorActs_then_theBeforeLastBehaviorHasARisePenAndWaitAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planRisePenBeforeGoingToAntennaStop,
+            &Robot_risePenAndWaitASecondAndAHalf);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanRisePenBeforeGoingToAntennaStopAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planRisePenBeforeGoingToAntennaStop);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanRisePenBeforeGoingToAntennaStopAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsAntennaStopAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planRisePenBeforeGoingToAntennaStop,
+            &Navigator_planTowardsAntennaStop);
+}
+
+Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theLastBehaviorOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
+    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsAntennaStop);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theLastBehaviorOfTheRobotHasTheAntennaStopCoordinatesAsEntryConditions
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
     robot->current_behavior->action = &Navigator_planTowardsAntennaStop;
     Behavior_act(robot->current_behavior, robot);
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectory(robot->current_behavior,
-            robot->navigator->planned_trajectory);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    struct Coordinates *expected_coordinates = robot->navigator->navigable_map->antenna_zone_stop;
+    struct Coordinates *goal_coordinates = last_behavior->entry_conditions->goal_state->pose->coordinates;
+    cr_assert(Coordinates_haveTheSameValues(expected_coordinates, goal_coordinates));
 }
-*/
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theLastBehaviorHasAPlanStopMotionForEndOfCycleAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsAntennaStop,
+            &Navigator_planStopMotionForEndOfCycle);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanStopMotionForEndOfCycleAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planStopMotionForEndOfCycle);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanStopMotionForEndOfCycleAction_when_behaviorActs_then_theBeforeLastBehaviorHasAStopMovementAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planStopMotionForEndOfCycle,
+            &Navigator_stopMovement);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanStopMotionForEndOfCycleAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planStopMotionForEndOfCycle);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanStopMotionForEndOfCycleAction_when_behaviorActs_then_theLastBehaviorHasAPlanEndOfCycleAndSendSignalAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planStopMotionForEndOfCycle,
+            &Navigator_planEndOfCycleAndSendSignal);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanEndOfCycleAndSendSignalAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planEndOfCycleAndSendSignal);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanEndOfCycleAndSendSignalAction_when_behaviorActs_then_theBeforeLastBehaviorHasACloseCycleAndSendEndOfCycleSignalAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planEndOfCycleAndSendSignal,
+            &Robot_closeCycleAndSendEndOfCycleSignal);
+}
+
+void assertBehaviorHasEndOfCycleReceivedByStationEntry(struct Behavior *behavior)
+{
+    struct Flags *end_of_cycle_received_by_station = Flags_irrelevant();
+    Flags_setEndOfCycleReceivedByStation(end_of_cycle_received_by_station, 1);
+    assertBehaviorHasFreePoseEntry(behavior);
+    struct Flags *behavior_entry_flags = behavior->entry_conditions->goal_state->flags;
+    cr_assert(Flags_haveTheSameValues(end_of_cycle_received_by_station, behavior_entry_flags));
+    Flags_delete(end_of_cycle_received_by_station);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanEndOfCycleAndSendSignalAction_when_behaviorActs_then_theLastBehaviorHasAEndOfCycleReceivedByStationFlagsWithFreePoseEntryGoal
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    robot->current_behavior->action = &Navigator_planEndOfCycleAndSendSignal;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    assertBehaviorHasEndOfCycleReceivedByStationEntry(last_behavior);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanEndOfCycleAndSendSignalAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsDrawingStartAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planEndOfCycleAndSendSignal,
+            &Navigator_planLightingRedLedUntilNewCycle);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanLightingRedLedUntilNewCycleAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planLightingRedLedUntilNewCycle);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanLightingRedLedUntilNewCycleAction_when_behaviorActs_then_theBeforeLastBehaviorHasALightRedLedAndWaitAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planLightingRedLedUntilNewCycle,
+            &Robot_lightRedLedAndWaitASecond);
+}
+
+void assertBehaviorHasStartCycleFlagEntry(struct Behavior *behavior)
+{
+    struct Flags *start_signal_received_flags = Flags_irrelevant();
+    Flags_setStartCycleSignalReceived(start_signal_received_flags, 1);
+    assertBehaviorHasFreePoseEntry(behavior);
+    struct Flags *behavior_entry_flags = behavior->entry_conditions->goal_state->flags;
+    cr_assert(Flags_haveTheSameValues(start_signal_received_flags, behavior_entry_flags));
+    Flags_delete(start_signal_received_flags);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanLightingRedLedUntilNewCycleAction_when_behaviorActs_then_theLastBehaviorHasAStartCycleReceivedByStationFlagsWithFreePoseEntryGoal
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    robot->current_behavior->action = &Navigator_planLightingRedLedUntilNewCycle;
+    Behavior_act(robot->current_behavior, robot);
+    struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
+    assertBehaviorHasEndOfCycleReceivedByStationEntry(last_behavior);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanLightingRedLedUntilNewCycleAction_when_behaviorActs_then_theLastBehaviorHasAPlanTakingPictureAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planLightingRedLedUntilNewCycle,
+            &Navigator_planUpdateMapForNewCycle);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithPlanUpdateMapForNewCycleAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planUpdateMapForNewCycle);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithUpdateMapForNewCycleAction_when_behaviorActs_then_theBeforeLastBehaviorHasAnUpdateNavigableMapAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planUpdateMapForNewCycle,
+            &Navigator_updateNavigableMap);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithUpdateMapForNewCycleAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planUpdateMapForNewCycle);
+}
+
+Test(RobotBehaviors,
+     given_aBehaviorWithUpdateMapForNewCycleAction_when_behaviorActs_then_theLastBehaviorHasAPlanOrientTowardsAntennaAction
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planUpdateMapForNewCycle,
+            &Navigator_planOrientationTowardsAntenna);
+}
+
+/*END OF BEHAVIORS*/
+
+Test(Robot,
+     given_theRobot_when_sendReadyToDrawIsCalledTwiceUnderThreeSeconds_then_theCommandIsSendOnlyOnce
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    while(!Timer_hasTimePassed(robot->timer, THREE_SECONDS));
+
+    Robot_sendReadyToDrawSignal(robot);
+    Robot_sendReadyToDrawSignal(robot);
+
+    cr_assert_eq(ready_to_draw_signal_count, 1);
+}
+
+Test(Robot,
+     given_theRobot_when_sendReadyToDrawIsCalledAndIsCalledAgainAfterThreeSeconds_then_theCommandIsSendTwice
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    while(!Timer_hasTimePassed(robot->timer, THREE_SECONDS));
+
+    Robot_sendReadyToDrawSignal(robot);
+
+    while(!Timer_hasTimePassed(robot->timer, THREE_SECONDS));
+
+    Robot_sendReadyToDrawSignal(robot);
+
+    cr_assert_eq(ready_to_draw_signal_count, 2);
+}
 
 Test(Robot,
      given_theRobot_when_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset_then_theCommandIsSend
@@ -1105,8 +1486,6 @@ Test(Robot,
 {
     while(!Timer_hasTimePassed(robot->timer, ONE_SECOND));
 
-    double current_time = Timer_elapsedTime(robot->timer);
-
     Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(robot);
 
     while(!Timer_hasTimePassed(robot->timer, ONE_SECOND));
@@ -1116,17 +1495,61 @@ Test(Robot,
     cr_assert_eq(manchester_code_command_count, 2);
 }
 
-Test(Robot, given_theRobot_when_askForLowerPenAndWaitASecondAndAHalf_then_theCommandIsSent
+Test(Robot, given_theRobot_when_askedToLightGreenLedAndWaitASecond_then_theCommandIsSent
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Robot_lightGreenLedAndWaitASecond(robot);
+
+    cr_assert_eq(validation_light_green_led_command_is_sent, SENT);
+}
+
+Test(Robot,
+     given_theRobot_when_askedToLightGreenLedAndWaitASecond_then_atLeastASecondHasPassedSinceTheActionWasTriggered
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    struct Timer *timer = Timer_new();
+    Robot_lightGreenLedAndWaitASecond(robot);
+
+    cr_assert(Timer_hasTimePassed(timer, ONE_SECOND));
+
+    Timer_delete(timer);
+}
+
+Test(Robot, given_theRobot_when_askedToLightRedLedAndWaitASecond_then_theCommandIsSent
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Robot_lightRedLedAndWaitASecond(robot);
+
+    cr_assert_eq(validation_light_red_led_command_is_sent, SENT);
+}
+
+Test(Robot,
+     given_theRobot_when_askedToLightRedLedAndWaitASecond_then_atLeastASecondHasPassedSinceTheActionWasTriggered
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    struct Timer *timer = Timer_new();
+    Robot_lightRedLedAndWaitASecond(robot);
+
+    cr_assert(Timer_hasTimePassed(timer, ONE_SECOND));
+
+    Timer_delete(timer);
+}
+
+Test(Robot, given_theRobot_when_askedToLowerPenAndWaitASecondAndAHalf_then_theCommandIsSent
      , .init = setup_robot
      , .fini = teardown_robot)
 {
     Robot_lowerPenAndWaitASecondAndAHalf(robot);
 
-    cr_assert_eq(validation_lower_pen_command_is_sent, PEN_DOWN_COMMAND_SENT);
+    cr_assert_eq(validation_lower_pen_command_is_sent, SENT);
 }
 
 Test(Robot,
-     given_theRobot_when_askForLowerPenAndWaitASecondAndAHalf_then_atLeastASecondAndAHalfHasPassedSinceTheActionWasTriggered
+     given_theRobot_when_askedToLowerPenAndWaitASecondAndAHalf_then_atLeastASecondAndAHalfHasPassedSinceTheActionWasTriggered
      , .init = setup_robot
      , .fini = teardown_robot)
 {
@@ -1138,17 +1561,17 @@ Test(Robot,
     Timer_delete(timer);
 }
 
-Test(Robot, given_theRobot_when_askForRisePenAndWaitASecondAHalfAnd_then_theCommandIsSent
+Test(Robot, given_theRobot_when_askedToRisePenAndWaitASecondAHalfAnd_then_theCommandIsSent
      , .init = setup_robot
      , .fini = teardown_robot)
 {
     Robot_risePenAndWaitASecondAndAHalf(robot);
 
-    cr_assert_eq(validation_rise_pen_command_is_sent, PEN_UP_COMMAND_SENT);
+    cr_assert_eq(validation_rise_pen_command_is_sent, SENT);
 }
 
 Test(Robot,
-     given_theRobot_when_askForRisePenAndWaitASecondAndAHalf_then_atLeastASecondAndAHalfHasPassedSinceTheActionWasTriggered
+     given_theRobot_when_askedToRisePenAndWaitASecondAndAHalf_then_atLeastASecondAndAHalfHasPassedSinceTheActionWasTriggered
      , .init = setup_robot
      , .fini = teardown_robot)
 {
@@ -1160,3 +1583,24 @@ Test(Robot,
     Timer_delete(timer);
 }
 
+Test(Robot,
+     given_aRobot_when_askedToCloseCycleAndSendEndOfCycleSignal_then_theRobotFlagsAreAllZeroedExpectHasCompletedACycle
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    struct Flags *expected_flags = Flags_new();
+    Flags_setHasCompletedACycle(expected_flags, TRUE);
+    Robot_closeCycleAndSendEndOfCycleSignal(robot);
+
+    cr_assert(Flags_haveTheSameValues(expected_flags, robot->current_state->flags));
+    Flags_delete(expected_flags);
+}
+
+Test(Robot,
+     given_aRobot_when_askedToCloseCycleAndSendEndOfCycleSignal_then_theEndOfCycleSignalIsSent
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Robot_closeCycleAndSendEndOfCycleSignal(robot);
+    cr_assert_eq(validation_end_of_cycle_is_sent, SENT);
+}

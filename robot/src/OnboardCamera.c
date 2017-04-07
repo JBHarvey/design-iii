@@ -7,11 +7,13 @@
 
 #define CALIBRATION_FILE "utils/camera_calibration.xml"
 #define CAMERA_INDEX 0
+#define CAMERA_BUFFER_LENGTH 5
 
 static CvCapture *cv_cap;
 CvMat *camera_matrix = 0;
 CvMat *distortion_coeffs = 0;
 static int counter = 0;
+
 
 void OnboardCamera_init(void)
 {
@@ -27,6 +29,7 @@ void OnboardCamera_init(void)
         #endif
         cvSetCaptureProperty(cv_cap, CV_CAP_PROP_FRAME_WIDTH, 1600);
         cvSetCaptureProperty(cv_cap, CV_CAP_PROP_FRAME_HEIGHT, 1200);
+        cvQueryFrame(cv_cap);
     }
 }
 
@@ -35,22 +38,19 @@ void OnboardCamera_freeCamera(void)
     cvReleaseCapture(&(cv_cap));
 }
 
-#define OPENCV_IMAGE_BUFFER_LENGTH (30)
-
 /* NOTE: returned image is in yuv color space and must be freed.
  */
 static IplImage *getImage(void)
 {
-
-    int buffer = 0;
     IplImage *image;
+    unsigned int tries = 0;
 
-    do {
+    while (tries < CAMERA_BUFFER_LENGTH) {
         image = cvQueryFrame(cv_cap);
-        ++buffer;
-    } while(buffer <= OPENCV_IMAGE_BUFFER_LENGTH);
+        ++tries;
+    }
 
-    if(camera_matrix && distortion_coeffs) {
+    if(image && camera_matrix && distortion_coeffs) {
         IplImage *image_temp = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
         cvUndistort2(image, image_temp, camera_matrix, distortion_coeffs, 0);
         IplImage *image_yuv = cvCreateImage(cvGetSize(image), IPL_DEPTH_8U, 3);
@@ -58,7 +58,7 @@ static IplImage *getImage(void)
         cvReleaseImage(&image_temp);
         return image_yuv;
     } else {
-        return image;
+        return NULL;
     }
 }
 
@@ -81,7 +81,6 @@ struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **
 
 
     if(image != NULL) {
-
         CvSeq *opencv_sequence = findFirstFigure(opencv_storage, image, painting_image);
 
         if(opencv_sequence) {
@@ -117,16 +116,15 @@ struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **
             CoordinatesSequence_append(sequence, first_coordinates);
             Coordinates_delete(first_coordinates);
         } else {
-
             char name[20];
             sprintf(name, "image-%d.jpg", counter);
             cvSaveImage(name, image, 0);
+            cvReleaseImage(&image);
             counter++;
         }
-
-        cvReleaseMemStorage(&opencv_storage);
     }
 
+    cvReleaseMemStorage(&opencv_storage);
     return sequence;
 }
 
@@ -138,14 +136,15 @@ void OnboardCamera_deleteImage(IplImage **image)
 void OnboardCamera_takePictureAndIfValidSendAndUpdateDrawingBaseTrajectory(struct Robot *robot)
 {
     Flags_setImageReceivedByStation(robot->current_state->flags, 0);
+    Flags_setPictureTaken(robot->current_state->flags, 0);
     IplImage *image;
     struct CoordinatesSequence *image_trajectory;
     image_trajectory = OnboardCamera_extractTrajectoryFromImage(&image);
 
-    if(image_trajectory != NULL) {
-
+    if(image_trajectory) {
         Flags_setPictureTaken(robot->current_state->flags, TRUE);
         DataSender_sendImage(robot->data_sender, image);
         robot->drawing_trajectory = image_trajectory;
+        OnboardCamera_deleteImage(&image);
     }
 }

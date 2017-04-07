@@ -19,6 +19,7 @@ struct Flags *Flags_new(void)
     pointer->ready_to_draw_received_by_station = FALSE;
     pointer->end_of_cycle_received_by_station = FALSE;
     pointer->manchester_code_received = FALSE;
+    pointer->has_completed_a_cycle = FALSE;
 
     return pointer;
 }
@@ -45,6 +46,7 @@ struct Flags *Flags_irrelevant(void)
     Flags_setReadyToDrawReceivedByStation(irrelevant, IRRELEVANT);
     Flags_setEndOfCycleReceivedByStation(irrelevant, IRRELEVANT);
     Flags_setManchesterCodeReceived(irrelevant, IRRELEVANT);
+    Flags_setHasCompletedACycle(irrelevant, IRRELEVANT);
 
     return irrelevant;
 }
@@ -60,6 +62,7 @@ void Flags_copyValuesFrom(struct Flags *recipient, struct Flags *source)
     recipient->ready_to_draw_received_by_station = source->ready_to_draw_received_by_station;
     recipient->end_of_cycle_received_by_station = source->end_of_cycle_received_by_station;
     recipient->manchester_code_received = source->manchester_code_received;
+    recipient->has_completed_a_cycle = source->has_completed_a_cycle;
 }
 
 
@@ -87,7 +90,10 @@ int Flags_haveTheSameValues(struct Flags *flags, struct Flags *other_flags)
             || flags->end_of_cycle_received_by_station == IRRELEVANT || other_flags->end_of_cycle_received_by_station == IRRELEVANT)
         && (flags->manchester_code_received == other_flags->manchester_code_received
             || flags->manchester_code_received == IRRELEVANT
-            || other_flags->manchester_code_received == IRRELEVANT
+            || other_flags->manchester_code_received == IRRELEVANT)
+        && (flags->has_completed_a_cycle == other_flags->has_completed_a_cycle
+            || flags->has_completed_a_cycle == IRRELEVANT
+            || other_flags->has_completed_a_cycle == IRRELEVANT
            );
 }
 
@@ -134,4 +140,9 @@ void Flags_setEndOfCycleReceivedByStation(struct Flags *flags, int new_value)
 void Flags_setManchesterCodeReceived(struct Flags *flags, int new_value)
 {
     flags->manchester_code_received = new_value;
+}
+
+void Flags_setHasCompletedACycle(struct Flags *flags, int new_value)
+{
+    flags->has_completed_a_cycle = new_value;
 }

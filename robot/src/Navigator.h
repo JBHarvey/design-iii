@@ -27,8 +27,9 @@ void Navigator_navigateRobotTowardsGoal(struct Robot *robot);
 void Navigator_orientRobotTowardsGoal(struct Robot *robot);
 
 void Navigator_planTowardsAntennaStart(struct Robot *robot);
-void Navigator_planTowardsAntennaMiddle(struct Robot *robot);
 void Navigator_planOrientationTowardsAntenna(struct Robot *robot);
+void Navigator_planTowardsAntennaMiddle(struct Robot *robot);
+void Navigator_planStopMotionBeforeFetchingManchester(struct Robot *robot);
 void Navigator_planFetchingManchesterCode(struct Robot *robot);
 void Navigator_planLowerPenForAntennaMark(struct Robot *robot);
 void Navigator_planTowardsAntennaMarkEnd(struct Robot *robot);
@@ -37,13 +38,23 @@ void Navigator_planTowardsObstacleZoneEastSide(struct Robot *robot);
 void Navigator_planTowardsPaintingZone(struct Robot *robot);
 void Navigator_planTowardsPainting(struct Robot *robot);
 void Navigator_planOrientationTowardsPainting(struct Robot *robot);
-void Navigator_planStopMotion(struct Robot *robot);
+void Navigator_planStopMotionBeforePicture(struct Robot *robot);
+void Navigator_planLightingGreenLedBeforePicture(struct Robot *robot);
 void Navigator_planTakingPicture(struct Robot *robot);
 void Navigator_planTowardsObstacleZoneWestSide(struct Robot *robot);
+void Navigator_planUpdateMapBeforeGoingToDrawingZone(struct Robot *robot);
 void Navigator_planTowardsDrawingZone(struct Robot *robot);
-/*
+void Navigator_planTowardsCenterOfDrawingZone(struct Robot *robot);
+void Navigator_planToTellReadyToDraw(struct Robot *robot);
+void Navigator_planTowardsDrawingStart(struct Robot *robot);
+void Navigator_planLowerPenBeforeDrawing(struct Robot *robot);
+void Navigator_planDrawing(struct Robot *robot);
+void Navigator_planRisePenBeforeGoingToAntennaStop(struct Robot *robot);
 void Navigator_planTowardsAntennaStop(struct Robot *robot);
- */
+void Navigator_planStopMotionForEndOfCycle(struct Robot *robot);
+void Navigator_planEndOfCycleAndSendSignal(struct Robot *robot);
+void Navigator_planLightingRedLedUntilNewCycle(struct Robot *robot);
+void Navigator_planUpdateMapForNewCycle(struct Robot *robot);
 
 int Navigator_computeRotationToleranceForPrecisionMovement(int planned_distance);
 

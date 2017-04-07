@@ -9,6 +9,8 @@ void Timer_start(void);
 
 void Timer_stop(void);
 
+void Timer_resume(void);
+
 void Timer_release(void);
 
 void Timer_redraw(void);

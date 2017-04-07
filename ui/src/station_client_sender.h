@@ -7,7 +7,7 @@
 void StationClientSender_sendStartCycleCommand(void);
 
 void StationClientSender_sendWorldInformationsToRobot(struct Communication_Object *obstacles, unsigned int num_obstacles, 
-        struct Communication_Object robot, int environment_has_changed);
+        struct Communication_Object robot, int environment_has_changed, struct Communication_Coordinates *green_square_corners);
 
 void StationClientSender_sendReceiveData(struct StationClient *station_client);
 

@@ -215,6 +215,24 @@ Test(Map, given_aMapAndARobotRadius_when_askedToFetchNavigableMap_then_theTableC
     Map_delete(navigable_map);
 }
 
+Test(Map, given_aMapAndARobotRadius_when_askedToFetchNavigableMap_then_theDrawingCornersValuesAreCopiedInTheNavigableMap
+     , .init = setup_Map
+     , .fini = teardown_Map)
+{
+    struct Map *navigable_map = Map_fetchNavigableMap(map, THEORICAL_ROBOT_RADIUS);
+
+    cr_assert(Coordinates_haveTheSameValues(navigable_map->south_western_drawing_corner,
+                                            map->south_western_drawing_corner));
+    cr_assert(Coordinates_haveTheSameValues(navigable_map->south_eastern_drawing_corner,
+                                            map->south_eastern_drawing_corner));
+    cr_assert(Coordinates_haveTheSameValues(navigable_map->north_western_drawing_corner,
+                                            map->north_western_drawing_corner));
+    cr_assert(Coordinates_haveTheSameValues(navigable_map->north_eastern_drawing_corner,
+                                            map->north_eastern_drawing_corner));
+
+    Map_delete(navigable_map);
+}
+
 struct Coordinates *center_west_coordinates;
 struct Coordinates *center_center_coordinates;
 struct Coordinates *center_east_coordinates;
