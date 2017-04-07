@@ -115,7 +115,7 @@ static void populateParticles(struct Map *map, struct Pose **particles, int *par
         }
     }
 }
-marc.antoine.fortier.
+
 static void predictParticlesPoseFromSentCommands(struct Pose **particles, struct Timer *command_timer,
         gsl_rng *random_number_generator, struct Wheels *wheels)
 {
