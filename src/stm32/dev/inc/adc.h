@@ -8,7 +8,7 @@
 #include "tm_stm32f4_adc.h"
 
 #define ADC_RESOLUTION 4096
-#define MAXIMUM_VOLT 3.3
+#define MAXIMUM_VOLT 3.0
 
 void initAdcIR();
 
