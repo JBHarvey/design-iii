@@ -315,6 +315,7 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 #define PHYSICAL_ACK_LOWER_PEN 105
 #define MANCHESTER_CODE_DECODED 106
 #define PHYSICAL_ACK_STOP_SENDING_SIGNAL 107
+#define INFRARED_DATA 108
 
 struct __attribute__((__packed__)) TransitionManchester {
     uint8_t painting_number;
