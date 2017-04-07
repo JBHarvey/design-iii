@@ -19,11 +19,12 @@ Test(PoseFilter, creation_destruction)
 Test(PoseFilter, given__when_fetchPoseFilterCallbacks_then_theCorrectStructureIsReturned)
 {
     void (*updateFromCameraOnly)(struct PoseFilter *) = &PoseFilter_updateFromCameraOnly;
-    void (*updateFromCameraAndWheels)(struct PoseFilter *) = &PoseFilter_updateFromCameraAndWheels;
+    void (*particlesFilterUsingWorldCameraAndWheels)(struct PoseFilter *) =
+        &PoseFilter_particlesFilterUsingWorldCameraAndWheels;
 
     struct PoseFilter_Callbacks callbacks = PoseFilter_fetchCallbacks();
     cr_assert_eq(callbacks.updateFromCameraOnly, updateFromCameraOnly);
-    cr_assert_eq(callbacks.updateFromCameraAndWheels, updateFromCameraAndWheels);
+    cr_assert_eq(callbacks.particlesFilterUsingWorldCameraAndWheels, particlesFilterUsingWorldCameraAndWheels);
 }
 
 int POSEFILTER_X = 9001;

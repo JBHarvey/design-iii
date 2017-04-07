@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
         RobotServer_communicate(robot_server);
 
         if(pose_filter->robot->current_state->flags->navigable_map_is_ready) {
-            PoseFilter_executeFilter(pose_filter, callbacks.updateFromCameraOnly);
+            PoseFilter_executeFilter(pose_filter, callbacks.particlesFilterUsingWorldCameraAndWheels);
             Robot_resetAllActuators(robot);
         }
 

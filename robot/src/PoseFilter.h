@@ -18,7 +18,7 @@ struct PoseFilter {
 
 struct PoseFilter_Callbacks {
     void (*updateFromCameraOnly)(struct PoseFilter *);
-    void (*updateFromCameraAndWheels)(struct PoseFilter *);
+    void (*particlesFilterUsingWorldCameraAndWheels)(struct PoseFilter *);
 };
 
 struct PoseFilter *PoseFilter_new(struct Robot *new_robot);
@@ -28,6 +28,6 @@ struct PoseFilter_Callbacks PoseFilter_fetchCallbacks(void);
 void PoseFilter_executeFilter(struct PoseFilter *pose_filter, void (*filter)(struct PoseFilter *));
 
 void PoseFilter_updateFromCameraOnly(struct PoseFilter *pose_filter);
-void PoseFilter_updateFromCameraAndWheels(struct PoseFilter *pose_filter);
+void PoseFilter_particlesFilterUsingWorldCameraAndWheels(struct PoseFilter * pose_filter);
 
 #endif // POSEFILTER_H_
