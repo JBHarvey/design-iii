@@ -284,7 +284,7 @@ void resampleParticles(double *normalized_particles_weight, int *particles_statu
     uniform_random_numbers_array[NUMBER_OF_PARTICLES] = 1;
     int i = 0, j = 0;
 
-    while(i <= NUMBER_OF_PARTICLES) {
+    while(i <= NUMBER_OF_PARTICLES && j < NUMBER_OF_PARTICLES) {
         if(uniform_random_numbers_array[i] < cumulative_weight_sums[j]) {
             particles_status[j] = 0;
             i++;
