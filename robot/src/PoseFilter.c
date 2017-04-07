@@ -1,7 +1,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <math.h>
-#include "gsl_sort.h"
+#include "gsl/gsl_sort.h"
 #include "PoseFilter.h"
 
 const int NUMBER_OF_PARTICLES = 50;
