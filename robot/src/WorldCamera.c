@@ -9,7 +9,7 @@ struct WorldCamera *WorldCamera_new(void)
     struct Map *new_map = Map_new();
     struct Pose *new_robot_pose = Pose_zero();
     int new_robot_radius = 0;
-    struct WorldCamera *pointer = (struct WorldCamera *) malloc(sizeof(struct WorldCamera));
+    struct WorldCamera *pointer = malloc(sizeof(struct WorldCamera));
 
     pointer->object = new_object;
     pointer->map_sensor = new_map_sensor;
@@ -33,4 +33,11 @@ void WorldCamera_delete(struct WorldCamera *world_camera)
         Pose_delete(world_camera->robot_pose);
         free(world_camera);
     }
+}
+
+void WorldCamera_readPoseData(struct WorldCamera *world_camera, struct Pose *robot_pose)
+{
+    Sensor_readsData(world_camera->robot_sensor);
+
+    Pose_copyValuesFrom(robot_pose, world_camera->robot_pose);
 }

@@ -128,17 +128,17 @@ void Wheels_readTranslationData(struct Wheels *wheels, struct Angle *current_ang
     Coordinates_copyValuesFrom(translation_speed, wheels->translation_data_speed);
 }
 
-void Wheels_readSpeedData(struct Wheels *wheels, struct Coordinates *translation_speed)
+void Wheels_readTranslationSpeedData(struct Wheels *wheels, struct Coordinates *translation_speed)
 {
     Sensor_readsData(wheels->translation_sensor);
 
     Coordinates_copyValuesFrom(translation_speed, wheels->translation_data_speed);
 }
 
-void Wheels_readRotationData(struct Wheels *wheels, struct Angle *rotation_delta, struct Angle *rotation_speed)
+void Wheels_readRotationSpeedData(struct Wheels *wheels, struct Angle *rotation_speed)
 {
     Sensor_readsData(wheels->rotation_sensor);
-    rotation_delta->theta = wheels->rotation_data_movement->theta;
+
     rotation_speed->theta = wheels->rotation_data_speed->theta;
 }
 

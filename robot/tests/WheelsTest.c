@@ -92,7 +92,7 @@ Test(Wheels, given_coordinates_when_receivesData_then_theRotationSensorHasReceiv
     Coordinates_delete(coordinates);
 }
 
-Test(Wheels, given_receivedData_when_readsRotationData_then_anglesAreModifiedToCorrespondTheReceivedOnes
+Test(Wheels, given_receivedData_when_readsRotationSpeedData_then_anglesAreModifiedToCorrespondTheReceivedOnes
      , .init = setup_wheels
      , .fini = teardown_wheels)
 {
@@ -100,40 +100,35 @@ Test(Wheels, given_receivedData_when_readsRotationData_then_anglesAreModifiedToC
     struct Angle *angle_speed = Angle_new(WHEELS_COMMMAND_THETA_SPEED);
     Wheels_receiveRotationData(wheels, angle_movement, angle_speed);
 
-    struct Angle *rotation_movement = Angle_new(0);
     struct Angle *rotation_speed = Angle_new(0);
-    Wheels_readRotationData(wheels, rotation_movement, rotation_speed);
+    Wheels_readRotationSpeedData(wheels, rotation_speed);
 
-    cr_assert(Angle_smallestAngleBetween(rotation_movement, angle_movement) == 0);
     cr_assert(Angle_smallestAngleBetween(rotation_speed, angle_speed) == 0);
 
     Angle_delete(angle_movement);
     Angle_delete(angle_speed);
-    Angle_delete(rotation_movement);
     Angle_delete(rotation_speed);
 
 }
 
-Test(Wheels, given_receivedData_when_readsRotationData_then_rotationSensorHasNoMoreNewData
+Test(Wheels, given_receivedData_when_readsRotationSpeedData_then_rotationSensorHasNoMoreNewData
      , .init = setup_wheels
      , .fini = teardown_wheels)
 {
     struct Angle *angle = Angle_new(WHEELS_COMMMAND_THETA);
     Wheels_receiveRotationData(wheels, angle, angle);
 
-    struct Angle *rotation_movement = Angle_new(0);
     struct Angle *rotation_speed = Angle_new(0);
-    Wheels_readRotationData(wheels, rotation_movement, rotation_speed);
+    Wheels_readRotationSpeedData(wheels, rotation_speed);
 
     cr_assert(!wheels->rotation_sensor->has_received_new_data);
 
     Angle_delete(angle);
-    Angle_delete(rotation_movement);
     Angle_delete(rotation_speed);
 
 }
 
-Test(Wheels, given_receivedData_when_readsSpeedData_then_theSpeedVectorIsModifiedToCorrespondTheReceivedOne
+Test(Wheels, given_receivedData_when_readsTranslationSpeedData_then_theSpeedVectorIsModifiedToCorrespondTheReceivedOne
      , .init = setup_wheels
      , .fini = teardown_wheels)
 {
@@ -144,7 +139,7 @@ Test(Wheels, given_receivedData_when_readsSpeedData_then_theSpeedVectorIsModifie
     Wheels_receiveTranslationData(wheels, received_translation_movement, received_translation_speed);
 
     struct Coordinates *translation_speed = Coordinates_zero();
-    Wheels_readSpeedData(wheels, translation_speed);
+    Wheels_readTranslationSpeedData(wheels, translation_speed);
 
     cr_assert(Coordinates_haveTheSameValues(received_translation_speed, translation_speed));
 
@@ -154,7 +149,7 @@ Test(Wheels, given_receivedData_when_readsSpeedData_then_theSpeedVectorIsModifie
     Coordinates_delete(translation_speed);
 }
 
-Test(Wheels, given_receivedData_when_readsSpeedData_then_translationSensorHasNoMoreNewData
+Test(Wheels, given_receivedData_when_readsTranslationSpeedData_then_translationSensorHasNoMoreNewData
      , .init = setup_wheels
      , .fini = teardown_wheels)
 {
@@ -165,7 +160,7 @@ Test(Wheels, given_receivedData_when_readsSpeedData_then_translationSensorHasNoM
     Wheels_receiveTranslationData(wheels, received_translation_movement, received_translation_speed);
 
     struct Coordinates *translation_speed = Coordinates_zero();
-    Wheels_readSpeedData(wheels, translation_speed);
+    Wheels_readTranslationSpeedData(wheels, translation_speed);
 
     cr_assert(!wheels->translation_sensor->has_received_new_data);
 

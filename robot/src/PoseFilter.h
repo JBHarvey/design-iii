@@ -10,7 +10,9 @@ struct PoseFilter {
     struct Robot *robot;
     struct Pose **particles;
     int *particles_status;
+    double *particles_weight;
     struct Timer *command_timer;
+    struct Timer *data_timer;
     gsl_rng *random_number_generator;
 };
 

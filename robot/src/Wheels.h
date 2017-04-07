@@ -28,9 +28,9 @@ void Wheels_delete(struct Wheels *wheels);
 void Wheels_receiveTranslationData(struct Wheels *wheels, struct Coordinates *translation_vector, struct Coordinates *translation_speed_vector);
 void Wheels_receiveRotationData(struct Wheels *wheels, struct Angle *rotation_angle, struct Angle *rotation_angle_speed);
 
-void Wheels_readRotationData(struct Wheels *wheels, struct Angle *rotation_delta, struct Angle *rotation_speed);
+void Wheels_readRotationSpeedData(struct Wheels *wheels, struct Angle *rotation_speed);
 void Wheels_readTranslationData(struct Wheels *wheels, struct Angle *current_angle, struct Coordinates *translation_delta, struct Coordinates *translation_speed);
-void Wheels_readSpeedData(struct Wheels *wheels, struct Coordinates *translation_speed);
+void Wheels_readTranslationSpeedData(struct Wheels *wheels, struct Coordinates *translation_speed);
 
 void Wheels_prepareRotationCommand(struct Wheels *wheels, struct Angle *angle);
 void Wheels_prepareSpeedCommand(struct Wheels *wheels, struct Coordinates *speeds_vector);
