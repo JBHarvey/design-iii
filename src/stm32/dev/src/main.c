@@ -50,6 +50,8 @@ volatile uint8_t readyToSendManchester = 0;
 
 volatile uint8_t readyToSendMoveMeasures = 0;
 
+volatile uint8_t readyToSendInfraredData = 0;
+
 volatile uint8_t readyToSendData = 0;
 
 volatile uint8_t initializeManchesterFlag = 0;
@@ -335,6 +337,17 @@ int main(void) {
 			}
 
 			readyToSendMoveMeasures = 0;
+		}
+
+		/* send ifrared captor measures */
+		if (readyToSendData && readyToSendInfraredData) {
+			float infraredCaptor1 = convertReadValueToVolt(getAdcIR1());
+			float infraredCaptor2 = convertReadValueToVolt(getAdcIR2());
+			float infraredCaptor3 = convertReadValueToVolt(getAdcIR3());
+
+			sendInfraredMesasures(infraredCaptor1, infraredCaptor2,
+					infraredCaptor3);
+			readyToSendInfraredData = 0;
 		}
 
 		/* to Test rotation */
@@ -672,6 +685,7 @@ extern void TIM2_IRQHandler() {
 
 		//flag to send measure datas to Robot
 		readyToSendMoveMeasures = 1;
+		readyToSendInfraredData = 1;
 		sendMeasureCounter = 0;
 
 		resetEncoderSpeedVariables();
@@ -804,6 +818,8 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 			newMoveCommand = 1;
 
 			isRobotRotating = 1;
+
+			readyToSendData = 1;
 
 			resetPositionEncoderVariables();
 

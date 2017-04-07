@@ -129,3 +129,28 @@ void sendManchesterCode(uint8_t figure, uint8_t factor, uint8_t *orientation) {
 	VCP_DataTx(dataToSend, 5);
 }
 
+void sendInfraredMesasures(float infraredCaptor1, float infraredCaptor2,
+		float infraredCaptor3) {
+
+	uint16_t dataToSend[14];
+	uint16_t *dataToSendPointer = dataToSend;
+
+	dataToSend[0] = COMMAND_SEND_INFRARED_CAPTORS;
+
+	dataToSend[1] = 12;
+	dataToSendPointer += 2;
+
+	memcpy(dataToSendPointer, &infraredCaptor1, sizeof(float));
+	dataToSendPointer += 4;
+
+	memcpy(dataToSendPointer, &infraredCaptor2, sizeof(float));
+	dataToSendPointer += 4;
+
+	memcpy(dataToSendPointer, &infraredCaptor3, sizeof(float));
+	dataToSendPointer += 4;
+
+	/* il faut envoyer les données par USART, sinon, ca crash ici. */
+	VCP_DataTx(dataToSend, 14);
+
+}
+

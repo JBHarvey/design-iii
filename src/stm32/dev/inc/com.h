@@ -29,7 +29,8 @@ enum COMMAND {
 	COMMAND_SEND_PREHENSOR_UP_CONFIRMATION = 104,
 	COMMAND_SEND_PREHENSOR_DOWN_CONFIRMATION = 105,
 	COMMAND_DECODED_MANCHESTER = 106,
-	COMMAND_STOP_SENDING_MANCHESTER_SIGNAL_CONFIRMATION = 107
+	COMMAND_STOP_SENDING_MANCHESTER_SIGNAL_CONFIRMATION = 107,
+	COMMAND_SEND_INFRARED_CAPTORS = 108
 };
 
 extern uint8_t bFlagSendData;
@@ -52,5 +53,8 @@ void sendPrehensorDownConfirmation();
 void sendStopSendingManchesterSignalConfirmation();
 
 void sendManchesterCode(uint8_t figure, uint8_t factor, uint8_t *orientation);
+
+void sendInfraredMesasures(float infraredCaptor1, float infraredCaptor2,
+		float infraredCaptor3);
 
 #endif

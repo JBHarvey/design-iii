@@ -23,3 +23,7 @@ uint16_t getAdcIR2() {
 uint16_t getAdcIR3() {
 	return TM_ADC_Read(ADC3, ADC_Channel_3);
 }
+
+float convertReadValueToVolt(uint16_t readValue) {
+	return readValue * MAXIMUM_VOLT / (ADC_RESOLUTION - 1);
+}
