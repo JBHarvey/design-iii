@@ -197,11 +197,11 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                 double translation_induced_weight =
                     gsl_ran_gaussian_pdf(sqrt(pow(particles[i]->coordinates->x - new_data_from_world_camera->coordinates->x, 2) +
                                               pow(particles[i]->coordinates->y - new_data_from_world_camera->coordinates->y, 2)),
-                                         ABSOLUTE_POSITION_NOISE_VARIANCE);
+                                         2 * ABSOLUTE_POSITION_NOISE_VARIANCE);
                 double theta_rotation_induced_weight =
                     gsl_ran_gaussian_pdf(particles[i]->angle->theta - new_data_from_world_camera->angle->theta,
                                          sqrt(ABSOLUTE_ANGLE_NOISE_VARIANCE));
-                particles_weight[i] = (translation_induced_weight > 0.001) ? translation_induced_weight : 0.0 ;
+                particles_weight[i] = (translation_induced_weight > 0.0000001) ? translation_induced_weight : 0.0 ;
                 // theta_rotation_induced_weight);
                 fprintf(logger,
                         "\n PARTICLE: X: %d, Y: %d, THETA: %d, CAM INFO: X: %d, Y: %d, THETA: %d, TRANSLATION_WEIGHT: %f, RESULTING WEIGHT: %f",
