@@ -220,6 +220,8 @@ static void correctParticlesUsingAbsolutePosition(struct Pose **particles, struc
         particles[i] = Pose_zero();
         double translation_noise = (gsl_rng_uniform(random_number_generator) - 0.5) * ABSOLUTE_POSITION_NOISE_VARIANCE;
         double rotation_noise = (gsl_rng_uniform(random_number_generator) - 0.5) * ABSOLUTE_ANGLE_NOISE_VARIANCE;
+        fprintf(new_log_file, "\nCAMERA DATA x: %d, y: %d, theta: %d", new_data_from_world_camera->coordinates->x,
+                new_data_from_world_camera->coordinates->y, new_data_from_world_camera->angle->theta);
         struct Pose *new_data_from_world_camera_with_noise = Pose_new(new_data_from_world_camera->coordinates->x +
                 (int) translation_noise, new_data_from_world_camera->coordinates->y + (int) translation_noise,
                 new_data_from_world_camera->angle->theta + (int) rotation_noise);
@@ -279,7 +281,7 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                                          sqrt(ROTATION_SPEED_NOISE_VARIANCE * time_delta));
                 particles_weight[i] = theta_rotation_induced_weight;
 
-                //fprintf(new_log_file, "\ntheta w: %f", theta_rotation_induced_weight);
+                fprintf(new_log_file, "\ntheta w: %f", theta_rotation_induced_weight);
                 Pose_delete(estimated_robot_pose_from_measurements);
             }
         }
