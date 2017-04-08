@@ -176,12 +176,14 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
        new_absolute_position_data_has_been_received) {
 
         double time_delta = Timer_elapsedTime(data_timer) / NUMBER_OF_NANOSECONDS_IN_A_SECOND;
+        fprintf(logger, "\nTIME_DELTA: %f", time_delta);
         Timer_reset(data_timer);
 
         if(new_translation_speed_data_has_been_received) {
             Wheels_readTranslationSpeedData(wheels, new_data_from_wheels->coordinates);
         } else if(new_rotation_speed_data_has_been_received) {
             Wheels_readRotationSpeedData(wheels, new_data_from_wheels->angle);
+            fprintf(logger, "\n RECEIVED ANGULAR SPEED: %d", new_data_from_wheels->angle->theta);
         }
 
         if(new_absolute_position_data_has_been_received) {
