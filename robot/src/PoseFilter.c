@@ -5,7 +5,7 @@
 #include "gsl/gsl_sort.h"
 #include "PoseFilter.h"
 
-const int NUMBER_OF_PARTICLES = 50;
+const int NUMBER_OF_PARTICLES = 100;
 const int DEPLETION_THRESHOLD = 20;
 const double ROTATION_SPEED_NOISE_VARIANCE = 0.0349066 / ANGLE_BASE_UNIT;
 const double TRANSLATION_SPEED_NOISE_VARIANCE = 0.002 / SPEEDS_BASE_UNIT;
@@ -172,9 +172,9 @@ static void predictParticlesPoseFromSentCommands(struct Pose **particles, struct
 
             }
 
-            fprintf(new_log_file, "\n Rotated particles: x: %d, y: %d, theta: %d", particles[0]->coordinates->x,
+            /*fprintf(new_log_file, "\n Rotated particles: x: %d, y: %d, theta: %d", particles[0]->coordinates->x,
                     particles[0]->coordinates->y,
-                    particles[0]->angle->theta);
+                    particles[0]->angle->theta);*/
         }
     } else {
         Timer_reset(command_timer); // In case of idle state.
@@ -206,6 +206,11 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
 
         if(new_absolute_position_data_has_been_received) {
             WorldCamera_readPoseData(world_camera, new_data_from_world_camera);
+            fprintf(new_log_file, "\n\t\t\t New data from world camera: x: %d, y: %d, theta: %d",
+                    new_data_from_world_camera->coordinates->x,
+                    new_data_from_world_camera->coordinates->y,
+                    new_data_from_world_camera->angle->theta);
+
         }
 
         for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
@@ -365,6 +370,9 @@ void PoseFilter_particlesFilterUsingWorldCameraAndWheels(struct PoseFilter *pose
     } else {
         struct Pose *new_robot_pose = calculateNewRobotPoseForParticlesFilter(pose_filter->particles,
                                       pose_filter->particles_weight);
+        fprintf(new_log_file, "\n\t\t\t\t\t\t Robot NEW Pose: x: %d, y: %d, theta: %d", new_robot_pose->coordinates->x,
+                new_robot_pose->coordinates->y,
+                new_robot_pose->angle->theta);
         Pose_copyValuesFrom(robot->current_state->pose, new_robot_pose);
         Pose_delete(new_robot_pose);
     }
