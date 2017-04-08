@@ -10,6 +10,8 @@ struct RobotServer *robot_server;
 struct Timer *timer;
 int main(int argc, char *argv[])
 {
+    setbuf(stdout, NULL);
+
     const int port = 35794;
     //char *ttyACM = "/dev/null";
     char *ttyACM = "/dev/ttyACM0";
