@@ -259,7 +259,13 @@ void normalizeParticlesWeight(double *particles_weight)
 
     for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
         int particles_weight_int = (int)(particles_weight[i] * 1000.0);
-        particles_weight[i] = (double) particles_weight_int / (double) cumulative_weight;
+
+        if(cumulative_weight > 0) {
+            particles_weight[i] = (double) particles_weight_int / (double) cumulative_weight;
+        } else {
+            particles_weight[i] = 0.0;
+        }
+
         fprintf(logger, "\n N_W : %f", particles_weight[i]);
     }
 }
