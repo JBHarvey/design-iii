@@ -9,7 +9,7 @@ const int NUMBER_OF_PARTICLES = 100;
 const int DEPLETION_THRESHOLD = 35;
 const double ROTATION_SPEED_NOISE_VARIANCE = 0.0349066 / ANGLE_BASE_UNIT;
 const double TRANSLATION_SPEED_NOISE_VARIANCE = 0.002 / SPEEDS_BASE_UNIT;
-const double ABSOLUTE_POSITION_NOISE_VARIANCE = 0.32 / SPEEDS_BASE_UNIT;
+const double ABSOLUTE_POSITION_NOISE_VARIANCE = 32 / SPEEDS_BASE_UNIT;
 const double ABSOLUTE_ANGLE_NOISE_VARIANCE = 0.0349066 / ANGLE_BASE_UNIT;
 
 const gsl_rng_type * RANDOM_NUMBER_GENERATOR_TYPE;
@@ -297,7 +297,7 @@ int resampleParticlesAndReturnStatus(struct Pose **particles, double *normalized
     int i = 0, j = 0;
     int last_important_particle_index = -1;
 
-    while(i <= NUMBER_OF_PARTICLES && j < NUMBER_OF_PARTICLES) {
+    while(i <= NUMBER_OF_PARTICLES) {
         if(uniform_random_numbers_array[i] < cumulative_weight_sums[j]) {
             last_important_particle_index = j;
             i++;
