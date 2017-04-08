@@ -120,6 +120,8 @@ static void populateParticles(struct Map *map, struct Pose **particles, int *par
             particles[i] = Pose_new((int)(gsl_rng_uniform(random_number_generator) * table_length),
                                     (int)(gsl_rng_uniform(random_number_generator) * table_width),
                                     (int)(gsl_rng_uniform(random_number_generator) * 2 * PI) - PI);
+            fprintf(new_log_file, "New particles: x: %d, y: %d, theta: %d", particles[i]->coordinates->x,
+                    particles[i]->coordinates->y, particles[i]->angle->theta);
         }
     }
 }
