@@ -203,9 +203,12 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                                          sqrt(ABSOLUTE_ANGLE_NOISE_VARIANCE));
                 particles_weight[i] = fmin(x_translation_induced_weight, y_translation_induced_weight);
                 // theta_rotation_induced_weight);
-                fprintf(logger, "\n CAM INFO: X: %d, Y: %d, THETA: %d, RESULTING WEIGHT: %f",
+                fprintf(logger,
+                        "\n PARTICLE: X: %d, Y: %d, THETA: %d,CAM INFO: X: %d, Y: %d, THETA: %d, X WEIGHT: %f, Y WEIGHT: %f, RESULTING WEIGHT: %f",
+                        particles[i]->coordinates->x, particles[i]->coordinates->y, particles[i]->angle->theta,
                         new_data_from_world_camera->coordinates->x,
-                        new_data_from_world_camera->coordinates->y, new_data_from_world_camera->angle->theta, particles_weight[i]);
+                        new_data_from_world_camera->coordinates->y, new_data_from_world_camera->angle->theta, x_translation_induced_weight,
+                        y_translation_induced_weight, particles_weight[i]);
 
             } else if(new_translation_speed_data_has_been_received) {
 
