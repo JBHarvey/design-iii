@@ -17,7 +17,9 @@ FILE *new_log_file;
 
 static void initializeParticlesWeight(double *particles_weight)
 {
+    fprintf(new_log_file, "\npO avant: %f", particles_weight[0]);
     memset(particles_weight, 1.0 / (double) NUMBER_OF_PARTICLES, NUMBER_OF_PARTICLES * sizeof(double));
+    fprintf(new_log_file, "\npO apres: %f", particles_weight[0]);
 }
 
 struct PoseFilter *PoseFilter_new(struct Robot *new_robot)
