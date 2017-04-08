@@ -9,7 +9,7 @@ const int NUMBER_OF_PARTICLES = 100;
 const int DEPLETION_THRESHOLD = 35;
 const double ROTATION_SPEED_NOISE_VARIANCE = 0.0349066 / ANGLE_BASE_UNIT;
 const double TRANSLATION_SPEED_NOISE_VARIANCE = 0.002 / SPEEDS_BASE_UNIT;
-const double ABSOLUTE_POSITION_NOISE_VARIANCE = 0.02 / SPEEDS_BASE_UNIT;
+const double ABSOLUTE_POSITION_NOISE_VARIANCE = 0.32 / SPEEDS_BASE_UNIT;
 const double ABSOLUTE_ANGLE_NOISE_VARIANCE = 0.0349066 / ANGLE_BASE_UNIT;
 
 const gsl_rng_type * RANDOM_NUMBER_GENERATOR_TYPE;
@@ -197,7 +197,7 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                 double translation_induced_weight =
                     gsl_ran_gaussian_pdf(sqrt(pow(particles[i]->coordinates->x - new_data_from_world_camera->coordinates->x, 2) +
                                               pow(particles[i]->coordinates->y - new_data_from_world_camera->coordinates->y, 2)),
-                                         sqrt(2 * ABSOLUTE_POSITION_NOISE_VARIANCE));
+                                         sqrt(ABSOLUTE_POSITION_NOISE_VARIANCE));
                 double theta_rotation_induced_weight =
                     gsl_ran_gaussian_pdf(particles[i]->angle->theta - new_data_from_world_camera->angle->theta,
                                          sqrt(ABSOLUTE_ANGLE_NOISE_VARIANCE));
