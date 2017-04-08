@@ -17,7 +17,7 @@ FILE *new_log_file;
 
 static void initializeParticlesWeight(double *particles_weight)
 {
-    memset(particles_weight, 1.0 / NUMBER_OF_PARTICLES, NUMBER_OF_PARTICLES * sizeof(double));
+    memset(particles_weight, 1.0 / (double) NUMBER_OF_PARTICLES, NUMBER_OF_PARTICLES * sizeof(double));
 }
 
 struct PoseFilter *PoseFilter_new(struct Robot *new_robot)
