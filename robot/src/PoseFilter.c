@@ -15,14 +15,18 @@ const gsl_rng_type * RANDOM_NUMBER_GENERATOR_TYPE;
 
 static void initializeParticlesWeight(double *particles_weight)
 {
-    memset(particles_weight, 1.0 / NUMBER_OF_PARTICLES, NUMBER_OF_PARTICLES * sizeof(double));
+    double number_of_particles = (double) NUMBER_OF_PARTICLES;
+    memset(particles_weight, 1.0, NUMBER_OF_PARTICLES * sizeof(double));
+
+    for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
+        particles_weight[i] /= number_of_particles;
+    }
 }
 
 struct PoseFilter *PoseFilter_new(struct Robot *new_robot)
 {
     struct Object *new_object = Object_new();
     struct Pose **new_particles = malloc(NUMBER_OF_PARTICLES * sizeof(struct Pose *));
-    int *new_particles_status = calloc(NUMBER_OF_PARTICLES, sizeof(int));
     double *new_particles_weight = malloc(NUMBER_OF_PARTICLES * sizeof(double));
     initializeParticlesWeight(new_particles_weight);
     struct Timer *new_command_timer = Timer_new();
@@ -40,7 +44,7 @@ struct PoseFilter *PoseFilter_new(struct Robot *new_robot)
     pointer->robot = new_robot;
 
     pointer->particles = new_particles;
-    pointer->particles_status = new_particles_status;
+    pointer->is_all_particles_dead = 1;
     pointer->particles_weight = new_particles_weight;
     pointer->command_timer = new_command_timer;
     pointer->data_timer = new_data_timer;
@@ -59,14 +63,11 @@ void PoseFilter_delete(struct PoseFilter *pose_filter)
         Robot_delete(pose_filter->robot);
 
         for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
-            if(pose_filter->particles_status[i]) {
-                Pose_delete(pose_filter->particles[i]);
-            }
+            Pose_delete(pose_filter->particles[i]);
         }
 
         Timer_delete(pose_filter->command_timer);
         Timer_delete(pose_filter->data_timer);
-        free(pose_filter->particles_status);
         free(pose_filter->particles_weight);
         free(pose_filter->particles);
         gsl_rng_free(pose_filter->random_number_generator);
@@ -101,18 +102,15 @@ void PoseFilter_updateFromCameraOnly(struct PoseFilter *pose_filter)
     }
 }
 
-static void populateParticles(struct Map *map, struct Pose **particles, int *particles_status,
-                              gsl_rng *random_number_generator)
+static void populateParticles(struct Map *map, struct Pose **particles, gsl_rng *random_number_generator)
 {
     int table_length = map->south_eastern_table_corner->x - map->south_western_table_corner->x;
     int table_width = map->north_western_table_corner->y - map->south_western_table_corner->y;
 
     for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
-        if(!particles_status[i]) {
-            particles[i] = Pose_new((int)(gsl_rng_uniform(random_number_generator) * table_length),
-                                    (int)(gsl_rng_uniform(random_number_generator) * table_width),
-                                    (int)(gsl_rng_uniform(random_number_generator) * 2 * PI) - PI);
-        }
+        particles[i] = Pose_new((int)(gsl_rng_uniform(random_number_generator) * table_length),
+                                (int)(gsl_rng_uniform(random_number_generator) * table_width),
+                                (int)(gsl_rng_uniform(random_number_generator) * 2 * PI) - PI);
     }
 }
 
@@ -264,11 +262,13 @@ int calculateNumberOfEffectiveParticles(double *normalized_particles_weight)
     return (int) number_of_effective_particles;
 }
 
-void resampleParticles(double *normalized_particles_weight, int *particles_status, gsl_rng *random_number_generator)
+int resampleParticlesAndReturnStatus(struct Pose **particles, double *normalized_particles_weight,
+                                     gsl_rng *random_number_generator)
 {
     double cumulative_weight_sums[NUMBER_OF_PARTICLES];
     double uniform_random_numbers_array[NUMBER_OF_PARTICLES + 1];
     memset(cumulative_weight_sums, 0.0, NUMBER_OF_PARTICLES * sizeof(double));
+    int is_all_particles_dead = 0;
 
     for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
         for(int j = 0; j <= i; j++) {
@@ -283,21 +283,32 @@ void resampleParticles(double *normalized_particles_weight, int *particles_statu
     gsl_sort(uniform_random_numbers_array, 1, NUMBER_OF_PARTICLES + 1);
     uniform_random_numbers_array[NUMBER_OF_PARTICLES] = 1;
     int i = 0, j = 0;
+    int last_important_particle_index = -1;
 
-    while(i <= NUMBER_OF_PARTICLES) {
+    while(i <= NUMBER_OF_PARTICLES && j < NUMBER_OF_PARTICLES) {
         if(uniform_random_numbers_array[i] < cumulative_weight_sums[j]) {
-            particles_status[j] = 0;
+            last_important_particle_index = j;
             i++;
         } else {
+            if(last_important_particle_index != -1 && last_important_particle_index != j) {
+                Pose_copyValuesFrom(particles[j], particles[last_important_particle_index]);
+            }
+
             j++;
         }
     }
 
-    for(int k = 0; k < NUMBER_OF_PARTICLES; k++) {
-        particles_status[k] = !particles_status[k];
+    if(last_important_particle_index != -1) {
+        for(int l = 0; uniform_random_numbers_array[0] >= cumulative_weight_sums[l]; l++) {
+            Pose_copyValuesFrom(particles[l], particles[last_important_particle_index]);
+        }
+    } else {
+        is_all_particles_dead = 1;
     }
 
     initializeParticlesWeight(normalized_particles_weight);
+
+    return is_all_particles_dead;
 }
 
 static struct Pose *calculateNewRobotPoseForParticlesFilter(struct Pose **particles, double *particles_weight)
@@ -322,8 +333,10 @@ void PoseFilter_particlesFilterUsingWorldCameraAndWheels(struct PoseFilter *pose
     struct Robot *robot = pose_filter->robot;
     int number_of_effective_particles;
 
-    populateParticles(robot->world_camera->map, pose_filter->particles, pose_filter->particles_status,
-                      pose_filter->random_number_generator);
+    if(pose_filter->is_all_particles_dead) {
+        populateParticles(robot->world_camera->map, pose_filter->particles, pose_filter->random_number_generator);
+    }
+
     predictParticlesPoseFromSentCommands(pose_filter->particles, pose_filter->command_timer,
                                          pose_filter->random_number_generator,
                                          robot->wheels);
@@ -333,8 +346,9 @@ void PoseFilter_particlesFilterUsingWorldCameraAndWheels(struct PoseFilter *pose
     number_of_effective_particles = calculateNumberOfEffectiveParticles(pose_filter->particles_weight);
 
     if(number_of_effective_particles < DEPLETION_THRESHOLD) {
-        resampleParticles(pose_filter->particles_weight, pose_filter->particles_status,
-                          pose_filter->random_number_generator);
+        pose_filter->is_all_particles_dead = resampleParticlesAndReturnStatus(pose_filter->particles,
+                                             pose_filter->particles_weight,
+                                             pose_filter->random_number_generator);
     } else {
         struct Pose *new_robot_pose = calculateNewRobotPoseForParticlesFilter(pose_filter->particles,
                                       pose_filter->particles_weight);

@@ -9,7 +9,7 @@ struct PoseFilter {
     struct Object *object;
     struct Robot *robot;
     struct Pose **particles;
-    int *particles_status;
+    int is_all_particles_dead;
     double *particles_weight;
     struct Timer *command_timer;
     struct Timer *data_timer;
