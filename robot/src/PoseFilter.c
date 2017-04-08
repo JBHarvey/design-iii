@@ -249,19 +249,19 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
 
 void normalizeParticlesWeight(double *particles_weight)
 {
-    int cumulative_weight = 0;
+    double cumulative_weight = 0;
 
     for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
-        int particles_weight_int = (int)(particles_weight[i] / 1e-7);
-        cumulative_weight += particles_weight_int;
+        //int particles_weight_int = (int)(particles_weight[i] / 1e-7);
+        cumulative_weight += particles_weight[i];
         //fprintf(logger, "\n CUMM_W: %d", cumulative_weight);
     }
 
     for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
-        int particles_weight_int = (int)(particles_weight[i] / 1e-7);
+        //int particles_weight_int = (int)(particles_weight[i] / 1e-7);
 
         if(cumulative_weight > 0) {
-            particles_weight[i] = (double) particles_weight_int / (double) cumulative_weight;
+            particles_weight[i] = particles_weight[i] / cumulative_weight;
         } else {
             particles_weight[i] = 0.0;
         }
