@@ -254,7 +254,7 @@ void normalizeParticlesWeight(double *particles_weight)
     for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
         int particles_weight_int = (int)(particles_weight[i] * 1000.0);
         cumulative_weight += particles_weight_int;
-        fprintf(logger, "\n CUMM_W: %d", cumulative_weight);
+        //fprintf(logger, "\n CUMM_W: %d", cumulative_weight);
     }
 
     for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
@@ -266,7 +266,7 @@ void normalizeParticlesWeight(double *particles_weight)
             particles_weight[i] = 0.0;
         }
 
-        fprintf(logger, "\n N_W : %f", particles_weight[i]);
+        //fprintf(logger, "\n N_W : %f", particles_weight[i]);
     }
 }
 
@@ -281,8 +281,13 @@ int calculateNumberOfEffectiveParticles(double *normalized_particles_weight)
         //fprintf(logger, "\n norm w: %f", normalized_particles_weight[i]);
     }
 
-    number_of_effective_particles = 1 / cumulative_square_of_normalized_weight;
-    //fprintf(logger, "\n\n NEFF: %f", number_of_effective_particles);
+    if(cumulative_square_of_normalized_weight > 0) {
+        number_of_effective_particles = 1.0 / cumulative_square_of_normalized_weight;
+    } else {
+        number_of_effective_particles = 0;
+    }
+
+    fprintf(logger, "\n\n NEFF: %f", number_of_effective_particles);
 
     return (int) number_of_effective_particles;
 }
