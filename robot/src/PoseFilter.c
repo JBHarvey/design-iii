@@ -249,21 +249,24 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
 
 void normalizeParticlesWeight(double *particles_weight)
 {
-    double cumulative_weight = 0;
+    int cumulative_weight = 0;
 
     for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
-        cumulative_weight += particles_weight[i];
+        int particles_weight_int = (int)(particles_weight[i] * 1000.0);
+        cumulative_weight += particles_weight_int;
     }
 
     for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
-        particles_weight[i] /= cumulative_weight;
+        int particles_weight_int = (int)(particles_weight[i] * 1000.0);
+        particles_weight[i] = (double) particles_weight_int / (double) cumulative_weight;
     }
 }
 
 int calculateNumberOfEffectiveParticles(double *normalized_particles_weight)
 {
     double number_of_effective_particles;
-    double cumulative_square_of_normalized_weight = 0; // NOTE normalized_particles_weight tjrs egal a 0.01
+    double cumulative_square_of_normalized_weight =
+        0; // NOTE normalized_particles_weight tjrs egal a 0.01 apres rsp, -nan sinon apres new cam
 
     for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
         cumulative_square_of_normalized_weight += pow(normalized_particles_weight[i], 2);
