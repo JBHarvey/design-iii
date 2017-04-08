@@ -317,6 +317,7 @@ int resampleParticlesAndReturnStatus(struct Pose **particles, double *normalized
             Pose_copyValuesFrom(particles[l], particles[last_important_particle_index]);
         }
     } else {
+        fprintf(logger, "\n\n\n ALL DEAD ! \n\n\n");
         is_all_particles_dead = 1;
     }
 
