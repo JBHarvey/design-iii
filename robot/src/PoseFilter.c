@@ -279,7 +279,7 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                                          sqrt(ROTATION_SPEED_NOISE_VARIANCE * time_delta));
                 particles_weight[i] = theta_rotation_induced_weight;
 
-                fprintf(new_log_file, "\ntheta w: %f", theta_rotation_induced_weight);
+                //fprintf(new_log_file, "\ntheta w: %f", theta_rotation_induced_weight);
                 Pose_delete(estimated_robot_pose_from_measurements);
             }
         }
@@ -390,7 +390,7 @@ void PoseFilter_particlesFilterUsingWorldCameraAndWheels(struct PoseFilter *pose
                                               pose_filter->random_number_generator);
         struct Pose *new_robot_pose = calculateNewRobotPoseForParticlesFilter(pose_filter->particles,
                                       pose_filter->particles_weight);
-        fprintf(new_log_file, "\n\t\t\t\t\t\t Robot NEW Pose: x: %d, y: %d, theta: %d", new_robot_pose->coordinates->x,
+        fprintf(new_log_file, "\n\t\t\t\t\t\t Robot NEW Pose CAM: x: %d, y: %d, theta: %d", new_robot_pose->coordinates->x,
                 new_robot_pose->coordinates->y,
                 new_robot_pose->angle->theta);
         Pose_copyValuesFrom(robot->current_state->pose, new_robot_pose);
