@@ -188,6 +188,8 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
             WorldCamera_readPoseData(world_camera, new_data_from_world_camera);
         }
 
+        fprintf(logger, "\n----------------------------------------------------------------------");
+
         for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
 
             if(new_absolute_position_data_has_been_received) {
@@ -365,9 +367,9 @@ void PoseFilter_particlesFilterUsingWorldCameraAndWheels(struct PoseFilter *pose
         struct Pose *new_robot_pose = calculateNewRobotPoseForParticlesFilter(pose_filter->particles,
                                       pose_filter->particles_weight);
         Pose_copyValuesFrom(robot->current_state->pose, new_robot_pose);
-        fprintf(logger, "\n UPDATED ROBOT POSE: X: %d, Y: %d, THETA: %d",
-                new_robot_pose->coordinates->x,
-                new_robot_pose->coordinates->y, new_robot_pose->angle->theta);
+        //fprintf(logger, "\n UPDATED ROBOT POSE: X: %d, Y: %d, THETA: %d",
+        //        new_robot_pose->coordinates->x,
+        //       new_robot_pose->coordinates->y, new_robot_pose->angle->theta);
         Pose_delete(new_robot_pose);
     }
 }
