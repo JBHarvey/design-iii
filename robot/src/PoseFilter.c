@@ -201,7 +201,7 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                 double theta_rotation_induced_weight =
                     gsl_ran_gaussian_pdf(particles[i]->angle->theta - new_data_from_world_camera->angle->theta,
                                          sqrt(ABSOLUTE_ANGLE_NOISE_VARIANCE));
-                particles_weight[i] = (translation_induced_weight > 0.0000001) ? translation_induced_weight : 0.0 ;
+                particles_weight[i] = (translation_induced_weight > 1e-7) ? translation_induced_weight : 0.0 ;
                 // theta_rotation_induced_weight);
                 fprintf(logger,
                         "\n PARTICLE: X: %d, Y: %d, THETA: %d, CAM INFO: X: %d, Y: %d, THETA: %d, TRANSLATION_WEIGHT: %f, RESULTING WEIGHT: %f",
@@ -252,13 +252,13 @@ void normalizeParticlesWeight(double *particles_weight)
     int cumulative_weight = 0;
 
     for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
-        int particles_weight_int = (int)(particles_weight[i] * 1000.0);
+        int particles_weight_int = (int)(particles_weight[i] / 1e-7);
         cumulative_weight += particles_weight_int;
         //fprintf(logger, "\n CUMM_W: %d", cumulative_weight);
     }
 
     for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
-        int particles_weight_int = (int)(particles_weight[i] * 1000.0);
+        int particles_weight_int = (int)(particles_weight[i] / 1e-7);
 
         if(cumulative_weight > 0) {
             particles_weight[i] = (double) particles_weight_int / (double) cumulative_weight;
