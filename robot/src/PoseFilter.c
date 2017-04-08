@@ -188,7 +188,7 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
             WorldCamera_readPoseData(world_camera, new_data_from_world_camera);
         }
 
-        fprintf(logger, "\n----------------------------------------------------------------------");
+        //fprintf(logger, "\n----------------------------------------------------------------------");
 
         for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
 
@@ -203,12 +203,12 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                                          sqrt(ABSOLUTE_ANGLE_NOISE_VARIANCE));
                 particles_weight[i] = translation_induced_weight;
                 // theta_rotation_induced_weight);
-                fprintf(logger,
+                /*fprintf(logger,
                         "\n PARTICLE: X: %d, Y: %d, THETA: %d, CAM INFO: X: %d, Y: %d, THETA: %d, TRANSLATION_WEIGHT: %f, RESULTING WEIGHT: %f",
                         particles[i]->coordinates->x, particles[i]->coordinates->y, particles[i]->angle->theta,
                         new_data_from_world_camera->coordinates->x,
                         new_data_from_world_camera->coordinates->y, new_data_from_world_camera->angle->theta,
-                        translation_induced_weight, particles_weight[i]);
+                        translation_induced_weight, particles_weight[i]);*/
 
             } else if(new_translation_speed_data_has_been_received) {
 
@@ -296,12 +296,19 @@ int resampleParticlesAndReturnStatus(struct Pose **particles, double *normalized
     uniform_random_numbers_array[NUMBER_OF_PARTICLES] = 1;
     int i = 0, j = 0;
     int last_important_particle_index = -1;
+    fprintf(logger, "\n------------------------------------");
 
-    while(i <= NUMBER_OF_PARTICLES) {
+    while(i <= NUMBER_OF_PARTICLES && j < NUMBER_OF_PARTICLES) {
+        fprintf(logger, "\nI: %d, J: %d", i, j);
+
         if(uniform_random_numbers_array[i] < cumulative_weight_sums[j]) {
+            fprintf(logger, "\nT: %f, Q: %f -- IF", uniform_random_numbers_array[i], cumulative_weight_sums[j]);
             last_important_particle_index = j;
             i++;
         } else {
+
+            fprintf(logger, "\nT: %f, Q: %f -- ELSE", uniform_random_numbers_array[i], cumulative_weight_sums[j]);
+
             if(last_important_particle_index != -1 && last_important_particle_index != j) {
                 Pose_copyValuesFrom(particles[j], particles[last_important_particle_index]);
             }
