@@ -868,4 +868,115 @@ Test(Graph,
     Coordinates_delete(northern_point_b);
 }
 
+Test(Graph, given_twoObstacleWithOverlappingInXAndYAndBothAreCenter_when_updatesGraph_then_theActualNumberOfNodesIsSix
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    setup_TwoObstaclesOverlappingInXAndY(CENTER, CENTER);
+    assertActualNumberOfNodeIs(6);
+}
+
+Test(Graph,
+     given_twoObstacleWithOverlappingInXAndYAndBothAreCenter_when_updatesGraph_then_theNodesAreAroundTheObstacleWithTheSouthernPointOfTheSouthernObstacleAndNorthernPointOfTheNorthernObstacleAsLimit
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    setup_TwoObstaclesOverlappingInXAndY(CENTER, CENTER);
+
+    struct Coordinates *northern_point_a = Obstacle_retrieveNorthernPointOf(obstacle_a);
+    struct Coordinates *southern_point_b = Obstacle_retrieveSouthernPointOf(obstacle_b);
+    int y = Coordinates_computeMeanY(northern_point_a, southern_point_b);
+
+    struct Node *first_new_node = graph->eastern_node;
+    struct Node *second_new_node = graph->western_node;
+    cr_assert_eq(y, first_new_node->coordinates->y);
+    cr_assert_eq(y, second_new_node->coordinates->y);
+
+    Coordinates_delete(northern_point_a);
+    Coordinates_delete(southern_point_b);
+
+}
+
+Test(Graph,
+     given_twoObstacleWithOverlappingInXAndY_when_updatesGraph_then_theEasternNodeIsBetweenTheEasternObstacleAndTheEasternWall
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    setup_TwoObstaclesOverlappingInXAndY(CENTER, CENTER);
+
+    struct Coordinates *eastern_point = Obstacle_retrieveEasternPointOf(obstacle_a);
+    int x = Coordinates_computeMeanX(eastern_point, graph_map->south_eastern_table_corner);
+
+    cr_assert_eq(x, graph->eastern_node->coordinates->x);
+
+    Coordinates_delete(eastern_point);
+
+}
+
+Test(Graph,
+     given_twoObstacleWithOverlappingInXAndY_when_updatesGraph_then_theWesternNodeIsBetweenTheWesternObstacleAndTheWesternWall
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    setup_TwoObstaclesOverlappingInXAndY(NORTH, CENTER);
+
+    struct Coordinates *western_point = Obstacle_retrieveWesternPointOf(obstacle_b);
+    int x = Coordinates_computeMeanX(western_point, graph_map->south_western_table_corner);
+
+    cr_assert_eq(x, graph->western_node->coordinates->x);
+
+    Coordinates_delete(western_point);
+
+}
+
+Test(Graph, given_twoObstacleWithOverlappingInXAndYAndOneIsNorth_when_updatesGraph_then_theActualNumberOfNodesIsFour
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    setup_TwoObstaclesOverlappingInXAndY(NORTH, CENTER);
+    assertActualNumberOfNodeIs(4);
+}
+
+Test(Graph,
+     given_twoObstacleWithOverlappingInXAndYAndOneIsNorth_when_updatesGraph_then_theNodesAreOnlyToTheNorthOfTheObstacles
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    setup_TwoObstaclesOverlappingInXAndY(CENTER, NORTH);
+
+    struct Coordinates *northern_point = Obstacle_retrieveNorthernPointOf(obstacle_a);
+    int y = Coordinates_computeMeanY(northern_point, graph_map->north_eastern_table_corner);
+
+    cr_assert_eq(y, graph->eastern_node->coordinates->y);
+    cr_assert_eq(y, graph->western_node->coordinates->y);
+
+    Coordinates_delete(northern_point);
+
+}
+
+Test(Graph, given_twoObstacleWithOverlappingInXAndYAndOneIsSouth_when_updatesGraph_then_theActualNumberOfNodesIsFour
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    setup_TwoObstaclesOverlappingInXAndY(SOUTH, CENTER);
+    assertActualNumberOfNodeIs(4);
+}
+
+Test(Graph,
+     given_twoObstacleWithOverlappingInXAndYAndOneIsSouth_when_updatesGraph_then_theNodesAreOnlyToTheSouthOfTheObstacles
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    setup_TwoObstaclesOverlappingInXAndY(CENTER, SOUTH);
+
+    struct Coordinates *southern_point = Obstacle_retrieveSouthernPointOf(obstacle_a);
+    int y = Coordinates_computeMeanY(southern_point, graph_map->south_eastern_table_corner);
+
+    cr_assert_eq(y, graph->eastern_node->coordinates->y);
+    cr_assert_eq(y, graph->western_node->coordinates->y);
+
+    Coordinates_delete(southern_point);
+
+}
+
 /* -- END OF TWO OBSTACLE GRAPH -- */
