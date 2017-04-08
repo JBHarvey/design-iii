@@ -270,6 +270,7 @@ int calculateNumberOfEffectiveParticles(double *normalized_particles_weight)
     }
 
     number_of_effective_particles = 1 / cumulative_square_of_normalized_weight;
+    fprintf(logger, "\n\n NEFF: %f", number_of_effective_particles);
 
     return (int) number_of_effective_particles;
 }
