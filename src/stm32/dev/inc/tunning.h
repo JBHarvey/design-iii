@@ -34,7 +34,7 @@ extern uint8_t bSendData;
 /******************************************************
  * Variables pour tester le PID de vitesse
  * ****************************************************/
-#define ENABLE_SPEED_PI
+//#define ENABLE_SPEED_PI
 #ifdef ENABLE_SPEED_PI
 #define PID_SPEED
 #define MAX_SPEED_PID_INDEX 400
@@ -87,7 +87,7 @@ extern uint8_t bufferDeadZoneToFill;
 /*********************************************************
  * Variables pour tester le PID de position
  *********************************************************/
-#define ENABLE_POSITION_PID
+//#define ENABLE_POSITION_PID
 #ifdef ENABLE_POSITION_PID
 
 #define MAX_POSITION_INDEX 3000

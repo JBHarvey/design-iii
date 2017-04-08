@@ -215,7 +215,7 @@ int main(void) {
 			 }*/
 
 			if (newSpeedSetpointCommand) {
-				resetPositionEncoderVariables();
+				//resetPositionEncoderVariables();
 				newSpeedSetpointCommand = 0;
 			} else {
 				computeSpeedPIDS();
@@ -340,15 +340,15 @@ int main(void) {
 		}
 
 		/* send ifrared captor measures */
-		if (readyToSendData && readyToSendInfraredData) {
-			float infraredCaptor1 = convertReadValueToVolt(getAdcIR1());
-			float infraredCaptor2 = convertReadValueToVolt(getAdcIR2());
-			float infraredCaptor3 = convertReadValueToVolt(getAdcIR3());
+		/*if (readyToSendData && readyToSendInfraredData) {
+		 float infraredCaptor1 = convertReadValueToVolt(getAdcIR1());
+		 float infraredCaptor2 = convertReadValueToVolt(getAdcIR2());
+		 float infraredCaptor3 = convertReadValueToVolt(getAdcIR3());
 
-			sendInfraredMesasures(infraredCaptor1, infraredCaptor2,
-					infraredCaptor3);
-			readyToSendInfraredData = 0;
-		}
+		 sendInfraredMesasures(infraredCaptor1, infraredCaptor2,
+		 infraredCaptor3);
+		 readyToSendInfraredData = 0;
+		 }*/
 
 		/* to Test rotation */
 		/*float position = calculatePosition(
@@ -817,11 +817,14 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 
 			newMoveCommand = 1;
 
-			isRobotRotating = 1;
-
 			readyToSendData = 1;
 
-			resetPositionEncoderVariables();
+			if (!isRobotRotating) {
+
+				resetPositionEncoderVariables();
+			}
+
+			isRobotRotating = 1;
 
 			setRotatePidSetpoints(data);
 
@@ -884,8 +887,11 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 		if (len == 8) {
 			newSpeedSetpointCommand = 1;
 			readyToSendData = 1;
+
+			if (isRobotRotating) {
+				resetPositionEncoderVariables();
+			}
 			isRobotRotating = 0;
-			resetPositionEncoderVariables();
 			setSpeedPidSetpoints(data);
 			setState(&mainState, MAIN_PID);
 		}

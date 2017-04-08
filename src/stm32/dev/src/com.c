@@ -151,6 +151,5 @@ void sendInfraredMesasures(float infraredCaptor1, float infraredCaptor2,
 
 	/* il faut envoyer les données par USART, sinon, ca crash ici. */
 	VCP_DataTx(dataToSend, 14);
-
 }
 
