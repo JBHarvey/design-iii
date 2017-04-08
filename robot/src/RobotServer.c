@@ -306,18 +306,18 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             }
 
         case DEBUG_CAMERA_GET_FIGURE: {
-            IplImage *image;
-            struct CoordinatesSequence *coordinates_sequence;
-            coordinates_sequence = OnboardCamera_extractTrajectoryFromImage(&image);
+                IplImage *image;
+                struct CoordinatesSequence *coordinates_sequence;
+                coordinates_sequence = OnboardCamera_extractTrajectoryFromImage(&image);
 
-            if (coordinates_sequence) {
-                RobotServer_sendImageToStation(image);
-                OnboardCamera_deleteImage(&image);
-                CoordinatesSequence_delete(coordinates_sequence);
+                if(coordinates_sequence) {
+                    RobotServer_sendImageToStation(image);
+                    OnboardCamera_deleteImage(&image);
+                    CoordinatesSequence_delete(coordinates_sequence);
+                }
+
+                break;
             }
-
-            break;
-        }
     }
 
 }
@@ -410,6 +410,7 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
                         .gamma = transition_rotation.travelled_radiants / ANGLE_BASE_UNIT,
                         .theta = transition_rotation.speed_radiants_second / ANGLE_BASE_UNIT
                     };
+                    printf("ROT_SPEED: %f", transition_rotation.speed_radiants_second);
 
                     reception_callbacks.updateWheelsRotation(robot_server->robot->wheels, communication_rotation);
                 } else {
