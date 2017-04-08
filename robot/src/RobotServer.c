@@ -403,90 +403,93 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
 
             break;
 
-        case PHYSICAL_FEEDBACK_ROTATION: {
-                if(length == sizeof(struct TransitionRotation)) {
-                    struct TransitionRotation transition_rotation;
-                    memcpy(&transition_rotation, data, sizeof(struct TransitionRotation));
-                    struct Communication_Rotation communication_rotation = {
-                        .gamma = transition_rotation.travelled_radiants / ANGLE_BASE_UNIT,
-                        .theta = transition_rotation.speed_radiants_second / ANGLE_BASE_UNIT
-                    };
+        case PHYSICAL_FEEDBACK_ROTATION:
+            if(length == sizeof(struct TransitionRotation)) {
+                struct TransitionRotation transition_rotation;
+                memcpy(&transition_rotation, data, sizeof(struct TransitionRotation));
+                struct Communication_Rotation communication_rotation = {
+                    .gamma = transition_rotation.travelled_radiants / ANGLE_BASE_UNIT,
+                    .theta = transition_rotation.speed_radiants_second / ANGLE_BASE_UNIT
+                };
 
-                    reception_callbacks.updateWheelsRotation(robot_server->robot->wheels, communication_rotation);
-                } else {
-                    printf("wrong struct Communication_Rotation length\n");
-                }
+                reception_callbacks.updateWheelsRotation(robot_server->robot->wheels, communication_rotation);
+            } else {
+                printf("wrong struct Communication_Rotation length\n");
+            }
 
-                break;
+            break;
 
-            case INFRARED_DATA:
-                /*
-                 * Three floats for a total of 12 octets
-                 * The data order is the following:
-                 * North
-                 * West
-                 * East
-                 */
-                break;
+        case INFRARED_DATA:
+            /*
+             * Three floats for a total of 12 octets
+             * The data order is the following:
+             * North
+             * West
+             * East
+             */
+            break;
 
-            };
-    }
+    };
+}
 
 #include <sys/ioctl.h>
 
-    static uint8_t TTYACM_header[2];
-    static _Bool TTYACM_header_stored;
+static uint8_t TTYACM_header[2];
+static _Bool TTYACM_header_stored;
 
-    static _Bool readTTYACMPacket(int fd) {
-        int bytes_available = 0;
-        ioctl(fd, FIONREAD, &bytes_available);
+static _Bool readTTYACMPacket(int fd)
+{
+    int bytes_available = 0;
+    ioctl(fd, FIONREAD, &bytes_available);
 
-        if(!TTYACM_header_stored) {
-            if(bytes_available >= 2 && read(fd, TTYACM_header, sizeof(TTYACM_header)) == 2) {
-                bytes_available -= 2;
-                TTYACM_header_stored = 1;
-            }
+    if(!TTYACM_header_stored) {
+        if(bytes_available >= 2 && read(fd, TTYACM_header, sizeof(TTYACM_header)) == 2) {
+            bytes_available -= 2;
+            TTYACM_header_stored = 1;
         }
+    }
 
-        if(TTYACM_header_stored) {
-            uint8_t data[TTYACM_header[1]];
+    if(TTYACM_header_stored) {
+        uint8_t data[TTYACM_header[1]];
 
-            if(bytes_available >= sizeof(data) && read(fd, data, sizeof(data)) == sizeof(data)) {
-                handleTTYACMPacket(TTYACM_header[0], data, sizeof(data));
-                TTYACM_header_stored = 0;
-                return 1;
-            }
+        if(bytes_available >= sizeof(data) && read(fd, data, sizeof(data)) == sizeof(data)) {
+            handleTTYACMPacket(TTYACM_header[0], data, sizeof(data));
+            TTYACM_header_stored = 0;
+            return 1;
         }
+    }
 
+    return 0;
+}
+
+_Bool writeTTYACMPacket(uint8_t type, uint8_t *data, unsigned int length)
+{
+    if(length > UINT8_MAX) {
         return 0;
     }
 
-    _Bool writeTTYACMPacket(uint8_t type, uint8_t *data, unsigned int length) {
-        if(length > UINT8_MAX) {
-            return 0;
-        }
+    uint8_t packet[2 + length];
 
-        uint8_t packet[2 + length];
+    packet[0] = type;
+    packet[1] = length;
+    memcpy(packet + 2, data, length);
 
-        packet[0] = type;
-        packet[1] = length;
-        memcpy(packet + 2, data, length);
+    return write(physical_robot_file_descriptor, packet, sizeof(packet)) == sizeof(packet);
+}
 
-        return write(physical_robot_file_descriptor, packet, sizeof(packet)) == sizeof(packet);
+void TTYACMCallback(struct ev_loop * loop, struct ev_io * watcher, int revents)
+{
+    if(EV_ERROR & revents) {
+        perror("got invalid event");
+        return;
     }
 
-    void TTYACMCallback(struct ev_loop * loop, struct ev_io * watcher, int revents) {
-        if(EV_ERROR & revents) {
-            perror("got invalid event");
-            return;
-        }
+    if(EV_READ & revents) {
+        while(readTTYACMPacket(watcher->fd));
 
-        if(EV_READ & revents) {
-            while(readTTYACMPacket(watcher->fd));
-
-            return;
-        }
+        return;
     }
+}
 
 #define COMMAND_TYPE_TRANSLATE 0
 #define COMMAND_TYPE_ROTATE 1
@@ -500,60 +503,68 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
 
 #define DISTANCE_UNIT_IN_METERS_FACTOR 0.0001
 
-    void RobotServer_sendTranslateCommand(struct Command_Translate command_translate) {
-        float x = command_translate.x * DISTANCE_UNIT_IN_METERS_FACTOR;
-        float y = command_translate.y * DISTANCE_UNIT_IN_METERS_FACTOR;
+void RobotServer_sendTranslateCommand(struct Command_Translate command_translate)
+{
+    float x = command_translate.x * DISTANCE_UNIT_IN_METERS_FACTOR;
+    float y = command_translate.y * DISTANCE_UNIT_IN_METERS_FACTOR;
 
-        uint8_t data[sizeof(float) * 2];
+    uint8_t data[sizeof(float) * 2];
 
-        memcpy(data, &x, sizeof(float));
-        memcpy(data + sizeof(float), &y, sizeof(float));
+    memcpy(data, &x, sizeof(float));
+    memcpy(data + sizeof(float), &y, sizeof(float));
 
-        writeTTYACMPacket(COMMAND_TYPE_TRANSLATE, data, sizeof(data));
-    }
+    writeTTYACMPacket(COMMAND_TYPE_TRANSLATE, data, sizeof(data));
+}
 
-    void RobotServer_sendRotateCommand(struct Command_Rotate command_rotate) {
-        float theta = command_rotate.theta * ANGLE_BASE_UNIT;
+void RobotServer_sendRotateCommand(struct Command_Rotate command_rotate)
+{
+    float theta = command_rotate.theta * ANGLE_BASE_UNIT;
 
-        uint8_t data[sizeof(float)];
+    uint8_t data[sizeof(float)];
 
-        memcpy(data, &theta, sizeof(float));
+    memcpy(data, &theta, sizeof(float));
 
-        writeTTYACMPacket(COMMAND_TYPE_ROTATE, data, sizeof(data));
-    }
+    writeTTYACMPacket(COMMAND_TYPE_ROTATE, data, sizeof(data));
+}
 
 #define ACTION_ONLY_COMMAND_LENGTH 0
 
-    void RobotServer_sendRisePenCommand(void) {
-        writeTTYACMPacket(COMMAND_TYPE_RISE_PEN, 0, ACTION_ONLY_COMMAND_LENGTH);
-    }
+void RobotServer_sendRisePenCommand(void)
+{
+    writeTTYACMPacket(COMMAND_TYPE_RISE_PEN, 0, ACTION_ONLY_COMMAND_LENGTH);
+}
 
-    void RobotServer_sendLowerPenCommand(void) {
-        writeTTYACMPacket(COMMAND_TYPE_LOWER_PEN, 0, ACTION_ONLY_COMMAND_LENGTH);
-    }
+void RobotServer_sendLowerPenCommand(void)
+{
+    writeTTYACMPacket(COMMAND_TYPE_LOWER_PEN, 0, ACTION_ONLY_COMMAND_LENGTH);
+}
 
-    void RobotServer_sendLightRedLEDCommand(void) {
-        writeTTYACMPacket(COMMAND_TYPE_RED_LED, 0, ACTION_ONLY_COMMAND_LENGTH);
-    }
+void RobotServer_sendLightRedLEDCommand(void)
+{
+    writeTTYACMPacket(COMMAND_TYPE_RED_LED, 0, ACTION_ONLY_COMMAND_LENGTH);
+}
 
-    void RobotServer_sendLightGreenLEDCommand(void) {
-        writeTTYACMPacket(COMMAND_TYPE_GREEN_LED, 0, ACTION_ONLY_COMMAND_LENGTH);
-    }
+void RobotServer_sendLightGreenLEDCommand(void)
+{
+    writeTTYACMPacket(COMMAND_TYPE_GREEN_LED, 0, ACTION_ONLY_COMMAND_LENGTH);
+}
 
-    void RobotServer_fetchManchesterCodeCommand(void) {
-        writeTTYACMPacket(COMMAND_TYPE_FETCH_MANCHESTER, 0, ACTION_ONLY_COMMAND_LENGTH);
-    }
-    // all of these have the command type + the ACTION_ONLY_COMMAND_LENGTH
-    void RobotServer_sendStopSendingManchesterSignalCommand(void) {}
+void RobotServer_fetchManchesterCodeCommand(void)
+{
+    writeTTYACMPacket(COMMAND_TYPE_FETCH_MANCHESTER, 0, ACTION_ONLY_COMMAND_LENGTH);
+}
+// all of these have the command type + the ACTION_ONLY_COMMAND_LENGTH
+void RobotServer_sendStopSendingManchesterSignalCommand(void) {}
 
-    void RobotServer_sendSpeedsCommand(struct Command_Speeds command_speeds) {
-        float x = command_speeds.x * SPEEDS_BASE_UNIT;
-        float y = command_speeds.y * SPEEDS_BASE_UNIT;
+void RobotServer_sendSpeedsCommand(struct Command_Speeds command_speeds)
+{
+    float x = command_speeds.x * SPEEDS_BASE_UNIT;
+    float y = command_speeds.y * SPEEDS_BASE_UNIT;
 
-        uint8_t data[sizeof(float) * 2];
+    uint8_t data[sizeof(float) * 2];
 
-        memcpy(data, &x, sizeof(float));
-        memcpy(data + sizeof(float), &y, sizeof(float));
+    memcpy(data, &x, sizeof(float));
+    memcpy(data + sizeof(float), &y, sizeof(float));
 
-        writeTTYACMPacket(COMMAND_TYPE_SPEEDS, data, sizeof(data));
-    }
+    writeTTYACMPacket(COMMAND_TYPE_SPEEDS, data, sizeof(data));
+}
