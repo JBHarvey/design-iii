@@ -203,6 +203,9 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                                          sqrt(ABSOLUTE_ANGLE_NOISE_VARIANCE));
                 particles_weight[i] = fmin(x_translation_induced_weight, y_translation_induced_weight);
                 // theta_rotation_induced_weight);
+                fprintf(logger, "\n CAM INFO: X: %d, Y: %d, THETA: %d, RESULTING WEIGHT: %f",
+                        new_data_from_world_camera->coordinates->x,
+                        new_data_from_world_camera->coordinates->y, new_data_from_world_camera->angle->theta, particles_weight[i]);
 
             } else if(new_translation_speed_data_has_been_received) {
 
@@ -359,6 +362,9 @@ void PoseFilter_particlesFilterUsingWorldCameraAndWheels(struct PoseFilter *pose
         struct Pose *new_robot_pose = calculateNewRobotPoseForParticlesFilter(pose_filter->particles,
                                       pose_filter->particles_weight);
         Pose_copyValuesFrom(robot->current_state->pose, new_robot_pose);
+        fprintf(logger, "\n UPDATED ROBOT POSE: X: %d, Y: %d, THETA: %d",
+                new_robot_pose->coordinates->x,
+                new_robot_pose->coordinates->y, new_robot_pose->angle->theta);
         Pose_delete(new_robot_pose);
     }
 }
