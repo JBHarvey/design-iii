@@ -61,8 +61,7 @@ void Robot_delete(struct Robot *robot)
         Logger_delete(robot->logger);
         Timer_delete(robot->timer);
 
-        if(robot->drawing_trajectory != NULL) {
-
+        if(robot->drawing_trajectory) {
             CoordinatesSequence_delete(robot->drawing_trajectory);
         }
 
@@ -72,6 +71,13 @@ void Robot_delete(struct Robot *robot)
 
         free(robot);
     }
+}
+
+void Robot_resetAllActuators(struct Robot *robot)
+{
+    Actuator_sendsCommand(robot->wheels->speed_actuator);
+    Actuator_sendsCommand(robot->wheels->rotation_actuator);
+    Actuator_sendsCommand(robot->wheels->translation_actuator);
 }
 
 void Robot_updateBehaviorIfNeeded(struct Robot *robot)
@@ -87,6 +93,14 @@ void Robot_act(struct Robot *robot)
 void Robot_sendReadyToStartSignal(struct Robot *robot)
 {
     DataSender_sendSignalReadyToStart(robot->data_sender);
+}
+
+void Robot_sendReadyToDrawSignal(struct Robot *robot)
+{
+    if(Timer_hasTimePassed(robot->timer, THREE_SECONDS)) {
+        DataSender_sendSignalReadyToDraw(robot->data_sender);
+        Timer_reset(robot->timer);
+    }
 }
 
 void Robot_sendPlannedTrajectory(struct Robot *robot)
@@ -107,6 +121,22 @@ void Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(
     }
 }
 
+void Robot_lightGreenLedAndWaitASecond(struct Robot *robot)
+{
+    CommandSender_sendLightGreenLEDCommand(robot->command_sender);
+    Timer_reset(robot->timer);
+
+    while(!Timer_hasTimePassed(robot->timer, ONE_SECOND));
+}
+
+void Robot_lightRedLedAndWaitASecond(struct Robot *robot)
+{
+    CommandSender_sendLightRedLEDCommand(robot->command_sender);
+    Timer_reset(robot->timer);
+
+    while(!Timer_hasTimePassed(robot->timer, ONE_SECOND));
+}
+
 void Robot_lowerPenAndWaitASecondAndAHalf(struct Robot *robot)
 {
     CommandSender_sendLowerPenCommand(robot->command_sender);
@@ -121,4 +151,14 @@ void Robot_risePenAndWaitASecondAndAHalf(struct Robot *robot)
     Timer_reset(robot->timer);
 
     while(!Timer_hasTimePassed(robot->timer, ONE_SECOND_AND_AN_HALF));
+}
+
+void Robot_closeCycleAndSendEndOfCycleSignal(struct Robot *robot)
+{
+    struct Flags *new_flags = Flags_new();
+    Flags_setHasCompletedACycle(new_flags, TRUE);
+
+    Flags_copyValuesFrom(robot->current_state->flags, new_flags);
+    Flags_delete(new_flags);
+    DataSender_sendSignalEndOfCycle(robot->data_sender);
 }

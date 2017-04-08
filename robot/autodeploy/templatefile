@@ -1,6 +1,6 @@
 CC=clang
-CFLAGS+= -g -Ofast `pkg-config --cflags opencv` -I/usr/include/libevdev-1.0
-LIBS=`pkg-config --libs opencv` -lev -lm
+CFLAGS+= -g -Ofast `pkg-config --cflags opencv gsl` -I/usr/include/libevdev-1.0
+LIBS=`pkg-config --libs opencv gsl` -lev
 ODIR=obj
 DEPS=HFILES
 _OBJ=OFILES

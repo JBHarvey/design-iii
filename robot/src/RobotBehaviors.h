@@ -11,5 +11,14 @@ void RobotBehaviors_appendTrajectoryBehaviors(struct Robot *robot, struct Coordi
 void RobotBehavior_appendOrientationBehaviorWithChildAction(struct Robot *robot, int orientation, void (*action)(struct Robot *));
 void RobotBehavior_appendFetchManchesterCodeBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *));
 void RobotBehavior_appendLowerPenBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *));
+void RobotBehavior_appendRisePenBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *));
+void RobotBehavior_appendTakePictureBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *));
+void RobotBehavior_appendStopMovementBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *));
+void RobotBehavior_appendLightGreenLedBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *));
+void RobotBehavior_appendSendReadyToDrawBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *));
+void RobotBehavior_appendCloseCycleAndSendSignalBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *));
+void RobotBehavior_appendLightRedLedBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *));
+void RobotBehavior_appendUpdateNavgableMapBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *));
+
 
 #endif // ROBOTBEHAVIORS_H_

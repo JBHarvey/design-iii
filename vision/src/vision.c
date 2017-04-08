@@ -703,9 +703,9 @@ CvPoint coordinateToTableCoordinate(CvPoint point, double height_cm, CvPoint cam
     return out;
 }
 
-#define MIN_TABLE_CORNER_DISTANCE_FROM_SIDE 25
-#define MAX_TABLE_CORNER_DISTANCE_FROM_SIDE 100
-#define MIN_CORNER_DISTANCE 10
+#define MIN_TABLE_CORNER_DISTANCE_FROM_SIDE 20
+#define MAX_TABLE_CORNER_DISTANCE_FROM_SIDE 110
+#define MIN_CORNER_DISTANCE 30
 
 #define TABLE_WIDTH 1507
 #define TABLE_HEIGHT_RIGHT 723
@@ -749,20 +749,29 @@ static void findCornersWithDistanceAngle(CvPoint2D32f *corners, unsigned int num
     corners[1] = corners[corner2];
 }
 
+#define GROW_PIXELS_NON_TABLE_MASK 4
+#define NON_TABLE_YUV_UPPER_BOUND (cvScalar(255, 146, 146, 255))
+#define NON_TABLE_YUV_LOWER_BOUND (cvScalar(0, 110, 110, 255))
+
 _Bool findTableCorners(IplImage *image_yuv, struct Square *square)
 {
     IplImage *image_grayscale = cvCreateImage(cvGetSize(image_yuv), IPL_DEPTH_8U, 1);
     cvSplit(image_yuv, image_grayscale, 0, 0, 0);
-    IplImage *image_mask = cvCreateImage(cvGetSize(image_yuv), IPL_DEPTH_8U, 1);
+    IplImage *image_mask = thresholdImage(image_yuv, NON_TABLE_YUV_LOWER_BOUND, NON_TABLE_YUV_UPPER_BOUND, 2);
+    cvErode(image_mask, image_mask, NULL, GROW_PIXELS_NON_TABLE_MASK);
 
+    IplImage *image_mask_rectangle = cvCreateImage(cvGetSize(image_yuv), IPL_DEPTH_8U, 1);
     int width = cvGetSize(image_yuv).width, height = cvGetSize(image_yuv).height;
-    cvSet(image_mask, cvScalar(0, 0, 0, 0), NULL);
-    cvRectangle(image_mask, cvPoint(width - MAX_TABLE_CORNER_DISTANCE_FROM_SIDE, 0),
+    cvSet(image_mask_rectangle, cvScalar(0, 0, 0, 0), NULL);
+    cvRectangle(image_mask_rectangle, cvPoint(width - MAX_TABLE_CORNER_DISTANCE_FROM_SIDE, 0),
                 cvPoint(width - MIN_TABLE_CORNER_DISTANCE_FROM_SIDE, height), CV_RGB(255, 255, 255), -1, 8, 0);
 
+    cvAnd(image_mask_rectangle, image_mask, image_mask, NULL);
+
+    cvReleaseImage(&image_mask_rectangle);
     int max_corners = MAX_DETECTED_CORNERS;
     CvPoint2D32f corners[max_corners];
-    cvGoodFeaturesToTrack(image_grayscale, NULL, NULL, corners, &max_corners, 0.01, MIN_CORNER_DISTANCE, image_mask, 10, 1,
+    cvGoodFeaturesToTrack(image_grayscale, NULL, NULL, corners, &max_corners, 0.001, MIN_CORNER_DISTANCE, image_mask, 10, 1,
                           0.15);
 
     _Bool success = 0;

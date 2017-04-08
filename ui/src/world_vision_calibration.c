@@ -278,18 +278,11 @@ void WorldVisionCalibration_convertWorldCoordinatesSetToImageCoordinatesSet(
 struct Point2D WorldVisionCalibration_convertWorldCoordinatesToImageCoordinates(
     struct Point3D world_coordinates, struct Camera *input_camera)
 {
-    struct Point3DSet *world_coordinates_set = PointTypes_initializePoint3DSet(10);
+    struct Point3DSet *world_coordinates_set = PointTypes_initializePoint3DSet(2);
     PointTypes_addPointToPoint3DSet(world_coordinates_set, world_coordinates);
     PointTypes_addPointToPoint3DSet(world_coordinates_set, PointTypes_createPoint3D(0, 0, 0));
-    PointTypes_addPointToPoint3DSet(world_coordinates_set, PointTypes_createPoint3D(0, 0, 0));
-    PointTypes_addPointToPoint3DSet(world_coordinates_set, PointTypes_createPoint3D(0, 0, 0));
-    PointTypes_addPointToPoint3DSet(world_coordinates_set, PointTypes_createPoint3D(0, 0, 0));
-    PointTypes_addPointToPoint3DSet(world_coordinates_set, PointTypes_createPoint3D(0, 0, 0));
-    PointTypes_addPointToPoint3DSet(world_coordinates_set, PointTypes_createPoint3D(0, 0, 0));
-    PointTypes_addPointToPoint3DSet(world_coordinates_set, PointTypes_createPoint3D(0, 0, 0));
-    PointTypes_addPointToPoint3DSet(world_coordinates_set, PointTypes_createPoint3D(0, 0, 0));
-    PointTypes_addPointToPoint3DSet(world_coordinates_set, PointTypes_createPoint3D(0, 0, 0));
-    struct Point2DSet *image_coordinates_set = PointTypes_initializePoint2DSet(10);
+
+    struct Point2DSet *image_coordinates_set = PointTypes_initializePoint2DSet(2);
     WorldVisionCalibration_convertWorldCoordinatesSetToImageCoordinatesSet(world_coordinates_set, image_coordinates_set,
             input_camera);
     struct Point2D image_coordinates = PointTypes_getPointFromPoint2DSet(image_coordinates_set, 0);

@@ -203,17 +203,34 @@ static void correctFrameColor(IplImage *input_output_frame)
     cvReleaseImage(&temporary_frame);
 }
 
+#define CAMERA_FRAME_TIME_MS (67ULL)
+#define BUFFER_FRAMES 5
+
+static uint64_t last_camera_frame_time;
+
+uint64_t monotonicTime(void)
+{
+    uint64_t time;
+    struct timespec monotime;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &monotime);
+    time = 1000ULL * monotime.tv_sec + (monotime.tv_nsec / 1000000ULL);
+    return time;
+}
+
 static void worldCameraQueryNextFrame(void)
 {
     g_mutex_lock(&world_vision_camera_frame_mutex);
+    unsigned int tries = (monotonicTime() - last_camera_frame_time) / CAMERA_FRAME_TIME_MS;
 
-    world_camera->camera_capture->current_raw_frame = cvQueryFrame(world_camera->camera_capture->camera_capture_feed);
-
-    while(world_camera->camera_capture->current_raw_frame == NULL) {
-
-        cvSetCaptureProperty(world_camera->camera_capture->camera_capture_feed, CV_CAP_PROP_POS_AVI_RATIO, 0);
-        world_camera->camera_capture->current_raw_frame = cvQueryFrame(world_camera->camera_capture->camera_capture_feed);
+    if (tries > BUFFER_FRAMES) {
+        tries = BUFFER_FRAMES;
     }
+
+    do {
+        world_camera->camera_capture->current_raw_frame = cvQueryFrame(world_camera->camera_capture->camera_capture_feed);
+    } while (tries--);
+
+    last_camera_frame_time = monotonicTime();
 
     if(world_camera->camera_status != UNCALIBRATED) {
 
@@ -341,10 +358,11 @@ gpointer WorldVision_prepareImageFromWorldCameraForDrawing(struct StationClient 
 }
 
 void WorldVision_sendWorldInformationToRobot(struct Communication_Object robot,
-        struct Communication_Object obstacles[MAXIMUM_OBSTACLE_NUMBER], int environment_has_changed)
+        struct Communication_Object obstacles[MAXIMUM_OBSTACLE_NUMBER], int environment_has_changed,
+        struct Communication_Coordinates green_square_corners[SQUARE_NUMBER_CORNER])
 {
     StationClientSender_sendWorldInformationsToRobot(obstacles, MAXIMUM_OBSTACLE_NUMBER, robot,
-            environment_has_changed);
+            environment_has_changed, green_square_corners);
 }
 
 void WorldVision_setPlannedTrajectory(struct Point3DSet *world_trajectory)

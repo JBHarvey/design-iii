@@ -22,9 +22,9 @@ struct Map *Map_new()
         new_obstacles[i] = Obstacle_new(0, 0, THEORICAL_OBSTACLE_RADIUS, CENTER);
     }
 
-    struct Pose *new_painting_zones[8];
+    struct Pose *new_painting_zones[NUMBER_OF_PAINTING];
 
-    for(i = 0; i < 8; ++i) {
+    for(i = 0; i < NUMBER_OF_PAINTING; ++i) {
         new_painting_zones[i] = Pose_zero();
     }
 
@@ -56,7 +56,7 @@ struct Map *Map_new()
         pointer->obstacles[i] = new_obstacles[i];
     }
 
-    for(i = 0; i < 8; ++i) {
+    for(i = 0; i < NUMBER_OF_PAINTING; ++i) {
         pointer->painting_zones[i] = new_painting_zones[i];
     }
 
@@ -85,7 +85,7 @@ void Map_delete(struct Map *map)
             Obstacle_delete(map->obstacles[i]);
         }
 
-        for(i = 0; i < 8; ++i) {
+        for(i = 0; i < NUMBER_OF_PAINTING; ++i) {
             Pose_delete(map->painting_zones[i]);
         }
 
@@ -165,6 +165,10 @@ struct Map *Map_fetchNavigableMap(struct Map *original_map, int robot_radius)
     new_map->north_western_table_corner->y = original_map->north_western_table_corner->y - robot_radius;
     new_map->north_eastern_table_corner->x = original_map->north_eastern_table_corner->x - robot_radius;
     new_map->north_eastern_table_corner->y = original_map->north_eastern_table_corner->y - robot_radius;
+    Coordinates_copyValuesFrom(new_map->north_eastern_drawing_corner, original_map->north_eastern_drawing_corner);
+    Coordinates_copyValuesFrom(new_map->south_eastern_drawing_corner, original_map->south_eastern_drawing_corner);
+    Coordinates_copyValuesFrom(new_map->north_western_drawing_corner, original_map->north_western_drawing_corner);
+    Coordinates_copyValuesFrom(new_map->south_western_drawing_corner, original_map->south_western_drawing_corner);
     new_map->antenna_zone_start->x = original_map->antenna_zone_start->x;
     new_map->antenna_zone_start->y = original_map->antenna_zone_start->y - robot_radius;
     new_map->antenna_zone_stop->x = original_map->antenna_zone_stop->x;
@@ -176,6 +180,10 @@ struct Map *Map_fetchNavigableMap(struct Map *original_map, int robot_radius)
         new_map->obstacles[i]->radius = original_map->obstacles[i]->radius + robot_radius;
         new_map->obstacles[i]->orientation = original_map->obstacles[i]->orientation;
         Coordinates_copyValuesFrom(new_map->obstacles[i]->coordinates, original_map->obstacles[i]->coordinates);
+    }
+
+    for(i = 0; i < NUMBER_OF_PAINTING; ++i) {
+        Pose_copyValuesFrom(new_map->painting_zones[i], original_map->painting_zones[i]);
     }
 
     return new_map;

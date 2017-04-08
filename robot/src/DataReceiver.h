@@ -40,7 +40,5 @@ void DataReceiver_updateFlagsEndOfCycleSignalReceivedByStation(struct Flags *fla
 void DataReceiver_updateFlagsManchesterCodeReceived(struct Flags *flags);
 
 struct Mesurements DataReceiver_fetchInputs(struct Mesurements (*communication_callback)(void));
-// See bottom of InformationReceiver.c for why this is commented out.
-//void DataReceiver_updateMesurements(struct Robot *robot);
 
 #endif // DATARECEIVER_H_
