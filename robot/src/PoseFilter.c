@@ -219,7 +219,7 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                     gsl_ran_gaussian_pdf(sqrt(pow(particles[i]->coordinates->x - estimated_robot_pose_from_measurements->coordinates->x,
                                                   2) +
                                               pow(particles[i]->coordinates->y - estimated_robot_pose_from_measurements->coordinates->y, 2)),
-                                         sqrt(2 * TRANSLATION_SPEED_NOISE_VARIANCE * time_delta));
+                                         2 * TRANSLATION_SPEED_NOISE_VARIANCE * time_delta);
                 particles_weight[i] = (induced_weight > 1e-7) ? induced_weight : 0.0 ;
                 fprintf(logger,
                         "\n PARTICLE: X: %d, Y: %d, THETA: %d, TRANSLATION WHEEL INFO: X: %d, Y: %d, THETA: %d, RESULTING WEIGHT: %f",
@@ -237,8 +237,9 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                 Pose_rotate(estimated_robot_pose_from_measurements, new_data_from_wheels->angle->theta * time_delta);
 
                 double induced_weight =
-                    gsl_ran_gaussian_pdf(particles[i]->angle->theta - estimated_robot_pose_from_measurements->angle->theta,
-                                         sqrt(2 * ROTATION_SPEED_NOISE_VARIANCE * time_delta));
+                    gsl_ran_gaussian_pdf((particles[i]->angle->theta - estimated_robot_pose_from_measurements->angle->theta) *
+                                         ABSOLUTE_POSITION_NOISE_VARIANCE / ABSOLUTE_ANGLE_NOISE_VARIANCE,
+                                         2 * ROTATION_SPEED_NOISE_VARIANCE * time_delta);
                 particles_weight[i] = (induced_weight > 1e-7) ? induced_weight : 0.0 ;
                 fprintf(logger,
                         "\n PARTICLE: X: %d, Y: %d, THETA: %d, ROTATION WHEEL INFO: X: %d, Y: %d, THETA: %d, RESULTING WEIGHT: %f",
