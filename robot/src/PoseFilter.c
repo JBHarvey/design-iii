@@ -166,8 +166,8 @@ static void predictParticlesPoseFromSentCommands(struct Pose **particles, struct
 static void updateParticlesWeightFromNewSensorData(struct Pose **particles, struct Pose *current_robot_pose,
         struct Timer *data_timer, double *particles_weight, struct Wheels *wheels, struct WorldCamera *world_camera)
 {
-    int new_translation_speed_data_has_been_received = 0;//wheels->translation_sensor->has_received_new_data;
-    int new_rotation_speed_data_has_been_received = 0;//wheels->rotation_sensor->has_received_new_data;
+    int new_translation_speed_data_has_been_received = wheels->translation_sensor->has_received_new_data;
+    int new_rotation_speed_data_has_been_received = wheels->rotation_sensor->has_received_new_data;
     int new_absolute_position_data_has_been_received = world_camera->robot_sensor->has_received_new_data;
     struct Pose *new_data_from_wheels = Pose_zero();
     struct Pose *new_data_from_world_camera = Pose_zero();
@@ -188,7 +188,7 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
             WorldCamera_readPoseData(world_camera, new_data_from_world_camera);
         }
 
-        //fprintf(logger, "\n----------------------------------------------------------------------");
+        fprintf(logger, "\n----------------------------------------------------------------------");
 
         for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
 
@@ -215,13 +215,18 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                 Pose_translate(estimated_robot_pose_from_measurements, new_data_from_wheels->coordinates->x * time_delta, 0);
                 Pose_translate(estimated_robot_pose_from_measurements, 0, new_data_from_wheels->coordinates->y * time_delta);
 
-                double x_translation_induced_weight =
-                    gsl_ran_gaussian_pdf(particles[i]->coordinates->x - estimated_robot_pose_from_measurements->coordinates->x,
-                                         sqrt(TRANSLATION_SPEED_NOISE_VARIANCE * time_delta));
-                double y_translation_induced_weight =
-                    gsl_ran_gaussian_pdf(particles[i]->coordinates->y - estimated_robot_pose_from_measurements->coordinates->y,
-                                         sqrt(TRANSLATION_SPEED_NOISE_VARIANCE * time_delta));
-                particles_weight[i] = fmin(x_translation_induced_weight, y_translation_induced_weight);
+                double induced_weight =
+                    gsl_ran_gaussian_pdf(sqrt(pow(particles[i]->coordinates->x - estimated_robot_pose_from_measurements->coordinates->x,
+                                                  2) +
+                                              pow(particles[i]->coordinates->y - estimated_robot_pose_from_measurements->coordinates->y, 2)),
+                                         sqrt(2 * TRANSLATION_SPEED_NOISE_VARIANCE * time_delta));
+                particles_weight[i] = (induced_weight > 1e-7) ? induced_weight : 0.0 ;
+                fprintf(logger,
+                        "\n PARTICLE: X: %d, Y: %d, THETA: %d, TRANSLATION WHEEL INFO: X: %d, Y: %d, THETA: %d, RESULTING WEIGHT: %f",
+                        particles[i]->coordinates->x, particles[i]->coordinates->y, particles[i]->angle->theta,
+                        estimated_robot_pose_from_measurements->coordinates->x,
+                        estimated_robot_pose_from_measurements->coordinates->y, estimated_robot_pose_from_measurements->angle->theta,
+                        particles_weight[i]);
 
                 Pose_delete(estimated_robot_pose_from_measurements);
 
@@ -231,11 +236,16 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                 Pose_copyValuesFrom(estimated_robot_pose_from_measurements, current_robot_pose);
                 Pose_rotate(estimated_robot_pose_from_measurements, new_data_from_wheels->angle->theta * time_delta);
 
-                double theta_rotation_induced_weight =
+                double induced_weight =
                     gsl_ran_gaussian_pdf(particles[i]->angle->theta - estimated_robot_pose_from_measurements->angle->theta,
-                                         sqrt(ROTATION_SPEED_NOISE_VARIANCE * time_delta));
-                particles_weight[i] = theta_rotation_induced_weight;
-
+                                         sqrt(2 * ROTATION_SPEED_NOISE_VARIANCE * time_delta));
+                particles_weight[i] = (induced_weight > 1e-7) ? induced_weight : 0.0 ;
+                fprintf(logger,
+                        "\n PARTICLE: X: %d, Y: %d, THETA: %d, ROTATION WHEEL INFO: X: %d, Y: %d, THETA: %d, RESULTING WEIGHT: %f",
+                        particles[i]->coordinates->x, particles[i]->coordinates->y, particles[i]->angle->theta,
+                        estimated_robot_pose_from_measurements->coordinates->x,
+                        estimated_robot_pose_from_measurements->coordinates->y, estimated_robot_pose_from_measurements->angle->theta,
+                        particles_weight[i]);
                 Pose_delete(estimated_robot_pose_from_measurements);
             }
         }
