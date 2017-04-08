@@ -160,8 +160,8 @@ static void predictParticlesPoseFromSentCommands(struct Pose **particles, struct
 static void updateParticlesWeightFromNewSensorData(struct Pose **particles, struct Pose *current_robot_pose,
         struct Timer *data_timer, double *particles_weight, struct Wheels *wheels, struct WorldCamera *world_camera)
 {
-    int new_translation_speed_data_has_been_received = wheels->translation_sensor->has_received_new_data;
-    int new_rotation_speed_data_has_been_received = wheels->rotation_sensor->has_received_new_data;
+    int new_translation_speed_data_has_been_received = 0;//wheels->translation_sensor->has_received_new_data;
+    int new_rotation_speed_data_has_been_received = 0;//wheels->rotation_sensor->has_received_new_data;
     int new_absolute_position_data_has_been_received = world_camera->robot_sensor->has_received_new_data;
     struct Pose *new_data_from_wheels = Pose_zero();
     struct Pose *new_data_from_world_camera = Pose_zero();
