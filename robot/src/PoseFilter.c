@@ -263,7 +263,7 @@ void normalizeParticlesWeight(double *particles_weight)
 int calculateNumberOfEffectiveParticles(double *normalized_particles_weight)
 {
     double number_of_effective_particles;
-    double cumulative_square_of_normalized_weight = 0;
+    double cumulative_square_of_normalized_weight = 0; // NOTE normalized_particles_weight tjrs egal a 0.01
 
     for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
         cumulative_square_of_normalized_weight += pow(normalized_particles_weight[i], 2);
@@ -363,9 +363,9 @@ void PoseFilter_particlesFilterUsingWorldCameraAndWheels(struct PoseFilter *pose
     number_of_effective_particles = calculateNumberOfEffectiveParticles(pose_filter->particles_weight);
 
     if(number_of_effective_particles < DEPLETION_THRESHOLD) {
-        pose_filter->is_all_particles_dead = resampleParticlesAndReturnStatus(pose_filter->particles,
+        /*pose_filter->is_all_particles_dead = resampleParticlesAndReturnStatus(pose_filter->particles,
                                              pose_filter->particles_weight,
-                                             pose_filter->random_number_generator);
+                                             pose_filter->random_number_generator);*/
     } else {
         struct Pose *new_robot_pose = calculateNewRobotPoseForParticlesFilter(pose_filter->particles,
                                       pose_filter->particles_weight);
