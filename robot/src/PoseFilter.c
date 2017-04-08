@@ -208,17 +208,36 @@ static void predictParticlesPoseFromSentCommands(struct Pose **particles, struct
     Pose_delete(new_command);
 }
 
+static void correctParticlesUsingAbsolutePosition(struct Pose **particles, struct WorldCamera *world_camera,
+        gsl_rng *random_number_generator)
+{
+    struct Pose *new_data_from_world_camera = Pose_zero();
+    WorldCamera_readPoseData(world_camera, new_data_from_world_camera);
+
+    for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
+
+        Pose_delete(particles[i]);
+        particles[i] = Pose_zero();
+        double translation_noise = (gsl_rng_uniform(random_number_generator) - 0.5) * ABSOLUTE_POSITION_NOISE_VARIANCE;
+        double rotation_noise = (gsl_rng_uniform(random_number_generator) - 0.5) * ABSOLUTE_ANGLE_NOISE_VARIANCE;
+        struct Pose *new_data_from_world_camera_with_noise = Pose_new(new_data_from_world_camera->coordinates->x +
+                (int) translation_noise, new_data_from_world_camera->coordinates->y + (int) translation_noise,
+                new_data_from_world_camera->angle->theta + (int) rotation_noise);
+        Pose_copyValuesFrom(particles[i], new_data_from_world_camera_with_noise);
+        Pose_delete(new_data_from_world_camera_with_noise);
+    }
+
+    Pose_delete(new_data_from_world_camera);
+}
+
 static void updateParticlesWeightFromNewSensorData(struct Pose **particles, struct Pose *current_robot_pose,
-        struct Timer *data_timer, double *particles_weight, struct Wheels *wheels, struct WorldCamera *world_camera)
+        struct Timer *data_timer, double *particles_weight, struct Wheels *wheels)
 {
     int new_translation_speed_data_has_been_received = wheels->translation_sensor->has_received_new_data;
     int new_rotation_speed_data_has_been_received = wheels->rotation_sensor->has_received_new_data;
-    int new_absolute_position_data_has_been_received = world_camera->robot_sensor->has_received_new_data;
     struct Pose *new_data_from_wheels = Pose_zero();
-    struct Pose *new_data_from_world_camera = Pose_zero();
 
-    if(new_translation_speed_data_has_been_received || new_rotation_speed_data_has_been_received ||
-       new_absolute_position_data_has_been_received) {
+    if(new_translation_speed_data_has_been_received || new_rotation_speed_data_has_been_received) {
 
         double time_delta = Timer_elapsedTime(data_timer) / NUMBER_OF_NANOSECONDS_IN_A_SECOND;
         Timer_reset(data_timer);
@@ -229,37 +248,9 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
             Wheels_readRotationSpeedData(wheels, new_data_from_wheels->angle);
         }
 
-        fprintf(new_log_file, "\nabs 1: %d", new_absolute_position_data_has_been_received);
-
-        if(new_absolute_position_data_has_been_received) {
-            WorldCamera_readPoseData(world_camera, new_data_from_world_camera);
-            fprintf(new_log_file, "\n\t\t\t New data from world camera: x: %d, y: %d, theta: %d",
-                    new_data_from_world_camera->coordinates->x,
-                    new_data_from_world_camera->coordinates->y,
-                    new_data_from_world_camera->angle->theta);
-
-        }
-
         for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
 
-            if(new_absolute_position_data_has_been_received) {
-
-                double x_translation_induced_weight =
-                    gsl_ran_gaussian_pdf(particles[i]->coordinates->x - new_data_from_world_camera->coordinates->x,
-                                         sqrt(ABSOLUTE_POSITION_NOISE_VARIANCE));
-                double y_translation_induced_weight =
-                    gsl_ran_gaussian_pdf(particles[i]->coordinates->y - new_data_from_world_camera->coordinates->y,
-                                         sqrt(ABSOLUTE_POSITION_NOISE_VARIANCE));
-                double theta_rotation_induced_weight =
-                    gsl_ran_gaussian_pdf(particles[i]->angle->theta - new_data_from_world_camera->angle->theta,
-                                         sqrt(ABSOLUTE_ANGLE_NOISE_VARIANCE));
-                fprintf(new_log_file, "\ntheta w: %f, x w: %f, y w: %f", theta_rotation_induced_weight,
-                        x_translation_induced_weight,
-                        y_translation_induced_weight);
-                particles_weight[i] = fmin(fmin(x_translation_induced_weight, y_translation_induced_weight),
-                                           theta_rotation_induced_weight);
-
-            } else if(new_translation_speed_data_has_been_received) {
+            if(new_translation_speed_data_has_been_received) {
 
                 struct Pose *estimated_robot_pose_from_measurements = Pose_zero();
                 Pose_copyValuesFrom(estimated_robot_pose_from_measurements, current_robot_pose);
@@ -274,6 +265,7 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                                          sqrt(TRANSLATION_SPEED_NOISE_VARIANCE * time_delta));
                 particles_weight[i] = fmin(x_translation_induced_weight, y_translation_induced_weight);
 
+                fprintf(new_log_file, "\nx w: %f, y w: %f", x_translation_induced_weight, y_translation_induced_weight);
                 Pose_delete(estimated_robot_pose_from_measurements);
 
             } else if(new_rotation_speed_data_has_been_received) {
@@ -287,13 +279,13 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                                          sqrt(ROTATION_SPEED_NOISE_VARIANCE * time_delta));
                 particles_weight[i] = theta_rotation_induced_weight;
 
+                fprintf(new_log_file, "\ntheta w: %f", theta_rotation_induced_weight);
                 Pose_delete(estimated_robot_pose_from_measurements);
             }
         }
     }
 
     Pose_delete(new_data_from_wheels);
-    Pose_delete(new_data_from_world_camera);
 }
 
 void normalizeParticlesWeight(double *particles_weight)
@@ -387,25 +379,15 @@ void PoseFilter_particlesFilterUsingWorldCameraAndWheels(struct PoseFilter *pose
 {
     struct Robot *robot = pose_filter->robot;
     int number_of_effective_particles;
+    int new_absolute_position_data_has_been_received = robot->world_camera->robot_sensor->has_received_new_data;
 
     populateParticlesIfNeeded(robot->world_camera->map, pose_filter->particles,
                               pose_filter->particles_status,
                               pose_filter->random_number_generator);
-    predictParticlesPoseFromSentCommands(pose_filter->particles, pose_filter->command_timer,
-                                         pose_filter->random_number_generator,
-                                         robot->wheels);
-    updateParticlesWeightFromNewSensorData(pose_filter->particles, robot->current_state->pose, pose_filter->data_timer,
-                                           pose_filter->particles_weight, robot->wheels, robot->world_camera);
-    normalizeParticlesWeight(pose_filter->particles_weight);
-    number_of_effective_particles = calculateNumberOfEffectiveParticles(pose_filter->particles_weight);
 
-    if(number_of_effective_particles < DEPLETION_THRESHOLD) {
-        resampleParticles(pose_filter->particles_weight, pose_filter->particles_status,
-                          pose_filter->random_number_generator);
-        deleteInvalidParticles(pose_filter->particles, pose_filter->particles_status);
-        repopulateParticlesOnValidOnes(pose_filter->particles, pose_filter->particles_status, pose_filter->particles_weight);
-        initializeParticlesWeight(pose_filter->particles_weight);
-    } else {
+    if(new_absolute_position_data_has_been_received) {
+        correctParticlesUsingAbsolutePosition(pose_filter->particles, robot->world_camera,
+                                              pose_filter->random_number_generator);
         struct Pose *new_robot_pose = calculateNewRobotPoseForParticlesFilter(pose_filter->particles,
                                       pose_filter->particles_weight);
         fprintf(new_log_file, "\n\t\t\t\t\t\t Robot NEW Pose: x: %d, y: %d, theta: %d", new_robot_pose->coordinates->x,
@@ -413,5 +395,36 @@ void PoseFilter_particlesFilterUsingWorldCameraAndWheels(struct PoseFilter *pose
                 new_robot_pose->angle->theta);
         Pose_copyValuesFrom(robot->current_state->pose, new_robot_pose);
         Pose_delete(new_robot_pose);
+        initializeParticlesWeight(pose_filter->particles_weight);
+    } else {
+
+        predictParticlesPoseFromSentCommands(pose_filter->particles, pose_filter->command_timer,
+                                             pose_filter->random_number_generator,
+                                             robot->wheels);
+
+        updateParticlesWeightFromNewSensorData(pose_filter->particles, robot->current_state->pose, pose_filter->data_timer,
+                                               pose_filter->particles_weight, robot->wheels);
+        normalizeParticlesWeight(pose_filter->particles_weight);
+        number_of_effective_particles = calculateNumberOfEffectiveParticles(pose_filter->particles_weight);
+
+        if(number_of_effective_particles < DEPLETION_THRESHOLD) {
+
+            resampleParticles(pose_filter->particles_weight, pose_filter->particles_status,
+                              pose_filter->random_number_generator);
+            deleteInvalidParticles(pose_filter->particles, pose_filter->particles_status);
+            repopulateParticlesOnValidOnes(pose_filter->particles, pose_filter->particles_status, pose_filter->particles_weight);
+            initializeParticlesWeight(pose_filter->particles_weight);
+
+        } else {
+
+            struct Pose *new_robot_pose = calculateNewRobotPoseForParticlesFilter(pose_filter->particles,
+                                          pose_filter->particles_weight);
+            fprintf(new_log_file, "\n\t\t\t\t\t\t Robot NEW Pose: x: %d, y: %d, theta: %d", new_robot_pose->coordinates->x,
+                    new_robot_pose->coordinates->y,
+                    new_robot_pose->angle->theta);
+            Pose_copyValuesFrom(robot->current_state->pose, new_robot_pose);
+            Pose_delete(new_robot_pose);
+
+        }
     }
 }
