@@ -1,5 +1,6 @@
 #include <time.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
 #include "gsl/gsl_sort.h"
 #include "PoseFilter.h"
@@ -8,10 +9,11 @@ const int NUMBER_OF_PARTICLES = 100;
 const int DEPLETION_THRESHOLD = 35;
 const double ROTATION_SPEED_NOISE_VARIANCE = 0.0349066 / ANGLE_BASE_UNIT;
 const double TRANSLATION_SPEED_NOISE_VARIANCE = 0.002 / SPEEDS_BASE_UNIT;
-const double ABSOLUTE_POSITION_NOISE_VARIANCE = 0.0002 / SPEEDS_BASE_UNIT;
+const double ABSOLUTE_POSITION_NOISE_VARIANCE = 0.002 / SPEEDS_BASE_UNIT;
 const double ABSOLUTE_ANGLE_NOISE_VARIANCE = 0.0349066 / ANGLE_BASE_UNIT;
 
 const gsl_rng_type * RANDOM_NUMBER_GENERATOR_TYPE;
+FILE *logger;
 
 static void initializeParticlesWeight(double *particles_weight)
 {
@@ -25,6 +27,8 @@ static void initializeParticlesWeight(double *particles_weight)
 
 struct PoseFilter *PoseFilter_new(struct Robot *new_robot)
 {
+    logger = fopen("FilterLogs.log", "a+");
+
     struct Object *new_object = Object_new();
     struct Pose **new_particles = malloc(NUMBER_OF_PARTICLES * sizeof(struct Pose *));
     double *new_particles_weight = malloc(NUMBER_OF_PARTICLES * sizeof(double));
@@ -72,6 +76,8 @@ void PoseFilter_delete(struct PoseFilter *pose_filter)
         free(pose_filter->particles);
         gsl_rng_free(pose_filter->random_number_generator);
         free(pose_filter);
+
+        fclose(logger);
     }
 }
 
@@ -195,8 +201,8 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                 double theta_rotation_induced_weight =
                     gsl_ran_gaussian_pdf(particles[i]->angle->theta - new_data_from_world_camera->angle->theta,
                                          sqrt(ABSOLUTE_ANGLE_NOISE_VARIANCE));
-                particles_weight[i] = fmin(fmin(x_translation_induced_weight, y_translation_induced_weight),
-                                           theta_rotation_induced_weight);
+                particles_weight[i] = fmin(x_translation_induced_weight, y_translation_induced_weight);
+                // theta_rotation_induced_weight);
 
             } else if(new_translation_speed_data_has_been_received) {
 
