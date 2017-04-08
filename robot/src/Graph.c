@@ -232,6 +232,19 @@ static void linkNodesForDuoObstacleNoOverlap(struct Graph *graph, struct Node *e
     linkNodesForSoloObstacle(graph, middle_node, west_node, west_obstacle, map);
 }
 
+static void linkNodesForDuoObstacleOverlappingInX(struct Graph *graph, struct Node *east_node, struct Node *west_node,
+        struct Obstacle *north_obstacle, struct Obstacle *south_obstacle, struct Map *map)
+{
+    enum CardinalDirection northern_obstacle_orientation = north_obstacle->orientation;
+    enum CardinalDirection southern_obstacle_orientation = south_obstacle->orientation;
+
+    if(northern_obstacle_orientation == NORTH) {
+        linkNodesForSoloObstacle(graph, east_node, west_node, north_obstacle, map);
+    } else if(southern_obstacle_orientation == SOUTH) {
+        linkNodesForSoloObstacle(graph, east_node, west_node, south_obstacle, map);
+    }
+}
+
 void Graph_updateForMap(struct Graph *graph, struct Map* map)
 {
     int number_of_obstacle = Map_fetchNumberOfObstacles(map);
@@ -255,14 +268,18 @@ void Graph_updateForMap(struct Graph *graph, struct Map* map)
         case 2:
             first = Map_retrieveFirstObstacle(map);
             last = Map_retrieveLastObstacle(map);
+            establishEasternNodeSolo(graph, first, map);
+            establishWesternNodeSolo(graph, last, map);
+            graph->actual_number_of_nodes = 2;
             int are_overlapping_in_x = Obstacle_areOverlappingInX(first, last);
             int are_overlapping_in_y = Obstacle_areOverlappingInX(first, last);
 
             if(!are_overlapping_in_x) {
-                establishEasternNodeSolo(graph, first, map);
-                establishWesternNodeSolo(graph, last, map);
-                graph->actual_number_of_nodes = 2;
                 linkNodesForDuoObstacleNoOverlap(graph, graph->eastern_node, graph->western_node, first, last, map);
+            } else {
+                first = Map_retrieveFirstOverlappingObstacle(map);
+                last = Map_retrieveLastOverlappingObstacle(map);
+                linkNodesForDuoObstacleOverlappingInX(graph, graph->eastern_node, graph->western_node, first, last, map);
             }
 
             break;
