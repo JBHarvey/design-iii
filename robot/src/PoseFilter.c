@@ -28,6 +28,11 @@ struct PoseFilter *PoseFilter_new(struct Robot *new_robot)
     struct Pose **new_particles = malloc(NUMBER_OF_PARTICLES * sizeof(struct Pose *));
     int *new_particles_status = calloc(NUMBER_OF_PARTICLES, sizeof(int));
     double *new_particles_weight = malloc(NUMBER_OF_PARTICLES * sizeof(double));
+
+    new_log_file = fopen("FilterLogs.log", "a+"); // a+ (create + append)
+    fprintf(new_log_file, "\n\n\n\t\t------------ NEW EXECUTION ------------\n");
+    setbuf(new_log_file, NULL);
+
     initializeParticlesWeight(new_particles_weight);
     struct Timer *new_command_timer = Timer_new();
     struct Timer *new_data_timer = Timer_new();
@@ -50,9 +55,6 @@ struct PoseFilter *PoseFilter_new(struct Robot *new_robot)
     pointer->data_timer = new_data_timer;
     pointer->random_number_generator = new_random_number_generator;
 
-    new_log_file = fopen("FilterLogs.log", "a+"); // a+ (create + append)
-    fprintf(new_log_file, "\n\n\n\t\t------------ NEW EXECUTION ------------\n");
-    setbuf(new_log_file, NULL);
 
     Object_addOneReference(new_robot->object);
     return pointer;
