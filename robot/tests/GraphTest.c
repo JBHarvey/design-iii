@@ -85,17 +85,19 @@ void teardown_Graph(void)
     Map_delete(base_map);
 }
 
-const int GRAPH_WESTERN_OBSTACLE_X = 4125;
+const int GRAPH_WESTERN_OBSTACLE_X = 4150;
 const int GRAPH_WEST_OBSTACLE_X = 6500;
 const int GRAPH_CENTER_OBSTACLE_X = 8875;
 const int GRAPH_EAST_OBSTACLE_X = 11250;
-const int GRAPH_EASTERN_OBSTACLE_X = 13625;
+const int GRAPH_EASTERN_OBSTACLE_X = 13600;
 
-const int GRAPH_SOUTHERN_OBSTACLE_Y = 625;
+const int GRAPH_SOUTHERN_OBSTACLE_Y = 650;
 const int GRAPH_SOUTH_OBSTACLE_Y = 1875;
+const int GRAPH_CENTER_SOUTH_OBSTACLE_Y = 4500;
 const int GRAPH_CENTER_OBSTACLE_Y = 5650;
+const int GRAPH_CENTER_NORTH_OBSTACLE_Y = 6800;
 const int GRAPH_NORTH_OBSTACLE_Y = 9425;
-const int GRAPH_NORTHERN_OBSTACLE_Y = 10675;
+const int GRAPH_NORTHERN_OBSTACLE_Y = 10650;
 
 void generateSoloMap(enum CardinalDirection orientation)
 {
@@ -567,10 +569,11 @@ void setup_TwoObstaclesOverlappingInY(enum CardinalDirection orientation_a, enum
     Graph_updateForMap(graph, graph_map);
 }
 
-void setup_TwoObstaclesOverlappingInX(enum CardinalDirection orientation_a, enum CardinalDirection orientation_b)
+void setup_TwoObstaclesOverlappingInXWithYValues(enum CardinalDirection orientation_a,
+        enum CardinalDirection orientation_b, int y_a, int y_b)
 {
-    struct Coordinates *coordinates_a = Coordinates_new(GRAPH_CENTER_OBSTACLE_X, GRAPH_NORTH_OBSTACLE_Y);
-    struct Coordinates *coordinates_b = Coordinates_new(GRAPH_CENTER_OBSTACLE_X, GRAPH_SOUTH_OBSTACLE_Y);
+    struct Coordinates *coordinates_a = Coordinates_new(GRAPH_CENTER_OBSTACLE_X, y_a);
+    struct Coordinates *coordinates_b = Coordinates_new(GRAPH_CENTER_OBSTACLE_X, y_b);
     Map_updateObstacle(graph_map, coordinates_a, orientation_a, 0);
     Map_updateObstacle(graph_map, coordinates_b, orientation_b, 1);
     obstacle_a = graph_map->obstacles[0];
@@ -579,6 +582,22 @@ void setup_TwoObstaclesOverlappingInX(enum CardinalDirection orientation_a, enum
     Coordinates_delete(coordinates_a);
     Coordinates_delete(coordinates_b);
     Graph_updateForMap(graph, graph_map);
+}
+
+void setup_TwoObstaclesOverlappingInXSouthCenter(void)
+{
+    setup_TwoObstaclesOverlappingInXWithYValues(SOUTH, CENTER, GRAPH_NORTHERN_OBSTACLE_Y, GRAPH_CENTER_SOUTH_OBSTACLE_Y);
+}
+
+void setup_TwoObstaclesOverlappingInXCenterNorth(void)
+{
+    setup_TwoObstaclesOverlappingInXWithYValues(CENTER, NORTH, GRAPH_CENTER_NORTH_OBSTACLE_Y, GRAPH_SOUTHERN_OBSTACLE_Y);
+}
+
+void setup_TwoObstaclesOverlappingInX(enum CardinalDirection orientation_a, enum CardinalDirection orientation_b)
+{
+    setup_TwoObstaclesOverlappingInXWithYValues(orientation_a, orientation_b, GRAPH_NORTH_OBSTACLE_Y,
+            GRAPH_SOUTH_OBSTACLE_Y);
 }
 
 void setup_TwoObstaclesOverlappingInXAndY(enum CardinalDirection orientation_a, enum CardinalDirection orientation_b)
@@ -683,7 +702,7 @@ Test(Graph, given_twoObstacleWithOverlappingInXNorthIrrelevant_when_updatesGraph
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
-    setup_TwoObstaclesOverlappingInX(NORTH, CENTER);
+    setup_TwoObstaclesOverlappingInXWithYValues(NORTH, CENTER, GRAPH_CENTER_OBSTACLE_Y, GRAPH_SOUTHERN_OBSTACLE_Y);
     assertActualNumberOfNodeIs(4);
 }
 
@@ -692,12 +711,10 @@ Test(Graph,
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
-    setup_TwoObstaclesOverlappingInX(NORTH, CENTER);
-
-    struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
-    struct Coordinates *eastern_point = Obstacle_retrieveEasternPointOf(obstacle);
-    struct Coordinates *western_point = Obstacle_retrieveWesternPointOf(obstacle);
-    struct Coordinates *northern_point = Obstacle_retrieveNorthernPointOf(obstacle);
+    setup_TwoObstaclesOverlappingInXWithYValues(NORTH, CENTER, GRAPH_CENTER_OBSTACLE_Y, GRAPH_SOUTHERN_OBSTACLE_Y);
+    struct Coordinates *eastern_point = Obstacle_retrieveEasternPointOf(obstacle_a);
+    struct Coordinates *western_point = Obstacle_retrieveWesternPointOf(obstacle_a);
+    struct Coordinates *northern_point = Obstacle_retrieveNorthernPointOf(obstacle_a);
     int y = Coordinates_computeMeanY(northern_point, graph_map->north_eastern_table_corner);
     eastern_point->y = y;
     western_point->y = y;
@@ -716,7 +733,7 @@ Test(Graph, given_twoObstacleWithOverlappingInXIrrelevantSouth_when_updatesGraph
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
-    setup_TwoObstaclesOverlappingInX(CENTER, SOUTH);
+    setup_TwoObstaclesOverlappingInXWithYValues(CENTER, SOUTH, GRAPH_NORTHERN_OBSTACLE_Y, GRAPH_CENTER_OBSTACLE_Y);
     assertActualNumberOfNodeIs(4);
 }
 
@@ -725,12 +742,11 @@ Test(Graph,
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
-    setup_TwoObstaclesOverlappingInX(CENTER, SOUTH);
+    setup_TwoObstaclesOverlappingInXWithYValues(CENTER, SOUTH, GRAPH_NORTHERN_OBSTACLE_Y, GRAPH_CENTER_OBSTACLE_Y);
 
-    struct Obstacle *obstacle = Map_retrieveLastObstacle(graph_map);
-    struct Coordinates *eastern_point = Obstacle_retrieveEasternPointOf(obstacle);
-    struct Coordinates *western_point = Obstacle_retrieveWesternPointOf(obstacle);
-    struct Coordinates *southern_point = Obstacle_retrieveSouthernPointOf(obstacle);
+    struct Coordinates *eastern_point = Obstacle_retrieveEasternPointOf(obstacle_b);
+    struct Coordinates *western_point = Obstacle_retrieveWesternPointOf(obstacle_b);
+    struct Coordinates *southern_point = Obstacle_retrieveSouthernPointOf(obstacle_b);
     int y = Coordinates_computeMeanY(southern_point, graph_map->south_eastern_table_corner);
     eastern_point->y = y;
     western_point->y = y;
@@ -743,6 +759,113 @@ Test(Graph,
     Coordinates_delete(eastern_point);
     Coordinates_delete(western_point);
     Coordinates_delete(southern_point);
+}
+
+Test(Graph, given_twoObstacleWithOverlappingInXSouthCenter_when_updatesGraph_then_theActualNumberOfNodesIsSix
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    setup_TwoObstaclesOverlappingInXSouthCenter();
+    assertActualNumberOfNodeIs(6);
+}
+
+Test(Graph,
+     given_twoObstacleWithOverlappingInXSouthCenter_when_updatesGraph_then_theNodesAreAroundTheCenterObstacleWithTheSouthernPointOfTheNorthObstacleAsLimit
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    setup_TwoObstaclesOverlappingInXSouthCenter();
+
+    struct Coordinates *southern_point_a = Obstacle_retrieveSouthernPointOf(obstacle_a);
+    struct Coordinates *northern_point_b = Obstacle_retrieveNorthernPointOf(obstacle_b);
+    struct Coordinates *southern_point_b = Obstacle_retrieveSouthernPointOf(obstacle_b);
+    int north_y = Coordinates_computeMeanY(northern_point_b, southern_point_a);
+    int south_y = Coordinates_computeMeanY(southern_point_b, graph_map->south_eastern_table_corner);
+    int mean_y = ((north_y + south_y) / 2);
+
+    struct Node *first_new_node = graph->eastern_node;
+    struct Node *second_new_node = graph->western_node;
+    cr_assert_eq(mean_y, first_new_node->coordinates->y);
+    cr_assert_eq(mean_y, second_new_node->coordinates->y);
+
+    Coordinates_delete(southern_point_a);
+    Coordinates_delete(northern_point_b);
+    Coordinates_delete(southern_point_b);
+
+}
+
+Test(Graph, given_twoObstacleWithOverlappingInXSouthNorth_when_updatesGraph_then_theActualNumberOfNodesIsFour
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    setup_TwoObstaclesOverlappingInX(SOUTH, NORTH);
+    assertActualNumberOfNodeIs(4);
+}
+
+Test(Graph,
+     given_twoObstacleWithOverlappingInXSouthNorth_when_updatesGraph_then_theNodesArePlacedBetweenTheObstacles
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    setup_TwoObstaclesOverlappingInX(SOUTH, NORTH);
+
+    struct Coordinates *eastern_point = Obstacle_retrieveEasternPointOf(obstacle_a);
+    struct Coordinates *western_point = Obstacle_retrieveWesternPointOf(obstacle_a);
+    struct Coordinates *southern_point_a = Obstacle_retrieveSouthernPointOf(obstacle_a);
+    struct Coordinates *northern_point_b = Obstacle_retrieveNorthernPointOf(obstacle_b);
+    int y = Coordinates_computeMeanY(northern_point_b, southern_point_a);
+    eastern_point->y = y;
+    western_point->y = y;
+
+    struct Node *first_new_node = graph->nodes[2];
+    struct Node *second_new_node = graph->nodes[3];
+    cr_assert(Coordinates_haveTheSameValues(first_new_node->coordinates, eastern_point)
+              , "Expected : (%d,%d) - Got: (%d,%d)\n",
+              eastern_point->x, eastern_point->y, first_new_node->coordinates->x, first_new_node->coordinates->y);
+    cr_assert(Coordinates_haveTheSameValues(second_new_node->coordinates, western_point)
+              , "Expected : (%d,%d) - Got: (%d,%d)\n",
+              eastern_point->x, eastern_point->y, second_new_node->coordinates->x, second_new_node->coordinates->y);
+
+    Coordinates_delete(eastern_point);
+    Coordinates_delete(western_point);
+    Coordinates_delete(southern_point_a);
+    Coordinates_delete(northern_point_b);
+}
+
+Test(Graph, given_twoObstacleWithOverlappingInXCenterNorth_when_updatesGraph_then_theActualNumberOfNodesIsSix
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    setup_TwoObstaclesOverlappingInXCenterNorth();
+    assertActualNumberOfNodeIs(6);
+}
+
+Test(Graph,
+     given_twoObstacleWithOverlappingInXCenterNorth_when_updatesGraph_then_theNodesAreAroundTheCenterObstacleWithTheNorthernPointOfTheSouthObstacleAsLimit
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    setup_TwoObstaclesOverlappingInXCenterNorth();
+
+    struct Coordinates *eastern_point = Obstacle_retrieveEasternPointOf(obstacle_a);
+    struct Coordinates *western_point = Obstacle_retrieveWesternPointOf(obstacle_a);
+    struct Coordinates *northern_point_a = Obstacle_retrieveNorthernPointOf(obstacle_a);
+    struct Coordinates *southern_point_a = Obstacle_retrieveSouthernPointOf(obstacle_a);
+    struct Coordinates *northern_point_b = Obstacle_retrieveNorthernPointOf(obstacle_b);
+    int north_y = Coordinates_computeMeanY(northern_point_a, graph_map->north_eastern_table_corner);
+    int south_y = Coordinates_computeMeanY(southern_point_a, northern_point_b);
+    int mean_y = ((north_y + south_y) / 2);
+
+    struct Node *first_new_node = graph->eastern_node;
+    struct Node *second_new_node = graph->western_node;
+    cr_assert_eq(mean_y, first_new_node->coordinates->y);
+    cr_assert_eq(mean_y, second_new_node->coordinates->y);
+
+    Coordinates_delete(eastern_point);
+    Coordinates_delete(western_point);
+    Coordinates_delete(northern_point_a);
+    Coordinates_delete(southern_point_a);
+    Coordinates_delete(northern_point_b);
 }
 
 /* -- END OF TWO OBSTACLE GRAPH -- */
