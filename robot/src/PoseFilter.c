@@ -204,6 +204,8 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
             Wheels_readRotationSpeedData(wheels, new_data_from_wheels->angle);
         }
 
+        fprintf(new_log_file, "\nabs 1: %d", new_absolute_position_data_has_been_received);
+
         if(new_absolute_position_data_has_been_received) {
             WorldCamera_readPoseData(world_camera, new_data_from_world_camera);
             fprintf(new_log_file, "\n\t\t\t New data from world camera: x: %d, y: %d, theta: %d",
@@ -214,6 +216,7 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
         }
 
         for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
+            fprintf(new_log_file, "\nabs 2: %d", new_absolute_position_data_has_been_received);
 
             if(new_absolute_position_data_has_been_received) {
 
