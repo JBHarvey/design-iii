@@ -364,6 +364,9 @@ static struct Pose *calculateNewRobotPoseForParticlesFilter(struct Pose **partic
         new_theta += particles_weight[i] * (double) particles[i]->angle->theta;
     }
 
+
+    fprintf(new_log_file, "\nNEW ROBOT POSE RAW: x: %f, y: %f, theta: %f, weight of p0: %f", new_x, new_y, new_theta,
+            particles_weight[0]);
     struct Pose *new_robot_pose = Pose_new((int) new_x, (int) new_y, (int) new_theta);
 
     return new_robot_pose;
