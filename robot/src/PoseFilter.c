@@ -394,12 +394,17 @@ void PoseFilter_particlesFilterUsingWorldCameraAndWheels(struct PoseFilter *pose
                                              pose_filter->particles_weight,
                                              pose_filter->random_number_generator);
     } else {
-        struct Pose *new_robot_pose = calculateNewRobotPoseForParticlesFilter(pose_filter->particles,
-                                      pose_filter->particles_weight);
-        Pose_copyValuesFrom(robot->current_state->pose, new_robot_pose);
-        fprintf(logger, "\n UPDATED ROBOT POSE: X: %d, Y: %d, THETA: %d",
-                new_robot_pose->coordinates->x,
-                new_robot_pose->coordinates->y, new_robot_pose->angle->theta);
-        Pose_delete(new_robot_pose);
+        if(pose_filter->is_all_particles_dead) {
+            pose_filter->is_all_particles_dead = 0;
+        } else {
+            struct Pose *new_robot_pose = calculateNewRobotPoseForParticlesFilter(pose_filter->particles,
+                                          pose_filter->particles_weight);
+            Pose_copyValuesFrom(robot->current_state->pose, new_robot_pose);
+            fprintf(logger, "\n UPDATED ROBOT POSE: X: %d, Y: %d, THETA: %d",
+                    new_robot_pose->coordinates->x,
+                    new_robot_pose->coordinates->y, new_robot_pose->angle->theta);
+            Pose_delete(new_robot_pose);
+
+        }
     }
 }
