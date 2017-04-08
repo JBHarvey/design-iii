@@ -218,12 +218,13 @@ static void correctParticlesUsingAbsolutePosition(struct Pose **particles, struc
 
         Pose_delete(particles[i]);
         particles[i] = Pose_zero();
-        double translation_noise = (gsl_rng_uniform(random_number_generator) - 0.5) * ABSOLUTE_POSITION_NOISE_VARIANCE;
+        double translation_noise_x = (gsl_rng_uniform(random_number_generator) - 0.5) * ABSOLUTE_POSITION_NOISE_VARIANCE;
+        double translation_noise_y = (gsl_rng_uniform(random_number_generator) - 0.5) * ABSOLUTE_POSITION_NOISE_VARIANCE;
         double rotation_noise = (gsl_rng_uniform(random_number_generator) - 0.5) * ABSOLUTE_ANGLE_NOISE_VARIANCE;
         fprintf(new_log_file, "\nCAMERA DATA x: %d, y: %d, theta: %d", new_data_from_world_camera->coordinates->x,
                 new_data_from_world_camera->coordinates->y, new_data_from_world_camera->angle->theta);
         struct Pose *new_data_from_world_camera_with_noise = Pose_new(new_data_from_world_camera->coordinates->x +
-                (int) translation_noise, new_data_from_world_camera->coordinates->y + (int) translation_noise,
+                (int) translation_noise_x, new_data_from_world_camera->coordinates->y + (int) translation_noise_y,
                 new_data_from_world_camera->angle->theta + (int) rotation_noise);
         Pose_copyValuesFrom(particles[i], new_data_from_world_camera_with_noise);
         Pose_delete(new_data_from_world_camera_with_noise);
@@ -390,6 +391,7 @@ void PoseFilter_particlesFilterUsingWorldCameraAndWheels(struct PoseFilter *pose
     if(new_absolute_position_data_has_been_received) {
         correctParticlesUsingAbsolutePosition(pose_filter->particles, robot->world_camera,
                                               pose_filter->random_number_generator);
+        initializeParticlesWeight(pose_filter->particles_weight);
         struct Pose *new_robot_pose = calculateNewRobotPoseForParticlesFilter(pose_filter->particles,
                                       pose_filter->particles_weight);
         fprintf(new_log_file, "\n\t\t\t\t\t\t Robot NEW Pose CAM: x: %d, y: %d, theta: %d", new_robot_pose->coordinates->x,
@@ -397,7 +399,6 @@ void PoseFilter_particlesFilterUsingWorldCameraAndWheels(struct PoseFilter *pose
                 new_robot_pose->angle->theta);
         Pose_copyValuesFrom(robot->current_state->pose, new_robot_pose);
         Pose_delete(new_robot_pose);
-        initializeParticlesWeight(pose_filter->particles_weight);
     } else {
 
         predictParticlesPoseFromSentCommands(pose_filter->particles, pose_filter->command_timer,
