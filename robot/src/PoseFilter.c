@@ -9,8 +9,8 @@ const int NUMBER_OF_PARTICLES = 100;
 const int DEPLETION_THRESHOLD = 35;
 const double ROTATION_SPEED_NOISE_VARIANCE = 0.0349066 / ANGLE_BASE_UNIT;
 const double TRANSLATION_SPEED_NOISE_VARIANCE = 0.002 / SPEEDS_BASE_UNIT;
-const double ABSOLUTE_POSITION_NOISE_VARIANCE = 4000;
-const double ABSOLUTE_ANGLE_NOISE_VARIANCE = 0.0349066 / ANGLE_BASE_UNIT;
+const double ABSOLUTE_POSITION_NOISE_VARIANCE = 3200;
+const double ABSOLUTE_ANGLE_NOISE_VARIANCE = (double) TWENTIETH_PI;
 
 const gsl_rng_type * RANDOM_NUMBER_GENERATOR_TYPE;
 FILE *logger;
@@ -194,21 +194,19 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
 
             if(new_absolute_position_data_has_been_received) {
 
-                double translation_induced_weight =
+                double induced_weight =
                     gsl_ran_gaussian_pdf(sqrt(pow(particles[i]->coordinates->x - new_data_from_world_camera->coordinates->x, 2) +
-                                              pow(particles[i]->coordinates->y - new_data_from_world_camera->coordinates->y, 2)),
+                                              pow(particles[i]->coordinates->y - new_data_from_world_camera->coordinates->y, 2) +
+                                              pow((particles[i]->angle->theta - new_data_from_world_camera->angle->theta) *
+                                                  ABSOLUTE_POSITION_NOISE_VARIANCE / ABSOLUTE_ANGLE_NOISE_VARIANCE, 2)),
                                          2 * ABSOLUTE_POSITION_NOISE_VARIANCE);
-                double theta_rotation_induced_weight =
-                    gsl_ran_gaussian_pdf(particles[i]->angle->theta - new_data_from_world_camera->angle->theta,
-                                         sqrt(ABSOLUTE_ANGLE_NOISE_VARIANCE));
-                particles_weight[i] = (translation_induced_weight > 1e-7) ? translation_induced_weight : 0.0 ;
-                // theta_rotation_induced_weight);
+                particles_weight[i] = (induced_weight > 1e-7) ? induced_weight : 0.0 ;
                 fprintf(logger,
-                        "\n PARTICLE: X: %d, Y: %d, THETA: %d, CAM INFO: X: %d, Y: %d, THETA: %d, TRANSLATION_WEIGHT: %f, RESULTING WEIGHT: %f",
+                        "\n PARTICLE: X: %d, Y: %d, THETA: %d, CAM INFO: X: %d, Y: %d, THETA: %d, RESULTING WEIGHT: %f",
                         particles[i]->coordinates->x, particles[i]->coordinates->y, particles[i]->angle->theta,
                         new_data_from_world_camera->coordinates->x,
                         new_data_from_world_camera->coordinates->y, new_data_from_world_camera->angle->theta,
-                        translation_induced_weight, particles_weight[i]);
+                        particles_weight[i]);
 
             } else if(new_translation_speed_data_has_been_received) {
 
