@@ -394,6 +394,7 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
                         .speeds.y = transition_translation.speed_y / SPEEDS_BASE_UNIT
                     };
 
+                    printf("TRANS_SPEED_X: %f\n", transition_translation.speed_x);
                     reception_callbacks.updateWheelsTranslation(robot_server->robot->wheels, communication_translation);
                 } else {
                     printf("wrong struct Communication_Translation length\n");
@@ -410,7 +411,7 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
                         .gamma = transition_rotation.travelled_radiants / ANGLE_BASE_UNIT,
                         .theta = transition_rotation.speed_radiants_second / ANGLE_BASE_UNIT
                     };
-                    printf("ROT_SPEED: %f", transition_rotation.speed_radiants_second);
+                    printf("ROT_SPEED: %f\n", transition_rotation.speed_radiants_second);
 
                     reception_callbacks.updateWheelsRotation(robot_server->robot->wheels, communication_rotation);
                 } else {
