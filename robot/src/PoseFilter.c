@@ -120,8 +120,8 @@ static void populateParticles(struct Map *map, struct Pose **particles, int *par
             particles[i] = Pose_new((int)(gsl_rng_uniform(random_number_generator) * table_length),
                                     (int)(gsl_rng_uniform(random_number_generator) * table_width),
                                     (int)(gsl_rng_uniform(random_number_generator) * 2 * PI) - PI);
-            fprintf(new_log_file, "New particles: x: %d, y: %d, theta: %d", particles[i]->coordinates->x,
-                    particles[i]->coordinates->y, particles[i]->angle->theta);
+            //fprintf(new_log_file, "\nNew particles: x: %d, y: %d, theta: %d", particles[i]->coordinates->x,
+            //        particles[i]->coordinates->y, particles[i]->angle->theta);
         }
     }
 }
@@ -150,16 +150,26 @@ static void predictParticlesPoseFromSentCommands(struct Pose **particles, struct
                                                       (int) gsl_ran_gaussian(random_number_generator, sqrt(ROTATION_SPEED_NOISE_VARIANCE))) *
                                                       time_delta);
                 Pose_rotate(particles[i], theta_rotation_with_noise);
+                fprintf(new_log_file, "\n Rotated particles: x: %d, y: %d, theta: %d", particles[i]->coordinates->x,
+                        particles[i]->coordinates->y,
+                        particles[i]->angle->theta);
             } else if(new_command->coordinates->x) {
                 int x_translation_with_noise = (int)((double)(new_command->coordinates->x +
                                                      (int) gsl_ran_gaussian(random_number_generator, sqrt(TRANSLATION_SPEED_NOISE_VARIANCE))) *
                                                      time_delta);
                 Pose_translate(particles[i], x_translation_with_noise, 0);
+                fprintf(new_log_file, "\n X Translated particles: x: %d, y: %d, theta: %d", particles[i]->coordinates->x,
+                        particles[i]->coordinates->y,
+                        particles[i]->angle->theta);
             } else if(new_command->coordinates->y) {
                 int y_translation_with_noise = (int)((double)(new_command->coordinates->y +
                                                      (int) gsl_ran_gaussian(random_number_generator, sqrt(TRANSLATION_SPEED_NOISE_VARIANCE))) *
                                                      time_delta);
                 Pose_translate(particles[i], 0, y_translation_with_noise);
+                fprintf(new_log_file, "\n Y Translated particles: x: %d, y: %d, theta: %d", particles[i]->coordinates->x,
+                        particles[i]->coordinates->y,
+                        particles[i]->angle->theta);
+
             }
         }
     } else {
