@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "gsl/gsl_randist.h"
+#include "math.h"
 #include "Navigator.h"
 #include "Pathfinder.h"
 
@@ -86,14 +86,8 @@ int Navigator_isAngleWithinRotationTolerance(int angle)
 
 static int convertDistanceToSpeed(int distance)
 {
-
-    int speed;
-
-    if(distance < 1600) {
-        speed = distance;
-    } else {
-        speed = 1600;
-    }
+    double x = (double) distance;
+    int speed = (int)(sqrt(x) * 4.0) * (sqrt(1600));
 
     return speed;
 }
