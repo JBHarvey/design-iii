@@ -9,8 +9,8 @@ const int NUMBER_OF_PARTICLES = 5000;
 const int DEPLETION_THRESHOLD = 1750;
 const double ROTATION_SPEED_NOISE_VARIANCE = ((double) TWENTIETH_PI) / 13.0;
 const double TRANSLATION_SPEED_NOISE_VARIANCE = 4000;
-const double ABSOLUTE_POSITION_NOISE_VARIANCE = 200;
-const double ABSOLUTE_ANGLE_NOISE_VARIANCE = (double) TWENTIETH_PI;
+const double ABSOLUTE_POSITION_NOISE_VARIANCE = 100;
+const double ABSOLUTE_ANGLE_NOISE_VARIANCE = (double) TWENTIETH_PI / 2.0;
 
 const gsl_rng_type * RANDOM_NUMBER_GENERATOR_TYPE;
 FILE *logger;
@@ -164,7 +164,8 @@ static void predictParticlesPoseFromSentCommands(struct Pose **particles, struct
 }
 
 static void updateParticlesWeightFromNewSensorData(struct Pose **particles, struct Pose *current_robot_pose,
-        struct Timer *data_timer, double *particles_weight, struct Wheels *wheels, struct WorldCamera *world_camera)
+        struct Timer *data_timer, double *particles_weight, struct Wheels *wheels, struct WorldCamera *world_camera,
+        gsl_rng *random_number_generator)
 {
     int new_translation_speed_data_has_been_received = wheels->translation_sensor->has_received_new_data;
     int new_rotation_speed_data_has_been_received = wheels->rotation_sensor->has_received_new_data;
@@ -193,6 +194,7 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
 
         if(new_absolute_position_data_has_been_received) {
             WorldCamera_readPoseData(world_camera, new_data_from_world_camera);
+            initializeParticlesWeight(particles_weight);
         }
 
         fprintf(logger, "\n----------------------------------------------------------------------");
@@ -201,13 +203,27 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
 
             if(new_absolute_position_data_has_been_received) {
 
-                double induced_weight =
+                /*double induced_weight =
                     gsl_ran_gaussian_pdf(sqrt(pow(particles[i]->coordinates->x - new_data_from_world_camera->coordinates->x, 2) +
                                               pow(particles[i]->coordinates->y - new_data_from_world_camera->coordinates->y, 2) +
                                               pow((particles[i]->angle->theta - new_data_from_world_camera->angle->theta) *
                                                   ABSOLUTE_POSITION_NOISE_VARIANCE / ABSOLUTE_ANGLE_NOISE_VARIANCE, 2)),
                                          2 * ABSOLUTE_POSITION_NOISE_VARIANCE);
-                particles_weight[i] = (induced_weight > 1e-7) ? induced_weight : 0.0 ;
+                particles_weight[i] = (induced_weight > 1e-7) ? induced_weight : 0.0 ;*/
+
+                struct Pose *new_data_from_world_camera_with_noise = Pose_zero();
+                Pose_copyValuesFrom(new_data_from_world_camera_with_noise, new_data_from_world_camera);
+                Pose_rotate(new_data_from_world_camera_with_noise, (int) round((gsl_rng_uniform(random_number_generator) - 0.5)
+                            * ABSOLUTE_ANGLE_NOISE_VARIANCE));
+                Pose_translate(new_data_from_world_camera_with_noise, (int) round((gsl_rng_uniform(random_number_generator) - 0.5)
+                               * ABSOLUTE_POSITION_NOISE_VARIANCE), 0);
+                Pose_translate(new_data_from_world_camera_with_noise, 0, (int) round((gsl_rng_uniform(random_number_generator) - 0.5)
+                               * ABSOLUTE_POSITION_NOISE_VARIANCE));
+                Pose_copyValuesFrom(particles[i], new_data_from_world_camera_with_noise);
+                Pose_delete(new_data_from_world_camera_with_noise);
+
+
+
                 fprintf(logger,
                         "\n PARTICLE: X: %d, Y: %d, THETA: %d, CAM INFO: X: %d, Y: %d, THETA: %d, RESULTING WEIGHT: %f",
                         particles[i]->coordinates->x, particles[i]->coordinates->y, particles[i]->angle->theta,
@@ -244,7 +260,8 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                 Pose_rotate(estimated_robot_pose_from_measurements, new_data_from_wheels->angle->theta * time_delta);
 
                 double induced_weight =
-                    gsl_ran_gaussian_pdf((particles[i]->angle->theta - estimated_robot_pose_from_measurements->angle->theta) *
+                    gsl_ran_gaussian_pdf(Angle_smallestAngleBetween(particles[i]->angle->theta,
+                                         estimated_robot_pose_from_measurements->angle->theta) *
                                          ABSOLUTE_POSITION_NOISE_VARIANCE / ABSOLUTE_ANGLE_NOISE_VARIANCE,
                                          2 * ROTATION_SPEED_NOISE_VARIANCE * time_delta);
                 particles_weight[i] = (induced_weight > 1e-7) ? induced_weight : 0.0 ;
@@ -390,7 +407,8 @@ void PoseFilter_particlesFilterUsingWorldCameraAndWheels(struct PoseFilter *pose
                                          pose_filter->random_number_generator,
                                          robot->wheels);
     updateParticlesWeightFromNewSensorData(pose_filter->particles, robot->current_state->pose, pose_filter->data_timer,
-                                           pose_filter->particles_weight, robot->wheels, robot->world_camera);
+                                           pose_filter->particles_weight, robot->wheels, robot->world_camera,
+                                           pose_filter->random_number_generator);
     normalizeParticlesWeight(pose_filter->particles_weight);
     number_of_effective_particles = calculateNumberOfEffectiveParticles(pose_filter->particles_weight);
 
