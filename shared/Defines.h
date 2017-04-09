@@ -34,10 +34,10 @@
 
 // Navigation related
 #define SPEEDS_BASE_UNIT 0.0001
-#define MEDIUM_SPEED_VALUE 1600
+#define MEDIUM_SPEED_VALUE 2000
 
-#define LOW_SPEED_VALUE 200
-#define LOW_SPEED_DISTANCE 1000
+#define LOW_SPEED_VALUE 300
+#define LOW_SPEED_DISTANCE 1200
 
 #define STOP_VALUE 0
 #define STOP_DISTANCE 50
@@ -81,7 +81,7 @@
 #define Y_TOLERANCE_MAX 50000               // 5 m
 
 #define THETA_TOLERANCE_MIN 0               // 0 rad
-#define THETA_TOLERANCE_DEFAULT 7854       // Pi/40 rad
+#define THETA_TOLERANCE_DEFAULT 3927       // Pi/80 rad
 #define THETA_TOLERANCE_MAX 314160         // Pi rad
 
 
