@@ -42,7 +42,7 @@
 #define STOP_VALUE 0
 #define STOP_DISTANCE 50
 
-#define ANTENNA_MARK_DISTANCE 750
+#define ANTENNA_MARK_DISTANCE 75
 
 // Units and mesurements related
 
@@ -73,15 +73,15 @@
 #define DEFAULT_GOAL_THETA 0
 
 #define X_TOLERANCE_MIN 0                   // 0 mm
-#define X_TOLERANCE_DEFAULT 100             // 2 mm
+#define X_TOLERANCE_DEFAULT 75             // 7.5 mm
 #define X_TOLERANCE_MAX 50000               // 5 m
 
 #define Y_TOLERANCE_MIN 0                   // 0 mm
-#define Y_TOLERANCE_DEFAULT 100             // 2 mm
+#define Y_TOLERANCE_DEFAULT 75             // 7.5 mm
 #define Y_TOLERANCE_MAX 50000               // 5 m
 
 #define THETA_TOLERANCE_MIN 0               // 0 rad
-#define THETA_TOLERANCE_DEFAULT 5236       // Pi/60 rad
+#define THETA_TOLERANCE_DEFAULT 6283       // Pi/50 rad
 #define THETA_TOLERANCE_MAX 314160         // Pi rad
 
 
