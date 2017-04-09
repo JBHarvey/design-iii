@@ -87,7 +87,7 @@ int Navigator_isAngleWithinRotationTolerance(int angle)
 static int convertDistanceToSpeed(int distance)
 {
     double x = (double) distance;
-    int speed = (int)(sqrt(x) * 4.0) * (sqrt(1600));
+    int speed = (int)(sqrt(x) * sqrt(1600));
 
     if(speed > 1600) {
         speed = 1600;
