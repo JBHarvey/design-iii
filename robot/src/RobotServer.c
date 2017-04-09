@@ -318,8 +318,19 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 
                 break;
             }
-    }
 
+        case DEBUG_SEND_MANCHESTER: {
+                if (length == sizeof(struct Communication_ManchesterCode) + 1) {
+                    struct Communication_ManchesterCode communication_manchester_code;
+                    memcpy(&communication_manchester_code, data + 1, length - 1);
+                    reception_callbacks.updateManchesterCode(robot_server->robot->manchester_code,
+                            robot_server->robot->current_state->flags,
+                            communication_manchester_code);
+                }
+
+                break;
+            }
+    }
 }
 
 
