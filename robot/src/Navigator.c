@@ -86,7 +86,7 @@ int Navigator_isAngleWithinRotationTolerance(int angle)
 
 static int convertDistanceToSpeed(int distance)
 {
-    int speed = (int)((gsl_ran_gaussian_pdf(0, 5) - gsl_ran_gaussian_pdf((double) distance / 175.0, 5)) * 3200.0);
+    int speed = (int)((gsl_ran_gaussian_pdf(0, 5) - gsl_ran_gaussian_pdf((double) distance / 175.0, 5)) * 32000.0);
     return speed;
 }
 
