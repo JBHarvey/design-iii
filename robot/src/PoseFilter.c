@@ -203,14 +203,6 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
 
             if(new_absolute_position_data_has_been_received) {
 
-                /*double induced_weight =
-                    gsl_ran_gaussian_pdf(sqrt(pow(particles[i]->coordinates->x - new_data_from_world_camera->coordinates->x, 2) +
-                                              pow(particles[i]->coordinates->y - new_data_from_world_camera->coordinates->y, 2) +
-                                              pow((particles[i]->angle->theta - new_data_from_world_camera->angle->theta) *
-                                                  ABSOLUTE_POSITION_NOISE_VARIANCE / ABSOLUTE_ANGLE_NOISE_VARIANCE, 2)),
-                                         2 * ABSOLUTE_POSITION_NOISE_VARIANCE);
-                particles_weight[i] = (induced_weight > 1e-7) ? induced_weight : 0.0 ;*/
-
                 struct Pose *new_data_from_world_camera_with_noise = Pose_zero();
                 Pose_copyValuesFrom(new_data_from_world_camera_with_noise, new_data_from_world_camera);
                 new_data_from_world_camera_with_noise->angle->theta += (int) round((gsl_rng_uniform(random_number_generator) - 0.5)
@@ -294,21 +286,16 @@ void normalizeParticlesWeight(double *particles_weight)
     double cumulative_weight = 0;
 
     for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
-        //int particles_weight_int = (int)(particles_weight[i] / 1e-7);
         cumulative_weight += particles_weight[i];
-        //fprintf(logger, "\n CUMM_W: %d", cumulative_weight);
     }
 
     for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
-        //int particles_weight_int = (int)(particles_weight[i] / 1e-7);
 
         if(cumulative_weight > 0) {
             particles_weight[i] = particles_weight[i] / cumulative_weight;
         } else {
             particles_weight[i] = 0.0;
         }
-
-        //fprintf(logger, "\n N_W : %f", particles_weight[i]);
     }
 }
 
@@ -316,11 +303,10 @@ int calculateNumberOfEffectiveParticles(double *normalized_particles_weight)
 {
     double number_of_effective_particles;
     double cumulative_square_of_normalized_weight =
-        0; // NOTE normalized_particles_weight tjrs egal a 0.01 apres rsp, -nan sinon apres new cam
+        0;
 
     for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
         cumulative_square_of_normalized_weight += pow(normalized_particles_weight[i], 2);
-        //fprintf(logger, "\n norm w: %f", normalized_particles_weight[i]);
     }
 
     if(cumulative_square_of_normalized_weight > 0) {
