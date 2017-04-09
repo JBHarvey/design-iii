@@ -223,13 +223,14 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                 Pose_delete(new_data_from_world_camera_with_noise);
 
 
-
-                fprintf(logger,
-                        "\n PARTICLE: X: %d, Y: %d, THETA: %d, CAM INFO: X: %d, Y: %d, THETA: %d, RESULTING WEIGHT: %f",
-                        particles[i]->coordinates->x, particles[i]->coordinates->y, particles[i]->angle->theta,
-                        new_data_from_world_camera->coordinates->x,
-                        new_data_from_world_camera->coordinates->y, new_data_from_world_camera->angle->theta,
-                        particles_weight[i]);
+                if(i == 0) {
+                    fprintf(logger,
+                            "\n PARTICLE: X: %d, Y: %d, THETA: %d, CAM INFO: X: %d, Y: %d, THETA: %d, RESULTING WEIGHT: %f",
+                            particles[i]->coordinates->x, particles[i]->coordinates->y, particles[i]->angle->theta,
+                            new_data_from_world_camera->coordinates->x,
+                            new_data_from_world_camera->coordinates->y, new_data_from_world_camera->angle->theta,
+                            particles_weight[i]);
+                }
 
             } else if(new_translation_speed_data_has_been_received) {
 
@@ -244,12 +245,15 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                                               pow(particles[i]->coordinates->y - estimated_robot_pose_from_measurements->coordinates->y, 2)),
                                          2 * TRANSLATION_SPEED_NOISE_VARIANCE * time_delta);
                 particles_weight[i] = (induced_weight > 1e-7) ? induced_weight : 0.0 ;
-                fprintf(logger,
-                        "\n PARTICLE: X: %d, Y: %d, THETA: %d, TRANSLATION WHEEL INFO: X: %d, Y: %d, THETA: %d, RESULTING WEIGHT: %f",
-                        particles[i]->coordinates->x, particles[i]->coordinates->y, particles[i]->angle->theta,
-                        estimated_robot_pose_from_measurements->coordinates->x,
-                        estimated_robot_pose_from_measurements->coordinates->y, estimated_robot_pose_from_measurements->angle->theta,
-                        particles_weight[i]);
+
+                if(i == 0) {
+                    fprintf(logger,
+                            "\n PARTICLE: X: %d, Y: %d, THETA: %d, TRANSLATION WHEEL INFO: X: %d, Y: %d, THETA: %d, RESULTING WEIGHT: %f",
+                            particles[i]->coordinates->x, particles[i]->coordinates->y, particles[i]->angle->theta,
+                            estimated_robot_pose_from_measurements->coordinates->x,
+                            estimated_robot_pose_from_measurements->coordinates->y, estimated_robot_pose_from_measurements->angle->theta,
+                            particles_weight[i]);
+                }
 
                 Pose_delete(estimated_robot_pose_from_measurements);
 
@@ -265,13 +269,18 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                                          ABSOLUTE_POSITION_NOISE_VARIANCE / ABSOLUTE_ANGLE_NOISE_VARIANCE,
                                          2 * ROTATION_SPEED_NOISE_VARIANCE * time_delta);
                 particles_weight[i] = (induced_weight > 1e-7) ? induced_weight : 0.0 ;
-                fprintf(logger,
-                        "\n PARTICLE: X: %d, Y: %d, THETA: %d, ROTATION WHEEL INFO: X: %d, Y: %d, THETA: %d, RESULTING WEIGHT: %f",
-                        particles[i]->coordinates->x, particles[i]->coordinates->y, particles[i]->angle->theta,
-                        estimated_robot_pose_from_measurements->coordinates->x,
-                        estimated_robot_pose_from_measurements->coordinates->y, estimated_robot_pose_from_measurements->angle->theta,
-                        particles_weight[i]);
+
+                if(i == 0) {
+                    fprintf(logger,
+                            "\n PARTICLE: X: %d, Y: %d, THETA: %d, ROTATION WHEEL INFO: X: %d, Y: %d, THETA: %d, RESULTING WEIGHT: %f",
+                            particles[i]->coordinates->x, particles[i]->coordinates->y, particles[i]->angle->theta,
+                            estimated_robot_pose_from_measurements->coordinates->x,
+                            estimated_robot_pose_from_measurements->coordinates->y, estimated_robot_pose_from_measurements->angle->theta,
+                            particles_weight[i]);
+                }
+
                 Pose_delete(estimated_robot_pose_from_measurements);
+
             }
         }
     }
