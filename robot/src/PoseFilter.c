@@ -213,8 +213,8 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
 
                 struct Pose *new_data_from_world_camera_with_noise = Pose_zero();
                 Pose_copyValuesFrom(new_data_from_world_camera_with_noise, new_data_from_world_camera);
-                Pose_rotate(new_data_from_world_camera_with_noise, (int) round((gsl_rng_uniform(random_number_generator) - 0.5)
-                            * ABSOLUTE_ANGLE_NOISE_VARIANCE));
+                new_data_from_world_camera_with_noise->angle->theta += (int) round((gsl_rng_uniform(random_number_generator) - 0.5)
+                        * ABSOLUTE_ANGLE_NOISE_VARIANCE);
                 Pose_translate(new_data_from_world_camera_with_noise, (int) round((gsl_rng_uniform(random_number_generator) - 0.5)
                                * ABSOLUTE_POSITION_NOISE_VARIANCE), 0);
                 Pose_translate(new_data_from_world_camera_with_noise, 0, (int) round((gsl_rng_uniform(random_number_generator) - 0.5)
