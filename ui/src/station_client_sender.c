@@ -215,3 +215,17 @@ void StationClientSender_removeForceEnvironmentHasChanged(void)
 {
     force_environment_has_changed = 0;
 }
+
+void StationClientSender_sendManchesterDebug(int painting_number, int scale_factor, char orientation /* Possibilities 'N' 'E' 'S' 'W' */)
+{
+    struct Communication_ManchesterCode communication_manchester;
+    communication_manchester.painting_number = painting_number;
+    communication_manchester.scale_factor = scale_factor;
+    communication_manchester.orientation = orientation;
+
+    uint8_t data[1 + sizeof(struct Communication_ManchesterCode)];
+    data[0] = DEBUG_SEND_MANCHESTER;
+    memcpy(data + 1, &communication_manchester, sizeof(struct Communication_ManchesterCode));
+
+    addPacketToQueue(data, sizeof(data));
+}
