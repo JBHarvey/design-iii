@@ -80,26 +80,6 @@ Test(Navigator,
 }
 
 Test(Navigator,
-     given_aRobotWithNoNewDataInItsWorldCamera_when_askedToUpdateNavigableWorld_then_theGraphTypeIsNone
-     , .init = setup_Navigator
-     , .fini = teardown_Navigator)
-{
-    Navigator_updateNavigableMap(robot);
-    cr_assert(navigator->graph->type == NONE);
-}
-
-Test(Navigator,
-     given_aRobotWithNewDataInItsWorldCamera_when_askedToUpdateNavigableWorld_then_theGraphTypeBecomesTrio
-     , .init = setup_Navigator
-     , .fini = teardown_Navigator)
-{
-
-    Sensor_receivesData(robot->world_camera->map_sensor);
-    Navigator_updateNavigableMap(robot);
-    cr_assert(navigator->graph->type == TRIO);
-}
-
-Test(Navigator,
      given_aRobotWithNewDataInItsWorldCamera_when_askedToUpdateNavigableWorld_then_theWorldCameraNoLongerHasNewData
      , .init = setup_Navigator
      , .fini = teardown_Navigator)

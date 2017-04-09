@@ -264,3 +264,87 @@ Test(Obstacle,
     cr_assert(!is_free);
     Coordinates_delete(coordinates);
 }
+
+Test(Obstacle,
+     given_twoObstaclesAlignedInXAndSeparatedByAGreaterDistanceThanTheSumOfTheyRadiusInY_when_askedIfTheyAreOverlappingInY_then_theyAreNot
+     , .init = setup_Obstacle
+     , .fini = teardown_Obstacle)
+{
+    int first_radius = center_obstacle->radius;
+    int second_radius = north_oriented_obstacle->radius;
+    int separation = 2 * (first_radius + second_radius);
+    north_oriented_obstacle->coordinates->y += separation;
+
+    int are_overlapping = Obstacle_areOverlappingInY(center_obstacle, north_oriented_obstacle);
+    cr_assert(!are_overlapping);
+}
+
+Test(Obstacle,
+     given_twoObstaclesAlignedInXAndSeparatedByADistanceEqualToTheSumOfTheyRadiusInY_when_askedIfTheyAreOverlappingInY_then_theyAre
+     , .init = setup_Obstacle
+     , .fini = teardown_Obstacle)
+{
+    int first_radius = center_obstacle->radius;
+    int second_radius = north_oriented_obstacle->radius;
+    int separation = first_radius + second_radius;
+    north_oriented_obstacle->coordinates->y += separation;
+
+    int are_overlapping = Obstacle_areOverlappingInY(center_obstacle, north_oriented_obstacle);
+    cr_assert(are_overlapping);
+}
+
+Test(Obstacle,
+     given_twoObstaclesAlignedInXAndSeparatedByASmallerDistanceThanTheSumOfTheyRadiusInY_when_askedIfTheyAreOverlappingInY_then_theyAre
+     , .init = setup_Obstacle
+     , .fini = teardown_Obstacle)
+{
+    int first_radius = center_obstacle->radius;
+    int second_radius = north_oriented_obstacle->radius;
+    int separation = (first_radius + second_radius) / 2;
+    north_oriented_obstacle->coordinates->y += separation;
+
+    int are_overlapping = Obstacle_areOverlappingInY(center_obstacle, north_oriented_obstacle);
+    cr_assert(are_overlapping);
+}
+
+Test(Obstacle,
+     given_twoObstaclesAlignedInYAndSeparatedByAGreaterDistanceThanTheSumOfTheyRadiusInX_when_askedIfTheyAreOverlappingInX_then_theyAreNot
+     , .init = setup_Obstacle
+     , .fini = teardown_Obstacle)
+{
+    int first_radius = center_obstacle->radius;
+    int second_radius = north_oriented_obstacle->radius;
+    int separation = 2 * (first_radius + second_radius);
+    north_oriented_obstacle->coordinates->x += separation;
+
+    int are_overlapping = Obstacle_areOverlappingInX(center_obstacle, north_oriented_obstacle);
+    cr_assert(!are_overlapping);
+}
+
+Test(Obstacle,
+     given_twoObstaclesAlignedInYAndSeparatedByADistanceEqualToTheSumOfTheyRadiusInX_when_askedIfTheyAreOverlappingInX_then_theyAre
+     , .init = setup_Obstacle
+     , .fini = teardown_Obstacle)
+{
+    int first_radius = center_obstacle->radius;
+    int second_radius = north_oriented_obstacle->radius;
+    int separation = first_radius + second_radius;
+    north_oriented_obstacle->coordinates->x += separation;
+
+    int are_overlapping = Obstacle_areOverlappingInX(center_obstacle, north_oriented_obstacle);
+    cr_assert(are_overlapping);
+}
+
+Test(Obstacle,
+     given_twoObstaclesAlignedInYAndSeparatedByASmallerDistanceThanTheSumOfTheyRadiusInX_when_askedIfTheyAreOverlappingInX_then_theyAre
+     , .init = setup_Obstacle
+     , .fini = teardown_Obstacle)
+{
+    int first_radius = center_obstacle->radius;
+    int second_radius = north_oriented_obstacle->radius;
+    int separation = (first_radius + second_radius) / 2;
+    north_oriented_obstacle->coordinates->x += separation;
+
+    int are_overlapping = Obstacle_areOverlappingInX(center_obstacle, north_oriented_obstacle);
+    cr_assert(are_overlapping);
+}

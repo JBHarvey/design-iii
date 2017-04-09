@@ -3,7 +3,7 @@
 
 #include "Coordinates.h"
 
-#define MAX_NUMBER_OF_NEIGHBOURS 4
+#define MAX_NUMBER_OF_NEIGHBOURS 5
 
 struct Node {
     struct Object *object;

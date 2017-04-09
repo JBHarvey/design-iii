@@ -8,6 +8,7 @@ struct Node *node_c;
 struct Node *node_d;
 struct Node *node_e;
 struct Node *node_f;
+struct Node *node_g;
 
 Test(Node, creation_destruction)
 {
@@ -38,6 +39,7 @@ void setup_Node(void)
     node_d = Node_new();
     node_e = Node_new();
     node_f = Node_new();
+    node_g = Node_new();
     node_b->coordinates->x = 3;
     node_b->coordinates->y = 4;
     node_c->coordinates->x = 6;
@@ -48,6 +50,8 @@ void setup_Node(void)
     node_e->coordinates->y = 16;
     node_f->coordinates->x = 15;
     node_f->coordinates->y = 20;
+    node_g->coordinates->x = 18;
+    node_g->coordinates->y = 24;
 }
 
 void teardown_Node(void)
@@ -58,6 +62,7 @@ void teardown_Node(void)
     Node_delete(node_d);
     Node_delete(node_e);
     Node_delete(node_f);
+    Node_delete(node_g);
 }
 
 Test(Node, given_twoNodesWithNoNeighbours_when_attemptsToConnectNeighbours_then_theTwoNodesAreEachOthersNeighbours
@@ -104,6 +109,7 @@ Test(Node,
     Node_attemptToConnectAsNeighbours(node_a, node_d);
     Node_attemptToConnectAsNeighbours(node_a, node_e);
     Node_attemptToConnectAsNeighbours(node_a, node_f);
+    Node_attemptToConnectAsNeighbours(node_a, node_g);
 
     cr_assert_eq(node_a->actual_number_of_neighbours, MAX_NUMBER_OF_NEIGHBOURS);
 }

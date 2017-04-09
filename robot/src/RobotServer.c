@@ -320,7 +320,7 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
             }
 
         case DEBUG_SEND_MANCHESTER: {
-                if (length == sizeof(struct Communication_ManchesterCode) + 1) {
+                if(length == sizeof(struct Communication_ManchesterCode) + 1) {
                     struct Communication_ManchesterCode communication_manchester_code;
                     memcpy(&communication_manchester_code, data + 1, length - 1);
                     reception_callbacks.updateManchesterCode(robot_server->robot->manchester_code,
@@ -342,6 +342,8 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
 #define PHYSICAL_ACK_LOWER_PEN 105
 #define MANCHESTER_CODE_DECODED 106
 #define PHYSICAL_ACK_STOP_SENDING_SIGNAL 107
+#define INFRARED_DATA 108
+#define INFRARED_VOLTAGE_BASE_UNIT 0.00001
 
 struct __attribute__((__packed__)) TransitionManchester {
     uint8_t painting_number;
@@ -405,7 +407,8 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
                         .speeds.y = transition_translation.speed_y / SPEEDS_BASE_UNIT
                     };
 
-                    printf("TRANS_MOVE_X: %f, TRANS_MOVE_Y: %f TRANS_SPEED_X: %f, TRANS_SPEED_Y: %f\n", transition_translation.travelled_x, transition_translation.travelled_y, transition_translation.speed_x, transition_translation.speed_y);
+                    printf("TRANS_MOVE_X: %f, TRANS_MOVE_Y: %f TRANS_SPEED_X: %f, TRANS_SPEED_Y: %f\n", transition_translation.travelled_x,
+                           transition_translation.travelled_y, transition_translation.speed_x, transition_translation.speed_y);
                     reception_callbacks.updateWheelsTranslation(robot_server->robot->wheels, communication_translation);
                 } else {
                     printf("wrong struct Communication_Translation length\n");
@@ -423,15 +426,25 @@ static void handleTTYACMPacket(uint8_t type, uint8_t *data, uint8_t length)
                         .theta = transition_rotation.speed_radiants_second / ANGLE_BASE_UNIT
                     };
 
-                    printf("ROT: travelled: %f speed: %f\n", transition_rotation.travelled_radiants, transition_rotation.speed_radiants_second);
+                    printf("ROT: travelled: %f speed: %f\n", transition_rotation.travelled_radiants,
+                           transition_rotation.speed_radiants_second);
 
                     reception_callbacks.updateWheelsRotation(robot_server->robot->wheels, communication_rotation);
                 } else {
                     printf("wrong struct Communication_Rotation length\n");
                 }
-
-                break;
             }
+
+        case INFRARED_DATA:
+            /*
+             * Three floats for a total of 12 octets
+             * The data order is the following:
+             * North
+             * West
+             * East
+             */
+            break;
+
     };
 }
 
@@ -480,7 +493,7 @@ _Bool writeTTYACMPacket(uint8_t type, uint8_t *data, unsigned int length)
     return write(physical_robot_file_descriptor, packet, sizeof(packet)) == sizeof(packet);
 }
 
-void TTYACMCallback(struct ev_loop *loop, struct ev_io *watcher, int revents)
+void TTYACMCallback(struct ev_loop * loop, struct ev_io * watcher, int revents)
 {
     if(EV_ERROR & revents) {
         perror("got invalid event");
