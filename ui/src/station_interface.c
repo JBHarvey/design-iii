@@ -31,7 +31,7 @@ GtkWidget *start_cycle_button_widget = NULL;
 
 void debugManchesterEventCallback(GtkWidget *widget, gpointer data)
 {
-    StationClientSender_sendManchesterDebug(2, 4, 'N'); /* Possibilities 'N' 'E' 'S' 'W' */
+    StationClientSender_sendManchesterDebug(2, 4, 'W'); /* Possibilities 'N' 'E' 'S' 'W' */
 }
 
 void uiWindowDestroyEventCallback(GtkWidget *widget, gpointer data)
