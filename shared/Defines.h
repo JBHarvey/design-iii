@@ -34,15 +34,15 @@
 
 // Navigation related
 #define SPEEDS_BASE_UNIT 0.0001
-#define MEDIUM_SPEED_VALUE 1600
+#define MEDIUM_SPEED_VALUE 2000
 
-#define LOW_SPEED_VALUE 200
+#define LOW_SPEED_VALUE 300
 #define LOW_SPEED_DISTANCE 800
 
 #define STOP_VALUE 0
-#define STOP_DISTANCE 50
+#define STOP_DISTANCE 75
 
-#define ANTENNA_MARK_DISTANCE 75
+#define ANTENNA_MARK_DISTANCE 76
 
 // Units and mesurements related
 
