@@ -27,7 +27,7 @@ static void initializeParticlesWeight(double *particles_weight)
 
 struct PoseFilter *PoseFilter_new(struct Robot *new_robot)
 {
-    logger = fopen("FilterLogs.log", "a+");
+    logger = fopen("filter.txt", "a+");
 
     struct Object *new_object = Object_new();
     struct Pose **new_particles = malloc(NUMBER_OF_PARTICLES * sizeof(struct Pose *));
