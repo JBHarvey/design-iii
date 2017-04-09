@@ -7,8 +7,8 @@
 
 const int NUMBER_OF_PARTICLES = 5000;
 const int DEPLETION_THRESHOLD = 1750;
-const double ROTATION_SPEED_NOISE_VARIANCE = ((double) TWENTIETH_PI) / 12.0;
-const double TRANSLATION_SPEED_NOISE_VARIANCE = 80;
+const double ROTATION_SPEED_NOISE_VARIANCE = ((double) TWENTIETH_PI) / 13.0;
+const double TRANSLATION_SPEED_NOISE_VARIANCE = 200;
 const double ABSOLUTE_POSITION_NOISE_VARIANCE = 200;
 const double ABSOLUTE_ANGLE_NOISE_VARIANCE = (double) TWENTIETH_PI;
 
@@ -181,6 +181,8 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
 
         if(new_translation_speed_data_has_been_received) {
             Wheels_readTranslationSpeedData(wheels, new_data_from_wheels->coordinates);
+            fprintf(logger, "\n RECEIVED X TRANSLATION SPEED: %d", new_data_from_wheels->coordinates->x);
+            fprintf(logger, "\n RECEIVED Y TRANSLATION SPEED: %d", new_data_from_wheels->coordinates->y);
         } else if(new_rotation_speed_data_has_been_received) {
             Wheels_readRotationSpeedData(wheels, new_data_from_wheels->angle);
             fprintf(logger, "\n RECEIVED ANGULAR SPEED: %d", new_data_from_wheels->angle->theta);
