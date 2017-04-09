@@ -871,6 +871,7 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 		readyToSendData = 1;
 		readyToSendManchester = 1;
 		initializeManchesterFlag = 1;
+		disableTimer5Interrupt();
 		setState(&mainState, MAIN_MANCH);
 		break;
 	case COMMAND_STOP_DECODE_MANCHESTER:
