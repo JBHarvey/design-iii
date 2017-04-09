@@ -29,6 +29,11 @@ int is_first_cycle = 1;
 struct StationClient *station_client = NULL;
 GtkWidget *start_cycle_button_widget = NULL;
 
+void debugManchesterEventCallback(GtkWidget *widget, gpointer data)
+{
+    StationClientSender_sendManchesterDebug(2, 4, 'N'); /* Possibilities 'N' 'E' 'S' 'W' */
+}
+
 void uiWindowDestroyEventCallback(GtkWidget *widget, gpointer data)
 {
     Logger_finalize();
