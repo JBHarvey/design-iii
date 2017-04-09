@@ -175,10 +175,6 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
     if(new_translation_speed_data_has_been_received || new_rotation_speed_data_has_been_received ||
        new_absolute_position_data_has_been_received) {
 
-        double time_delta = Timer_elapsedTime(data_timer) / NUMBER_OF_NANOSECONDS_IN_A_SECOND;
-        fprintf(logger, "\nTIME_DELTA: %f", time_delta);
-        Timer_reset(data_timer);
-
         if(new_translation_speed_data_has_been_received) {
             Wheels_readTranslationSpeedData(wheels, new_data_from_wheels->coordinates);
             fprintf(logger, "\n RECEIVED X TRANSLATION SPEED: %d", new_data_from_wheels->coordinates->x);
@@ -214,6 +210,10 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
 
             } else if(new_translation_speed_data_has_been_received) {
 
+                double time_delta = Timer_elapsedTime(data_timer) / NUMBER_OF_NANOSECONDS_IN_A_SECOND;
+                fprintf(logger, "\nTIME_DELTA: %f", time_delta);
+                Timer_reset(data_timer);
+
                 struct Pose *estimated_robot_pose_from_measurements = Pose_zero();
                 Pose_copyValuesFrom(estimated_robot_pose_from_measurements, current_robot_pose);
                 Pose_translate(estimated_robot_pose_from_measurements, new_data_from_wheels->coordinates->x * time_delta, 0);
@@ -235,6 +235,10 @@ static void updateParticlesWeightFromNewSensorData(struct Pose **particles, stru
                 Pose_delete(estimated_robot_pose_from_measurements);
 
             } else if(new_rotation_speed_data_has_been_received) {
+
+                double time_delta = Timer_elapsedTime(data_timer) / NUMBER_OF_NANOSECONDS_IN_A_SECOND;
+                fprintf(logger, "\nTIME_DELTA: %f", time_delta);
+                Timer_reset(data_timer);
 
                 struct Pose *estimated_robot_pose_from_measurements = Pose_zero();
                 Pose_copyValuesFrom(estimated_robot_pose_from_measurements, current_robot_pose);
