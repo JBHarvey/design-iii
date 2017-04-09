@@ -37,7 +37,7 @@
 #define MEDIUM_SPEED_VALUE 1600
 
 #define LOW_SPEED_VALUE 200
-#define LOW_SPEED_DISTANCE 500
+#define LOW_SPEED_DISTANCE 1000
 
 #define STOP_VALUE 0
 #define STOP_DISTANCE 50
@@ -73,16 +73,16 @@
 #define DEFAULT_GOAL_THETA 0
 
 #define X_TOLERANCE_MIN 0                   // 0 mm
-#define X_TOLERANCE_DEFAULT 200             // 4 mm
+#define X_TOLERANCE_DEFAULT 100             // 2 mm
 #define X_TOLERANCE_MAX 50000               // 5 m
 
 #define Y_TOLERANCE_MIN 0                   // 0 mm
-#define Y_TOLERANCE_DEFAULT 200             // 4 mm
+#define Y_TOLERANCE_DEFAULT 100             // 2 mm
 #define Y_TOLERANCE_MAX 50000               // 5 m
 
 #define THETA_TOLERANCE_MIN 0               // 0 rad
-#define THETA_TOLERANCE_DEFAULT 15708       // Pi/20 rad
-#define THETA_TOLERANCE_MAX 314160          // Pi rad
+#define THETA_TOLERANCE_DEFAULT 7854       // Pi/40 rad
+#define THETA_TOLERANCE_MAX 314160         // Pi rad
 
 
 // Time related
