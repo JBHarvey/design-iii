@@ -408,35 +408,42 @@ void PoseFilter_particlesFilterUsingWorldCameraAndWheels(struct PoseFilter *pose
     struct Robot *robot = pose_filter->robot;
     int number_of_effective_particles;
 
-    if(pose_filter->is_all_particles_dead) {
-        populateParticles(robot->world_camera->map, pose_filter->particles, pose_filter->random_number_generator);
-    }
+    int new_translation_speed_data_has_been_received = robot->wheels->translation_sensor->has_received_new_data;
+    int new_rotation_speed_data_has_been_received = robot->wheels->rotation_sensor->has_received_new_data;
+    int new_absolute_position_data_has_been_received = robot->world_camera->robot_sensor->has_received_new_data;
 
-    predictParticlesPoseFromSentCommands(pose_filter->particles, pose_filter->command_timer,
-                                         pose_filter->random_number_generator,
-                                         robot->wheels);
-    updateParticlesWeightFromNewSensorData(pose_filter->particles, robot->current_state->pose, pose_filter->data_timer,
-                                           pose_filter->particles_weight, robot->wheels, robot->world_camera,
-                                           pose_filter->random_number_generator);
-    normalizeParticlesWeight(pose_filter->particles_weight);
-    number_of_effective_particles = calculateNumberOfEffectiveParticles(pose_filter->particles_weight);
-
-    if(number_of_effective_particles < DEPLETION_THRESHOLD) {
-        pose_filter->is_all_particles_dead = resampleParticlesAndReturnStatus(pose_filter->particles,
-                                             pose_filter->particles_weight,
-                                             pose_filter->random_number_generator);
-    } else {
+    if(new_translation_speed_data_has_been_received || new_absolute_position_data_has_been_received ||
+       new_rotation_speed_data_has_been_received) {
         if(pose_filter->is_all_particles_dead) {
-            pose_filter->is_all_particles_dead = 0;
-        } else {
-            struct Pose *new_robot_pose = calculateNewRobotPoseForParticlesFilter(pose_filter->particles,
-                                          pose_filter->particles_weight);
-            Pose_copyValuesFrom(robot->current_state->pose, new_robot_pose);
-            fprintf(logger, "\n UPDATED ROBOT POSE: X: %d, Y: %d, THETA: %d",
-                    new_robot_pose->coordinates->x,
-                    new_robot_pose->coordinates->y, new_robot_pose->angle->theta);
-            Pose_delete(new_robot_pose);
+            populateParticles(robot->world_camera->map, pose_filter->particles, pose_filter->random_number_generator);
+        }
 
+        predictParticlesPoseFromSentCommands(pose_filter->particles, pose_filter->command_timer,
+                                             pose_filter->random_number_generator,
+                                             robot->wheels);
+        updateParticlesWeightFromNewSensorData(pose_filter->particles, robot->current_state->pose, pose_filter->data_timer,
+                                               pose_filter->particles_weight, robot->wheels, robot->world_camera,
+                                               pose_filter->random_number_generator);
+        normalizeParticlesWeight(pose_filter->particles_weight);
+        number_of_effective_particles = calculateNumberOfEffectiveParticles(pose_filter->particles_weight);
+
+        if(number_of_effective_particles < DEPLETION_THRESHOLD) {
+            pose_filter->is_all_particles_dead = resampleParticlesAndReturnStatus(pose_filter->particles,
+                                                 pose_filter->particles_weight,
+                                                 pose_filter->random_number_generator);
+        } else {
+            if(pose_filter->is_all_particles_dead) {
+                pose_filter->is_all_particles_dead = 0;
+            } else {
+                struct Pose *new_robot_pose = calculateNewRobotPoseForParticlesFilter(pose_filter->particles,
+                                              pose_filter->particles_weight);
+                Pose_copyValuesFrom(robot->current_state->pose, new_robot_pose);
+                fprintf(logger, "\n UPDATED ROBOT POSE: X: %d, Y: %d, THETA: %d",
+                        new_robot_pose->coordinates->x,
+                        new_robot_pose->coordinates->y, new_robot_pose->angle->theta);
+                Pose_delete(new_robot_pose);
+
+            }
         }
     }
 }

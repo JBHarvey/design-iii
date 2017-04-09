@@ -164,6 +164,8 @@ void StationClientSender_sendWorldInformationsToRobot(struct Communication_Objec
         communication_world.environment_has_changed = environment_has_changed;
     }
 
+    /* Correction */
+    robot.zone.pose.coordinates.y += 200;
     communication_world.robot = robot;
     memcpy(communication_world.environment.obstacles, obstacles, num_obstacles * sizeof(struct Communication_Object));
     memcpy(data + 1, &communication_world, sizeof(struct Communication_World));
@@ -216,7 +218,8 @@ void StationClientSender_removeForceEnvironmentHasChanged(void)
     force_environment_has_changed = 0;
 }
 
-void StationClientSender_sendManchesterDebug(int painting_number, int scale_factor, char orientation /* Possibilities 'N' 'E' 'S' 'W' */)
+void StationClientSender_sendManchesterDebug(int painting_number, int scale_factor,
+        char orientation /* Possibilities 'N' 'E' 'S' 'W' */)
 {
     struct Communication_ManchesterCode communication_manchester;
     communication_manchester.painting_number = painting_number;
