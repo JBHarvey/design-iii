@@ -164,8 +164,6 @@ void StationClientSender_sendWorldInformationsToRobot(struct Communication_Objec
         communication_world.environment_has_changed = environment_has_changed;
     }
 
-    /* Correction */
-    robot.zone.pose.coordinates.y += 200;
     communication_world.robot = robot;
     memcpy(communication_world.environment.obstacles, obstacles, num_obstacles * sizeof(struct Communication_Object));
     memcpy(data + 1, &communication_world, sizeof(struct Communication_World));
