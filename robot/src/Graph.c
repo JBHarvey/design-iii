@@ -514,8 +514,8 @@ void Graph_updateForMap(struct Graph *graph, struct Map* map)
             int first_overlaps_middle_y = Obstacle_areOverlappingInY(first, middle);
             int last_overlaps_middle_x = Obstacle_areOverlappingInX(last, middle);
             int last_overlaps_middle_y = Obstacle_areOverlappingInY(last, middle);
-            struct middle_east_node;
-            struct middle_west_node;
+            struct Node *middle_east_node;
+            struct Node *middle_west_node;
 
             if(!first_overlaps_middle_x && !last_overlaps_middle_x) {
                 establishEasternNodeSolo(graph, first, map);
