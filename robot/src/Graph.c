@@ -464,6 +464,7 @@ void Graph_updateForMap(struct Graph *graph, struct Map* map)
     int number_of_obstacle = Map_fetchNumberOfObstacles(map);
 
     struct Obstacle *first;
+    struct Obstacle *middle;
     struct Obstacle *last;
 
     switch(number_of_obstacle) {
@@ -508,9 +509,23 @@ void Graph_updateForMap(struct Graph *graph, struct Map* map)
         case 3:
             first = Map_retrieveFirstObstacle(map);
             last = Map_retrieveLastObstacle(map);
-            struct Obstacle *middle = Map_retrieveMiddleObstacle(map, first, last);
-            int eastern_are_overlapping = Obstacle_areOverlappingInX(first, middle);
-            int western_are_overlapping = Obstacle_areOverlappingInX(last, middle);
+            middle = Map_retrieveMiddleObstacle(map, first, last);
+            int first_overlaps_middle_x = Obstacle_areOverlappingInX(first, middle);
+            int first_overlaps_middle_y = Obstacle_areOverlappingInY(first, middle);
+            int last_overlaps_middle_x = Obstacle_areOverlappingInX(last, middle);
+            int last_overlaps_middle_y = Obstacle_areOverlappingInY(last, middle);
+            struct middle_east_node;
+            struct middle_west_node;
+
+            if(!first_overlaps_middle_x && !last_overlaps_middle_x) {
+                establishEasternNodeSolo(graph, first, map);
+                establishWesternNodeSolo(graph, last, map);
+                middle_east_node = createMiddleNode(first, middle, map);
+                middle_west_node = createMiddleNode(middle, last, map);
+                linkNodesForSoloObstacle(graph, graph->eastern_node, middle_east_node, first, map);
+                linkNodesForSoloObstacle(graph, middle_east_node, middle_west_node, middle, map);
+                linkNodesForSoloObstacle(graph, middle_west_node, graph->western_node, last, map);
+            }
 
             break;
 
