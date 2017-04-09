@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include "gsl/gsl_randist.h"
 #include "Navigator.h"
 #include "Pathfinder.h"
 
@@ -85,15 +86,7 @@ int Navigator_isAngleWithinRotationTolerance(int angle)
 
 static int convertDistanceToSpeed(int distance)
 {
-    int speed;
-
-    if(distance > LOW_SPEED_DISTANCE) {
-        speed = MEDIUM_SPEED_VALUE;
-    } else if(distance > STOP_DISTANCE * 2) {
-        speed = LOW_SPEED_VALUE;
-    } else {
-        speed = STOP_VALUE;
-    }
+    int speed = (int)((gsl_ran_gaussian_pdf(0, 800) - gsl_ran_gaussian_pdf(distance, 800)) * 3200.0);
 
     return speed;
 }
