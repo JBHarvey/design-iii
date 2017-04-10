@@ -2,6 +2,7 @@
 #include "math.h"
 #include "Navigator.h"
 #include "Pathfinder.h"
+#include "Timer.h"
 
 int last_speed = 0;
 
@@ -287,6 +288,14 @@ void Navigator_navigateRobotTowardsGoal(struct Robot *robot)
         } else if(was_oriented && !is_very_oriented && last_speed > 200) {
             int distance_to_target = Coordinates_distanceBetween(current_pose->coordinates, goal_coordinates);
             sendSlowDownCommand(robot, distance_to_target, angle_between_robot_and_target);
+
+            if(last_speed <= 200) {
+                struct Timer *timer = Timer_new();
+
+                while(!Timer_hasTimePassed(timer, 300));
+
+                Timer_delete(timer);
+            }
         } else {
             sendRotationCommandForNavigation(robot, angle_between_robot_and_target);
         }
