@@ -69,9 +69,12 @@ void decodeManchBC() {
 
 			setOrientationFromInformationBits(informationBits,
 					manchesterOrientationVerification);
-
 			manchesterFactorVerification = getFactorFromInformationBits(
 					informationBits);
+
+			sendManchesterCode(manchesterFigureVerification,
+					manchesterFactorVerification,
+					manchesterOrientationVerification);
 
 			char messageToDisplay[MESSAGE_TO_DISPLAY_LENGTH];
 
@@ -79,13 +82,28 @@ void decodeManchBC() {
 					manchesterOrientationVerification,
 					manchesterFactorVerification, messageToDisplay);
 
+			/*if (manchChecked == 0) {
+			 memcpy(messageToDisplayHold, messageToDisplay,
+			 MESSAGE_TO_DISPLAY_LENGTH);
+			 manchChecked = 1;
+			 } else if (manchChecked == 1) {
+			 if (strcmp(messageToDisplayHold, messageToDisplay) == 0) {
+			 displayManchesterMessage(messageToDisplay);
+			 GPIO_SetBits(GPIOD, GPIO_Pin_13);
+
+			 sendManchesterCode(manchesterFigureVerification,
+			 manchesterFactorVerification,
+			 manchesterOrientationVerification);
+			 }
+
+			 manchChecked = 0;
+			 }
+			 BcManchFlag = MANCH_BC_DONE;
+			 }*/
 			displayManchesterMessage(messageToDisplay);
 			GPIO_SetBits(GPIOD, GPIO_Pin_13);
-			BcManchFlag = MANCH_BC_DONE;
 
-			sendManchesterCode(manchesterFigureVerification,
-					manchesterFactorVerification,
-					manchesterOrientationVerification);
+			BcManchFlag = MANCH_BC_DONE;
 
 		} else {
 			BcManchFlag = MANCH_BC_ACQUIRE;
