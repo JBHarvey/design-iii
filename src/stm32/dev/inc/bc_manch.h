@@ -34,6 +34,9 @@ void initBCManch();
 // Permet d'obtenir le code Manchester en 01 10 à partir du buffer d'échantillons
 void obtenirCodeManch(uint8_t* bufferCodeManch);
 
+// Permet de comparer deux chaînes de caractères
+uint8_t homemadeStringCompare(char* first, char* second, uint8_t size);
+
 void decodeManchBC();
 
 #endif

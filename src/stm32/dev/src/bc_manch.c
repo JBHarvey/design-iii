@@ -83,33 +83,45 @@ void decodeManchBC() {
 					manchesterOrientationVerification,
 					manchesterFactorVerification, messageToDisplay);
 
-			/*if (manchChecked == 0) {
-			 memcpy(messageToDisplayHold, messageToDisplay,
-			 MESSAGE_TO_DISPLAY_LENGTH);
-			 manchChecked = 1;
-			 } else if (manchChecked == 1) {
-			 if (strcmp(messageToDisplayHold, messageToDisplay) == 0) {
-			 displayManchesterMessage(messageToDisplay);
-			 GPIO_SetBits(GPIOD, GPIO_Pin_13);
+			if (manchChecked == 0) {
+				memcpy(messageToDisplayHold, messageToDisplay,
+						MESSAGE_TO_DISPLAY_LENGTH);
+				manchChecked = 1;
+				BcManchFlag = MANCH_BC_ACQUIRE;
+				GPIO_SetBits(GPIOD, GPIO_Pin_14);
+			} else if (manchChecked == 1) {
+				uint8_t iCompare = homemadeStringCompare(messageToDisplayHold,
+						messageToDisplay, MESSAGE_TO_DISPLAY_LENGTH);
+				if (iCompare == 1) {
+					displayManchesterMessage(messageToDisplay);
+					GPIO_SetBits(GPIOD, GPIO_Pin_13);
 
-			 sendManchesterCode(manchesterFigureVerification,
-			 manchesterFactorVerification,
-			 manchesterOrientationVerification);
-			 }
+					sendManchesterCode(manchesterFigureVerification,
+							manchesterFactorVerification,
+							manchesterOrientationVerification);
+					BcManchFlag = MANCH_BC_DONE;
+				} else {
+					BcManchFlag = MANCH_BC_ACQUIRE;
+				}
 
-			 manchChecked = 0;
-			 }
-			 BcManchFlag = MANCH_BC_DONE;
-			 }*/
-			displayManchesterMessage(messageToDisplay);
-			GPIO_SetBits(GPIOD, GPIO_Pin_13);
+				manchChecked = 0;
 
-			BcManchFlag = MANCH_BC_DONE;
+			}
 
 		} else {
 			BcManchFlag = MANCH_BC_ACQUIRE;
 		}
 	}
+}
+
+uint8_t homemadeStringCompare(char* first, char* second, uint8_t size) {
+	int i;
+	for (i = 0; i < size; i++) {
+		if (first[i] != second[i]) {
+			return 0;
+		}
+	}
+	return 1;
 }
 
 /* Interruption du TIM7 qui permet d'échantillonner le signal Manchester */
