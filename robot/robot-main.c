@@ -8,15 +8,15 @@ struct PoseFilter *pose_filter;
 struct Robot *robot;
 struct RobotServer *robot_server;
 struct Timer *timer;
-int main(int argc, char *argv[])
-{
-    setbuf(stdout, NULL);
+struct PoseFilter_Callbacks filters;
 
+static void initializeRobot(void)
+{
     const int port = 35794;
     //char *ttyACM = "/dev/null";
     char *ttyACM = "/dev/ttyACM0";
 
-    struct PoseFilter_Callbacks callbacks = PoseFilter_fetchCallbacks();
+    filters = PoseFilter_fetchCallbacks();
 
     OnboardCamera_init();
     robot = Robot_new();
@@ -27,11 +27,16 @@ int main(int argc, char *argv[])
 
     Logger_startLoggingRobot(robot);
 
-    while(1) {
+    while(!Timer_hasTimePassed(THREE_SECONDS));
+}
+
+static void executeRobot(void)
+{
+    while(!robot->current_state->flags->stop_execution_signal_received)  {
         RobotServer_communicate(robot_server);
 
         if(pose_filter->robot->current_state->flags->navigable_map_is_ready) {
-            PoseFilter_executeFilter(pose_filter, callbacks.particlesFilterUsingWorldCameraAndWheels);
+            PoseFilter_executeFilter(pose_filter, filters.updateFromCameraOnly);
             Robot_resetAllActuators(robot);
         }
 
@@ -43,11 +48,31 @@ int main(int argc, char *argv[])
             Timer_reset(timer);
         }
     }
+}
 
+static void freeRobot(void)
+{
     Timer_delete(timer);
     RobotServer_delete(robot_server);
     Robot_delete(robot);
     PoseFilter_delete(pose_filter);
     OnboardCamera_freeCamera();
+}
+
+int main(int argc, char *argv[])
+{
+
+    while(1) {
+
+        initializeRobot();
+
+        executeRobot();
+
+        freeRobot();
+
+        //ask station to send : [stop signal] on exit
+    }
+
+
     return 0;
 }

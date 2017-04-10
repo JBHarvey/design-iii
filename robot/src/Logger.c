@@ -87,6 +87,7 @@ struct DataReceiver_Callbacks Logger_startLoggingDataReceiverAndReturnCallbacks(
         .updateWheelsRotation = &Logger_updateWheelsRotation,
         .updateManchesterCode = &Logger_updateManchesterCode,
         .updateFlagsStartCycle = &Logger_updateFlagsStartCycle,
+        .updateFlagsStopExecution = &Logger_updateFlagsStopExecution,
         .updateFlagsImageReceivedByStation = &Logger_updateFlagsImageReceivedByStation,
         .updateFlagsPlannedTrajectoryReceivedByStation = &Logger_updateFlagsPlannedTrajectoryReceivedByStation,
         .updateFlagsReadyToStartSignalReceivedByStation = &Logger_updateFlagsReadyToStartSignalReceivedByStation,
@@ -274,6 +275,13 @@ void Logger_updateFlagsStartCycle(struct Flags *flags)
 {
     logFlags(FLAG_START_CYCLE);
     (*(file_logger->original_data_receiver_callbacks.updateFlagsStartCycle))(flags);
+}
+
+static const char *FLAG_STOP_EXECUTION = "Stop Execution";
+void Logger_updateFlagsStopExecution(struct Flags *flags)
+{
+    logFlags(FLAG_STOP_EXECUTION);
+    (*(file_logger->original_data_receiver_callbacks.updateFlagsStopExecution))(flags);
 }
 
 static const char *FLAG_IMAGE_RECEIVED_BY_STATION = "Image Received By Station - (Ack)";
