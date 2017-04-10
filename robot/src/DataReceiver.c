@@ -253,7 +253,7 @@ void DataReceiver_updateFlagsStartCycle(struct Flags *flags)
 
 void DataReceiver_updateFlagsStopExecution(struct Flags *flags)
 {
-    Flags_setStartCycleStopExecution(flags, 1);
+    Flags_setStopExecutionSignalReceived(flags, 1);
 }
 
 void DataReceiver_updateFlagsImageReceivedByStation(struct Flags *flags)

@@ -27,7 +27,7 @@ static void initializeRobot(void)
 
     Logger_startLoggingRobot(robot);
 
-    while(!Timer_hasTimePassed(THREE_SECONDS));
+    while(!Timer_hasTimePassed(timer, THREE_SECONDS));
 }
 
 static void executeRobot(void)
