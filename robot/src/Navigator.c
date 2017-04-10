@@ -188,8 +188,8 @@ static void sendSlowDownCommand(struct Robot *robot, int angular_distance_to_tar
     int angular_distance_to_south = abs(MINUS_HALF_PI - angle_to_target);
     int speed = last_speed / 2;
 
-    if(speed < 10) {
-        speed = 10;
+    if(speed < 100) {
+        speed = 100;
     }
 
     last_speed = speed;
