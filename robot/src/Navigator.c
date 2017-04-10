@@ -9,7 +9,7 @@ const int MEDIUM_DISTANCE = 1000;
 const int SHORT_DISTANCE = 100;
 const double ACCELERATION_FACTOR = 1.3;
 
-const int STM_CLOCK_TIME_IN_MS = 5;
+const int STM_CLOCK_TIME_IN_MS = 20;
 struct Timer *command_timer;
 
 struct Navigator *Navigator_new(void)
