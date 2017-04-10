@@ -73,6 +73,28 @@ void Navigator_updateNavigableMap(struct Robot *robot)
     }
 }
 
+int Navigator_isAngleWithinRotationTolerance(int angle)
+{
+    if(angle > HALF_PI) {
+        angle -= HALF_PI;
+    }
+
+    while(angle < 0) {
+        angle += HALF_PI;
+    }
+
+    int is_within = 1;
+    int lower_border = THETA_TOLERANCE_DEFAULT;
+    int upper_border = HALF_PI - THETA_TOLERANCE_DEFAULT;
+
+    if((angle >= lower_border)
+       && (angle <= upper_border)) {
+        is_within = 0;
+    }
+
+    return is_within;
+}
+
 int Navigator_isAngleWithinCapTolerance(int angle, int current_speed)
 {
     if(angle > HALF_PI) {
@@ -207,6 +229,24 @@ static void sendRotationCommand(struct Robot *robot, int value)
     }
 }
 
+static void sendRotationCommandForNavigation(struct Robot *robot, int angle_to_target)
+{
+    int theta;
+    int tolerance = THETA_TOLERANCE_DEFAULT;
+
+    while(angle_to_target > QUARTER_PI) {
+        angle_to_target -= HALF_PI;
+    }
+
+    while(angle_to_target < MINUS_QUARTER_PI) {
+        angle_to_target += HALF_PI;
+    }
+
+    theta = angle_to_target;
+
+    sendRotationCommand(robot, theta);
+}
+
 static void resetPlannedTrajectoryFlagsIfNecessary(struct Robot *robot)
 {
     int flag_value = robot->current_state->flags->planned_trajectory_received_by_station;
@@ -243,7 +283,7 @@ void Navigator_navigateRobotTowardsGoal(struct Robot *robot)
         robot->navigator->was_oriented_before_last_command = 0;
         Navigator_stopMovement(robot);
     } else if(!is_oriented && !was_oriented) {
-        sendRotationCommand(robot, angle_between_robot_and_target);
+        sendRotationCommandForNavigation(robot, angle_between_robot_and_target);
     } else {
         robot->navigator->was_oriented_before_last_command = 1;
 
