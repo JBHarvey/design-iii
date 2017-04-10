@@ -10,7 +10,7 @@ struct RobotServer *robot_server;
 struct Timer *timer;
 struct PoseFilter_Callbacks filters;
 
-static void initializeRobot(void)
+void initializeRobot(void)
 {
     const int port = 35794;
     //char *ttyACM = "/dev/null";
@@ -30,13 +30,13 @@ static void initializeRobot(void)
     while(!Timer_hasTimePassed(timer, THREE_SECONDS));
 }
 
-static void executeRobot(void)
+void executeRobot(void)
 {
     while(!robot->current_state->flags->stop_execution_signal_received)  {
         RobotServer_communicate(robot_server);
 
         if(pose_filter->robot->current_state->flags->navigable_map_is_ready) {
-            PoseFilter_executeFilter(pose_filter, filters.updateFromCameraOnly);
+            PoseFilter_executeFilter(pose_filter, filters.particlesFilterUsingWorldCameraAndWheels);
             Robot_resetAllActuators(robot);
         }
 
@@ -50,7 +50,7 @@ static void executeRobot(void)
     }
 }
 
-static void freeRobot(void)
+void freeRobot(void)
 {
     Timer_delete(timer);
     RobotServer_delete(robot_server);
