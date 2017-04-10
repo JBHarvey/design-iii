@@ -98,7 +98,10 @@ static int convertDistanceToSpeed(int distance)
     return speed;
 }
 
-//static int convertAngleToSpeed()
+static int convertAngleToSpeed(int theta)
+{
+    return theta;
+}
 
 static void sendSpeedsCommand(struct Robot *robot, int angular_distance_to_target, int angle_to_target)
 {
