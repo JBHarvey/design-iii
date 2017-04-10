@@ -119,6 +119,31 @@ int main(void) {
 	TM_HD44780_Puts(0, 0, "#OnLFaitEnC SHOW");
 	TM_HD44780_Puts(0, 1, "ME WHAT U GOT :O");
 
+	/* Test routine LEDs */
+	//startLEDsRoutine();
+	/* to test rotation */
+
+	/*moveDownPrehensor();
+	 Delayms(800);
+
+	 uint8_t rotationIsFinished = 0;
+	 uint8_t routineIsFinished = 0;
+
+	 isRobotRotating = 0;
+	 resetPositionEncoderVariables();
+
+	 float speedX = 0.02;
+	 float speedY = 0.0;
+	 uint8_t data[8];
+
+	 memcpy(data, &speedX, sizeof(float));
+
+	 memcpy(data + 4, &speedY, sizeof(float));
+
+	 setSpeedPidSetpoints(data);
+
+	 setState(&mainState, MAIN_PID);*/
+
 	while (1) {
 		/* Main state machine */
 		switch (mainState) {
