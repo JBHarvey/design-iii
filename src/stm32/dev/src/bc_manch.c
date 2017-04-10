@@ -1,6 +1,6 @@
 #include "bc_manch.h"
 
-// Variables utilisées conjointement dans l'Handler
+// Variables utilisï¿½es conjointement dans l'Handler
 uint8_t BcManchFlag = 0;
 uint16_t bufferBcManchIndex;
 uint8_t bufferBcManch[BC_MANCH_BUFFER_SIZE];
@@ -57,14 +57,15 @@ void decodeManchBC() {
 	uint8_t informationBits[INFORMATION_BITS_LENGTH];
 	char manchesterOrientationVerification[ORIENTATION_LENGTH] = { ' ', ' ',
 			' ', ' ', ' ' };
-	uint8_t manchesterFigureVerification = getFigureFromInformationBits(
-			informationBits);
 
 	if (BcManchFlag == MANCH_BC_DECODE) {
 
 		obtenirCodeManch(codeDecoder);
 		if (decodeManchester(informationBits, codeDecoder)
 				== VALID_INFORMATION) {
+
+			uint8_t manchesterFigureVerification = getFigureFromInformationBits(
+					informationBits);
 
 			setOrientationFromInformationBits(informationBits,
 					manchesterOrientationVerification);
@@ -92,17 +93,17 @@ void decodeManchBC() {
 	}
 }
 
-/* Interruption du TIM7 qui permet d'échantillonner le signal Manchester */
+/* Interruption du TIM7 qui permet d'ï¿½chantillonner le signal Manchester */
 extern void TIM7_IRQHandler() {
 	if (TIM_GetITStatus(TIM7, TIM_IT_Update) != RESET) {
 		TIM_ClearITPendingBit(TIM7, TIM_IT_Update);
-		// 0 indique que l'on est entrain d'échantillonner
+		// 0 indique que l'on est entrain d'ï¿½chantillonner
 		if (BcManchFlag == MANCH_BC_ACQUIRE) {
 			if (bufferBcManchIndex < BC_MANCH_BUFFER_SIZE) {
 				bufferBcManch[bufferBcManchIndex++] = GPIO_ReadInputDataBit(
 						GPIOD, MANCHESTER_PIN);
 			} else {
-				// Le buffer est plein, on est prêt à le traiter
+				// Le buffer est plein, on est prï¿½t ï¿½ le traiter
 				BcManchFlag = 1;
 			}
 		}
