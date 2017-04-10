@@ -91,7 +91,7 @@ static int convertDistanceToSpeed(int distance)
 
     if(speed > 1600) {
         speed = 1600;
-    } else if(speed < 600) {
+    } else if(distance < 1000) {
         speed /= 5;
     }
 
