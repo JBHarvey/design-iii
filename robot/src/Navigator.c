@@ -3,6 +3,8 @@
 #include "Navigator.h"
 #include "Pathfinder.h"
 
+int last_speed = 0;
+
 struct Navigator *Navigator_new(void)
 {
     struct Object *new_object = Object_new();
@@ -87,14 +89,26 @@ int Navigator_isAngleWithinRotationTolerance(int angle)
 static int convertDistanceToSpeed(int distance)
 {
     double x = (double) distance;
-    int speed = (int)(sqrt(x) * sqrt(1600));
+    int top_speed = (int)(sqrt(x) * sqrt(1600));
+    int speed;
 
-    if(speed > 1600) {
-        speed = 1600;
-    } else if(distance < 1000) {
-        speed /= 4;
+    if(top_speed > 1600) {
+        top_speed = 1600;
+    } else if(distance < 1000 && distance > 5) {
+        top_speed /= 3.5;
+    } else if(distance <= 5) {
+        top_speed = 0;
     }
 
+    if(last_speed < top_speed) {
+        if(last_speed == 0) {
+            speed = 10;
+        } else {
+            speed = (last_speed * 2 < top_speed) ? last_speed * 2 : top_speed;
+        }
+    }
+
+    last_speed = speed;
     return speed;
 }
 
