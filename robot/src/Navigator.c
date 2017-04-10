@@ -284,7 +284,7 @@ void Navigator_navigateRobotTowardsGoal(struct Robot *robot)
         if(was_oriented && is_very_oriented) {
             int distance_to_target = Coordinates_distanceBetween(current_pose->coordinates, goal_coordinates);
             sendSpeedsCommand(robot, distance_to_target, angle_between_robot_and_target);
-        } else if(was_oriented && !is_very_oriented) {
+        } else if(was_oriented && !is_very_oriented && last_speed > 100) {
             int distance_to_target = Coordinates_distanceBetween(current_pose->coordinates, goal_coordinates);
             sendSlowDownCommand(robot, distance_to_target, angle_between_robot_and_target);
         } else {
