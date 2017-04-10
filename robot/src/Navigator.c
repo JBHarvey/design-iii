@@ -92,11 +92,13 @@ static int convertDistanceToSpeed(int distance)
     if(speed > 1600) {
         speed = 1600;
     } else if(distance < 1000) {
-        speed /= 5;
+        speed /= 4;
     }
 
     return speed;
 }
+
+//static int convertAngleToSpeed()
 
 static void sendSpeedsCommand(struct Robot *robot, int angular_distance_to_target, int angle_to_target)
 {
