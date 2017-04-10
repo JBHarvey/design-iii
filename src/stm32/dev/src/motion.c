@@ -458,11 +458,22 @@ void setRotatePidSetpoints(uint8_t *data) {
 		MotorSetDirection(3, CLOCK);
 		MotorSetDirection(4, CLOCK);
 
+		PID_SPEED1.mySetpoint = calculateSpeedToTicks(radian);
+		PID_SPEED2.mySetpoint = calculateSpeedToTicks(radian);
+		PID_SPEED3.mySetpoint = calculateSpeedToTicks(radian);
+		PID_SPEED4.mySetpoint = calculateSpeedToTicks(radian);
+
 	} else if (radian < 0.0) {
 		MotorSetDirection(1, COUNTER_CLOCK);
 		MotorSetDirection(2, COUNTER_CLOCK);
 		MotorSetDirection(3, COUNTER_CLOCK);
 		MotorSetDirection(4, COUNTER_CLOCK);
+		radian = -radian;
+
+		PID_SPEED1.mySetpoint = calculateSpeedToTicks(radian);
+		PID_SPEED2.mySetpoint = calculateSpeedToTicks(radian);
+		PID_SPEED3.mySetpoint = calculateSpeedToTicks(radian);
+		PID_SPEED4.mySetpoint = calculateSpeedToTicks(radian);
 
 	} else {
 		MotorSetDirection(1, BRAKE_G);
@@ -475,10 +486,5 @@ void setRotatePidSetpoints(uint8_t *data) {
 		PID_SPEED3.mySetpoint = 0;
 		PID_SPEED4.mySetpoint = 0;
 	}
-
-	PID_SPEED1.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED_LOW);
-	PID_SPEED2.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED_LOW);
-	PID_SPEED3.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED_LOW);
-	PID_SPEED4.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED_LOW);
 }
 

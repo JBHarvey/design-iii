@@ -130,6 +130,8 @@ uint16_t calculateSpeedToTicks(FloatType speedInMeters);
 
 FloatType calculatePosition(FloatType positionEdges);
 
+FloatType calculateRadianFromMeters(FloatType perimeterInMeters);
+
 //void PID_Initialize(PidType* pid);
 
 /*******************************************************

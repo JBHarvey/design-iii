@@ -28,6 +28,7 @@
 #include "com.h"
 #include "prehenseur.h"
 #include "motion.h"
+#include "bc_manch.h"
 
 volatile int mainState = MAIN_IDLE;
 
@@ -35,10 +36,6 @@ volatile int mainState = MAIN_IDLE;
 volatile uint8_t manchesterBuffer[MANCHESTER_BUFFER_LENGTH];
 volatile uint8_t manchesterIndex = 0;
 volatile uint8_t manchesterState = MANCHESTER_WAIT_FOR_DECODING;
-volatile uint8_t manchesterFigureVerification = 0;
-volatile char manchesterOrientationVerification[ORIENTATION_LENGTH] = { ' ',
-		' ', ' ', ' ', ' ' };
-volatile uint8_t manchesterFactorVerification = 0;
 
 volatile uint8_t sendMeasureCounter = 0;
 
@@ -50,32 +47,22 @@ volatile uint8_t readyToSendManchester = 0;
 
 volatile uint8_t readyToSendMoveMeasures = 0;
 
+volatile uint8_t readyToSendInfraredData = 0;
+
 volatile uint8_t readyToSendData = 0;
 
 volatile uint8_t initializeManchesterFlag = 0;
 
-extern void TIM5_IRQHandler() {
-	if (TIM_GetITStatus(TIM5, TIM_IT_Update) != RESET) {
-		TIM_ClearITPendingBit(TIM5, TIM_IT_Update);
+volatile float lastRadian = 0;
 
-		switch (manchesterState) {
-		case MANCHESTER_FIRST:
-			manchesterIndex = 0;
-			manchesterState = MANCHESTER_FILL;
-			TIM_SetAutoreload(TIM5, MANCHESTER_PERIOD * 4 - 1);
-			break;
-		case MANCHESTER_FILL:
-			manchesterBuffer[manchesterIndex] = GPIO_ReadInputDataBit(GPIOD,
-					MANCHESTER_PIN);
-			manchesterIndex++;
-			if (manchesterIndex >= MANCHESTER_BUFFER_LENGTH) {
-				manchesterState = MANCHESTER_DECODE;
-				disableTimer5Interrupt();
-			}
-			break;
-		}
-	}
-}
+/* routine to test rotation */
+/*volatile float radianForDebug = 0;
+
+ volatile float positionLine1 = 0;
+
+ volatile float positionLine2 = 0;
+
+ volatile uint8_t line2Flag = 0;*/
 
 /* frequency is in hertz*/
 void systickInit(uint16_t frequency) {
@@ -91,6 +78,7 @@ void initAll(void) {
 	SystemInit();
 	// LCD initialization
 	TM_HD44780_Init(16, 2);
+	TM_HD44780_Clear();
 	// Intern LEDs initialization
 	TM_DISCO_LedInit();
 	// COM port initialization
@@ -100,31 +88,20 @@ void initAll(void) {
 	// Encoder initialization
 	initEncoders();
 	// Push button initialization
-	initBtn();
-
+	//initBtn();
 // Initialisation des variables
 	mainState = MAIN_IDLE;
-//setState(&mainState, MAIN_MOVE);
-
-	int state = IDLE;
 
 // Extern LEDs initialization
 	InitializeLEDs();
 
 // initializations for manchester signal
 	// ADC antenne initialization
-	initAdcAntenne();
+	initAdcIR();
 	// Manchester initialization
 	InitializeManchesterInput();
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 	//initializeExternalInterruptLine4();
-}
-
-int main(void) {
-	initAll();
-	// Initialisation des variables
-	//mainState = MAIN_ACQUIS_ALL;
-
 	/* Initialization of PIDs */
 	initAllPIDS();
 
@@ -132,10 +109,16 @@ int main(void) {
 
 	turnOffLEDs();
 
-	TM_HD44780_Puts(0, 0, "Captain ready");
+	initBCManch();
 
-	/* Test routine LEDs */
-	//startLEDsRoutine();
+}
+
+int main(void) {
+	initAll();
+	// Initialisation des variables
+	TM_HD44780_Puts(0, 0, "#OnLFaitEnC SHOW");
+	TM_HD44780_Puts(0, 1, "ME WHAT U GOT :O");
+
 	while (1) {
 		/* Main state machine */
 		switch (mainState) {
@@ -166,59 +149,15 @@ int main(void) {
 			break;
 
 		case MAIN_PID:
-			/*if (newMoveCommand) {
-
-			 resetPositionEncoderVariables();
-
-			 resetPIDValues();
-
-			 setWheelMoveDirections();
-
-			 newMoveCommand = 0;
-			 } else {
-			 setSpeedSetpoints();
-			 computeCustomPIDS(&mainState);
-			 }*/
-
 			if (newSpeedSetpointCommand) {
-				resetPositionEncoderVariables();
+				//resetPositionEncoderVariables();
 				newSpeedSetpointCommand = 0;
 			} else {
 				computeSpeedPIDS();
 			}
-
 			break;
-		case MAIN_MANCH:
-
-			if (initializeManchesterFlag == 1) {
-				initializeExternalInterruptLine4();
-				initializeManchesterFlag = 0;
-			} else {
-
-				tryToDecodeManchesterCode(&manchesterState, manchesterBuffer,
-						&manchesterFigureVerification,
-						manchesterOrientationVerification,
-						&manchesterFactorVerification);
-
-				/* conidition pour code valide
-				 * if (manchesterFactorVerification != 0
-				 && manchesterOrientationVerification[2] != ' '
-				 && readyToSendManchester)
-				 *********************************************/
-
-				if (readyToSendManchester && readyToSendData
-						&& manchesterOrientationVerification[2] != ' ') {
-
-					sendManchesterCode(manchesterFigureVerification,
-							manchesterFactorVerification,
-							manchesterOrientationVerification);
-
-					manchesterOrientationVerification[2] = ' ';
-
-					readyToSendManchester = 0;
-				}
-			}
-
+		case MAIN_MANCH_BC:
+			decodeManchBC();
 			break;
 		case MAIN_PREHENSEUR:
 			initPrehensor();
@@ -262,30 +201,49 @@ int main(void) {
 		// il envoie des donnees apres que readyToSendData == 1 donc apres avoir recu une commande de mouvement.
 		if (readyToSendMoveMeasures && readyToSendData) {
 
-			float positionX = calculatePosition(
-					(numberOfPositionEdges1 + numberOfPositionEdges3) / 2);
+			if (isRobotRotating) {
+				float perimeterInMeters = calculatePosition(
+						(-numberOfPositionEdges1 + numberOfPositionEdges3
+								- numberOfPositionEdges2
+								+ numberOfPositionEdges4) / 4);
 
-			float positionY = calculatePosition(
-					(numberOfPositionEdges2 + numberOfPositionEdges4) / 2);
+				float radian = calculateRadianFromMeters(perimeterInMeters);
 
-			float speedX = calculateSpeed(
-					(PID_SPEED1.myInput + PID_SPEED3.myInput) / 2);
+				float radianSpeed = (radian - lastRadian)
+						/ SPEED_CALC_TIME_DELAY;
 
-			if (speedDirection1 == SPEED_DIRECTION_BACKWARD) {
-				speedX = -speedX;
+				lastRadian = radian;
+
+				sendMoveMeasures(0, 0, 0, 0, radian, radianSpeed);
+
+			} else {
+
+				float positionX = calculatePosition(
+						(numberOfPositionEdges1 + numberOfPositionEdges3) / 2);
+
+				float positionY = calculatePosition(
+						(numberOfPositionEdges2 + numberOfPositionEdges4) / 2);
+
+				float speedX = calculateSpeed(
+						(PID_SPEED1.myInput + PID_SPEED3.myInput) / 2);
+
+				if (speedDirection1 == SPEED_DIRECTION_BACKWARD) {
+					speedX = -speedX;
+				}
+
+				float speedY = calculateSpeed(
+						(PID_SPEED2.myInput + PID_SPEED4.myInput) / 2);
+
+				if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
+					speedY = -speedY;
+				}
+
+				sendMoveMeasures(positionX, positionY, speedX, speedY, 0, 0);
 			}
-
-			float speedY = calculateSpeed(
-					(PID_SPEED2.myInput + PID_SPEED4.myInput) / 2);
-
-			if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
-				speedY = -speedY;
-			}
-
-			sendMoveMeasures(positionX, positionY, speedX, speedY);
 
 			readyToSendMoveMeasures = 0;
 		}
+
 	}
 }
 
@@ -300,8 +258,11 @@ extern void EXTI4_IRQHandler(void) {
 	}
 }
 
+/**********************************************************************
+ * Handlers pour metter à jour les encodeurs et les variables positions
+ * vitesses.
+ ***********************************************************************/
 extern void EXTI9_5_IRQHandler(void) {
-	/* Make sure that interrupt flag is set */
 
 // wheel 1 channel 1
 	if (EXTI_GetITStatus(EXTI_Line5) != RESET) {
@@ -311,7 +272,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		wheel1Channel1UP = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_5);
 		wheel1Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_6);
 
-		// check wheel 1
+		// regarde le déphasage pour la direction
 		if (wheel1Channel1UP == wheel1Channel2UP) {
 
 			numberOfPositionEdges1++;
@@ -328,6 +289,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		EXTI_ClearITPendingBit (EXTI_Line5);
 	}
 
+// wheel 1 channel 2
 	if (EXTI_GetITStatus(EXTI_Line6) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges1++;
@@ -335,7 +297,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		wheel1Channel1UP = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_5);
 		wheel1Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_6);
 
-		// check wheel 1
+		// regarde le déphasage pour la direction
 		if (wheel1Channel1UP != wheel1Channel2UP) {
 			numberOfPositionEdges1++;
 			incWheel1Canal2EncoderCounter++;
@@ -350,6 +312,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		EXTI_ClearITPendingBit (EXTI_Line6);
 	}
 
+// wheel 2 channel 1
 	if (EXTI_GetITStatus(EXTI_Line8) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges2++;
@@ -357,7 +320,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		wheel2Channel1UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_8);
 		wheel2Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_9);
 
-		// check wheel 2
+		// regarde le déphasage pour la direction
 		if (wheel2Channel1UP == wheel2Channel2UP) {
 
 			numberOfPositionEdges2++;
@@ -374,6 +337,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		EXTI_ClearITPendingBit (EXTI_Line8);
 	}
 
+// wheel 2 channel 2
 	if (EXTI_GetITStatus(EXTI_Line9) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges2++;
@@ -381,7 +345,7 @@ extern void EXTI9_5_IRQHandler(void) {
 		wheel2Channel1UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_8);
 		wheel2Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_9);
 
-		// check wheel 2
+		// regarde le déphasage pour la direction
 		if (wheel2Channel1UP != wheel2Channel2UP) {
 			numberOfPositionEdges2++;
 			incWheel2Canal2EncoderCounter++;
@@ -400,6 +364,7 @@ extern void EXTI9_5_IRQHandler(void) {
 
 extern void EXTI15_10_IRQHandler(void) {
 	/* Make sure that interrupt flag is set */
+// wheel 3 channel 1
 	if (EXTI_GetITStatus(EXTI_Line10) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges3++;
@@ -407,7 +372,7 @@ extern void EXTI15_10_IRQHandler(void) {
 		wheel3Channel1UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_10);
 		wheel3Channel2UP = GPIO_ReadInputDataBit(GPIOD, GPIO_Pin_11);
 
-		// check wheel 3
+		// regarde le déphasage pour la direction
 		if (wheel3Channel1UP != wheel3Channel2UP) {
 			numberOfPositionEdges3++;
 			incWheel3Canal1EncoderCounter++;
@@ -444,6 +409,7 @@ extern void EXTI15_10_IRQHandler(void) {
 		EXTI_ClearITPendingBit (EXTI_Line11);
 	}
 
+// wheel 3 channel 2
 	if (EXTI_GetITStatus(EXTI_Line12) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges4++;
@@ -451,7 +417,7 @@ extern void EXTI15_10_IRQHandler(void) {
 		wheel4Channel1UP = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_12);
 		wheel4Channel2UP = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_13);
 
-		// check wheel 4
+		// regarde le déphasage pour la direction
 		if (wheel4Channel1UP != wheel4Channel2UP) {
 			numberOfPositionEdges4++;
 			incWheel4Canal1EncoderCounter++;
@@ -466,6 +432,7 @@ extern void EXTI15_10_IRQHandler(void) {
 		EXTI_ClearITPendingBit (EXTI_Line12);
 	}
 
+// wheel 4 channel 2
 	if (EXTI_GetITStatus(EXTI_Line13) != RESET) {
 		/* increase ticks */
 		numberOfSpeedEdges4++;
@@ -473,7 +440,7 @@ extern void EXTI15_10_IRQHandler(void) {
 		wheel4Channel1UP = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_12);
 		wheel4Channel2UP = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_13);
 
-		// check wheel 4
+		// regarde le déphasage pour la direction
 		if (wheel4Channel1UP == wheel4Channel2UP) {
 			numberOfPositionEdges4++;
 			incWheel4Canal2EncoderCounter++;
@@ -493,29 +460,7 @@ extern void TIM2_IRQHandler() {
 	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
 
-		/* update Speed pids inputs ticks with direction sign */
-		/*if (speedDirection1 == SPEED_DIRECTION_FORWARD) {
-		 PID_SPEED1.myInput = numberOfSpeedEdges1;
-		 } else if (speedDirection1 == SPEED_DIRECTION_BACKWARD) {
-		 PID_SPEED1.myInput = -numberOfSpeedEdges1;
-		 }
-		 if (speedDirection2 == SPEED_DIRECTION_FORWARD) {
-		 PID_SPEED2.myInput = numberOfSpeedEdges2;
-		 } else if (speedDirection2 == SPEED_DIRECTION_BACKWARD) {
-		 PID_SPEED2.myInput = -numberOfSpeedEdges2;
-		 }
-		 if (speedDirection3 == SPEED_DIRECTION_FORWARD) {
-		 PID_SPEED3.myInput = numberOfSpeedEdges3; // slave
-		 } else if (speedDirection3 == SPEED_DIRECTION_BACKWARD) {
-		 PID_SPEED3.myInput = -numberOfSpeedEdges3; // slave
-
-		 }
-		 if (speedDirection4 == SPEED_DIRECTION_FORWARD) {
-		 PID_SPEED4.myInput = numberOfSpeedEdges4; // slave
-		 } else if (speedDirection4 == SPEED_DIRECTION_BACKWARD) {
-		 PID_SPEED4.myInput = -numberOfSpeedEdges4; // slave
-		 }*/
-
+		/* Update Speed measure PIDS*/
 		PID_SPEED1.myInput = numberOfSpeedEdges1;
 		PID_SPEED2.myInput = numberOfSpeedEdges2;
 		PID_SPEED3.myInput = numberOfSpeedEdges3;
@@ -541,11 +486,10 @@ extern void TIM2_IRQHandler() {
 
 		sendMeasureCounter++;
 
-		//if (sendMeasureCounter == 10) {
-		/* envoyer les mesures captees, a remplacer par USART */
+		//flag to send measure datas to Robot
 		readyToSendMoveMeasures = 1;
+		readyToSendInfraredData = 1;
 		sendMeasureCounter = 0;
-		//}
 
 		resetEncoderSpeedVariables();
 
@@ -673,21 +617,15 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 		break;
 	case COMMAND_ROTATE:
 		if (len == 4) {
-			// stop the robot before rotating
-			/*stopMove();
-
-			 newMoveCommand = 1;
-
-			 isRobotRotating = 1;
-
-			 setRotateSetpoints(data);
-
-			 //setRotateSettings(data);
-			 setCustomRotateSettings(data);
-
-			 setState(&mainState, MAIN_PID);*/
 
 			newMoveCommand = 1;
+
+			readyToSendData = 1;
+
+			if (!isRobotRotating) {
+
+				resetPositionEncoderVariables();
+			}
 
 			isRobotRotating = 1;
 
@@ -733,10 +671,8 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 		setState(&mainState, MAIN_MOVE_DOWN_PREHENSOR);
 		break;
 	case COMMAND_DECODE_MANCHESTER:
-		readyToSendData = 1;
-		readyToSendManchester = 1;
-		initializeManchesterFlag = 1;
-		setState(&mainState, MAIN_MANCH);
+		BcManchFlag = 0;
+		setState(&mainState, MAIN_MANCH_BC);
 		break;
 	case COMMAND_STOP_DECODE_MANCHESTER:
 		// stop reading and sending adc signal
@@ -752,6 +688,11 @@ extern void handle_full_packet(uint8_t type, uint8_t *data, uint8_t len) {
 		if (len == 8) {
 			newSpeedSetpointCommand = 1;
 			readyToSendData = 1;
+
+			if (isRobotRotating) {
+				resetPositionEncoderVariables();
+			}
+			isRobotRotating = 0;
 			setSpeedPidSetpoints(data);
 			setState(&mainState, MAIN_PID);
 		}
