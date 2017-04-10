@@ -13,6 +13,7 @@ struct Flags *Flags_new(void)
     pointer->navigable_map_is_ready = FALSE;
     pointer->ready_to_start_received_by_station = FALSE;
     pointer->start_cycle_signal_received = FALSE;
+    pointer->stop_execution_signal_received = FALSE;
     pointer->planned_trajectory_received_by_station = FALSE;
     pointer->picture_taken = FALSE;
     pointer->image_received_by_station = FALSE;
@@ -40,6 +41,7 @@ struct Flags *Flags_irrelevant(void)
     Flags_setNavigableMapIsReady(irrelevant, IRRELEVANT);
     Flags_setReadyToStartReceivedByStation(irrelevant, IRRELEVANT);
     Flags_setStartCycleSignalReceived(irrelevant, IRRELEVANT);
+    Flags_setStopExecutionSignalReceived(irrelevant, IRRELEVANT);
     Flags_setPlannedTrajectoryReceivedByStation(irrelevant, IRRELEVANT);
     Flags_setPictureTaken(irrelevant, IRRELEVANT);
     Flags_setImageReceivedByStation(irrelevant, IRRELEVANT);
@@ -56,6 +58,7 @@ void Flags_copyValuesFrom(struct Flags *recipient, struct Flags *source)
     recipient->navigable_map_is_ready = source->navigable_map_is_ready;
     recipient->ready_to_start_received_by_station = source->ready_to_start_received_by_station;
     recipient->start_cycle_signal_received = source->start_cycle_signal_received;
+    recipient->stop_execution_signal_received = source->stop_execution_signal_received;
     recipient->planned_trajectory_received_by_station = source->planned_trajectory_received_by_station;
     recipient->picture_taken = source->picture_taken;
     recipient->image_received_by_station = source->image_received_by_station;
@@ -76,6 +79,8 @@ int Flags_haveTheSameValues(struct Flags *flags, struct Flags *other_flags)
             || other_flags->ready_to_start_received_by_station == IRRELEVANT)
         && (flags->start_cycle_signal_received == other_flags->start_cycle_signal_received
             || flags->start_cycle_signal_received == IRRELEVANT || other_flags->start_cycle_signal_received == IRRELEVANT)
+        && (flags->stop_execution_signal_received == other_flags->stop_execution_signal_received
+            || flags->stop_execution_signal_received == IRRELEVANT || other_flags->stop_execution_signal_received == IRRELEVANT)
         && (flags->planned_trajectory_received_by_station == other_flags->planned_trajectory_received_by_station
             || flags->planned_trajectory_received_by_station == IRRELEVANT
             || other_flags->planned_trajectory_received_by_station == IRRELEVANT)
@@ -110,6 +115,11 @@ void Flags_setReadyToStartReceivedByStation(struct Flags *flags, int new_value)
 void Flags_setStartCycleSignalReceived(struct Flags *flags, int new_value)
 {
     flags->start_cycle_signal_received = new_value;
+}
+
+void Flags_setStopExecutionSignalReceived(struct Flags *flags, int new_value)
+{
+    flags->stop_execution_signal_received = new_value;
 }
 
 void Flags_setPlannedTrajectoryReceivedByStation(struct Flags *flags, int new_value)

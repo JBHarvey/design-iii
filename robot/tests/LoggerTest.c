@@ -22,6 +22,7 @@ void assertDataReceiverCallbacksAreDecoratedByLogger(struct DataReceiver_Callbac
     void (*updateManchesterCode)(struct ManchesterCode *, struct Flags *,
                                  struct Communication_ManchesterCode) = &Logger_updateManchesterCode;
     void (*updateFlagsStartCycle)(struct Flags *) = &Logger_updateFlagsStartCycle;
+    void (*updateFlagsStopExecution)(struct Flags *) = &Logger_updateFlagsStopExecution;
     void (*updateFlagsImageReceivedByStation)(struct Flags *) = &Logger_updateFlagsImageReceivedByStation;
     void (*updateFlagsPlannedTrajectoryReceivedByStation)(struct Flags *) =
         &Logger_updateFlagsPlannedTrajectoryReceivedByStation;
@@ -37,6 +38,7 @@ void assertDataReceiverCallbacksAreDecoratedByLogger(struct DataReceiver_Callbac
     cr_assert_eq(data_receiver_callbacks.updateWheelsRotation, updateWheelsRotation);
     cr_assert_eq(data_receiver_callbacks.updateManchesterCode, updateManchesterCode);
     cr_assert_eq(data_receiver_callbacks.updateFlagsStartCycle, updateFlagsStartCycle);
+    cr_assert_eq(data_receiver_callbacks.updateFlagsStopExecution, updateFlagsStopExecution);
     cr_assert_eq(data_receiver_callbacks.updateFlagsImageReceivedByStation, updateFlagsImageReceivedByStation);
     cr_assert_eq(data_receiver_callbacks.updateFlagsPlannedTrajectoryReceivedByStation,
                  updateFlagsPlannedTrajectoryReceivedByStation);
@@ -75,6 +77,7 @@ Test(Logger, given_aLogger_when_stopsLoggingDataReceiver_then_originalDataReceiv
     cr_assert_eq(from_logger.updateWheelsRotation, data_receiver_callbacks.updateWheelsRotation);
     cr_assert_eq(from_logger.updateManchesterCode, data_receiver_callbacks.updateManchesterCode);
     cr_assert_eq(from_logger.updateFlagsStartCycle, data_receiver_callbacks.updateFlagsStartCycle);
+    cr_assert_eq(from_logger.updateFlagsStopExecution, data_receiver_callbacks.updateFlagsStopExecution);
     cr_assert_eq(from_logger.updateFlagsImageReceivedByStation, data_receiver_callbacks.updateFlagsImageReceivedByStation);
     cr_assert_eq(from_logger.updateFlagsPlannedTrajectoryReceivedByStation,
                  data_receiver_callbacks.updateFlagsPlannedTrajectoryReceivedByStation);
