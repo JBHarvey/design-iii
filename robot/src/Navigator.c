@@ -9,7 +9,7 @@ const int MEDIUM_DISTANCE = 1000;
 const int SHORT_DISTANCE = 100;
 const double ACCELERATION_FACTOR = 1.3;
 
-const int STM_CLOCK_TIME_IN_MS = 10;
+const int STM_CLOCK_TIME_IN_MS = 5;
 struct Timer *command_timer;
 
 struct Navigator *Navigator_new(void)
@@ -124,14 +124,18 @@ static int convertDistanceToSpeed(int distance, int current_speed)
 
 static int convertAngleToSpeed(int theta)
 {
-    int speed = (theta < 0) ? -30000 : 30000 ;
+    int speed = (theta < 0) ? -40000 : 40000 ;
+
+    if(theta < QUARTER_PI && theta > -QUARTER_PI) {
+        speed = (theta < 0) ? -22000 : 22000 ;
+    }
 
     if(theta < THETA_TOLERANCE_DEFAULT && theta > -THETA_TOLERANCE_DEFAULT) {
-        speed = 13000;
+        speed = (theta < 0) ? -13000 : 13000 ;
     }
 
     if(theta < THETA_TOLERANCE_DEFAULT / 2 && theta > -THETA_TOLERANCE_DEFAULT / 2) {
-        speed = 7000;
+        speed = (theta < 0) ? -7000 : 7000 ;
     }
 
     return speed;
