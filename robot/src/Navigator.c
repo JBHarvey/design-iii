@@ -124,14 +124,14 @@ static int convertDistanceToSpeed(int distance, int current_speed)
 
 static int convertAngleToSpeed(int theta)
 {
-    int speed = theta;
+    int speed = 25000;
 
     if(theta < THETA_TOLERANCE_DEFAULT && theta > -THETA_TOLERANCE_DEFAULT) {
-        speed = 17000;
+        speed = 13000;
     }
 
     if(theta < THETA_TOLERANCE_DEFAULT / 2 && theta > -THETA_TOLERANCE_DEFAULT / 2) {
-        speed = 9000;
+        speed = 7000;
     }
 
     return speed;
