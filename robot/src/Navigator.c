@@ -118,14 +118,14 @@ static int convertDistanceToSpeed(int distance)
     if(top_speed > 1600) {
         top_speed = 1600;
     } else if(distance < 1000 && distance > 5) {
-        top_speed /= 3.5;
+        top_speed /= 2;
     } else if(distance <= 5) {
         top_speed = 0;
     }
 
     if(last_speed < top_speed) {
         if(last_speed == 0) {
-            speed = 10;
+            speed = 100;
         } else {
             speed = (last_speed * 1.3 < top_speed) ? last_speed * 1.3 : top_speed;
         }
@@ -186,7 +186,7 @@ static void sendSlowDownCommand(struct Robot *robot, int angular_distance_to_tar
     int angular_distance_to_east = abs(angle_to_target);
     int angular_distance_to_north = abs(HALF_PI - angle_to_target);
     int angular_distance_to_south = abs(MINUS_HALF_PI - angle_to_target);
-    int speed = last_speed / 2;
+    int speed = last_speed / 1.5;
 
     if(speed < 100) {
         speed = 100;
