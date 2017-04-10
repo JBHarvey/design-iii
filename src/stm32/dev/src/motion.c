@@ -468,12 +468,6 @@ void setRotatePidSetpoints(uint8_t *data) {
 		MotorSetDirection(2, COUNTER_CLOCK);
 		MotorSetDirection(3, COUNTER_CLOCK);
 		MotorSetDirection(4, COUNTER_CLOCK);
-		radian = -radian;
-
-		PID_SPEED1.mySetpoint = calculateSpeedToTicks(radian);
-		PID_SPEED2.mySetpoint = calculateSpeedToTicks(radian);
-		PID_SPEED3.mySetpoint = calculateSpeedToTicks(radian);
-		PID_SPEED4.mySetpoint = calculateSpeedToTicks(radian);
 
 		PID_SPEED1.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED_LOW);
 		PID_SPEED2.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED_LOW);
