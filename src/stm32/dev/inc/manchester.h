@@ -38,7 +38,7 @@ enum InformationBitsState {
 #define FACTOR_2X 2
 #define FACTOR_4X 4
 #define ORIENTATION_LENGTH 5
-#define MESSAGE_TO_DISPLAY_LENGTH 10
+#define MESSAGE_TO_DISPLAY_LENGTH 16
 
 uint8_t isNextTwoBitsTheBeginningOfNewCycle(uint8_t index,
 		uint8_t *manchesterBuffer);

@@ -52,7 +52,7 @@ void sendPrehensorDownConfirmation();
 
 void sendStopSendingManchesterSignalConfirmation();
 
-void sendManchesterCode(uint8_t figure, uint8_t factor, uint8_t *orientation);
+void sendManchesterCode(uint8_t figure, uint8_t factor, char *orientation);
 
 void sendInfraredMesasures(float infraredCaptor1, float infraredCaptor2,
 		float infraredCaptor3);

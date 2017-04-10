@@ -102,7 +102,7 @@ void sendStopSendingManchesterSignalConfirmation() {
 	VCP_DataTx(dataToSend, 2);
 }
 
-void sendManchesterCode(uint8_t figure, uint8_t factor, uint8_t *orientation) {
+void sendManchesterCode(uint8_t figure, uint8_t factor, char *orientation) {
 	uint8_t dataToSend[5];
 	dataToSend[0] = COMMAND_DECODED_MANCHESTER;
 	dataToSend[1] = 3;

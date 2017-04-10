@@ -58,6 +58,7 @@ void decodeManchBC() {
 	char manchesterOrientationVerification[ORIENTATION_LENGTH] = { ' ', ' ',
 			' ', ' ', ' ' };
 	uint8_t manchesterFigureVerification;
+	char messageToDisplay[MESSAGE_TO_DISPLAY_LENGTH];
 
 	if (BcManchFlag == MANCH_BC_DECODE) {
 
@@ -72,12 +73,6 @@ void decodeManchBC() {
 					manchesterOrientationVerification);
 			manchesterFactorVerification = getFactorFromInformationBits(
 					informationBits);
-
-			sendManchesterCode(manchesterFigureVerification,
-					manchesterFactorVerification,
-					manchesterOrientationVerification);
-
-			char messageToDisplay[MESSAGE_TO_DISPLAY_LENGTH];
 
 			setMessageToDisplay(manchesterFigureVerification,
 					manchesterOrientationVerification,

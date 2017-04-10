@@ -90,7 +90,7 @@ void initAll(void) {
 	// Push button initialization
 	//initBtn();
 // Initialisation des variables
-	mainState = MAIN_MANCH_BC;
+	mainState = MAIN_IDLE;
 
 // Extern LEDs initialization
 	InitializeLEDs();
@@ -116,8 +116,8 @@ void initAll(void) {
 int main(void) {
 	initAll();
 	// Initialisation des variables
-	TM_HD44780_Puts(0, 0, "#OnLFaitEnC SHOW");
-	TM_HD44780_Puts(0, 1, "ME WHAT U GOT :O");
+	TM_HD44780_Puts(0, 0, "VIROC WASTD NEXT");
+	TM_HD44780_Puts(0, 1, "THURSDAY (-'.')-");
 
 	/* Test routine LEDs */
 	//startLEDsRoutine();
