@@ -7,6 +7,7 @@ struct CommandSender_Callbacks callbacks;
 struct Navigator *navigator;
 struct Robot *robot;
 const int COMMAND_SENT = 1;
+const int DEFAULT_SPEED = 500;
 int speeds_validator;
 int sent_speeds_command_x;
 int sent_speeds_command_y;
@@ -101,95 +102,95 @@ Test(Navigator,
     cr_assert(navigable_map_is_ready);
 }
 
-Test(Navigator, given_anAngleSmallerThanTheThetaTolerance_when_askedIfTheAngleIsWithinTheRotationTolerance_then_itIs
+Test(Navigator, given_anAngleSmallerThanTheThetaTolerance_when_askedIfTheAngleIsWithinTheCapTolerance_then_itIs
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
     int angle = THETA_TOLERANCE_DEFAULT / 2;
-    int is_oriented = Navigator_isAngleWithinRotationTolerance(angle);
+    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED);
     cr_assert(is_oriented);
 }
 
-Test(Navigator, given_anAngleEqualToTheTolerance_when_askedIfTheAngleIsWithinTheRotationTolerance_then_itIsNot
+Test(Navigator, given_anAngleEqualToTheTolerance_when_askedIfTheAngleIsWithinTheCapTolerance_then_itIsNot
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
     int angle = THETA_TOLERANCE_DEFAULT;
-    int is_oriented = Navigator_isAngleWithinRotationTolerance(angle);
+    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED);
     cr_assert(!is_oriented);
 }
 
 Test(Navigator,
-     given_anAngleBiggerThanToleranceButSmallerTheAQuarterOfPi_when_askedIfTheAngleIsWithinTheRotationTolerance_then_itIsNot
+     given_anAngleBiggerThanToleranceButSmallerTheAQuarterOfPi_when_askedIfTheAngleIsWithinTheCapTolerance_then_itIsNot
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
     int angle = QUARTER_PI - THETA_TOLERANCE_DEFAULT;
     cr_assert(angle > THETA_TOLERANCE_DEFAULT,
               "\n Attention! The current theta tolerance default doesn't allow correct orientation. It is too big.");
-    int is_oriented = Navigator_isAngleWithinRotationTolerance(angle);
+    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED);
     cr_assert(!is_oriented);
 }
 
 Test(Navigator,
-     given_anAngleBiggerThanAQuarterOfPiButSmallerThanHalfPiMinusTolerance_when_askedIfTheAngleIsWithinTheRotationTolerance_then_itIsNot
+     given_anAngleBiggerThanAQuarterOfPiButSmallerThanHalfPiMinusTolerance_when_askedIfTheAngleIsWithinTheCapTolerance_then_itIsNot
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
     int angle = QUARTER_PI + THETA_TOLERANCE_DEFAULT;
     cr_assert(angle < (HALF_PI - THETA_TOLERANCE_DEFAULT),
               "\n Attention! The current theta tolerance default doesn't allow correct orientation. It is too big.");
-    int is_oriented = Navigator_isAngleWithinRotationTolerance(angle);
+    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED);
     cr_assert(!is_oriented);
 }
 
 Test(Navigator,
-     given_anAngleHalfPiMinusTolerance_when_askedIfTheAngleIsWithinTheRotationTolerance_then_itIsNot
+     given_anAngleHalfPiMinusTolerance_when_askedIfTheAngleIsWithinTheCapTolerance_then_itIsNot
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
     int angle =  HALF_PI - THETA_TOLERANCE_DEFAULT;
-    int is_oriented = Navigator_isAngleWithinRotationTolerance(angle);
+    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED);
     cr_assert(!is_oriented);
 }
 
 Test(Navigator,
-     given_anAngleBetweenHalfPiAndHalfPiMinusTolerance_when_askedIfTheAngleIsWithinTheRotationTolerance_then_itIs
+     given_anAngleBetweenHalfPiAndHalfPiMinusTolerance_when_askedIfTheAngleIsWithinTheCapTolerance_then_itIs
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
     int angle =  HALF_PI - (THETA_TOLERANCE_DEFAULT / 2);
-    int is_oriented = Navigator_isAngleWithinRotationTolerance(angle);
+    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED);
     cr_assert(is_oriented);
 }
 
 Test(Navigator,
-     given_anAngleExactlyEqualToHalfPi_when_askedIfTheAngleIsWithinTheRotationTolerance_then_itIs
+     given_anAngleExactlyEqualToHalfPi_when_askedIfTheAngleIsWithinTheCapTolerance_then_itIs
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
     int angle =  HALF_PI;
-    int is_oriented = Navigator_isAngleWithinRotationTolerance(angle);
+    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED);
     cr_assert(is_oriented);
 }
 
 Test(Navigator,
-     given_anAngleBetweenPiAndPiMinusTolerance_when_askedIfTheAngleIsWithinTheRotationTolerance_then_itIs
+     given_anAngleBetweenPiAndPiMinusTolerance_when_askedIfTheAngleIsWithinTheCapTolerance_then_itIs
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
     int angle =  PI - (THETA_TOLERANCE_DEFAULT / 2);
-    int is_oriented = Navigator_isAngleWithinRotationTolerance(angle);
+    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED);
     cr_assert(is_oriented);
 }
 
 Test(Navigator,
-     given_anAngleBetweenMinusPiAndMinusPiPlusTolerance_when_askedIfTheAngleIsWithinTheRotationTolerance_then_itIs
+     given_anAngleBetweenMinusPiAndMinusPiPlusTolerance_when_askedIfTheAngleIsWithinTheCapTolerance_then_itIs
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
     int angle =  MINUS_PI + (THETA_TOLERANCE_DEFAULT / 2);
-    int is_oriented = Navigator_isAngleWithinRotationTolerance(angle);
+    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED);
     cr_assert(is_oriented);
 }
 
