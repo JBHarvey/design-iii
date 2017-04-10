@@ -1,6 +1,6 @@
 #include "bc_manch.h"
 
-// Variables utilisï¿½es conjointement dans l'Handler
+// Variables utilisées conjointement dans l'Handler
 uint8_t BcManchFlag = 0;
 uint16_t bufferBcManchIndex;
 uint8_t bufferBcManch[BC_MANCH_BUFFER_SIZE];
@@ -12,7 +12,7 @@ void initBCManch() {
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM7, ENABLE);
 	/* Time base configuration */
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
-	TIM_TimeBaseStructure.TIM_Period = 100 - 1; // 1 MHz down to 10 KHz (0.1 ms)
+	TIM_TimeBaseStructure.TIM_Period = 25 - 1; // 1 MHz down to 10 KHz (0.1 ms)
 	TIM_TimeBaseStructure.TIM_Prescaler = 84 - 1; // Down to 1 MHz (adjust per your clock)
 	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
@@ -57,6 +57,7 @@ void decodeManchBC() {
 	uint8_t informationBits[INFORMATION_BITS_LENGTH];
 	char manchesterOrientationVerification[ORIENTATION_LENGTH] = { ' ', ' ',
 			' ', ' ', ' ' };
+	uint8_t manchesterFigureVerification;
 
 	if (BcManchFlag == MANCH_BC_DECODE) {
 
@@ -64,7 +65,7 @@ void decodeManchBC() {
 		if (decodeManchester(informationBits, codeDecoder)
 				== VALID_INFORMATION) {
 
-			uint8_t manchesterFigureVerification = getFigureFromInformationBits(
+			manchesterFigureVerification = getFigureFromInformationBits(
 					informationBits);
 
 			setOrientationFromInformationBits(informationBits,
@@ -111,17 +112,17 @@ void decodeManchBC() {
 	}
 }
 
-/* Interruption du TIM7 qui permet d'ï¿½chantillonner le signal Manchester */
+/* Interruption du TIM7 qui permet d'échantillonner le signal Manchester */
 extern void TIM7_IRQHandler() {
 	if (TIM_GetITStatus(TIM7, TIM_IT_Update) != RESET) {
 		TIM_ClearITPendingBit(TIM7, TIM_IT_Update);
-		// 0 indique que l'on est entrain d'ï¿½chantillonner
+		// 0 indique que l'on est entrain d'échantillonner
 		if (BcManchFlag == MANCH_BC_ACQUIRE) {
 			if (bufferBcManchIndex < BC_MANCH_BUFFER_SIZE) {
 				bufferBcManch[bufferBcManchIndex++] = GPIO_ReadInputDataBit(
 						GPIOD, MANCHESTER_PIN);
 			} else {
-				// Le buffer est plein, on est prï¿½t ï¿½ le traiter
+				// Le buffer est plein, on est prêt à le traiter
 				BcManchFlag = 1;
 			}
 		}

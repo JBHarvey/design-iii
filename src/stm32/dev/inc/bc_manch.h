@@ -9,9 +9,9 @@
 // Taille du buffer d'échantillonnage
 #define BC_MANCH_BUFFER_SIZE 2000
 // Nombre d'échantillon pour 2 chiffres consécutifs
-#define BC_MANCH_SEUIL_TOP 7
+#define BC_MANCH_SEUIL_TOP 33
 // Nombre d'échantillon pour un seul chiffre
-#define BC_MANCH_SEUIL_BOTTOM 4
+#define BC_MANCH_SEUIL_BOTTOM 23
 
 enum MANCH_BC_STATE {
 	MANCH_BC_ACQUIRE = 0, MANCH_BC_DECODE = 1, MANCH_BC_DONE = 2

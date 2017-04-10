@@ -90,7 +90,7 @@ void initAll(void) {
 	// Push button initialization
 	//initBtn();
 // Initialisation des variables
-	mainState = MAIN_IDLE;
+	mainState = MAIN_MANCH_BC;
 
 // Extern LEDs initialization
 	InitializeLEDs();
