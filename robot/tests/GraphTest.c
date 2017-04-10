@@ -979,4 +979,34 @@ Test(Graph,
 
 }
 
+struct Obstacle *obstacle_c;
+void setup_ThreeObstaclesSoloDuoOverlappingInXAndY(enum CardinalDirection orientation_a,
+        enum CardinalDirection orientation_b, enum CardinalDirection orientation_c)
+{
+    struct Coordinates *coordinates_a = Coordinates_new(GRAPH_EAST_OBSTACLE_X, GRAPH_NORTH_OBSTACLE_Y);
+    struct Coordinates *coordinates_b = Coordinates_new(GRAPH_WESTERN_OBSTACLE_X, GRAPH_SOUTH_OBSTACLE_Y);
+    struct Coordinates *coordinates_c = Coordinates_new(GRAPH_WESTERN_OBSTACLE_X, GRAPH_SOUTHERN_OBSTACLE_Y);
+    Map_updateObstacle(graph_map, coordinates_a, orientation_a, 0);
+    Map_updateObstacle(graph_map, coordinates_b, orientation_b, 1);
+    Map_updateObstacle(graph_map, coordinates_c, orientation_c, 2);
+    obstacle_a = graph_map->obstacles[0];
+    obstacle_b = graph_map->obstacles[1];
+    obstacle_c = graph_map->obstacles[2];
+
+    Coordinates_delete(coordinates_a);
+    Coordinates_delete(coordinates_b);
+    Coordinates_delete(coordinates_c);
+    Graph_updateForMap(graph, graph_map);
+}
+
+Test(Graph,
+     given_aSoloDuoOverlappingInXAndYObstacleConfiguration_when_updatesGraph_then_theWesternNodeIsToTheWestOfTheWesternObstacle
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    setup_ThreeObstaclesSoloDuoOverlappingInXAndY(SOUTH, CENTER, NORTH);
+    cr_assert(Coordinates_isToTheWestOf(obstacle_b->coordinates, graph->western_node->coordinates));
+}
+
+
 /* -- END OF TWO OBSTACLE GRAPH -- */
