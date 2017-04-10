@@ -140,7 +140,7 @@ static int convertAngleToSpeed(int theta)
     int speed = theta;
 
     if(theta < THETA_TOLERANCE_DEFAULT && theta > -THETA_TOLERANCE_DEFAULT) {
-        speed /= 2;
+        speed /= 30;
     }
 
     if(theta < THETA_TOLERANCE_DEFAULT / 2 && theta > -THETA_TOLERANCE_DEFAULT / 2) {
@@ -186,7 +186,7 @@ static void sendSlowDownCommand(struct Robot *robot, int angular_distance_to_tar
     int angular_distance_to_east = abs(angle_to_target);
     int angular_distance_to_north = abs(HALF_PI - angle_to_target);
     int angular_distance_to_south = abs(MINUS_HALF_PI - angle_to_target);
-    int speed = last_speed / 1.5;
+    int speed = last_speed / 2;
 
     if(speed < 100) {
         speed = 100;
@@ -284,7 +284,7 @@ void Navigator_navigateRobotTowardsGoal(struct Robot *robot)
         if(was_oriented && is_very_oriented) {
             int distance_to_target = Coordinates_distanceBetween(current_pose->coordinates, goal_coordinates);
             sendSpeedsCommand(robot, distance_to_target, angle_between_robot_and_target);
-        } else if(was_oriented && !is_very_oriented && last_speed > 100) {
+        } else if(was_oriented && !is_very_oriented && last_speed > 200) {
             int distance_to_target = Coordinates_distanceBetween(current_pose->coordinates, goal_coordinates);
             sendSlowDownCommand(robot, distance_to_target, angle_between_robot_and_target);
         } else {
