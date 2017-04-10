@@ -452,33 +452,30 @@ void setSpeedPidSetpoints(uint8_t *data) {
 void setRotatePidSetpoints(uint8_t *data) {
 	/* get circular distance setpoint */
 	float radian = getRadianMoveFromBuffer(data);
-	if (radian > 0.0) {
+	float linearSpeed = getMoveFromRadian(radian);
+
+	if (linearSpeed > 0.0) {
 		MotorSetDirection(1, CLOCK);
 		MotorSetDirection(2, CLOCK);
 		MotorSetDirection(3, CLOCK);
 		MotorSetDirection(4, CLOCK);
 
-		PID_SPEED1.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED_LOW);
-		PID_SPEED2.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED_LOW);
-		PID_SPEED3.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED_LOW);
-		PID_SPEED4.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED_LOW);
+		PID_SPEED1.mySetpoint = calculateSpeedToTicks(linearSpeed);
+		PID_SPEED2.mySetpoint = calculateSpeedToTicks(linearSpeed);
+		PID_SPEED3.mySetpoint = calculateSpeedToTicks(linearSpeed);
+		PID_SPEED4.mySetpoint = calculateSpeedToTicks(linearSpeed);
 
-	} else if (radian < 0.0) {
+	} else if (linearSpeed < 0.0) {
 		MotorSetDirection(1, COUNTER_CLOCK);
 		MotorSetDirection(2, COUNTER_CLOCK);
 		MotorSetDirection(3, COUNTER_CLOCK);
 		MotorSetDirection(4, COUNTER_CLOCK);
-		radian = -radian;
+		linearSpeed = -linearSpeed;
 
-		PID_SPEED1.mySetpoint = calculateSpeedToTicks(radian);
-		PID_SPEED2.mySetpoint = calculateSpeedToTicks(radian);
-		PID_SPEED3.mySetpoint = calculateSpeedToTicks(radian);
-		PID_SPEED4.mySetpoint = calculateSpeedToTicks(radian);
-
-		PID_SPEED1.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED_LOW);
-		PID_SPEED2.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED_LOW);
-		PID_SPEED3.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED_LOW);
-		PID_SPEED4.mySetpoint = calculateSpeedToTicks(CONSIGNE_SPEED_LOW);
+		PID_SPEED1.mySetpoint = calculateSpeedToTicks(linearSpeed);
+		PID_SPEED2.mySetpoint = calculateSpeedToTicks(linearSpeed);
+		PID_SPEED3.mySetpoint = calculateSpeedToTicks(linearSpeed);
+		PID_SPEED4.mySetpoint = calculateSpeedToTicks(linearSpeed);
 
 	} else {
 		MotorSetDirection(1, BRAKE_G);
