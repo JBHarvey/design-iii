@@ -104,7 +104,7 @@ static int convertDistanceToSpeed(int distance)
         if(last_speed == 0) {
             speed = 10;
         } else {
-            speed = (last_speed * 2 < top_speed) ? last_speed * 2 : top_speed;
+            speed = (last_speed * 1.3 < top_speed) ? last_speed * 1.3 : top_speed;
         }
     }
 
@@ -114,7 +114,17 @@ static int convertDistanceToSpeed(int distance)
 
 static int convertAngleToSpeed(int theta)
 {
-    return theta;
+    int speed = theta;
+
+    if(theta < THETA_TOLERANCE_DEFAULT && theta > -THETA_TOLERANCE_DEFAULT) {
+        speed /= 2;
+    }
+
+    if(theta < THETA_TOLERANCE_DEFAULT / 2 && theta > -THETA_TOLERANCE_DEFAULT / 2) {
+        speed = 0;
+    }
+
+    return speed;
 }
 
 static void sendSpeedsCommand(struct Robot *robot, int angular_distance_to_target, int angle_to_target)
@@ -148,7 +158,7 @@ static void sendSpeedsCommand(struct Robot *robot, int angular_distance_to_targe
 static void sendRotationCommand(struct Robot *robot, int value)
 {
     struct Command_Rotate rotate_command = {
-        .theta = value
+        .theta = convertAngleToSpeed(value)
     };
 
     CommandSender_sendRotateCommand(robot->command_sender, rotate_command, robot->wheels);
