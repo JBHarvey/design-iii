@@ -4,6 +4,8 @@
 uint8_t BcManchFlag = 0;
 uint16_t bufferBcManchIndex;
 uint8_t bufferBcManch[BC_MANCH_BUFFER_SIZE];
+uint8_t manchChecked = 0;
+char messageToDisplayHold[MESSAGE_TO_DISPLAY_LENGTH];
 
 void initBCManch() {
 	/* TIM7 clock enable */

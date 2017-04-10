@@ -23,6 +23,10 @@ extern uint8_t BcManchFlag;
 extern uint16_t bufferBcManchIndex;
 // Buffer contenant les échantillons du code Manchester
 extern uint8_t bufferBcManch[BC_MANCH_BUFFER_SIZE];
+// Permet de compter le nombre de fois que le même code à été décodé
+extern uint8_t manchChecked;
+// Garde en mémoire le dernier code manchester lu
+extern char messageToDisplayHold[MESSAGE_TO_DISPLAY_LENGTH];
 
 // Permet d'initialiser le timer qui sert à échantillonner le signal Manchester
 void initBCManch();
