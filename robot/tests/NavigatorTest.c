@@ -703,6 +703,7 @@ Test(Navigator,
     Pose_delete(robot_pose);
 }
 */
+/*
 Test(Navigator,
      given_aRobotSeparatedOfItsGoalByTheStopDistance_when_navigateTowardsGoal_then_theSpeedsCommandValueIsTheStopSpeed
      , .init = setup_Navigator
@@ -727,6 +728,7 @@ Test(Navigator,
     Coordinates_delete(target_coordinates);
     Pose_delete(robot_pose);
 }
+*/
 
 Test(Navigator,
      given_aRobotSeparatedOfItsGoalByLessThanTheStopDistance_when_navigateTowardsGoal_then_theSpeedsCommandValueIsTheStopSpeed

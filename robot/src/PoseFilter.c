@@ -31,11 +31,17 @@ struct PoseFilter *PoseFilter_new(struct Robot *new_robot)
 
     struct Object *new_object = Object_new();
     struct Pose **new_particles = malloc(NUMBER_OF_PARTICLES * sizeof(struct Pose *));
+
+    for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
+        new_particles[i] = Pose_zero();
+    }
+
     double *new_particles_weight = malloc(NUMBER_OF_PARTICLES * sizeof(double));
     initializeParticlesWeight(new_particles_weight);
     struct Timer *new_command_timer = Timer_new();
     struct Timer *new_data_timer = Timer_new();
     struct PoseFilter *pointer =  malloc(sizeof(struct PoseFilter));
+
 
     gsl_rng *new_random_number_generator;
     gsl_rng_env_setup();
@@ -67,7 +73,9 @@ void PoseFilter_delete(struct PoseFilter *pose_filter)
         Robot_delete(pose_filter->robot);
 
         for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
-            Pose_delete(pose_filter->particles[i]);
+            if(pose_filter->particles[i] != NULL) {
+                Pose_delete(pose_filter->particles[i]);
+            }
         }
 
         Timer_delete(pose_filter->command_timer);
@@ -114,9 +122,11 @@ static void populateParticles(struct Map *map, struct Pose **particles, gsl_rng 
     int table_width = map->north_western_table_corner->y - map->south_western_table_corner->y;
 
     for(int i = 0; i < NUMBER_OF_PARTICLES; i++) {
-        particles[i] = Pose_new((int)(gsl_rng_uniform(random_number_generator) * table_length),
-                                (int)(gsl_rng_uniform(random_number_generator) * table_width),
-                                (int)(gsl_rng_uniform(random_number_generator) * 2 * PI) - PI);
+        struct Pose *new_pose = Pose_new((int)(gsl_rng_uniform(random_number_generator) * table_length),
+                                         (int)(gsl_rng_uniform(random_number_generator) * table_width),
+                                         (int)(gsl_rng_uniform(random_number_generator) * 2 * PI) - PI);
+        Pose_copyValuesFrom(particles[i], new_pose);
+        Pose_delete(new_pose);
     }
 }
 
