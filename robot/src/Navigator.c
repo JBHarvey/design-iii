@@ -148,7 +148,7 @@ static int convertAngleToSpeed(int theta)
     }
 
     if(theta < THETA_TOLERANCE_DEFAULT / 2 && theta > -THETA_TOLERANCE_DEFAULT / 2) {
-        speed = 10;
+        speed = 70;
     }
 
     return speed;
