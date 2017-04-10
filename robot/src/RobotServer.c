@@ -245,21 +245,13 @@ void handleReceivedPacket(uint8_t *data, uint32_t length)
     struct WorldCamera *world_camera = robot_server->robot->world_camera;
 
     switch(data[0]) {
-        /*
-        case DATA_TRANSLATION:
-            //TODO: add processing
-            reception_callbacks.updateWheelsTranslation(robot_server->robot->wheels, communication_translation);
-            break;
-
-        case DATA_ROTATION:
-            //TODO: add processing
-            reception_callbacks.updateWheelsTranslation(robot_server->robot->wheels, communication_rotation);
-            break;
-
-            */
 
         case COMMAND_START_CYCLE:
             reception_callbacks.updateFlagsStartCycle(flags);
+            break;
+
+        case COMMAND_STOP_EXECUTION:
+            reception_callbacks.updateFlagsStopExecution(flags);
             break;
 
         case ACK_IMAGE_RECEIVED:

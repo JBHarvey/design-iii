@@ -9,6 +9,7 @@ const int MINUS_ONE = -1;
 const int NAVIGABLE_MAP_IS_READY = 1;
 const int READY_TO_START_RECEIVED_BY_STATION = 1;
 const int START_CYCLE = 1;
+const int STOP_EXECUTION = 1;
 const int PLANNED_TRAJECTORY_RECEIVED_BY_STATION = 1;
 const int PICTURE_TAKEN = 1;
 const int IMAGE_RECEIVED_BY_STATION = 1;
