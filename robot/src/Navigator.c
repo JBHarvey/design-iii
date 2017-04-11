@@ -135,6 +135,10 @@ static int convertDistanceToSpeed(int distance, int current_speed)
 
     // Smooth acceleration
     if(current_speed < top_speed) {
+        if(current_speed == 0) {
+            current_speed = 50;
+        }
+
         speed = (current_speed * ACCELERATION_FACTOR < top_speed) ? current_speed * ACCELERATION_FACTOR : top_speed;
     } else {
         speed = top_speed;
