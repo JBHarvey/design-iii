@@ -121,8 +121,7 @@ int Navigator_isAngleWithinCapTolerance(int angle, int current_speed)
 static int convertDistanceToSpeed(int distance, int current_speed)
 {
     double x = (double) distance;
-    int top_speed = MAX_SPEED;
-    int speed;
+    int speed, top_speed;
 
     if(distance > SHORT_DISTANCE) {
         top_speed = ((distance - SHORT_DISTANCE) / MEDIUM_DISTANCE) * (MAX_SPEED - 2 * SHORT_DISTANCE) + 2 * SHORT_DISTANCE;
@@ -136,11 +135,9 @@ static int convertDistanceToSpeed(int distance, int current_speed)
 
     // Smooth acceleration
     if(current_speed < top_speed) {
-        if(current_speed < SHORT_DISTANCE) {
-            speed = 100;
-        } else {
-            speed = (current_speed * ACCELERATION_FACTOR < top_speed) ? current_speed * ACCELERATION_FACTOR : top_speed;
-        }
+        speed = (current_speed * ACCELERATION_FACTOR < top_speed) ? current_speed * ACCELERATION_FACTOR : top_speed;
+    } else {
+        speed = top_speed;
     }
 
     return speed;
@@ -150,8 +147,8 @@ static int convertAngleToSpeed(int theta)
 {
     int speed = (int)((double) theta / 2);
 
-    if(speed < 9000 && speed > -9000) {
-        speed = 4500;
+    if(speed < 10000 && speed > -10000) {
+        speed = 5000;
 
         if(theta < 0) {
             speed *= -1;
