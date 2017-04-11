@@ -578,12 +578,12 @@ Test(RobotBehaviors,
 }
 
 Test(RobotBehaviors,
-     given_aBehaviorWithPlanTowardsAntennaMiddleAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanStopMotionBeforeFetchingManchesterCode
+     given_aBehaviorWithPlanTowardsAntennaMiddleAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanOrientationTowardsAntenna
      , .init = setup_robot
      , .fini = teardown_robot)
 {
     assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsAntennaMiddle,
-            &Navigator_planStopMotionBeforeFetchingManchester);
+            &Navigator_planOrientationTowardsAntenna);
 }
 
 Test(RobotBehaviors,
