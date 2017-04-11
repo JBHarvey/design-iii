@@ -143,7 +143,7 @@ Test(Robot, creation_destruction)
 
 
     struct Behavior *fourth_behavior = third_behavior->first_child;
-    void (*plan_navigation_to_antenna_start)(struct Robot *) = &Navigator_planTowardsAntennaStart;
+    void (*plan_navigation_to_antenna_start)(struct Robot *) = &Navigator_planTowardsAntennaMiddle;
     struct Flags *fourth_flags = fourth_behavior->entry_conditions->goal_state->flags;
     struct Flags *start_signal_received_flags = Flags_new();
     Flags_setStartCycleSignalReceived(start_signal_received_flags, 1);
@@ -347,14 +347,6 @@ void assertBehaviorIsAFreeEntrySendingPlannedTrajectory(void (*action)(struct Ro
 }
 
 Test(RobotBehaviors,
-     given_aBehaviorWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
-     , .init = setup_robot
-     , .fini = teardown_robot)
-{
-    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsAntennaStart);
-}
-
-Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsAntennaMiddleAction_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -486,15 +478,6 @@ struct Behavior *fetchLastBehavior(struct Behavior *behavior)
     struct Behavior *current = fetchBeforeLastBehavior(behavior);
     return current->first_child;
 }
-
-Test(RobotBehaviors,
-     given_aBehaviorWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
-     , .init = setup_robot
-     , .fini = teardown_robot)
-{
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsAntennaStart);
-}
-
 void assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(void (*firstAction)(struct Robot *),
         void (*expectedAction)(struct Robot *))
 {
@@ -513,15 +496,6 @@ void assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(void (*firstActio
     Behavior_act(current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(current_behavior);
     cr_assert_eq(last_behavior->action, expectedAction);
-}
-
-Test(RobotBehaviors,
-     given_aBehaviorWithPlanTowardsAntennaStartAction_when_behaviorActs_then_theLastBehaviorsActionIsToPlanToOrientTowardsTheAntenna
-     , .init = setup_robot
-     , .fini = teardown_robot)
-{
-    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsAntennaStart,
-            &Navigator_planOrientationTowardsAntenna);
 }
 
 void assertBeforeLastBehaviorHasFreeEntryAfterAction(void (*action)(struct Robot *))
@@ -569,12 +543,12 @@ Test(RobotBehaviors,
 }
 
 Test(RobotBehaviors,
-     given_aBehaviorWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsAntennaMiddleAction
+     given_aBehaviorWithPlanOrientationTowardsAntennaAction_when_behaviorActs_then_theLastBehaviorHasAStopMotionBeforeFetchingManchesterAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
     assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planOrientationTowardsAntenna,
-            &Navigator_planTowardsAntennaMiddle);
+            &Navigator_planStopMotionBeforeFetchingManchester);
 }
 
 Test(RobotBehaviors,

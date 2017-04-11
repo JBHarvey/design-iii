@@ -383,14 +383,14 @@ void Navigator_planTowardsAntennaMiddle(struct Robot * robot)
 
     RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
     void (*orientationAction)(struct Robot *) = &Navigator_planOrientationTowardsAntenna;
-    RobotBehaviors_appendTrajectoryBehaviors(robot, trajectory_to_antenna_middle, stopMotionBeforeManchester);
+    RobotBehaviors_appendTrajectoryBehaviors(robot, trajectory_to_antenna_middle, orientationAction);
 }
 
 void Navigator_planOrientationTowardsAntenna(struct Robot * robot)
 {
     int angle = 0;
     void (*stopMotionBeforeManchester)(struct Robot *) = &Navigator_planStopMotionBeforeFetchingManchester;
-    RobotBehavior_appendOrientationBehaviorWithChildAction(robot, angle, action);
+    RobotBehavior_appendOrientationBehaviorWithChildAction(robot, angle, stopMotionBeforeManchester);
 }
 
 void Navigator_planStopMotionBeforeFetchingManchester(struct Robot * robot)

@@ -35,22 +35,22 @@ void RobotBehaviors_prepareInitialBehaviors(struct Robot *robot)
 
     Flags_delete(ready_to_start_signal_received);
 
-    void (*planTowardsAntennaStart)(struct Robot *) = &Navigator_planTowardsAntennaStart;
+    void (*planTowardsAntennaMiddle)(struct Robot *) = &Navigator_planTowardsAntennaMiddle;
     struct Flags *start_cycle_signal_received = Flags_irrelevant();
     Flags_setStartCycleSignalReceived(start_cycle_signal_received, 1);
-    struct Behavior *behavior_plan_towards_antenna_when_start_cycle_signal_is_received;
-    behavior_plan_towards_antenna_when_start_cycle_signal_is_received = BehaviorBuilder_build(
+    struct Behavior *behavior_plan_towards_antenna_when_middle_cycle_signal_is_received;
+    behavior_plan_towards_antenna_when_middle_cycle_signal_is_received = BehaviorBuilder_build(
                 BehaviorBuilder_withFlags(start_cycle_signal_received,
                                           BehaviorBuilder_withFreeEntry(
-                                                  BehaviorBuilder_withAction(planTowardsAntennaStart,
+                                                  BehaviorBuilder_withAction(planTowardsAntennaMiddle,
                                                           BehaviorBuilder_end()))));
 
     Behavior_addChild(behavior_idle_when_ready_to_start_is_received,
-                      behavior_plan_towards_antenna_when_start_cycle_signal_is_received);
+                      behavior_plan_towards_antenna_when_middle_cycle_signal_is_received);
 
     Flags_delete(start_cycle_signal_received);
 
-    Behavior_delete(behavior_plan_towards_antenna_when_start_cycle_signal_is_received);
+    Behavior_delete(behavior_plan_towards_antenna_when_middle_cycle_signal_is_received);
     Behavior_delete(behavior_idle_when_ready_to_start_is_received);
     Behavior_delete(behavior_send_ready_to_start_when_map_is_navigable);
 }
