@@ -366,27 +366,6 @@ void Navigator_orientRobotTowardsGoal(struct Robot * robot)
     Angle_delete(orientation_goal);
 }
 
-void Navigator_planTowardsAntennaStart(struct Robot * robot)
-{
-    deletePlannedTrajectoryIfExistant(robot->navigator);
-    struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
-    struct Coordinates *antenna_start_coordinates = robot->navigator->navigable_map->antenna_zone_start;
-    struct CoordinatesSequence *trajectory_to_antenna_start = CoordinatesSequence_new(current_coordinates);
-    CoordinatesSequence_append(trajectory_to_antenna_start, antenna_start_coordinates);
-
-    robot->navigator->planned_trajectory = trajectory_to_antenna_start;
-    RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
-    void (*orientationAction)(struct Robot *) = &Navigator_planOrientationTowardsAntenna;
-    RobotBehaviors_appendTrajectoryBehaviors(robot, trajectory_to_antenna_start, orientationAction);
-}
-
-void Navigator_planOrientationTowardsAntenna(struct Robot * robot)
-{
-    int angle = 0;
-    void (*action)(struct Robot *) = &Navigator_planTowardsAntennaMiddle;
-    RobotBehavior_appendOrientationBehaviorWithChildAction(robot, angle, action);
-}
-
 void Navigator_planTowardsAntennaMiddle(struct Robot * robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
@@ -403,8 +382,15 @@ void Navigator_planTowardsAntennaMiddle(struct Robot * robot)
     robot->navigator->planned_trajectory = trajectory_to_antenna_middle;
 
     RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
-    void (*stopMotionBeforeManchester)(struct Robot *) = &Navigator_planStopMotionBeforeFetchingManchester;
+    void (*orientationAction)(struct Robot *) = &Navigator_planOrientationTowardsAntenna;
     RobotBehaviors_appendTrajectoryBehaviors(robot, trajectory_to_antenna_middle, stopMotionBeforeManchester);
+}
+
+void Navigator_planOrientationTowardsAntenna(struct Robot * robot)
+{
+    int angle = 0;
+    void (*stopMotionBeforeManchester)(struct Robot *) = &Navigator_planStopMotionBeforeFetchingManchester;
+    RobotBehavior_appendOrientationBehaviorWithChildAction(robot, angle, action);
 }
 
 void Navigator_planStopMotionBeforeFetchingManchester(struct Robot * robot)

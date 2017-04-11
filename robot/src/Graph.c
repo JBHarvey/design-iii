@@ -664,7 +664,7 @@ static void linkDuoOverlapXSolo(struct Graph *graph, struct Obstacle *first, str
                                 struct Obstacle *last, struct Map *map)
 {
     struct Node *middle_node = createMiddleNodeDuoOverlapXSolo(graph, first, middle, last, map);
-    establishEastNodesCoordinatesDuoOverlappingXAndYWithEasternXBorders(graph->eastern_node, graph, first, middle,
+    establishEastNodesCoordinatesDuoOverlappingXWithEasternXBorders(graph->eastern_node, graph, first, middle,
             map->south_eastern_table_corner, map);
     linkNodesForSoloObstacle(graph, middle_node, graph->western_node, last, map);
     linkNodesForDuoObstacleOverlappingInX(graph, graph->eastern_node, middle_node, first, middle, map);
