@@ -148,8 +148,12 @@ static int convertAngleToSpeed(int theta)
 {
     int speed = theta / 3;
 
-    if(speed < 2000) {
+    if(speed < 2000 && speed > -2000) {
         speed = 2000;
+
+        if(theta < 0) {
+            speed *= -1;
+        }
     }
 
     /*
