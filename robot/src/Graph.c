@@ -697,8 +697,8 @@ static void establishGraphForTrioObstacles(struct Graph *graph, struct Obstacle 
 {
     struct Coordinates *eastern_point_of_eastern_obstacle = Obstacle_retrieveEasternPointOf(eastern_obstacle);
     struct Coordinates *western_point_of_western_obstacle = Obstacle_retrieveWesternPointOf(western_obstacle);
-    int eastern_node_x = Coordinates_computeMeanX(map->south_eastern_table_corner);
-    int western_node_x = Coordinates_computeMeanX(map->south_western_table_corner);
+    int eastern_node_x = Coordinates_computeMeanX(map->south_eastern_table_corner, eastern_point_of_eastern_obstacle);
+    int western_node_x = Coordinates_computeMeanX(map->south_western_table_corner, western_point_of_western_obstacle);
     Coordinates_delete(eastern_point_of_eastern_obstacle);
     Coordinates_delete(western_point_of_western_obstacle);
 
