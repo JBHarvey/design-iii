@@ -706,6 +706,15 @@ static void createGraphTrioTwoYs(struct Graph *graph, int eastern_node_x, int we
     addNodesForXBordersAndYValue(graph, graph->eastern_node, graph->western_node, eastern_node_x, western_node_x, second_y);
 }
 
+static void createGraphTrioThreeYs(struct Graph *graph, int eastern_node_x, int western_node_x, int first_y,
+                                   int second_y, int third_y)
+{
+    int y = ((first_y + second_y + third_y) / 3);
+    establishEasternAndWesternNodeForTrioObstacles(graph, eastern_node_x, western_node_x, y);
+    addNodesForXBordersAndYValue(graph, graph->eastern_node, graph->western_node, eastern_node_x, western_node_x, first_y);
+    addNodesForXBordersAndYValue(graph, graph->eastern_node, graph->western_node, eastern_node_x, western_node_x, second_y);
+}
+
 static void establishGraphForTrioObstacles(struct Graph *graph, struct Obstacle *eastern_obstacle,
         struct Obstacle *middle_x_obstacle, struct Obstacle *western_obstacle, struct Map *map)
 {
