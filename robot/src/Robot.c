@@ -129,28 +129,32 @@ void Robot_lightGreenLedAndWaitASecond(struct Robot *robot)
     while(!Timer_hasTimePassed(robot->timer, ONE_SECOND));
 }
 
-void Robot_lightRedLedAndWaitASecond(struct Robot *robot)
+void Robot_lightRedLed(struct Robot *robot)
 {
     CommandSender_sendLightRedLEDCommand(robot->command_sender);
-    Timer_reset(robot->timer);
-
-    while(!Timer_hasTimePassed(robot->timer, ONE_SECOND));
 }
 
-void Robot_lowerPenAndWaitASecondAndAHalf(struct Robot *robot)
+static void waitTwoSeconds(struct Robot *robot)
 {
+    Timer_reset(robot->timer);
+
+    while(!Timer_hasTimePassed(robot->timer, TWO_SECONDS));
+}
+
+void Robot_stopWaitTwoSecondsLowerPenWaitTwoSecond(struct Robot *robot)
+{
+    Navigator_stopMovement(robot);
+    waitTwoSeconds(robot);
     CommandSender_sendLowerPenCommand(robot->command_sender);
-    Timer_reset(robot->timer);
-
-    while(!Timer_hasTimePassed(robot->timer, ONE_SECOND_AND_AN_HALF));
+    waitTwoSeconds(robot);
 }
 
-void Robot_risePenAndWaitASecondAndAHalf(struct Robot *robot)
+void Robot_stopWaitTwoSecondsRisePenWaitTwoSecond(struct Robot *robot)
 {
+    Navigator_stopMovement(robot);
+    waitTwoSeconds(robot);
     CommandSender_sendRisePenCommand(robot->command_sender);
-    Timer_reset(robot->timer);
-
-    while(!Timer_hasTimePassed(robot->timer, ONE_SECOND_AND_AN_HALF));
+    waitTwoSeconds(robot);
 }
 
 void Robot_closeCycleAndSendEndOfCycleSignal(struct Robot *robot)
