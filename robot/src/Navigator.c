@@ -7,7 +7,7 @@
 const int MAX_SPEED = 1400;
 const int MEDIUM_DISTANCE = 1000;
 const int SHORT_DISTANCE = 100;
-const double ACCELERATION_FACTOR = 1.3;
+const double ACCELERATION_FACTOR = 1.4;
 
 const int STM_CLOCK_TIME_IN_MS = 18;
 struct Timer *command_timer;
@@ -130,13 +130,13 @@ static int convertDistanceToSpeed(int distance, int current_speed)
             top_speed = MAX_SPEED;
         }
     } else if(distance <= SHORT_DISTANCE) {
-        top_speed = 50 + distance * 1.5;
+        top_speed = 80 + distance * 1.2;
     }
 
     // Smooth acceleration
     if(current_speed < top_speed) {
         if(current_speed == 0) {
-            current_speed = 50;
+            current_speed = 80;
         }
 
         speed = (current_speed * ACCELERATION_FACTOR < top_speed) ? current_speed * ACCELERATION_FACTOR : top_speed;
@@ -151,8 +151,12 @@ static int convertAngleToSpeed(int theta)
 {
     int speed = (int)((double) theta / 2);
 
-    if(speed < 11000 && speed > -11000) {
-        speed = 5500;
+    if(speed < 10000 && speed > -10000) {
+        speed = 6000;
+
+        if(theta < THETA_TOLERANCE_DEFAULT && theta > -THETA_TOLERANCE_DEFAULT) {
+            speed = 3000;
+        }
 
         if(theta < 0) {
             speed *= -1;
