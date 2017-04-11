@@ -4,8 +4,7 @@
 enum {
     INVALID_PACKET,
     COMMAND_START_CYCLE,
-    DATA_TRANSLATION,
-    DATA_ROTATION,
+    COMMAND_STOP_EXECUTION,
     DATA_MANCHESTER_CODE,
     DATA_WORLD,
     DATA_ESTIMATED_ROBOT_POSITION,
@@ -20,7 +19,8 @@ enum {
     ACK_READY_TO_DRAW_RECEIVED,
     ACK_END_OF_CYCLE_RECEIVED,
     DEBUG_TTY_ACM_SEND,
-    DEBUG_CAMERA_GET_FIGURE
+    DEBUG_CAMERA_GET_FIGURE,
+    DEBUG_SEND_MANCHESTER
 };
 
 void sendStartPacket();
@@ -49,7 +49,7 @@ struct __attribute__((__packed__)) Communication_ManchesterSignal {
     int intensity;
 };
 
-struct Communication_ManchesterCode {
+struct __attribute__((__packed__)) Communication_ManchesterCode {
     int painting_number;
     int scale_factor;
     char orientation; // Possibilities 'N' 'E' 'S' 'W'

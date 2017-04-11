@@ -23,4 +23,6 @@ void StationClientSender_sendEndOfCycleSignalReceivedAck(void);
 
 void StationClientSender_removeForceEnvironmentHasChanged(void);
 
+void StationClientSender_sendManchesterDebug(int painting_number, int scale_factor, char orientation /* Possibilities 'N' 'E' 'S' 'W' */);
+
 #endif // STATION_CLIENT_SENDER_H_

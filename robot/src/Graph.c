@@ -6,7 +6,6 @@ struct Graph *Graph_new(void)
     struct Object *new_object = Object_new();
     struct Node *new_eastern_node = Node_new();
     struct Node *new_western_node = Node_new();
-    enum ObstaclePlacementType new_type = NONE;
     int new_actual_number_of_nodes = 0;
     struct Graph *pointer =  malloc(sizeof(struct Graph));
 
@@ -15,7 +14,6 @@ struct Graph *Graph_new(void)
     pointer->western_node = new_western_node;
     pointer->nodes[0] = new_eastern_node;
     pointer->nodes[1] = new_western_node;
-    pointer->type = new_type;
     pointer->actual_number_of_nodes = new_actual_number_of_nodes;
 
     return pointer;
@@ -74,20 +72,32 @@ static int isSouthOfTheObstacleNavigable(struct Map *map, struct Obstacle *obsta
     return navigable;
 }
 
+static int computeOptimalXValueForObstacleEastNodeWithBorder(struct Obstacle *east_obstacle,
+        struct Coordinates *eastern_point_x)
+{
+    struct Coordinates *eastern_obstacle_point = Obstacle_retrieveEasternPointOf(east_obstacle);
+    int eastern_node_x = Coordinates_computeMeanX(eastern_obstacle_point, eastern_point_x);
+    Coordinates_delete(eastern_obstacle_point);
+    return eastern_node_x;
+}
+
+static int computeOptimalXValueForObstacleWestNodeWithBorder(struct Obstacle *west_obstacle,
+        struct Coordinates *western_point_x)
+{
+    struct Coordinates *western_obstacle_point = Obstacle_retrieveWesternPointOf(west_obstacle);
+    int western_node_x = Coordinates_computeMeanX(western_obstacle_point, western_point_x);
+    Coordinates_delete(western_obstacle_point);
+    return western_node_x;
+}
+
 static int computeOptimalXValueForSoloObstacleEasternNode(struct Obstacle *eastern_obstacle, struct Map *map)
 {
-    struct Coordinates *eastern_obstacle_coordinates = Obstacle_retrieveEasternPointOf(eastern_obstacle);
-    int x = Coordinates_computeMeanX(eastern_obstacle_coordinates, map->south_eastern_table_corner);
-    Coordinates_delete(eastern_obstacle_coordinates);
-    return x;
+    return computeOptimalXValueForObstacleEastNodeWithBorder(eastern_obstacle, map->south_eastern_table_corner);
 }
 
 static int computeOptimalXValueForSoloObstacleWesternNode(struct Obstacle *western_obstacle, struct Map *map)
 {
-    struct Coordinates *western_obstacle_coordinates = Obstacle_retrieveWesternPointOf(western_obstacle);
-    int x = Coordinates_computeMeanX(western_obstacle_coordinates, map->south_western_table_corner);
-    Coordinates_delete(western_obstacle_coordinates);
-    return x;
+    return computeOptimalXValueForObstacleWestNodeWithBorder(western_obstacle, map->south_western_table_corner);
 }
 
 static int computeOptimalYValueForSideSoloObstacleNode(struct Obstacle *obstacle, struct Map *map)
@@ -117,13 +127,11 @@ static int computeOptimalYValueForSideSoloObstacleNode(struct Obstacle *obstacle
     return y;
 }
 
-static void addNodesToSoloObstacleWithYValue(struct Graph *graph, struct Node *east_node, struct Node *west_node,
-        struct Obstacle *obstacle, struct Map *map, int y)
+static void addNodesForXBordersAndYValue(struct Graph *graph, struct Node *east_node, struct Node *west_node,
+        int east_border, int west_border, int y)
 {
-    struct Coordinates *new_east_node_coordinates = Obstacle_retrieveEasternPointOf(obstacle);
-    struct Coordinates *new_west_node_coordinates = Obstacle_retrieveWesternPointOf(obstacle);
-    new_east_node_coordinates->y = y;
-    new_west_node_coordinates->y = y;
+    struct Coordinates *new_east_node_coordinates = Coordinates_new(east_border, y);
+    struct Coordinates *new_west_node_coordinates = Coordinates_new(west_border, y);
 
     struct Node *new_east_node = Node_new();
     struct Node *new_west_node = Node_new();
@@ -144,11 +152,23 @@ static void addNodesToSoloObstacleWithYValue(struct Graph *graph, struct Node *e
     graph->actual_number_of_nodes = next_node_index;
 }
 
+static void addNodesForObstacleAndYValue(struct Graph *graph, struct Node *east_node, struct Node *west_node,
+        struct Obstacle *obstacle, int y)
+{
+    struct Coordinates *east_point = Obstacle_retrieveEasternPointOf(obstacle);
+    struct Coordinates *west_point = Obstacle_retrieveWesternPointOf(obstacle);
+    int east_border = east_point->x;
+    int west_border = west_point->x;
+    Coordinates_delete(east_point);
+    Coordinates_delete(west_point);
+    addNodesForXBordersAndYValue(graph, east_node, west_node, east_border, west_border, y);
+}
+
 static void addNodesNorthOfSoloObstacle(struct Graph *graph, struct Node *east_node, struct Node *west_node,
                                         struct Obstacle *obstacle, struct Map *map)
 {
     int new_nodes_y = computeYNorthBetweenObstacleAndWall(map, obstacle);
-    addNodesToSoloObstacleWithYValue(graph, east_node, west_node, obstacle, map, new_nodes_y);
+    addNodesForObstacleAndYValue(graph, east_node, west_node, obstacle, new_nodes_y);
 }
 
 
@@ -156,7 +176,27 @@ static void addNodesSouthOfSoloObstacle(struct Graph *graph, struct Node *east_n
                                         struct Obstacle *obstacle, struct Map *map)
 {
     int new_nodes_y = computeYSouthBetweenObstacleAndWall(map, obstacle);
-    addNodesToSoloObstacleWithYValue(graph, east_node, west_node, obstacle, map, new_nodes_y);
+    addNodesForObstacleAndYValue(graph, east_node, west_node, obstacle, new_nodes_y);
+}
+
+static void addNodesNorthOfSoloObstacleIfNavigable(struct Graph *graph, struct Node *east_node, struct Node *west_node,
+        struct Obstacle *obstacle, struct Map *map)
+{
+    int north_is_navigable = isNorthOfTheObstacleNavigable(map, obstacle);
+
+    if(obstacle->orientation == CENTER && north_is_navigable) {
+        addNodesNorthOfSoloObstacle(graph, east_node, west_node, obstacle, map);
+    }
+}
+
+static void addNodesSouthOfSoloObstacleIfNavigable(struct Graph *graph, struct Node *east_node, struct Node *west_node,
+        struct Obstacle *obstacle, struct Map *map)
+{
+    int south_is_navigable = isSouthOfTheObstacleNavigable(map, obstacle);
+
+    if(obstacle->orientation == CENTER && south_is_navigable) {
+        addNodesSouthOfSoloObstacle(graph, east_node, west_node, obstacle, map);
+    }
 }
 
 static void linkNodesForSoloObstacle(struct Graph *graph, struct Node *east_node, struct Node *west_node,
@@ -170,17 +210,8 @@ static void linkNodesForSoloObstacle(struct Graph *graph, struct Node *east_node
     } else if(orientation == SOUTH) {
         addNodesSouthOfSoloObstacle(graph, east_node, west_node, obstacle, map);
     } else if(orientation == CENTER) {
-        int north_is_navigable = isNorthOfTheObstacleNavigable(map, obstacle);
-        int south_is_navigable = isSouthOfTheObstacleNavigable(map, obstacle);
-
-        if(!north_is_navigable && south_is_navigable) {
-            addNodesSouthOfSoloObstacle(graph, east_node, west_node, obstacle, map);
-        } else if(north_is_navigable && !south_is_navigable) {
-            addNodesNorthOfSoloObstacle(graph, east_node, west_node, obstacle, map);
-        } else if(north_is_navigable && south_is_navigable) {
-            addNodesNorthOfSoloObstacle(graph, east_node, west_node, obstacle, map);
-            addNodesSouthOfSoloObstacle(graph, east_node, west_node, obstacle, map);
-        }
+        addNodesNorthOfSoloObstacleIfNavigable(graph, east_node, west_node, obstacle, map);
+        addNodesSouthOfSoloObstacleIfNavigable(graph, east_node, west_node, obstacle, map);
     }
 }
 
@@ -206,20 +237,444 @@ static void establishWesternNodeSolo(struct Graph *graph, struct Obstacle *obsta
     Coordinates_delete(new_western_node_coordinates);
 }
 
+static struct Node *createMiddleNode(struct Obstacle *east_obstacle, struct Obstacle *west_obstacle, struct Map *map)
+{
+    struct Node *middle_node = Node_new();
+    int x = Coordinates_computeMeanX(east_obstacle->coordinates, west_obstacle->coordinates);
+    int east_y = computeOptimalYValueForSideSoloObstacleNode(east_obstacle, map);
+    int west_y = computeOptimalYValueForSideSoloObstacleNode(west_obstacle, map);
+    int y = (int)((east_y + west_y) / 2);
+
+    struct Coordinates *middle_coordinates = Coordinates_new(x, y);
+    Coordinates_copyValuesFrom(middle_node->coordinates, middle_coordinates);
+    Coordinates_delete(middle_coordinates);
+
+    return middle_node;
+}
+
+static void linkNodesForSoloSoloObstacleNoOverlap(struct Graph *graph, struct Node *east_node, struct Node *west_node,
+        struct Obstacle *east_obstacle, struct Obstacle *west_obstacle, struct Map *map)
+{
+    struct Node *middle_node = createMiddleNode(east_obstacle, west_obstacle, map);
+
+    int next_node_index = graph->actual_number_of_nodes;
+    graph->nodes[next_node_index++] = middle_node;
+    graph->actual_number_of_nodes = next_node_index;
+
+    linkNodesForSoloObstacle(graph, east_node, middle_node, east_obstacle, map);
+    linkNodesForSoloObstacle(graph, middle_node, west_node, west_obstacle, map);
+}
+
+static void linkNodesBetweenObstacles(struct Graph *graph, struct Node *east_node, struct Node *west_node,
+                                      struct Obstacle *north_obstacle, struct Obstacle *south_obstacle)
+{
+    int new_node_y = Coordinates_computeMeanY(north_obstacle->coordinates, south_obstacle->coordinates);
+    struct Obstacle *eastern_obstacle = Obstacle_retrieveEastern(north_obstacle, south_obstacle);
+    struct Obstacle *western_obstacle = Obstacle_retrieveWestern(north_obstacle, south_obstacle);
+    struct Coordinates *eastern_point = Obstacle_retrieveEasternPointOf(eastern_obstacle);
+    struct Coordinates *western_point = Obstacle_retrieveWesternPointOf(western_obstacle);
+    int east_border = eastern_point->x;
+    int west_border = western_point->x;
+    Coordinates_delete(eastern_point);
+    Coordinates_delete(western_point);
+    addNodesForXBordersAndYValue(graph, east_node, west_node, east_border, west_border, new_node_y);
+}
+
+static void linkNodesForDuoObstacleOverlappingInX(struct Graph *graph, struct Node *east_node, struct Node *west_node,
+        struct Obstacle *north_obstacle, struct Obstacle *south_obstacle, struct Map *map)
+{
+    enum CardinalDirection northern_obstacle_orientation = north_obstacle->orientation;
+    enum CardinalDirection southern_obstacle_orientation = south_obstacle->orientation;
+
+    if(northern_obstacle_orientation == NORTH) {
+        addNodesNorthOfSoloObstacle(graph, east_node, west_node, north_obstacle, map);
+    } else if(southern_obstacle_orientation == SOUTH) {
+        addNodesSouthOfSoloObstacle(graph, east_node, west_node, south_obstacle, map);
+    } else if(northern_obstacle_orientation == SOUTH) {
+        linkNodesBetweenObstacles(graph, east_node, west_node, north_obstacle, south_obstacle);
+        addNodesSouthOfSoloObstacleIfNavigable(graph, east_node, west_node, south_obstacle, map);
+
+    } else if(southern_obstacle_orientation == NORTH) {
+        linkNodesBetweenObstacles(graph, east_node, west_node, north_obstacle, south_obstacle);
+        addNodesNorthOfSoloObstacleIfNavigable(graph, east_node, west_node, north_obstacle, map);
+
+    } else if(northern_obstacle_orientation == CENTER && southern_obstacle_orientation == CENTER) {
+        addNodesNorthOfSoloObstacleIfNavigable(graph, east_node, west_node, north_obstacle, map);
+        addNodesSouthOfSoloObstacleIfNavigable(graph, east_node, west_node, south_obstacle, map);
+    }
+}
+
+static int computeOptimalYValueForDuoOverlappingXObstacles(struct Graph *graph, struct Obstacle *north_obstacle,
+        struct Obstacle *south_obstacle, struct Map *map)
+{
+    int y;
+    enum CardinalDirection northern_obstacle_orientation = north_obstacle->orientation;
+    enum CardinalDirection southern_obstacle_orientation = south_obstacle->orientation;
+
+    if(northern_obstacle_orientation == NORTH) {
+        y = computeOptimalYValueForSideSoloObstacleNode(north_obstacle, map);
+    } else if(southern_obstacle_orientation == SOUTH) {
+        y = computeOptimalYValueForSideSoloObstacleNode(south_obstacle, map);
+    } else if(northern_obstacle_orientation == SOUTH && southern_obstacle_orientation == CENTER) {
+        int y_between = Coordinates_computeMeanY(north_obstacle->coordinates, south_obstacle->coordinates);
+        int south_is_navigable = isSouthOfTheObstacleNavigable(map, south_obstacle);
+
+        if(south_is_navigable) {
+            int y_south = computeYSouthBetweenObstacleAndWall(map, south_obstacle);
+            y = ((y_between + y_south) / 2);
+        } else {
+            y = y_between;
+        }
+
+    } else if(southern_obstacle_orientation == NORTH && northern_obstacle_orientation == CENTER) {
+        int y_between = Coordinates_computeMeanY(north_obstacle->coordinates, south_obstacle->coordinates);
+        int north_is_navigable = isNorthOfTheObstacleNavigable(map, north_obstacle);
+
+        if(north_is_navigable) {
+            int y_north = computeYNorthBetweenObstacleAndWall(map, north_obstacle);
+            y = ((y_between + y_north) / 2);
+        } else {
+            y = y_between;
+        }
+    } else if(northern_obstacle_orientation == SOUTH && southern_obstacle_orientation == NORTH) {
+        y = Coordinates_computeMeanY(north_obstacle->coordinates, south_obstacle->coordinates);
+    } else { // CENTER CENTER
+        int south_is_navigable = isSouthOfTheObstacleNavigable(map, south_obstacle);
+        int north_is_navigable = isNorthOfTheObstacleNavigable(map, north_obstacle);
+
+        if(!north_is_navigable && south_is_navigable) {
+            y = computeYSouthBetweenObstacleAndWall(map, south_obstacle);
+        } else if(north_is_navigable && !south_is_navigable) {
+            y = computeYNorthBetweenObstacleAndWall(map, north_obstacle);
+        } else if(north_is_navigable && south_is_navigable) {
+            y = Coordinates_computeMeanY(north_obstacle->coordinates, south_obstacle->coordinates);
+        }
+    }
+
+    return y;
+}
+
+static void establishEasternAndWesternNodeDuo(struct Graph *graph, struct Obstacle *north_obstacle,
+        struct Obstacle *south_obstacle, struct Map *map)
+{
+    int east_x;
+    int west_x;
+
+    if(Coordinates_isToTheEastOf(north_obstacle->coordinates, south_obstacle->coordinates)) {
+        east_x = computeOptimalXValueForSoloObstacleEasternNode(north_obstacle, map);
+        west_x = computeOptimalXValueForSoloObstacleWesternNode(south_obstacle, map);
+    } else {
+        east_x = computeOptimalXValueForSoloObstacleEasternNode(south_obstacle, map);
+        west_x = computeOptimalXValueForSoloObstacleWesternNode(north_obstacle, map);
+    }
+
+    int y = computeOptimalYValueForDuoOverlappingXObstacles(graph, north_obstacle, south_obstacle, map);
+
+    struct Coordinates *new_eastern_node_coordinates = Coordinates_new(east_x, y);
+    struct Coordinates *new_western_node_coordinates = Coordinates_new(west_x, y);
+
+    Coordinates_copyValuesFrom(graph->eastern_node->coordinates, new_eastern_node_coordinates);
+    Coordinates_copyValuesFrom(graph->western_node->coordinates, new_western_node_coordinates);
+
+    Coordinates_delete(new_eastern_node_coordinates);
+    Coordinates_delete(new_western_node_coordinates);
+}
+
+static int computeOptimalYValueForDuoOverlappingXAndYObstacles(struct Obstacle *east_obstacle,
+        struct Obstacle *west_obstacle, struct Map *map)
+{
+    int y;
+    struct Obstacle *northern_obstacle = Obstacle_retrieveNorthern(east_obstacle, west_obstacle);
+    struct Obstacle *southern_obstacle = Obstacle_retrieveSouthern(east_obstacle, west_obstacle);
+
+    if(east_obstacle->orientation == NORTH || west_obstacle->orientation == NORTH) {
+        y = computeYNorthBetweenObstacleAndWall(map, northern_obstacle);
+    } else if(east_obstacle->orientation == SOUTH || west_obstacle->orientation == SOUTH) {
+        y = computeYSouthBetweenObstacleAndWall(map, southern_obstacle);
+    } else {
+        int y_north;
+        int y_south;
+        int north_is_navigable = isNorthOfTheObstacleNavigable(map, northern_obstacle);
+        int south_is_navigable = isSouthOfTheObstacleNavigable(map, southern_obstacle);
+
+        if(!north_is_navigable && south_is_navigable) {
+            y_south = computeYSouthBetweenObstacleAndWall(map, southern_obstacle);
+            y = y_south;
+        } else if(north_is_navigable && !south_is_navigable) {
+            y_north = computeYNorthBetweenObstacleAndWall(map, northern_obstacle);
+            y = y_north;
+        } else if(north_is_navigable && south_is_navigable) {
+            y_south = computeYSouthBetweenObstacleAndWall(map, southern_obstacle);
+            y_north = computeYNorthBetweenObstacleAndWall(map, northern_obstacle);
+            y = ((y_south + y_north) / 2);
+        }
+    }
+
+    return y;
+}
+
+static void establishEastNodesCoordinatesDuoOverlappingXAndYWithEasternXBorders(struct Node *target_node,
+        struct Graph *graph, struct Obstacle *first_obstacle, struct Obstacle *second_obstacle,
+        struct Coordinates *eastern_point, struct Map *map)
+{
+    struct Obstacle *east_obstacle;
+    struct Obstacle *west_obstacle;
+
+    if(Coordinates_isToTheEastOf(first_obstacle->coordinates, second_obstacle->coordinates)) {
+        east_obstacle = first_obstacle;
+        west_obstacle = second_obstacle;
+    } else {
+        east_obstacle = second_obstacle;
+        west_obstacle = first_obstacle;
+    }
+
+    int y = computeOptimalYValueForDuoOverlappingXAndYObstacles(east_obstacle, west_obstacle, map);
+    int east_node_x = computeOptimalXValueForObstacleEastNodeWithBorder(east_obstacle, eastern_point);
+    struct Coordinates *new_east_node_coordinates = Coordinates_new(east_node_x, y);
+    Coordinates_copyValuesFrom(target_node->coordinates, new_east_node_coordinates);
+    Coordinates_delete(new_east_node_coordinates);
+}
+
+static void establishWestNodesCoordinatesDuoOverlappingXAndYWithWesternXBorders(struct Node *target_node,
+        struct Graph *graph, struct Obstacle *first_obstacle, struct Obstacle *second_obstacle,
+        struct Coordinates *western_point,
+        struct Map *map)
+{
+    struct Obstacle *east_obstacle;
+    struct Obstacle *west_obstacle;
+
+    if(Coordinates_isToTheEastOf(first_obstacle->coordinates, second_obstacle->coordinates)) {
+        east_obstacle = first_obstacle;
+        west_obstacle = second_obstacle;
+    } else {
+        east_obstacle = second_obstacle;
+        west_obstacle = first_obstacle;
+    }
+
+    int y = computeOptimalYValueForDuoOverlappingXAndYObstacles(east_obstacle, west_obstacle, map);
+    int west_node_x = computeOptimalXValueForObstacleWestNodeWithBorder(west_obstacle, western_point);
+    struct Coordinates *new_west_node_coordinates = Coordinates_new(west_node_x, y);
+    Coordinates_copyValuesFrom(target_node->coordinates, new_west_node_coordinates);
+    Coordinates_delete(new_west_node_coordinates);
+}
+
+static void establishEasternAndWesternNodesDuoOverlappingXAndYWithXBorders(struct Graph *graph,
+        struct Obstacle *east_obstacle, struct Obstacle *west_obstacle, struct Coordinates *eastern_point,
+        struct Coordinates *western_point, struct Map *map)
+{
+    establishEastNodesCoordinatesDuoOverlappingXAndYWithEasternXBorders(graph->eastern_node, graph, east_obstacle,
+            west_obstacle, eastern_point, map);
+    establishWestNodesCoordinatesDuoOverlappingXAndYWithWesternXBorders(graph->western_node, graph, east_obstacle,
+            west_obstacle, western_point, map);
+}
+
+static void linkNodesForDuoObstacleOverlappingInXAndY(struct Graph *graph, struct Node *east_node,
+        struct Node *west_node, struct Obstacle *east_obstacle, struct Obstacle *west_obstacle, struct Map *map)
+{
+    struct Coordinates *eastern_point = Obstacle_retrieveEasternPointOf(east_obstacle);
+    struct Coordinates *western_point = Obstacle_retrieveWesternPointOf(west_obstacle);
+    int east_border = eastern_point->x;
+    int west_border = western_point->x;
+    Coordinates_delete(eastern_point);
+    Coordinates_delete(western_point);
+
+    struct Obstacle *northern_obstacle = Obstacle_retrieveNorthern(east_obstacle, west_obstacle);
+    struct Obstacle *southern_obstacle = Obstacle_retrieveSouthern(east_obstacle, west_obstacle);
+
+    if(east_obstacle->orientation != CENTER || west_obstacle->orientation != CENTER) {
+
+        int y = computeOptimalYValueForDuoOverlappingXAndYObstacles(east_obstacle, west_obstacle, map);;
+        addNodesForXBordersAndYValue(graph, east_node, west_node, east_border, west_border, y);
+    } else {
+
+        int north_is_navigable = isNorthOfTheObstacleNavigable(map, northern_obstacle);
+        int south_is_navigable = isSouthOfTheObstacleNavigable(map, southern_obstacle);
+
+        if(north_is_navigable) {
+            int y_north = computeYNorthBetweenObstacleAndWall(map, northern_obstacle);
+            addNodesForXBordersAndYValue(graph, east_node, west_node, east_border, west_border, y_north);
+        }
+
+        if(south_is_navigable) {
+            int y_south = computeYSouthBetweenObstacleAndWall(map, southern_obstacle);
+            addNodesForXBordersAndYValue(graph, east_node, west_node, east_border, west_border, y_south);
+        }
+    }
+}
+static void linkSoloSoloSoloObstaclesNoOverlap(struct Graph *graph, struct Obstacle *first, struct Obstacle *middle,
+        struct Obstacle *last, struct Map *map)
+{
+    establishEasternNodeSolo(graph, first, map);
+    establishWesternNodeSolo(graph, last, map);
+    struct Node *middle_east_node = createMiddleNode(first, middle, map);
+    struct Node *middle_west_node = createMiddleNode(middle, last, map);
+    int next_node_index = graph->actual_number_of_nodes;
+    graph->nodes[next_node_index++] = middle_east_node;
+    graph->nodes[next_node_index++] = middle_west_node;
+    graph->actual_number_of_nodes = next_node_index;
+    linkNodesForSoloObstacle(graph, graph->eastern_node, middle_east_node, first, map);
+    linkNodesForSoloObstacle(graph, middle_east_node, middle_west_node, middle, map);
+    linkNodesForSoloObstacle(graph, middle_west_node, graph->western_node, last, map);
+
+}
+
+static struct Node *createNodeAndAddToGraph(struct Graph *graph, int x, int y)
+{
+    struct Node *new_node = Node_new();
+    struct Coordinates *node_coordinates = Coordinates_new(x, y);
+    Coordinates_copyValuesFrom(new_node->coordinates, node_coordinates);
+    Coordinates_delete(node_coordinates);
+    int next_node_index = graph->actual_number_of_nodes;
+    graph->nodes[next_node_index++] = new_node;
+    graph->actual_number_of_nodes = next_node_index;
+    return new_node;
+}
+
+static struct Node *createMiddleNodeSoloDuoOverlapX(struct Graph *graph, struct Obstacle *first,
+        struct Obstacle *middle, struct Obstacle *last, struct Map *map)
+{
+    struct Coordinates *west_border_x;
+
+    if(Coordinates_isToTheEastOf(middle->coordinates, last->coordinates)) {
+        west_border_x = Obstacle_retrieveEasternPointOf(middle);
+    } else {
+        west_border_x = Obstacle_retrieveEasternPointOf(last);
+    }
+
+    int middle_node_x = computeOptimalXValueForObstacleWestNodeWithBorder(first, west_border_x);
+    Coordinates_delete(west_border_x);
+
+    int west_y = computeOptimalYValueForDuoOverlappingXObstacles(graph, middle, last, map);
+    int east_y = computeOptimalYValueForSideSoloObstacleNode(first, map);
+    int middle_node_y = ((east_y + west_y) / 2);
+
+    struct Node *middle_node = createNodeAndAddToGraph(graph, middle_node_x, middle_node_y);
+
+    return middle_node;
+}
+
+static struct Node *createMiddleNodeDuoOverlapXSolo(struct Graph *graph, struct Obstacle *first,
+        struct Obstacle *middle, struct Obstacle *last, struct Map *map)
+{
+    struct Coordinates *east_border_x;
+
+    if(Coordinates_isToTheEastOf(first->coordinates, middle->coordinates)) {
+        east_border_x = Obstacle_retrieveEasternPointOf(first);
+    } else {
+        east_border_x = Obstacle_retrieveEasternPointOf(middle);
+    }
+
+    int middle_node_x = computeOptimalXValueForObstacleEastNodeWithBorder(last, east_border_x);
+    Coordinates_delete(east_border_x);
+
+    int west_y = computeOptimalYValueForDuoOverlappingXObstacles(graph, first, middle, map);
+    int east_y = computeOptimalYValueForSideSoloObstacleNode(last, map);
+    int middle_node_y = ((east_y + west_y) / 2);
+
+    struct Node *middle_node = createNodeAndAddToGraph(graph, middle_node_x, middle_node_y);
+
+    return middle_node;
+}
+
+static struct Node *createMiddleNodeSoloDuoOverlapXAndY(struct Graph *graph, struct Obstacle *first,
+        struct Obstacle *middle, struct Obstacle *last, struct Map *map)
+{
+    struct Coordinates *west_border_x;
+
+    if(Coordinates_isToTheEastOf(middle->coordinates, last->coordinates)) {
+        west_border_x = Obstacle_retrieveEasternPointOf(middle);
+    } else {
+        west_border_x = Obstacle_retrieveEasternPointOf(last);
+    }
+
+    int middle_node_x = computeOptimalXValueForObstacleWestNodeWithBorder(first, west_border_x);
+    Coordinates_delete(west_border_x);
+
+    int west_y = computeOptimalYValueForDuoOverlappingXAndYObstacles(middle, last, map);
+    int east_y = computeOptimalYValueForSideSoloObstacleNode(first, map);
+    int middle_node_y = ((east_y + west_y) / 2);
+
+    struct Node *middle_node = createNodeAndAddToGraph(graph, middle_node_x, middle_node_y);
+
+    return middle_node;
+}
+
+static struct Node *createMiddleNodeDuoOverlapXAndYSolo(struct Graph *graph, struct Obstacle *first,
+        struct Obstacle *middle, struct Obstacle *last, struct Map *map)
+{
+    struct Coordinates *east_border_x;
+
+    if(Coordinates_isToTheEastOf(first->coordinates, middle->coordinates)) {
+        east_border_x = Obstacle_retrieveWesternPointOf(first);
+    } else {
+        east_border_x = Obstacle_retrieveWesternPointOf(middle);
+    }
+
+    int middle_node_x = computeOptimalXValueForObstacleEastNodeWithBorder(last, east_border_x);
+    Coordinates_delete(east_border_x);
+
+    int west_y = computeOptimalYValueForDuoOverlappingXAndYObstacles(first, middle, map);
+    int east_y = computeOptimalYValueForSideSoloObstacleNode(last, map);
+    int middle_node_y = ((east_y + west_y) / 2);
+
+    struct Node *middle_node = createNodeAndAddToGraph(graph, middle_node_x, middle_node_y);
+
+    return middle_node;
+}
+
+static void linkSoloDuoOverlapX(struct Graph *graph, struct Obstacle *first, struct Obstacle *middle,
+                                struct Obstacle *last, struct Map *map)
+{
+    struct Node *middle_node = createMiddleNodeSoloDuoOverlapX(graph, first, middle, last, map);
+    establishWestNodesCoordinatesDuoOverlappingXAndYWithWesternXBorders(graph->western_node, graph, middle, last,
+            map->south_western_drawing_corner, map);
+    linkNodesForSoloObstacle(graph, graph->eastern_node, middle_node, first, map);
+    linkNodesForDuoObstacleOverlappingInX(graph, middle_node, graph->western_node, middle, last, map);
+}
+
+static void linkSoloDuoOverlapXAndY(struct Graph *graph, struct Obstacle *first, struct Obstacle *middle,
+                                    struct Obstacle *last, struct Map *map)
+{
+    struct Node *middle_node = createMiddleNodeSoloDuoOverlapXAndY(graph, first, middle, last, map);
+    establishWestNodesCoordinatesDuoOverlappingXAndYWithWesternXBorders(graph->western_node, graph, middle, last,
+            map->south_western_drawing_corner, map);
+    linkNodesForSoloObstacle(graph, graph->eastern_node, middle_node, first, map);
+    linkNodesForDuoObstacleOverlappingInXAndY(graph, middle_node, graph->western_node, middle, last, map);
+}
+
+static void linkDuoOverlapXSolo(struct Graph *graph, struct Obstacle *first, struct Obstacle *middle,
+                                struct Obstacle *last, struct Map *map)
+{
+    struct Node *middle_node = createMiddleNodeDuoOverlapXSolo(graph, first, middle, last, map);
+    establishEastNodesCoordinatesDuoOverlappingXAndYWithEasternXBorders(graph->eastern_node, graph, first, middle,
+            map->south_eastern_drawing_corner, map);
+    linkNodesForSoloObstacle(graph, middle_node, graph->western_node, last, map);
+    linkNodesForDuoObstacleOverlappingInX(graph, graph->eastern_node, middle_node, first, middle, map);
+}
+
+static void linkDuoOverlapXAndYSolo(struct Graph *graph, struct Obstacle *first, struct Obstacle *middle,
+                                    struct Obstacle *last, struct Map *map)
+{
+    struct Node *middle_node = createMiddleNodeDuoOverlapXAndYSolo(graph, first, middle, last, map);
+    establishEastNodesCoordinatesDuoOverlappingXAndYWithEasternXBorders(graph->eastern_node, graph, first, middle,
+            map->south_eastern_drawing_corner, map);
+    linkNodesForSoloObstacle(graph, middle_node, graph->western_node, last, map);
+    linkNodesForDuoObstacleOverlappingInXAndY(graph, graph->eastern_node, middle_node, first, middle, map);
+}
+
 void Graph_updateForMap(struct Graph *graph, struct Map* map)
 {
     int number_of_obstacle = Map_fetchNumberOfObstacles(map);
 
     struct Obstacle *first;
+    struct Obstacle *middle;
     struct Obstacle *last;
 
     switch(number_of_obstacle) {
         case 0:
-            graph->type = NONE;
             break;
 
         case 1:
-            graph->type = SOLO;
             first = Map_retrieveFirstObstacle(map);
             establishEasternNodeSolo(graph, first, map);
             establishWesternNodeSolo(graph, first, map);
@@ -231,12 +686,25 @@ void Graph_updateForMap(struct Graph *graph, struct Map* map)
         case 2:
             first = Map_retrieveFirstObstacle(map);
             last = Map_retrieveLastObstacle(map);
-            int are_overlapping = Obstacle_areOverlappingInX(first, last);
+            int are_overlapping_in_x = Obstacle_areOverlappingInX(first, last);
+            int are_overlapping_in_y = Obstacle_areOverlappingInY(first, last);
+            graph->actual_number_of_nodes = 2;
 
-            if(are_overlapping) {
-                graph->type = DUO;
+            if(!are_overlapping_in_x) {
+                establishEasternNodeSolo(graph, first, map);
+                establishWesternNodeSolo(graph, last, map);
+                linkNodesForSoloSoloObstacleNoOverlap(graph, graph->eastern_node, graph->western_node, first, last, map);
             } else {
-                graph->type = SOLO_SOLO;
+                if(!are_overlapping_in_y) {
+                    first = Map_retrieveFirstOverlappingObstacle(map);
+                    last = Map_retrieveLastOverlappingObstacle(map);
+                    establishEasternAndWesternNodeDuo(graph, first, last, map);
+                    linkNodesForDuoObstacleOverlappingInX(graph, graph->eastern_node, graph->western_node, first, last, map);
+                } else {
+                    establishEasternAndWesternNodesDuoOverlappingXAndYWithXBorders(graph, first, last, map->south_eastern_table_corner,
+                            map->south_western_table_corner, map);
+                    linkNodesForDuoObstacleOverlappingInXAndY(graph, graph->eastern_node, graph->western_node, first, last, map);
+                }
             }
 
             break;
@@ -244,18 +712,32 @@ void Graph_updateForMap(struct Graph *graph, struct Map* map)
         case 3:
             first = Map_retrieveFirstObstacle(map);
             last = Map_retrieveLastObstacle(map);
-            struct Obstacle *middle = Map_retrieveMiddleObstacle(map, first, last);
-            int eastern_are_overlapping = Obstacle_areOverlappingInX(first, middle);
-            int western_are_overlapping = Obstacle_areOverlappingInX(last, middle);
+            middle = Map_retrieveMiddleObstacle(map, first, last);
+            int first_overlaps_middle_x = Obstacle_areOverlappingInX(first, middle);
+            int first_overlaps_middle_y = Obstacle_areOverlappingInY(first, middle);
+            int last_overlaps_middle_x = Obstacle_areOverlappingInX(last, middle);
+            int last_overlaps_middle_y = Obstacle_areOverlappingInY(last, middle);
 
-            if(eastern_are_overlapping && ! western_are_overlapping) {
-                graph->type = DUO_SOLO;
-            } else if(!eastern_are_overlapping && western_are_overlapping) {
-                graph->type = SOLO_DUO;
-            } else if(eastern_are_overlapping && western_are_overlapping) {
-                graph->type = TRIO;
-            } else {
-                graph->type = SOLO_SOLO_SOLO;
+            graph->actual_number_of_nodes = 2;
+
+            if(!first_overlaps_middle_x && !last_overlaps_middle_x) {
+            } else if(!first_overlaps_middle_x && last_overlaps_middle_x) {
+                establishEasternNodeSolo(graph, first, map);
+
+                if(!last_overlaps_middle_y) {
+                    linkSoloDuoOverlapX(graph, first, middle, last, map);
+                } else {
+                    linkSoloDuoOverlapXAndY(graph, first, middle, last, map);
+                }
+            } else if(first_overlaps_middle_x && !last_overlaps_middle_x) {
+                establishWesternNodeSolo(graph, last, map);
+
+                if(!first_overlaps_middle_y) {
+                    linkDuoOverlapXSolo(graph, first, middle, last, map);
+                } else {
+                    linkDuoOverlapXAndYSolo(graph, first, middle, last, map);
+                }
+            } else if(first_overlaps_middle_x && last_overlaps_middle_x) {
             }
 
             break;

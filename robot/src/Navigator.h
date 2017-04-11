@@ -21,7 +21,7 @@ void Navigator_delete(struct Navigator *navigator);
 
 void Navigator_updateNavigableMap(struct Robot *robot);
 
-int Navigator_isAngleWithinRotationTolerance(int angle);
+int Navigator_isAngleWithinCapTolerance(int angle, int current_speed);
 void Navigator_stopMovement(struct Robot *robot);
 void Navigator_navigateRobotTowardsGoal(struct Robot *robot);
 void Navigator_orientRobotTowardsGoal(struct Robot *robot);
