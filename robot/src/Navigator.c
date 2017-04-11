@@ -151,10 +151,10 @@ static int convertAngleToSpeed(int theta)
 {
     int speed = (int)((double) theta / 2);
 
-    if(speed < 10000 && speed > -10000) {
+    if(theta < THETA_TOLERANCE_DEFAULT && theta > -THETA_TOLERANCE_DEFAULT) {
         speed = 6000;
 
-        if(theta < THETA_TOLERANCE_DEFAULT && theta > -THETA_TOLERANCE_DEFAULT) {
+        if(theta < THETA_TOLERANCE_DEFAULT / 2 && theta > -THETA_TOLERANCE_DEFAULT / 2) {
             speed = 3000;
         }
 
