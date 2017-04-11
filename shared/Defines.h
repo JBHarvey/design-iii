@@ -5,8 +5,14 @@
 
 // Flags / boolean related
 
+#ifndef TRUE
 #define TRUE 1
+#endif // TRUE (Avoid Gtk TRUE redefinition)
+
+#ifndef FALSE
 #define FALSE 0
+#endif // FALSE (Avoid Gtk FALSE redefinition)
+
 #define IRRELEVANT -1
 
 
@@ -85,6 +91,8 @@
 #define THETA_TOLERANCE_DEFAULT 8000      
 #define THETA_TOLERANCE_MAX 314160         // Pi rad
 
+#define OMEGA_MEDIUM_SPEED 8000
+#define OMEGA_LOW_SPEED 4000
 
 // Time related
 #define NUMBER_OF_NANOSECONDS_IN_A_SECOND 1.0e9

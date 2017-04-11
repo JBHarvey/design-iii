@@ -214,7 +214,7 @@ const int TARGET_DELTA_X = 1000;
 const int TARGET_DELTA_Y = 1000;
 
 Test(Navigator,
-     given__when_askedToStopMovement_then_aRotationCommandWithValueZeroIsSentAndASpeedCommandWithAllZeroValuesIsSent
+     given__when_askedToStopMovement_then_aSpeedCommandWithAllZeroValuesIsSent
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
@@ -229,10 +229,9 @@ Test(Navigator,
     Navigator_stopMovement(robot);
 
     cr_assert(speeds_validator == COMMAND_SENT);
-    cr_assert(rotation_validator == COMMAND_SENT);
+    cr_assert(rotation_validator != COMMAND_SENT);
     cr_assert(sent_speeds_command_x == 0);
     cr_assert(sent_speeds_command_y == 0);
-    cr_assert(sent_rotation_command_theta == 0);
 
     Coordinates_delete(target_coordinates);
     Pose_delete(robot_pose);
@@ -314,6 +313,8 @@ Test(Navigator,
             NAVIGATOR_ROBOT_Y + TARGET_DELTA_Y);
     updateRobotGoalCoordinatesTo(target_coordinates);
 
+    while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
+
     Navigator_navigateRobotTowardsGoal(robot);
 
     cr_assert(speeds_validator != COMMAND_SENT);
@@ -357,8 +358,6 @@ Test(Navigator,
     Navigator_navigateRobotTowardsGoal(robot);
 
     cr_assert(speeds_validator == COMMAND_SENT);
-    cr_assert(rotation_validator == COMMAND_SENT);
-    cr_assert(sent_rotation_command_theta == 0);
     cr_assert(sent_speeds_command_y == 0);
     cr_assert(sent_speeds_command_x == 0);
 
@@ -367,7 +366,7 @@ Test(Navigator,
 }
 
 Test(Navigator,
-     given_aRobotNotOrientedWithItsGoalBetweenTheEastAndNorthEast_when_askedToNavigateTowardsGoal_then_aRotationCommandIsSentWithThePositiveAngleBetweenTheAbsoluteRobotEastAndTheTarget
+     given_aRobotNotOrientedWithItsGoalBetweenTheEastAndNorthEast_when_askedToNavigateTowardsGoal_then_aRotationCommandIsSentWithTheNegativeAngleBetweenTheAbsoluteRobotNorthAndTheTarget
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
@@ -378,11 +377,13 @@ Test(Navigator,
             NAVIGATOR_ROBOT_Y + TARGET_DELTA_Y - MINIMAL_GAP);
     updateRobotGoalCoordinatesTo(target_coordinates);
 
+    while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
+
     Navigator_navigateRobotTowardsGoal(robot);
 
     cr_assert(speeds_validator != COMMAND_SENT);
     cr_assert(rotation_validator == COMMAND_SENT);
-    cr_assert(sent_rotation_command_theta > 0);
+    cr_assert(sent_rotation_command_theta < 0);
 
     Coordinates_delete(target_coordinates);
     Pose_delete(robot_pose);
@@ -399,6 +400,8 @@ Test(Navigator,
     struct Coordinates *target_coordinates = Coordinates_new(NAVIGATOR_ROBOT_X + TARGET_DELTA_X,
             NAVIGATOR_ROBOT_Y + TARGET_DELTA_Y + MINIMAL_GAP);
     updateRobotGoalCoordinatesTo(target_coordinates);
+
+    while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
 
     Navigator_navigateRobotTowardsGoal(robot);
 
@@ -422,6 +425,8 @@ Test(Navigator,
             NAVIGATOR_ROBOT_Y + TARGET_DELTA_Y + MINIMAL_GAP);
     updateRobotGoalCoordinatesTo(target_coordinates);
 
+    while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
+
     Navigator_navigateRobotTowardsGoal(robot);
 
     cr_assert(speeds_validator != COMMAND_SENT);
@@ -433,7 +438,7 @@ Test(Navigator,
 }
 
 Test(Navigator,
-     given_aRobotNotOrientedWithItsGoalBetweenTheWestAndNorthWest_when_askedToNavigateTowardsGoal_then_aRotationCommandIsSentWithTheNegativeAngleBetweenTheAbsoluteRobotWestAndTheTarget
+     given_aRobotNotOrientedWithItsGoalBetweenTheWestAndNorthWest_when_askedToNavigateTowardsGoal_then_aRotationCommandIsSentWithThePositiveAngleBetweenTheAbsoluteRobotNorthAndTheTarget
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
@@ -444,18 +449,20 @@ Test(Navigator,
             NAVIGATOR_ROBOT_Y + TARGET_DELTA_Y - MINIMAL_GAP);
     updateRobotGoalCoordinatesTo(target_coordinates);
 
+    while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
+
     Navigator_navigateRobotTowardsGoal(robot);
 
     cr_assert(speeds_validator != COMMAND_SENT);
     cr_assert(rotation_validator == COMMAND_SENT);
-    cr_assert(sent_rotation_command_theta < 0);
+    cr_assert(sent_rotation_command_theta > 0);
 
     Coordinates_delete(target_coordinates);
     Pose_delete(robot_pose);
 }
 
 Test(Navigator,
-     given_aRobotNotOrientedWithItsGoalBetweenTheEastAndSouthEast_when_askedToNavigateTowardsGoal_then_aRotationCommandIsSentWithTheNegativeAngleBetweenTheAbsoluteRobotEastAndTheTarget
+     given_aRobotNotOrientedWithItsGoalBetweenTheEastAndSouthEast_when_askedToNavigateTowardsGoal_then_aRotationCommandIsSentWithThePositiveAngleBetweenTheAbsoluteRobotSouthAndTheTarget
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
@@ -466,11 +473,13 @@ Test(Navigator,
             NAVIGATOR_ROBOT_Y - TARGET_DELTA_Y + MINIMAL_GAP);
     updateRobotGoalCoordinatesTo(target_coordinates);
 
+    while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
+
     Navigator_navigateRobotTowardsGoal(robot);
 
     cr_assert(speeds_validator != COMMAND_SENT);
     cr_assert(rotation_validator == COMMAND_SENT);
-    cr_assert(sent_rotation_command_theta < 0);
+    cr_assert(sent_rotation_command_theta > 0);
 
     Coordinates_delete(target_coordinates);
     Pose_delete(robot_pose);
@@ -487,6 +496,8 @@ Test(Navigator,
     struct Coordinates *target_coordinates = Coordinates_new(NAVIGATOR_ROBOT_X + TARGET_DELTA_X,
             NAVIGATOR_ROBOT_Y - TARGET_DELTA_Y - MINIMAL_GAP);
     updateRobotGoalCoordinatesTo(target_coordinates);
+
+    while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
 
     Navigator_navigateRobotTowardsGoal(robot);
 
@@ -510,6 +521,8 @@ Test(Navigator,
             NAVIGATOR_ROBOT_Y - TARGET_DELTA_Y - MINIMAL_GAP);
     updateRobotGoalCoordinatesTo(target_coordinates);
 
+    while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
+
     Navigator_navigateRobotTowardsGoal(robot);
 
     cr_assert(speeds_validator != COMMAND_SENT);
@@ -521,7 +534,7 @@ Test(Navigator,
 }
 
 Test(Navigator,
-     given_aRobotNotOrientedWithItsGoalBetweenTheWestAndSouthWest_when_askedToNavigateTowardsGoal_then_aRotationCommandIsSentWithThePositiveAngleBetweenTheAbsoluteRobotWestAndTheTarget
+     given_aRobotNotOrientedWithItsGoalBetweenTheWestAndSouthWest_when_askedToNavigateTowardsGoal_then_aRotationCommandIsSentWithTheNegativeAngleBetweenTheAbsoluteRobotSouthAndTheTarget
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
@@ -532,11 +545,13 @@ Test(Navigator,
             NAVIGATOR_ROBOT_Y - TARGET_DELTA_Y + MINIMAL_GAP);
     updateRobotGoalCoordinatesTo(target_coordinates);
 
+    while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
+
     Navigator_navigateRobotTowardsGoal(robot);
 
     cr_assert(speeds_validator != COMMAND_SENT);
     cr_assert(rotation_validator == COMMAND_SENT);
-    cr_assert(sent_rotation_command_theta > 0);
+    cr_assert(sent_rotation_command_theta < 0);
 
     Coordinates_delete(target_coordinates);
     Pose_delete(robot_pose);
@@ -554,6 +569,9 @@ Test(Navigator,
     updateRobotGoalCoordinatesTo(target_coordinates);
 
     navigator->was_oriented_before_last_command = 1;
+
+    while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
+
     Navigator_navigateRobotTowardsGoal(robot);
 
     cr_assert(rotation_validator != COMMAND_SENT);
@@ -578,6 +596,9 @@ Test(Navigator,
     updateRobotGoalCoordinatesTo(target_coordinates);
 
     navigator->was_oriented_before_last_command = 1;
+
+    while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
+
     Navigator_navigateRobotTowardsGoal(robot);
 
     cr_assert(rotation_validator != COMMAND_SENT);
@@ -602,6 +623,9 @@ Test(Navigator,
     updateRobotGoalCoordinatesTo(target_coordinates);
 
     navigator->was_oriented_before_last_command = 1;
+
+    while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
+
     Navigator_navigateRobotTowardsGoal(robot);
 
     cr_assert(rotation_validator != COMMAND_SENT);
@@ -626,6 +650,9 @@ Test(Navigator,
     updateRobotGoalCoordinatesTo(target_coordinates);
 
     navigator->was_oriented_before_last_command = 1;
+
+    while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
+
     Navigator_navigateRobotTowardsGoal(robot);
 
     cr_assert(rotation_validator != COMMAND_SENT);
@@ -637,165 +664,6 @@ Test(Navigator,
     Coordinates_delete(target_coordinates);
     Pose_delete(robot_pose);
 }
-/*
-Test(Navigator,
-     given_aRobotSeparatedOfItsGoalOfMoreThanTheLowSpeedDistance_when_navigateTowardsGoal_then_theSpeedsCommandValueIsTheMediumSpeed
-     , .init = setup_Navigator
-     , .fini = teardown_Navigator)
-{
-    struct Pose *robot_pose = Pose_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y, 0);
-    Pose_copyValuesFrom(robot->current_state->pose, robot_pose);
-
-    struct Coordinates *target_coordinates = Coordinates_new(NAVIGATOR_ROBOT_X + (2 * LOW_SPEED_DISTANCE),
-            NAVIGATOR_ROBOT_Y);
-    updateRobotGoalCoordinatesTo(target_coordinates);
-
-    navigator->was_oriented_before_last_command = 1;
-    Navigator_navigateRobotTowardsGoal(robot);
-
-    cr_assert(rotation_validator != COMMAND_SENT);
-    cr_assert(speeds_validator == COMMAND_SENT);
-
-    cr_assert(sent_speeds_command_x == MEDIUM_SPEED_VALUE);
-    cr_assert(sent_speeds_command_y == 0);
-
-    Coordinates_delete(target_coordinates);
-    Pose_delete(robot_pose);
-}
-
-Test(Navigator,
-     given_aRobotSeparatedOfItsGoalByTheLowSpeedDistance_when_navigateTowardsGoal_then_theSpeedsCommandValueIsTheLowSpeed
-     , .init = setup_Navigator
-     , .fini = teardown_Navigator)
-{
-    struct Pose *robot_pose = Pose_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y, 0);
-    Pose_copyValuesFrom(robot->current_state->pose, robot_pose);
-
-    struct Coordinates *target_coordinates = Coordinates_new(NAVIGATOR_ROBOT_X + LOW_SPEED_DISTANCE, NAVIGATOR_ROBOT_Y);
-    updateRobotGoalCoordinatesTo(target_coordinates);
-
-    navigator->was_oriented_before_last_command = 1;
-    Navigator_navigateRobotTowardsGoal(robot);
-
-    cr_assert(rotation_validator != COMMAND_SENT);
-    cr_assert(speeds_validator == COMMAND_SENT);
-
-    cr_assert(sent_speeds_command_x == LOW_SPEED_VALUE);
-    cr_assert(sent_speeds_command_y == 0);
-
-    Coordinates_delete(target_coordinates);
-    Pose_delete(robot_pose);
-}
-
-Test(Navigator,
-     given_aRobotSeparatedOfItsGoalByLessThanTheLowSpeedDistanceButMoreThanTheStopDistance_when_navigateTowardsGoal_then_theSpeedsCommandValueIsTheLowSpeed
-     , .init = setup_Navigator
-     , .fini = teardown_Navigator)
-{
-    struct Pose *robot_pose = Pose_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y, 0);
-    Pose_copyValuesFrom(robot->current_state->pose, robot_pose);
-
-    int distance = (4 * LOW_SPEED_DISTANCE / 5);
-    struct Coordinates *target_coordinates = Coordinates_new(NAVIGATOR_ROBOT_X + distance, NAVIGATOR_ROBOT_Y);
-    cr_assert(distance > STOP_DISTANCE,
-              "Warning! This test won't pass because the stop distance is greater than the used distance\n\n");
-    updateRobotGoalCoordinatesTo(target_coordinates);
-
-    navigator->was_oriented_before_last_command = 1;
-    Navigator_navigateRobotTowardsGoal(robot);
-
-    cr_assert(rotation_validator != COMMAND_SENT);
-    cr_assert(speeds_validator == COMMAND_SENT);
-
-    cr_assert(sent_speeds_command_x == LOW_SPEED_VALUE);
-    cr_assert(sent_speeds_command_y == 0);
-
-    Coordinates_delete(target_coordinates);
-    Pose_delete(robot_pose);
-}
-*/
-/*
-Test(Navigator,
-     given_aRobotSeparatedOfItsGoalByTheStopDistance_when_navigateTowardsGoal_then_theSpeedsCommandValueIsTheStopSpeed
-     , .init = setup_Navigator
-     , .fini = teardown_Navigator)
-{
-    struct Pose *robot_pose = Pose_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y, 0);
-    Pose_copyValuesFrom(robot->current_state->pose, robot_pose);
-
-    int distance = STOP_DISTANCE;
-    struct Coordinates *target_coordinates = Coordinates_new(NAVIGATOR_ROBOT_X + distance, NAVIGATOR_ROBOT_Y);
-    updateRobotGoalCoordinatesTo(target_coordinates);
-
-    navigator->was_oriented_before_last_command = 1;
-    Navigator_navigateRobotTowardsGoal(robot);
-
-    cr_assert(rotation_validator != COMMAND_SENT);
-    cr_assert(speeds_validator == COMMAND_SENT);
-
-    cr_assert(sent_speeds_command_x == STOP_VALUE);
-    cr_assert(sent_speeds_command_y == 0);
-
-    Coordinates_delete(target_coordinates);
-    Pose_delete(robot_pose);
-}
-*/
-
-Test(Navigator,
-     given_aRobotSeparatedOfItsGoalByLessThanTheStopDistance_when_navigateTowardsGoal_then_theSpeedsCommandValueIsTheStopSpeed
-     , .init = setup_Navigator
-     , .fini = teardown_Navigator)
-{
-    struct Pose *robot_pose = Pose_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y, 0);
-    Pose_copyValuesFrom(robot->current_state->pose, robot_pose);
-
-    struct Coordinates *target_coordinates = Coordinates_new(NAVIGATOR_ROBOT_X, NAVIGATOR_ROBOT_Y);
-    updateRobotGoalCoordinatesTo(target_coordinates);
-
-    navigator->was_oriented_before_last_command = 1;
-    Navigator_navigateRobotTowardsGoal(robot);
-
-    cr_assert(rotation_validator != COMMAND_SENT);
-    cr_assert(speeds_validator == COMMAND_SENT);
-
-    cr_assert(sent_speeds_command_x == STOP_VALUE);
-    cr_assert(sent_speeds_command_y == 0);
-
-    Coordinates_delete(target_coordinates);
-    Pose_delete(robot_pose);
-}
-
-Test(Navigator,
-     given_aRobotDirectlyAlignedWithItsGoal_when_orientTowardsGoal_then_aRotationCommandIsSentWithAValueOfZero
-     , .init = setup_Navigator
-     , .fini = teardown_Navigator)
-{
-    int target_angle = 0;
-    updateRobotGoalAngleTo(target_angle);
-
-    Navigator_orientRobotTowardsGoal(robot);
-
-    cr_assert(rotation_validator == COMMAND_SENT);
-    cr_assert(speeds_validator != COMMAND_SENT);
-
-    cr_assert(sent_rotation_command_theta == 0);
-}
-
-Test(Navigator,
-     given_aRobotAngularlySeparatedOfItsGoalOfTheDefaultThetaTolerance_when_orientTowardsGoal_then_aRotationCommandIsSentWithAValueOfZero
-     , .init = setup_Navigator
-     , .fini = teardown_Navigator)
-{
-    int target_angle = THETA_TOLERANCE_DEFAULT;
-    updateRobotGoalAngleTo(target_angle);
-
-    Navigator_orientRobotTowardsGoal(robot);
-
-    cr_assert(rotation_validator == COMMAND_SENT);
-    cr_assert(speeds_validator != COMMAND_SENT);
-
-    cr_assert(sent_rotation_command_theta == 0);
-}
 
 Test(Navigator,
      given_aRobotAngularlySeparatedOfItsGoalOfAnAngleGreaterThanTheDefaultThetaTolerance_when_orientTowardsGoal_then_aRotationCommandIsSentWithAPositiveValue
@@ -804,6 +672,8 @@ Test(Navigator,
 {
     int target_angle = 2 * THETA_TOLERANCE_DEFAULT;
     updateRobotGoalAngleTo(target_angle);
+
+    while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
 
     Navigator_orientRobotTowardsGoal(robot);
 
@@ -814,35 +684,39 @@ Test(Navigator,
 }
 
 Test(Navigator,
-     given_aRobotAngularlySeparatedOfItsGoalOfMinusTheDefaultThetaTolerance_when_orientTowardsGoal_then_aRotationCommandIsSentWithAValueOfZero
+     given_aRobotAngularlySeparatedOfItsGoalOfAnAngleSmallerThanTheTheDefaultThetaToleranceAndGreaterThanHalfOfTheDefaultTolerance_when_orientTowardsGoal_then_aRotationCommandIsSentWithOmegaMediumSpeed
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
-    int target_angle = -1 * THETA_TOLERANCE_DEFAULT;
+    int target_angle = THETA_TOLERANCE_DEFAULT - 1;
     updateRobotGoalAngleTo(target_angle);
+
+    while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
 
     Navigator_orientRobotTowardsGoal(robot);
 
     cr_assert(rotation_validator == COMMAND_SENT);
     cr_assert(speeds_validator != COMMAND_SENT);
 
-    cr_assert(sent_rotation_command_theta == 0);
+    cr_assert(sent_rotation_command_theta == OMEGA_MEDIUM_SPEED);
 }
 
 Test(Navigator,
-     given_aRobotAngularlySeparatedOfItsGoalOfAnAngleSmallerThanMinusTheDefaultThetaTolerance_when_orientTowardsGoal_then_aRotationCommandIsSentWithANegativeValue
+     given_aRobotAngularlySeparatedOfItsGoalOfAnAngleSmallerThanTheHalfOfTheDefaultThetaTolerance_when_orientTowardsGoal_then_aRotationCommandIsSentWithOmegaLowSpeed
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
-    int target_angle = -2 * THETA_TOLERANCE_DEFAULT;
+    int target_angle = THETA_TOLERANCE_DEFAULT / 3;
     updateRobotGoalAngleTo(target_angle);
+
+    while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
 
     Navigator_orientRobotTowardsGoal(robot);
 
     cr_assert(rotation_validator == COMMAND_SENT);
     cr_assert(speeds_validator != COMMAND_SENT);
 
-    cr_assert(sent_rotation_command_theta < 0);
+    cr_assert(sent_rotation_command_theta == OMEGA_LOW_SPEED);
 }
 
 void assertEqualityWithTolerance(int expected_value, int received_value, int tolerance)

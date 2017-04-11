@@ -152,10 +152,10 @@ static int convertAngleToSpeed(int theta)
     int speed = (int)((double) theta / 2);
 
     if(theta < THETA_TOLERANCE_DEFAULT && theta > -THETA_TOLERANCE_DEFAULT) {
-        speed = 8000;
+        speed = OMEGA_MEDIUM_SPEED;
 
         if(theta < THETA_TOLERANCE_DEFAULT / 2 && theta > -THETA_TOLERANCE_DEFAULT / 2) {
-            speed = 4000;
+            speed = OMEGA_LOW_SPEED;
         }
 
         /*
@@ -183,27 +183,6 @@ static int convertAngleToSpeed(int theta)
             speed *= -1;
         }
     }
-
-    /*
-        (theta < 0) ? -60000 : 60000 ;
-
-    if(theta < HALF_PI && theta > -HALF_PI) {
-        speed = (theta < 0) ? -40000 : 40000 ;
-    }
-
-    if(theta < QUARTER_PI && theta > -QUARTER_PI) {
-        speed = (theta < 0) ? -22000 : 22000 ;
-    }
-
-    if(theta < THETA_TOLERANCE_DEFAULT && theta > -THETA_TOLERANCE_DEFAULT) {
-        speed = (theta < 0) ? -13000 : 13000 ;
-    }
-
-    if(theta < THETA_TOLERANCE_DEFAULT / 2 && theta > -THETA_TOLERANCE_DEFAULT / 2) {
-        speed = (theta < 0) ? -7000 : 7000 ;
-    }
-
-    */
 
     return speed;
 }
@@ -277,16 +256,11 @@ static void sendRotationCommand(struct Robot * robot, int value)
 static void sendRotationCommandForNavigation(struct Robot * robot, int angle_to_target)
 {
     int theta;
-    int tolerance = THETA_TOLERANCE_DEFAULT;
 
-    // TODO: Modify this function to make the robot go only NORTH-SOUTH
-    //       in its navigation
-    while(angle_to_target > QUARTER_PI) {
-        angle_to_target -= HALF_PI;
-    }
-
-    while(angle_to_target < MINUS_QUARTER_PI) {
-        angle_to_target += HALF_PI;
+    if(angle_to_target >= 0) {
+        angle_to_target = MINUS_HALF_PI + angle_to_target;
+    } else if(angle_to_target < 0) {
+        angle_to_target = HALF_PI + angle_to_target;
     }
 
     theta = angle_to_target;
@@ -344,7 +318,7 @@ void Navigator_navigateRobotTowardsGoal(struct Robot * robot)
 
 void Navigator_orientRobotTowardsGoal(struct Robot * robot)
 {
-    int tolerance = THETA_TOLERANCE_DEFAULT;
+    int tolerance = THETA_TOLERANCE_DEFAULT / 2;
     int rotation_value = 0;
     struct Angle *orientation_goal = Angle_new(
                                          robot->current_behavior->first_child->entry_conditions->goal_state->pose->angle->theta);

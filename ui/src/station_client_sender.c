@@ -37,7 +37,7 @@ static int force_environment_has_changed = 1;
 
 static void addPacketToQueue(uint8_t *data, uint32_t length)
 {
-    if(StationInterface_isConnectedToRobot) {
+    if(StationInterface_isConnectedToRobot()) {
         g_mutex_lock(&add_packet_mutex);
         addPacket(data, length);
         g_mutex_unlock(&add_packet_mutex);
