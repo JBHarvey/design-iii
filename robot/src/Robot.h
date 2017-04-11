@@ -32,9 +32,9 @@ void Robot_sendPlannedTrajectory(struct Robot *robot);
 void Robot_sendPoseEstimate(struct Robot *robot);
 void Robot_fetchManchesterCodeIfAtLeastASecondHasPassedSinceLastRobotTimerReset(struct Robot *robot);
 void Robot_lightGreenLedAndWaitASecond(struct Robot *robot);
-void Robot_lightRedLedAndWaitASecond(struct Robot *robot);
-void Robot_lowerPenAndWaitASecondAndAHalf(struct Robot *robot);
-void Robot_risePenAndWaitASecondAndAHalf(struct Robot *robot);
+void Robot_lightRedLed(struct Robot *robot);
+void Robot_stopWaitTwoSecondsLowerPenWaitTwoSecond(struct Robot *robot);
+void Robot_stopWaitTwoSecondsRisePenWaitTwoSecond(struct Robot *robot);
 void Robot_closeCycleAndSendEndOfCycleSignal(struct Robot *robot);
 
 

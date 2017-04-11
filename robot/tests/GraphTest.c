@@ -1005,7 +1005,7 @@ Test(Graph,
      , .fini = teardown_Graph)
 {
     setup_ThreeObstaclesSoloDuoOverlappingInXAndY(SOUTH, CENTER, NORTH);
-    cr_assert(Coordinates_isToTheWestOf(obstacle_b->coordinates, graph->western_node->coordinates));
+    cr_assert(Coordinates_isToTheWestOf(graph->western_node->coordinates, obstacle_b->coordinates));
 }
 
 

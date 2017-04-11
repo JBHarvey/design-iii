@@ -158,6 +158,27 @@ static int convertAngleToSpeed(int theta)
             speed = 3000;
         }
 
+        /*
+         * For Marc: TODO:
+         * There is a bug here.
+         * The test case is :
+         * given_aRobotNotOrientedWithItsGoalBetweenTheWestAndSouthWest_when_askedToNavigateTowardsGoal_then_aRotationCommandIsSentWithThePositiveAngleBetweenTheAbsoluteRobotWestAndTheTarget
+         * NavigatorTest.c - line 514.
+         *
+         * You should handle this case :D
+         * The failing reason: theta will be negative, because the west of the robot
+         * is PI and its target has a negative angle.
+         *
+         * This bug will translate in the following behavior:
+         * IF the robot isn't oriented with its target to its south-west,
+         * ---> it will turn so that its target is oriented towards its south,
+         *      even if the angle to its west is smaller.
+         *
+         *
+         * *Side note: Tu m'appelleras quand tu sera rendu ici, jvais avoir un comportement
+         *              different a te faire gérer aussi ;)
+         *
+         */
         if(theta < 0) {
             speed *= -1;
         }
@@ -258,6 +279,8 @@ static void sendRotationCommandForNavigation(struct Robot * robot, int angle_to_
     int theta;
     int tolerance = THETA_TOLERANCE_DEFAULT;
 
+    // TODO: Modify this function to make the robot go only NORTH-SOUTH
+    //       in its navigation
     while(angle_to_target > QUARTER_PI) {
         angle_to_target -= HALF_PI;
     }
@@ -343,27 +366,6 @@ void Navigator_orientRobotTowardsGoal(struct Robot * robot)
     Angle_delete(orientation_goal);
 }
 
-void Navigator_planTowardsAntennaStart(struct Robot * robot)
-{
-    deletePlannedTrajectoryIfExistant(robot->navigator);
-    struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
-    struct Coordinates *antenna_start_coordinates = robot->navigator->navigable_map->antenna_zone_start;
-    struct CoordinatesSequence *trajectory_to_antenna_start = CoordinatesSequence_new(current_coordinates);
-    CoordinatesSequence_append(trajectory_to_antenna_start, antenna_start_coordinates);
-
-    robot->navigator->planned_trajectory = trajectory_to_antenna_start;
-    RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
-    void (*orientationAction)(struct Robot *) = &Navigator_planOrientationTowardsAntenna;
-    RobotBehaviors_appendTrajectoryBehaviors(robot, trajectory_to_antenna_start, orientationAction);
-}
-
-void Navigator_planOrientationTowardsAntenna(struct Robot * robot)
-{
-    int angle = 0;
-    void (*action)(struct Robot *) = &Navigator_planTowardsAntennaMiddle;
-    RobotBehavior_appendOrientationBehaviorWithChildAction(robot, angle, action);
-}
-
 void Navigator_planTowardsAntennaMiddle(struct Robot * robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
@@ -380,8 +382,15 @@ void Navigator_planTowardsAntennaMiddle(struct Robot * robot)
     robot->navigator->planned_trajectory = trajectory_to_antenna_middle;
 
     RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
+    void (*orientationAction)(struct Robot *) = &Navigator_planOrientationTowardsAntenna;
+    RobotBehaviors_appendTrajectoryBehaviors(robot, trajectory_to_antenna_middle, orientationAction);
+}
+
+void Navigator_planOrientationTowardsAntenna(struct Robot * robot)
+{
+    int angle = 0;
     void (*stopMotionBeforeManchester)(struct Robot *) = &Navigator_planStopMotionBeforeFetchingManchester;
-    RobotBehaviors_appendTrajectoryBehaviors(robot, trajectory_to_antenna_middle, stopMotionBeforeManchester);
+    RobotBehavior_appendOrientationBehaviorWithChildAction(robot, angle, stopMotionBeforeManchester);
 }
 
 void Navigator_planStopMotionBeforeFetchingManchester(struct Robot * robot)
