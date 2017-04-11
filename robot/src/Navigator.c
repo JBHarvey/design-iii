@@ -4,12 +4,12 @@
 #include "Pathfinder.h"
 #include "Timer.h"
 
-const int MAX_SPEED = 1600;
+const int MAX_SPEED = 1400;
 const int MEDIUM_DISTANCE = 1000;
 const int SHORT_DISTANCE = 100;
 const double ACCELERATION_FACTOR = 1.3;
 
-const int STM_CLOCK_TIME_IN_MS = 16;
+const int STM_CLOCK_TIME_IN_MS = 18;
 struct Timer *command_timer;
 
 struct Navigator *Navigator_new(void)
@@ -129,7 +129,7 @@ static int convertDistanceToSpeed(int distance, int current_speed)
     } else if(distance < MEDIUM_DISTANCE && distance > SHORT_DISTANCE) {
         top_speed /= 2;
     } else if(distance <= SHORT_DISTANCE) {
-        top_speed = distance * 5;
+        top_speed = distance * 3;
     }
 
     // Smooth acceleration
@@ -146,7 +146,14 @@ static int convertDistanceToSpeed(int distance, int current_speed)
 
 static int convertAngleToSpeed(int theta)
 {
-    int speed = (theta < 0) ? -60000 : 60000 ;
+    int speed = theta / 3;
+
+    if(speed < 2000) {
+        speed = 2000;
+    }
+
+    /*
+        (theta < 0) ? -60000 : 60000 ;
 
     if(theta < HALF_PI && theta > -HALF_PI) {
         speed = (theta < 0) ? -40000 : 40000 ;
@@ -163,6 +170,8 @@ static int convertAngleToSpeed(int theta)
     if(theta < THETA_TOLERANCE_DEFAULT / 2 && theta > -THETA_TOLERANCE_DEFAULT / 2) {
         speed = (theta < 0) ? -7000 : 7000 ;
     }
+
+    */
 
     return speed;
 }
