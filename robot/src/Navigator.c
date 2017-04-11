@@ -136,11 +136,7 @@ static int convertDistanceToSpeed(int distance, int current_speed)
     if(current_speed < top_speed) {
         //if(current_speed < SHORT_DISTANCE) {
         //    speed = 150;
-        if(current_speed < 0) {
-            speed = (current_speed * ACCELERATION_FACTOR > -top_speed) ? current_speed * ACCELERATION_FACTOR : -top_speed;
-        } else {
-            speed = (current_speed * ACCELERATION_FACTOR < top_speed) ? current_speed * ACCELERATION_FACTOR : top_speed;
-        }
+        speed = (current_speed * ACCELERATION_FACTOR < top_speed) ? current_speed * ACCELERATION_FACTOR : top_speed;
     }
 
     return speed;
@@ -200,7 +196,7 @@ static int isMovingTowardsXAxis(int angle_to_target)
     }
 }
 
-static void sendSpeedsCommand(struct Robot *robot, int angular_distance_to_target, int angle_to_target)
+static void sendSpeedsCommand(struct Robot * robot, int angular_distance_to_target, int angle_to_target)
 {
     if(Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS)) {
         int x = 0;
@@ -211,16 +207,16 @@ static void sendSpeedsCommand(struct Robot *robot, int angular_distance_to_targe
         int angular_distance_to_south = abs(MINUS_HALF_PI - angle_to_target);
 
         if(angular_distance_to_east < tolerance) {
-            int speed = convertDistanceToSpeed(angular_distance_to_target, robot->wheels->translation_data_speed->x);
+            int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->x));
             x = speed;
         } else if(angular_distance_to_north < tolerance) {
-            int speed = convertDistanceToSpeed(angular_distance_to_target, robot->wheels->translation_data_speed->y);
+            int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->y));
             y = speed;
         } else if(angular_distance_to_south < tolerance) {
-            int speed = convertDistanceToSpeed(angular_distance_to_target, robot->wheels->translation_data_speed->y);
+            int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->y));
             y = -1 * speed;
         } else {
-            int speed = convertDistanceToSpeed(angular_distance_to_target, robot->wheels->translation_data_speed->x);
+            int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->x));
             x = -1 * speed;
         }
 
@@ -235,7 +231,7 @@ static void sendSpeedsCommand(struct Robot *robot, int angular_distance_to_targe
     }
 }
 
-static void sendRotationCommand(struct Robot *robot, int value)
+static void sendRotationCommand(struct Robot * robot, int value)
 {
     if(Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS)) {
         struct Command_Rotate rotate_command = {
@@ -248,7 +244,7 @@ static void sendRotationCommand(struct Robot *robot, int value)
     }
 }
 
-static void sendRotationCommandForNavigation(struct Robot *robot, int angle_to_target)
+static void sendRotationCommandForNavigation(struct Robot * robot, int angle_to_target)
 {
     int theta;
     int tolerance = THETA_TOLERANCE_DEFAULT;
@@ -266,7 +262,7 @@ static void sendRotationCommandForNavigation(struct Robot *robot, int angle_to_t
     sendRotationCommand(robot, theta);
 }
 
-static void resetPlannedTrajectoryFlagsIfNecessary(struct Robot *robot)
+static void resetPlannedTrajectoryFlagsIfNecessary(struct Robot * robot)
 {
     int flag_value = robot->current_state->flags->planned_trajectory_received_by_station;
 
@@ -275,7 +271,7 @@ static void resetPlannedTrajectoryFlagsIfNecessary(struct Robot *robot)
     }
 }
 
-void Navigator_stopMovement(struct Robot *robot)
+void Navigator_stopMovement(struct Robot * robot)
 {
     sendRotationCommand(robot, 0);
     struct Command_Speeds speeds_command = {
@@ -286,7 +282,7 @@ void Navigator_stopMovement(struct Robot *robot)
     Timer_reset(command_timer);
 }
 
-void Navigator_navigateRobotTowardsGoal(struct Robot *robot)
+void Navigator_navigateRobotTowardsGoal(struct Robot * robot)
 {
     struct Coordinates *goal_coordinates =
             robot->current_behavior->first_child->entry_conditions->goal_state->pose->coordinates;
@@ -315,7 +311,7 @@ void Navigator_navigateRobotTowardsGoal(struct Robot *robot)
     }
 }
 
-void Navigator_orientRobotTowardsGoal(struct Robot *robot)
+void Navigator_orientRobotTowardsGoal(struct Robot * robot)
 {
     int tolerance = THETA_TOLERANCE_DEFAULT;
     int rotation_value = 0;
@@ -338,7 +334,7 @@ void Navigator_orientRobotTowardsGoal(struct Robot *robot)
     Angle_delete(orientation_goal);
 }
 
-void Navigator_planTowardsAntennaStart(struct Robot *robot)
+void Navigator_planTowardsAntennaStart(struct Robot * robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
     struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
@@ -352,14 +348,14 @@ void Navigator_planTowardsAntennaStart(struct Robot *robot)
     RobotBehaviors_appendTrajectoryBehaviors(robot, trajectory_to_antenna_start, orientationAction);
 }
 
-void Navigator_planOrientationTowardsAntenna(struct Robot *robot)
+void Navigator_planOrientationTowardsAntenna(struct Robot * robot)
 {
     int angle = 0;
     void (*action)(struct Robot *) = &Navigator_planTowardsAntennaMiddle;
     RobotBehavior_appendOrientationBehaviorWithChildAction(robot, angle, action);
 }
 
-void Navigator_planTowardsAntennaMiddle(struct Robot *robot)
+void Navigator_planTowardsAntennaMiddle(struct Robot * robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
     struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
@@ -379,14 +375,14 @@ void Navigator_planTowardsAntennaMiddle(struct Robot *robot)
     RobotBehaviors_appendTrajectoryBehaviors(robot, trajectory_to_antenna_middle, stopMotionBeforeManchester);
 }
 
-void Navigator_planStopMotionBeforeFetchingManchester(struct Robot *robot)
+void Navigator_planStopMotionBeforeFetchingManchester(struct Robot * robot)
 {
     void (*action)(struct Robot *) = &Navigator_planFetchingManchesterCode;
     RobotBehavior_appendStopMovementBehaviorWithChildAction(robot, action);
 }
 
 
-void Navigator_planFetchingManchesterCode(struct Robot *robot)
+void Navigator_planFetchingManchesterCode(struct Robot * robot)
 {
 
     void (*action)(struct Robot *);
@@ -400,13 +396,13 @@ void Navigator_planFetchingManchesterCode(struct Robot *robot)
     RobotBehavior_appendFetchManchesterCodeBehaviorWithChildAction(robot, action);
 }
 
-void Navigator_planLowerPenForAntennaMark(struct Robot *robot)
+void Navigator_planLowerPenForAntennaMark(struct Robot * robot)
 {
     void (*action)(struct Robot *) = &Navigator_planTowardsAntennaMarkEnd;
     RobotBehavior_appendLowerPenBehaviorWithChildAction(robot, action);
 }
 
-void Navigator_planTowardsAntennaMarkEnd(struct Robot *robot)
+void Navigator_planTowardsAntennaMarkEnd(struct Robot * robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
     struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
@@ -424,13 +420,13 @@ void Navigator_planTowardsAntennaMarkEnd(struct Robot *robot)
     RobotBehaviors_appendTrajectoryBehaviors(robot, mark_trajectory, risePenBeforeCrossing);
 }
 
-void Navigator_planRisePenForObstacleCrossing(struct Robot *robot)
+void Navigator_planRisePenForObstacleCrossing(struct Robot * robot)
 {
     void (*action)(struct Robot *) = &Navigator_planTowardsObstacleZoneEastSide;
     RobotBehavior_appendRisePenBehaviorWithChildAction(robot, action);
 }
 
-void Navigator_planTowardsObstacleZoneEastSide(struct Robot *robot)
+void Navigator_planTowardsObstacleZoneEastSide(struct Robot * robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
     Graph_updateForMap(robot->navigator->graph, robot->navigator->navigable_map);
@@ -447,7 +443,7 @@ void Navigator_planTowardsObstacleZoneEastSide(struct Robot *robot)
 
 }
 
-void Navigator_planTowardsPaintingZone(struct Robot *robot)
+void Navigator_planTowardsPaintingZone(struct Robot * robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
     struct Graph *graph = robot->navigator->graph;
@@ -462,7 +458,7 @@ void Navigator_planTowardsPaintingZone(struct Robot *robot)
 }
 
 // TODO: TEST THIS FUNCTION
-void Navigator_planTowardsPainting(struct Robot *robot)
+void Navigator_planTowardsPainting(struct Robot * robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
     struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
@@ -479,7 +475,7 @@ void Navigator_planTowardsPainting(struct Robot *robot)
     RobotBehaviors_appendTrajectoryBehaviors(robot, target_painting_trajectory, planOrientationTowardsPainting);
 }
 
-void Navigator_planOrientationTowardsPainting(struct Robot *robot)
+void Navigator_planOrientationTowardsPainting(struct Robot * robot)
 {
     int target_painting = robot->manchester_code->painting_number;
     struct Pose *painting_pose = robot->navigator->navigable_map->painting_zones[target_painting];
@@ -488,25 +484,25 @@ void Navigator_planOrientationTowardsPainting(struct Robot *robot)
     RobotBehavior_appendOrientationBehaviorWithChildAction(robot, angle, action);
 }
 
-void Navigator_planStopMotionBeforePicture(struct Robot *robot)
+void Navigator_planStopMotionBeforePicture(struct Robot * robot)
 {
     void (*action)(struct Robot *) = &Navigator_planLightingGreenLedBeforePicture;
     RobotBehavior_appendStopMovementBehaviorWithChildAction(robot, action);
 }
 
-void Navigator_planLightingGreenLedBeforePicture(struct Robot *robot)
+void Navigator_planLightingGreenLedBeforePicture(struct Robot * robot)
 {
     void (*action)(struct Robot *) = &Navigator_planTakingPicture;
     RobotBehavior_appendLightGreenLedBehaviorWithChildAction(robot, action);
 }
 
-void Navigator_planTakingPicture(struct Robot *robot)
+void Navigator_planTakingPicture(struct Robot * robot)
 {
     void (*action)(struct Robot *) = &Navigator_planTowardsObstacleZoneWestSide;
     RobotBehavior_appendTakePictureBehaviorWithChildAction(robot, action);
 }
 
-void Navigator_planTowardsObstacleZoneWestSide(struct Robot *robot)
+void Navigator_planTowardsObstacleZoneWestSide(struct Robot * robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
     Graph_updateForMap(robot->navigator->graph, robot->navigator->navigable_map);
@@ -523,7 +519,7 @@ void Navigator_planTowardsObstacleZoneWestSide(struct Robot *robot)
 }
 
 // TODO: TEST THIS FUNCTION
-void Navigator_planTowardsDrawingZone(struct Robot *robot)
+void Navigator_planTowardsDrawingZone(struct Robot * robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
     struct Graph *graph = robot->navigator->graph;
@@ -537,7 +533,7 @@ void Navigator_planTowardsDrawingZone(struct Robot *robot)
     RobotBehaviors_appendTrajectoryBehaviors(robot, obstacle_crossing_trajectory, planTowardsPainting);
 }
 
-void Navigator_planTowardsCenterOfDrawingZone(struct Robot *robot)
+void Navigator_planTowardsCenterOfDrawingZone(struct Robot * robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
     struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
@@ -558,13 +554,13 @@ void Navigator_planTowardsCenterOfDrawingZone(struct Robot *robot)
     Coordinates_delete(center_of_drawing_zone);
 }
 
-void Navigator_planToTellReadyToDraw(struct Robot *robot)
+void Navigator_planToTellReadyToDraw(struct Robot * robot)
 {
     void (*action)(struct Robot *) = &Navigator_planTowardsDrawingStart;
     RobotBehavior_appendSendReadyToDrawBehaviorWithChildAction(robot, action);
 }
 
-void Navigator_planTowardsDrawingStart(struct Robot *robot)
+void Navigator_planTowardsDrawingStart(struct Robot * robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
     struct Map *map = robot->navigator->navigable_map;
@@ -583,14 +579,14 @@ void Navigator_planTowardsDrawingStart(struct Robot *robot)
     RobotBehaviors_appendTrajectoryBehaviors(robot, start_of_drawing_trajectory, planLowerPenBeforeDrawing);
 }
 
-void Navigator_planLowerPenBeforeDrawing(struct Robot *robot)
+void Navigator_planLowerPenBeforeDrawing(struct Robot * robot)
 {
     void (*action)(struct Robot *) = &Navigator_planDrawing;
     RobotBehavior_appendLowerPenBehaviorWithChildAction(robot, action);
 }
 
 //TODO: test this function
-void Navigator_planDrawing(struct Robot *robot)
+void Navigator_planDrawing(struct Robot * robot)
 {
     struct CoordinatesSequence *drawing_trajectory = robot->drawing_trajectory;
 
@@ -601,13 +597,13 @@ void Navigator_planDrawing(struct Robot *robot)
     RobotBehaviors_appendTrajectoryBehaviors(robot, drawing_trajectory, planRisePenBeforeGoingToAntennaStop);
 }
 
-void Navigator_planRisePenBeforeGoingToAntennaStop(struct Robot *robot)
+void Navigator_planRisePenBeforeGoingToAntennaStop(struct Robot * robot)
 {
     void (*action)(struct Robot *) = &Navigator_planTowardsAntennaStop;
     RobotBehavior_appendRisePenBehaviorWithChildAction(robot, action);
 }
 
-void Navigator_planTowardsAntennaStop(struct Robot *robot)
+void Navigator_planTowardsAntennaStop(struct Robot * robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
     struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
@@ -622,25 +618,25 @@ void Navigator_planTowardsAntennaStop(struct Robot *robot)
     RobotBehaviors_appendTrajectoryBehaviors(robot, antenna_stop_trajectory, planStopMotionForEndOfCycle);
 }
 
-void Navigator_planStopMotionForEndOfCycle(struct Robot *robot)
+void Navigator_planStopMotionForEndOfCycle(struct Robot * robot)
 {
     void (*action)(struct Robot *) = &Navigator_planEndOfCycleAndSendSignal;
     RobotBehavior_appendStopMovementBehaviorWithChildAction(robot, action);
 }
 
-void Navigator_planEndOfCycleAndSendSignal(struct Robot *robot)
+void Navigator_planEndOfCycleAndSendSignal(struct Robot * robot)
 {
     void (*action)(struct Robot *) = &Navigator_planLightingRedLedUntilNewCycle;
     RobotBehavior_appendCloseCycleAndSendSignalBehaviorWithChildAction(robot, action);
 }
 
-void Navigator_planLightingRedLedUntilNewCycle(struct Robot *robot)
+void Navigator_planLightingRedLedUntilNewCycle(struct Robot * robot)
 {
     void(*action)(struct Robot *) = &Navigator_planUpdateMapForNewCycle;
     RobotBehavior_appendLightRedLedBehaviorWithChildAction(robot, action);
 }
 
-void Navigator_planUpdateMapForNewCycle(struct Robot *robot)
+void Navigator_planUpdateMapForNewCycle(struct Robot * robot)
 {
     void(*action)(struct Robot *) = &Navigator_planOrientationTowardsAntenna;
     RobotBehavior_appendUpdateNavgableMapBehaviorWithChildAction(robot, action);
