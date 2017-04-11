@@ -16,6 +16,7 @@ struct DataReceiver_Callbacks {
     void (*updateWheelsRotation)(struct Wheels *, struct Communication_Rotation);
     void (*updateManchesterCode)(struct ManchesterCode *, struct Flags *, struct Communication_ManchesterCode);
     void (*updateFlagsStartCycle)(struct Flags *);
+    void (*updateFlagsStopExecution)(struct Flags *);
     void (*updateFlagsImageReceivedByStation)(struct Flags *);
     void (*updateFlagsPlannedTrajectoryReceivedByStation)(struct Flags *);
     void (*updateFlagsReadyToStartSignalReceivedByStation)(struct Flags *);
@@ -32,6 +33,7 @@ void DataReceiver_updateWheelsRotation(struct Wheels *wheels, struct Communicati
 void DataReceiver_updateManchesterCode(struct ManchesterCode *manchester_code, struct Flags *flags,
         struct Communication_ManchesterCode new_manchester_code);
 void DataReceiver_updateFlagsStartCycle(struct Flags *flags);
+void DataReceiver_updateFlagsStopExecution(struct Flags *flags);
 void DataReceiver_updateFlagsImageReceivedByStation(struct Flags *flags);
 void DataReceiver_updateFlagsPlannedTrajectoryReceivedByStation(struct Flags *flags);
 void DataReceiver_updateFlagsReadyToStartSignalReceivedByStation(struct Flags *flags);

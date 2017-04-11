@@ -22,6 +22,7 @@ void Logger_updateWheelsTranslation(struct Wheels *wheels, struct Communication_
 void Logger_updateWheelsRotation(struct Wheels *wheels, struct Communication_Rotation rotation);
 void Logger_updateManchesterCode(struct ManchesterCode *manchester_code, struct Flags *flags, struct Communication_ManchesterCode code_informations);
 void Logger_updateFlagsStartCycle(struct Flags *flags);
+void Logger_updateFlagsStopExecution(struct Flags *flags);
 void Logger_updateFlagsImageReceivedByStation(struct Flags *flags);
 void Logger_updateFlagsPlannedTrajectoryReceivedByStation(struct Flags *flags);
 void Logger_updateFlagsReadyToStartSignalReceivedByStation(struct Flags *flags);

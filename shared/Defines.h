@@ -34,15 +34,15 @@
 
 // Navigation related
 #define SPEEDS_BASE_UNIT 0.0001
-#define MEDIUM_SPEED_VALUE 800
+#define MEDIUM_SPEED_VALUE 2000
 
-#define LOW_SPEED_VALUE 20
-#define LOW_SPEED_DISTANCE 750
+#define LOW_SPEED_VALUE 300
+#define LOW_SPEED_DISTANCE 800
 
 #define STOP_VALUE 0
-#define STOP_DISTANCE 80
+#define STOP_DISTANCE 75
 
-#define ANTENNA_MARK_DISTANCE 750
+#define ANTENNA_MARK_DISTANCE 76
 
 // Units and mesurements related
 
@@ -73,16 +73,16 @@
 #define DEFAULT_GOAL_THETA 0
 
 #define X_TOLERANCE_MIN 0                   // 0 mm
-#define X_TOLERANCE_DEFAULT 200             // 4 mm
+#define X_TOLERANCE_DEFAULT 50             // 5 mm
 #define X_TOLERANCE_MAX 50000               // 5 m
 
 #define Y_TOLERANCE_MIN 0                   // 0 mm
-#define Y_TOLERANCE_DEFAULT 200             // 4 mm
+#define Y_TOLERANCE_DEFAULT 50             // 5 mm
 #define Y_TOLERANCE_MAX 50000               // 5 m
 
 #define THETA_TOLERANCE_MIN 0               // 0 rad
-#define THETA_TOLERANCE_DEFAULT 15708       // Pi/20 rad
-#define THETA_TOLERANCE_MAX 314160          // Pi rad
+#define THETA_TOLERANCE_DEFAULT 8000      
+#define THETA_TOLERANCE_MAX 314160         // Pi rad
 
 
 // Time related
