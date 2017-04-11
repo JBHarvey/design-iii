@@ -152,10 +152,10 @@ static int convertAngleToSpeed(int theta)
     int speed = (int)((double) theta / 2);
 
     if(theta < THETA_TOLERANCE_DEFAULT && theta > -THETA_TOLERANCE_DEFAULT) {
-        speed = 6000;
+        speed = 8000;
 
         if(theta < THETA_TOLERANCE_DEFAULT / 2 && theta > -THETA_TOLERANCE_DEFAULT / 2) {
-            speed = 3000;
+            speed = 4000;
         }
 
         /*
@@ -305,7 +305,6 @@ static void resetPlannedTrajectoryFlagsIfNecessary(struct Robot * robot)
 
 void Navigator_stopMovement(struct Robot * robot)
 {
-    sendRotationCommand(robot, 0);
     struct Command_Speeds speeds_command = {
         .x = 0,
         .y = 0

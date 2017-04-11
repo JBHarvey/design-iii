@@ -1,6 +1,7 @@
 #include <criterion/criterion.h>
 #include <stdio.h>
 #include "Logger.h"
+#include "Timer.h"
 
 struct CommandSender *command_sender;
 struct CommandSender_Callbacks callbacks;
@@ -8,6 +9,8 @@ struct Navigator *navigator;
 struct Robot *robot;
 const int COMMAND_SENT = 1;
 const int DEFAULT_SPEED = 500;
+extern const int STM_CLOCK_TIME_IN_MS;
+extern struct Timer *command_timer;
 int speeds_validator;
 int sent_speeds_command_x;
 int sent_speeds_command_y;
@@ -248,6 +251,9 @@ Test(Navigator,
     updateRobotGoalCoordinatesTo(target_coordinates);
 
     navigator->was_oriented_before_last_command = 1;
+
+    while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
+
     Navigator_navigateRobotTowardsGoal(robot);
 
     cr_assert(speeds_validator == COMMAND_SENT);
@@ -334,7 +340,7 @@ Test(Navigator,
 }
 
 Test(Navigator,
-     given_aRobotThatWasNotOrientedTowardsItsGoalAndIsNow_when_askedToNavigateTowardsGoal_then_aRotationCommandIsSentWithAValueOfZero
+     given_aRobotThatWasNotOrientedTowardsItsGoalAndIsNow_when_askedToNavigateTowardsGoal_then_aStopCommandIsSent
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
@@ -346,11 +352,15 @@ Test(Navigator,
 
     navigator->was_oriented_before_last_command = 0;
 
+    while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
+
     Navigator_navigateRobotTowardsGoal(robot);
 
-    cr_assert(speeds_validator != COMMAND_SENT);
+    cr_assert(speeds_validator == COMMAND_SENT);
     cr_assert(rotation_validator == COMMAND_SENT);
     cr_assert(sent_rotation_command_theta == 0);
+    cr_assert(sent_speeds_command_y == 0);
+    cr_assert(sent_speeds_command_x == 0);
 
     Coordinates_delete(target_coordinates);
     Pose_delete(robot_pose);
