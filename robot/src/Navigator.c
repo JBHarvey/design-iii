@@ -158,6 +158,27 @@ static int convertAngleToSpeed(int theta)
             speed = 3000;
         }
 
+        /*
+         * For Marc: TODO:
+         * There is a bug here.
+         * The test case is :
+         * given_aRobotNotOrientedWithItsGoalBetweenTheWestAndSouthWest_when_askedToNavigateTowardsGoal_then_aRotationCommandIsSentWithThePositiveAngleBetweenTheAbsoluteRobotWestAndTheTarget
+         * NavigatorTest.c - line 514.
+         *
+         * You should handle this case :D
+         * The failing reason: theta will be negative, because the west of the robot
+         * is PI and its target has a negative angle.
+         *
+         * This bug will translate in the following behavior:
+         * IF the robot isn't oriented with its target to its south-west,
+         * ---> it will turn so that its target is oriented towards its south,
+         *      even if the angle to its west is smaller.
+         *
+         *
+         * *Side note: Tu m'appelleras quand tu sera rendu ici, jvais avoir un comportement
+         *              different a te faire gérer aussi ;)
+         *
+         */
         if(theta < 0) {
             speed *= -1;
         }
@@ -258,6 +279,8 @@ static void sendRotationCommandForNavigation(struct Robot * robot, int angle_to_
     int theta;
     int tolerance = THETA_TOLERANCE_DEFAULT;
 
+    // TODO: Modify this function to make the robot go only NORTH-SOUTH
+    //       in its navigation
     while(angle_to_target > QUARTER_PI) {
         angle_to_target -= HALF_PI;
     }
