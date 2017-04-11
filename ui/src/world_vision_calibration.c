@@ -254,6 +254,7 @@ static struct Point3D compute3DPointOnPlaneInCameraFrame(struct Point2D image_co
 struct Point3D WorldVisionCalibration_convertImageCoordinatesToWorldCoordinates(struct Point2D image_coordinates,
         struct Camera *input_camera)
 {
+
     struct Point3D result_in_camera_frame = compute3DPointOnPlaneInCameraFrame(image_coordinates, input_camera);
     struct Point3D result = PointTypes_transformInversePoint3D(result_in_camera_frame,
                             input_camera->camera_extrinsics->rotation_vector,
