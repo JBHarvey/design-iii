@@ -662,6 +662,11 @@ static void linkDuoOverlapXAndYSolo(struct Graph *graph, struct Obstacle *first,
     linkNodesForDuoObstacleOverlappingInXAndY(graph, graph->eastern_node, middle_node, first, middle, map);
 }
 
+static void establishGraphForTrioObstacles(struct Graph *graph, struct Obstacle *first, struct Obstacle *middle,
+        struct Obstacle *last, struct Map *map)
+{
+}
+
 void Graph_updateForMap(struct Graph *graph, struct Map* map)
 {
     int number_of_obstacle = Map_fetchNumberOfObstacles(map);
@@ -738,6 +743,7 @@ void Graph_updateForMap(struct Graph *graph, struct Map* map)
                     linkDuoOverlapXAndYSolo(graph, first, middle, last, map);
                 }
             } else if(first_overlaps_middle_x && last_overlaps_middle_x) {
+                establishGraphForTrioObstacles(graph, first, middle, last, map);
             }
 
             break;
