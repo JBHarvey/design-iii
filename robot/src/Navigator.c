@@ -130,7 +130,7 @@ static int convertDistanceToSpeed(int distance, int current_speed)
             top_speed = MAX_SPEED;
         }
     } else if(distance <= SHORT_DISTANCE) {
-        top_speed = distance * 2;
+        top_speed = 50 + distance * 1.5;
     }
 
     // Smooth acceleration
@@ -147,8 +147,8 @@ static int convertAngleToSpeed(int theta)
 {
     int speed = (int)((double) theta / 2);
 
-    if(speed < 10000 && speed > -10000) {
-        speed = 5000;
+    if(speed < 11000 && speed > -11000) {
+        speed = 5500;
 
         if(theta < 0) {
             speed *= -1;
