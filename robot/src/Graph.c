@@ -586,11 +586,8 @@ static struct Node *createMiddleNodeDuoOverlapXSolo(struct Graph *graph, struct 
 {
     struct Coordinates *east_border_x;
 
-    if(Coordinates_isToTheEastOf(first->coordinates, middle->coordinates)) {
-        east_border_x = Obstacle_retrieveEasternPointOf(first);
-    } else {
-        east_border_x = Obstacle_retrieveEasternPointOf(middle);
-    }
+    struct Obstacle *middle_obstacle = Obstacle_retrieveWestern(first, middle);
+    east_border_x = Obstacle_retrieveWesternPointOf(middle_obstacle);
 
     int middle_node_x = computeOptimalXValueForObstacleEastNodeWithBorder(last, east_border_x);
     Coordinates_delete(east_border_x);
@@ -609,11 +606,8 @@ static struct Node *createMiddleNodeSoloDuoOverlapXAndY(struct Graph *graph, str
 {
     struct Coordinates *west_border_x;
 
-    if(Coordinates_isToTheEastOf(middle->coordinates, last->coordinates)) {
-        west_border_x = Obstacle_retrieveEasternPointOf(middle);
-    } else {
-        west_border_x = Obstacle_retrieveEasternPointOf(last);
-    }
+    struct Obstacle *middle_obstacle = Obstacle_retrieveEastern(middle, last);
+    west_border_x = Obstacle_retrieveEasternPointOf(middle_obstacle);
 
     int middle_node_x = computeOptimalXValueForObstacleWestNodeWithBorder(first, west_border_x);
     Coordinates_delete(west_border_x);
