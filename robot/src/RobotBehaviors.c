@@ -186,7 +186,7 @@ void RobotBehavior_appendLowerPenBehaviorWithChildAction(struct Robot *robot, vo
 {
     struct Behavior *last_behavior = fetchLastBehavior(robot);
 
-    void (*lowerPen)(struct Robot*) = &Robot_lowerPenAndWaitASecondAndAHalf;
+    void (*lowerPen)(struct Robot*) = &Robot_stopWaitTwoSecondsLowerPenWaitTwoSecond;
     struct Behavior *behavior_lower_pen_with_free_entry;
     behavior_lower_pen_with_free_entry = BehaviorBuilder_build(
             BehaviorBuilder_withAction(lowerPen,
@@ -212,7 +212,7 @@ void RobotBehavior_appendRisePenBehaviorWithChildAction(struct Robot *robot, voi
 {
     struct Behavior *last_behavior = fetchLastBehavior(robot);
 
-    void (*risePen)(struct Robot*) = &Robot_risePenAndWaitASecondAndAHalf;
+    void (*risePen)(struct Robot*) = &Robot_stopWaitTwoSecondsRisePenWaitTwoSecond;
     struct Behavior *behavior_rise_pen_with_free_entry;
     behavior_rise_pen_with_free_entry = BehaviorBuilder_build(
                                             BehaviorBuilder_withAction(risePen,
@@ -380,7 +380,7 @@ void RobotBehavior_appendLightRedLedBehaviorWithChildAction(struct Robot *robot,
 {
     struct Behavior *last_behavior = fetchLastBehavior(robot);
 
-    void (*lightRedLed)(struct Robot*) = &Robot_lightRedLedAndWaitASecond;
+    void (*lightRedLed)(struct Robot*) = &Robot_lightRedLed;
     struct Behavior *behavior_light_red_led_with_free_entry;
     behavior_light_red_led_with_free_entry = BehaviorBuilder_build(
                 BehaviorBuilder_withAction(lightRedLed,

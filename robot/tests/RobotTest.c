@@ -15,6 +15,7 @@ int validation_light_green_led_command_is_sent;
 int validation_light_red_led_command_is_sent;
 int validation_lower_pen_command_is_sent;
 int validation_rise_pen_command_is_sent;
+int validation_send_speeds_command_is_sent;
 const int SENT = 1;
 const int NOT_SENT = 0;
 const int PEN_DOWN_COMMAND_SENT = 1;
@@ -211,6 +212,11 @@ void validateFetchManchesterCodeIsSent(void)
     manchester_code_command_count++;
 }
 
+void validateSendSpeedsCommand(struct Command_Speeds speeds)
+{
+    validation_send_speeds_command_is_sent = SENT;
+}
+
 void setup_robot(void)
 {
     robot = Robot_new();
@@ -223,6 +229,7 @@ void setup_robot(void)
     validation_light_red_led_command_is_sent = NOT_SENT;
     validation_lower_pen_command_is_sent = NOT_SENT;
     validation_rise_pen_command_is_sent = NOT_SENT;
+    validation_send_speeds_command_is_sent = NOT_SENT;
     manchester_code_command_count = 0;
     validation_data_sender_callbacks.sendSignalReadyToStart = &validateReadyToStartIsSent;
     validation_data_sender_callbacks.sendSignalReadyToDraw = &validateReadyToDrawIsSent;
@@ -234,7 +241,8 @@ void setup_robot(void)
     validation_command_sender_callbacks.sendLightRedLEDCommand = &validateLightRedLedIsSent;
     validation_command_sender_callbacks.sendLowerPenCommand = &validateLowerPenIsSent;
     validation_command_sender_callbacks.sendRisePenCommand = &validateRisePenIsSent;
-    DataSender_changeTarget(robot->data_sender, validation_data_sender_callbacks);
+    validation_command_sender_callbacks.sendSpeedsCommand = &validateSendSpeedsCommand,
+                                        DataSender_changeTarget(robot->data_sender, validation_data_sender_callbacks);
     CommandSender_changeTarget(robot->command_sender, validation_command_sender_callbacks);
 
     Sensor_receivesData(robot->world_camera->map_sensor);
@@ -712,7 +720,7 @@ Test(RobotBehaviors,
      , .fini = teardown_robot)
 {
     assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planLowerPenForAntennaMark,
-            &Robot_lowerPenAndWaitASecondAndAHalf);
+            &Robot_stopWaitTwoSecondsLowerPenWaitTwoSecond);
 }
 
 Test(RobotBehaviors,
@@ -779,7 +787,7 @@ Test(RobotBehaviors,
      , .fini = teardown_robot)
 {
     assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planRisePenForObstacleCrossing,
-            &Robot_risePenAndWaitASecondAndAHalf);
+            &Robot_stopWaitTwoSecondsRisePenWaitTwoSecond);
 }
 
 Test(RobotBehaviors,
@@ -1178,7 +1186,7 @@ Test(RobotBehaviors,
      , .fini = teardown_robot)
 {
     assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planLowerPenBeforeDrawing,
-            &Robot_lowerPenAndWaitASecondAndAHalf);
+            &Robot_stopWaitTwoSecondsLowerPenWaitTwoSecond);
 }
 
 Test(RobotBehaviors,
@@ -1211,7 +1219,7 @@ Test(RobotBehaviors,
      , .fini = teardown_robot)
 {
     assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planRisePenBeforeGoingToAntennaStop,
-            &Robot_risePenAndWaitASecondAndAHalf);
+            &Robot_stopWaitTwoSecondsRisePenWaitTwoSecond);
 }
 
 Test(RobotBehaviors,
@@ -1356,7 +1364,7 @@ Test(RobotBehaviors,
      , .fini = teardown_robot)
 {
     assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planLightingRedLedUntilNewCycle,
-            &Robot_lightRedLedAndWaitASecond);
+            &Robot_lightRedLed);
 }
 
 void assertBehaviorHasStartCycleFlagEntry(struct Behavior *behavior)
@@ -1521,66 +1529,77 @@ Test(Robot, given_theRobot_when_askedToLightRedLedAndWaitASecond_then_theCommand
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Robot_lightRedLedAndWaitASecond(robot);
+    Robot_lightRedLed(robot);
 
     cr_assert_eq(validation_light_red_led_command_is_sent, SENT);
 }
 
-Test(Robot,
-     given_theRobot_when_askedToLightRedLedAndWaitASecond_then_atLeastASecondHasPassedSinceTheActionWasTriggered
+Test(Robot, given_theRobot_when_askedToStopWaitTwoSecondsLowerPenWaitTwoSecond_then_theCommandIsSent
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    struct Timer *timer = Timer_new();
-    Robot_lightRedLedAndWaitASecond(robot);
-
-    cr_assert(Timer_hasTimePassed(timer, ONE_SECOND));
-
-    Timer_delete(timer);
-}
-
-Test(Robot, given_theRobot_when_askedToLowerPenAndWaitASecondAndAHalf_then_theCommandIsSent
-     , .init = setup_robot
-     , .fini = teardown_robot)
-{
-    Robot_lowerPenAndWaitASecondAndAHalf(robot);
+    Robot_stopWaitTwoSecondsLowerPenWaitTwoSecond(robot);
 
     cr_assert_eq(validation_lower_pen_command_is_sent, SENT);
 }
 
 Test(Robot,
-     given_theRobot_when_askedToLowerPenAndWaitASecondAndAHalf_then_atLeastASecondAndAHalfHasPassedSinceTheActionWasTriggered
+     given_theRobot_when_askedToStopWaitTwoSecondsLowerPenWaitTwoSecond_then_atLeastFourSecondsHalfHavePassedSinceTheActionWasTriggered
      , .init = setup_robot
      , .fini = teardown_robot)
 {
     struct Timer *timer = Timer_new();
-    Robot_lowerPenAndWaitASecondAndAHalf(robot);
+    Robot_stopWaitTwoSecondsLowerPenWaitTwoSecond(robot);
 
-    cr_assert(Timer_hasTimePassed(timer, ONE_SECOND_AND_AN_HALF));
+    cr_assert(Timer_hasTimePassed(timer, FOUR_SECONDS));
 
     Timer_delete(timer);
 }
 
-Test(Robot, given_theRobot_when_askedToRisePenAndWaitASecondAHalfAnd_then_theCommandIsSent
+Test(Robot,
+     given_theRobot_when_askedToStopWaitTwoSecondsLowerPenWaitTwoSecond_then_aSpeedsCommandMovementIsSent
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    Robot_risePenAndWaitASecondAndAHalf(robot);
+
+    Robot_stopWaitTwoSecondsLowerPenWaitTwoSecond(robot);
+
+    cr_assert_eq(validation_send_speeds_command_is_sent, SENT);
+}
+
+Test(Robot, given_theRobot_when_askedToStopWaitTwoSecondsRisePenWaitTwoSecond_then_theCommandIsSent
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+
+    Robot_stopWaitTwoSecondsRisePenWaitTwoSecond(robot);
 
     cr_assert_eq(validation_rise_pen_command_is_sent, SENT);
 }
 
 Test(Robot,
-     given_theRobot_when_askedToRisePenAndWaitASecondAndAHalf_then_atLeastASecondAndAHalfHasPassedSinceTheActionWasTriggered
+     given_theRobot_when_askedToStopWaitTwoSecondsRisePenWaitTwoSecond_then_atLeastFourSecondsHalfHavePassedSinceTheActionWasTriggered
      , .init = setup_robot
      , .fini = teardown_robot)
 {
     struct Timer *timer = Timer_new();
-    Robot_risePenAndWaitASecondAndAHalf(robot);
 
-    cr_assert(Timer_hasTimePassed(timer, ONE_SECOND_AND_AN_HALF));
+    Robot_stopWaitTwoSecondsRisePenWaitTwoSecond(robot);
+
+    cr_assert(Timer_hasTimePassed(timer, FOUR_SECONDS));
 
     Timer_delete(timer);
+}
+
+Test(Robot,
+     given_theRobot_when_askedToStopWaitTwoSecondsRisePenWaitTwoSecond_then_aSpeedsCommandMovementIsSent
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+
+    Robot_stopWaitTwoSecondsRisePenWaitTwoSecond(robot);
+
+    cr_assert_eq(validation_send_speeds_command_is_sent, SENT);
 }
 
 Test(Robot,
