@@ -8,10 +8,11 @@ struct BehaviorBuilder *BehaviorBuilder_end(void)
     struct BehaviorBuilder *pointer = malloc(sizeof(struct BehaviorBuilder));
     pointer->goalX = DEFAULT_GOAL_X ;
     pointer->goalY = DEFAULT_GOAL_Y ;
-    pointer->goal_theta = DEFAULT_GOAL_THETA ;
-    pointer->tolerancesX = X_TOLERANCE_DEFAULT;
-    pointer->tolerancesY = Y_TOLERANCE_DEFAULT;
-    pointer->tolerances_theta = THETA_TOLERANCE_DEFAULT;
+    pointer->goal_theta = DEFAULT_GOAL_THETA;
+    pointer->tolerancesX = X_TOLERANCE_MOVING;
+    pointer->tolerancesY = Y_TOLERANCE_MOVING;
+    pointer->tolerances_theta = THETA_TOLERANCE_MOVING;
+
     pointer->flags = default_flags;
     pointer->action = &Behavior_idle;
 
