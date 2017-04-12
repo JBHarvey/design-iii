@@ -752,7 +752,7 @@ static void establishGraphForTrioObstacles(struct Graph *graph, struct Obstacle 
 
 
     enum CardinalDirection northern_obstacle_orientation = northern_obstacle->orientation;
-    enum CardinalDirection middle_obstacle_orientation = middle_x_obstacle->orientation;
+    enum CardinalDirection middle_obstacle_orientation = middle_y_obstacle->orientation;
     enum CardinalDirection southern_obstacle_orientation = southern_obstacle->orientation;
 
     int middle_y;
