@@ -24,7 +24,7 @@ struct Coordinates *other_coordinates;
 void setup_CoordinatesSequence(void)
 {
     coordinates = Coordinates_new(SEQUENCE_X, SEQUENCE_Y);
-    other_coordinates = Coordinates_new(SEQUENCE_Y, SEQUENCE_X);
+    other_coordinates = Coordinates_new(SEQUENCE_X * 3, SEQUENCE_Y);
     sequence = CoordinatesSequence_new(coordinates);
 }
 
@@ -96,3 +96,46 @@ Test(CoordinateSequence, given_aSequence_when_fetchSize_then_returnsTheTotalNumb
     cr_assert_eq(number_of_elements, 3);
 
 }
+
+/*
+Test(CoordinatesSequence,
+     given_aSequenceOfSizeTwoBiggerThanADistance_when_askedToShortenTheSegments_then_aSequenceOfBiggerSizeIsReturned
+     , .init = setup_CoordinatesSequence
+     , .fini = teardown_CoordinatesSequence)
+{
+    int distance = MAX_SEGMENT_LENGHT_DRAWING;
+    other_coordinates->x = SEQUENCE_X + 2 * MAX_SEGMENT_LENGHT_DRAWING;
+    CoordinatesSequence_append(sequence, other_coordinates);
+    int original_size = CoordinatesSequence_size(sequence);
+
+    struct CoordinatesSequence *new_sequence = CoordinatesSequence_shortenSegments(sequence, distance);
+    int new_size = CoordinatesSequence_size(new_sequence);
+    cr_assert(original_size < new_size);
+
+    CoordinatesSequence_delete(new_sequence);
+}
+
+Test(CoordinatesSequence,
+     given_aSequenceOfSizeTwoBiggerThanADistance_when_askedToShortenTheSegments_then_aSequenceOfBiggerSizeIsReturned
+     , .init = setup_CoordinatesSequence
+     , .fini = teardown_CoordinatesSequence)
+{
+    int distance = MAX_SEGMENT_LENGHT_DRAWING;
+    other_coordinates->x = SEQUENCE_X + 3 * MAX_SEGMENT_LENGHT_OBSTACLE;
+    CoordinatesSequence_append(sequence, other_coordinates);
+
+    struct CoordinatesSequence *new_sequence = CoordinatesSequence_shortenSegments(sequence, distance);
+    struct CoordinatesSequence *new_element = new_sequence;
+    int segment_distance;
+
+    do {
+        segment_distance = Coordinates_distanceBetween(new_element->coordinates, new_element->next_element->coordinates);
+        cr_assert(distance >= segment_distance);
+        new_element = new_element->next_element;
+
+    } while(!CoordinatesSequence_isLast(new_element));
+
+    CoordinatesSequence_delete(new_sequence);
+}
+
+*/

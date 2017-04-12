@@ -60,3 +60,31 @@ int CoordinatesSequence_size(struct CoordinatesSequence *coordinates_sequence)
 {
     return countSizeOfSequenceFrom(coordinates_sequence, 1);
 }
+
+static struct Coordinates *fetchNextValidCoordinatesForDistance(struct Coordinates *current, struct Coordinates *goal,
+        int max_distance)
+{
+    struct Coordinates *next_valid_coordinates;
+    int distance_between = Coordinates_distanceBetween(current, goal);
+    /*
+    if(distance_between > max_distance){
+    }
+    */
+    return next_valid_coordinates;
+}
+
+struct CoordinatesSequence *CoordinatesSequence_shortenSegments(struct CoordinatesSequence *coordinates_sequence,
+        int max_distance)
+{
+    struct Coordinates *last_valid_coordinates = coordinates_sequence->coordinates;
+    struct Coordinates *goal_coordinates = coordinates_sequence->next_element->coordinates;
+    struct Coordinates *next_valid_coordinates;
+
+    struct CoordinatesSequence *new_sequence = CoordinatesSequence_new(last_valid_coordinates);
+
+    while(!CoordinatesSequence_isLast(coordinates_sequence)) {
+        last_valid_coordinates = next_valid_coordinates;
+    }
+
+    return new_sequence;
+}

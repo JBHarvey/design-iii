@@ -42,6 +42,7 @@ int Coordinates_isToTheSouthEastOf(struct Coordinates *a, struct Coordinates *b)
 int Coordinates_isToTheSouthWestOf(struct Coordinates *a, struct Coordinates *b);
 int Coordinates_isToTheNorthWestOf(struct Coordinates *a, struct Coordinates *b);
 
+struct Angle *Coordinates_angleBetween(struct Coordinates *a, struct Coordinates *b);
 int Coordinates_distanceBetween(struct Coordinates *origin, struct Coordinates *destination);
 int Coordinates_distanceFromOrigin(struct Coordinates *destination);
 

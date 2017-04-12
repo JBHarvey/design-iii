@@ -235,6 +235,30 @@ Test(Coordinates,
 }
 
 Test(Coordinates,
+     given_twoCoordinatesWithAnAngleBetweenThem_when_askedTheAngleBetweenTheseCoordinates_then_aNewAngleWithAValueInsideAReasonnableToleranceIsReturned
+     , .init = setup_coordinates
+     , .fini = teardown_coordinates)
+{
+    struct Angle *angle = Angle_new(MINUS_FIFTH_PI);
+    int initial_x = COORDINATES_X + 100 * COORDINATES_DELTA;
+    int initial_y = COORDINATES_Y;
+    other_coordinates->x = initial_x;
+    other_coordinates->y = initial_y;
+    Coordinates_rotateOfAngleAround(coordinates, angle, other_coordinates);
+
+    int reasonnable_error_on_angle = 100;
+    struct Angle *computed_angle = Coordinates_angleBetween(coordinates, other_coordinates);
+    int angular_distance = Angle_smallestAngleBetween(angle, computed_angle);
+
+    cr_assert(angular_distance <= reasonnable_error_on_angle, "Received Angle : %d - Expected : %d"
+              , computed_angle->theta, angle->theta);
+
+    Angle_delete(computed_angle);
+    Angle_delete(angle);
+}
+
+
+Test(Coordinates,
      given_twoCoordinatesWhichAlreadyHaveAnAngleBetweenThem_when_rotatesCoordinatesOfAngle_thenTheSecondCoordinatesRotatesWithTheFirstOneAsOrigin
      , .init = setup_coordinates
      , .fini = teardown_coordinates)

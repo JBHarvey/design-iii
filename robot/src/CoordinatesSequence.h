@@ -15,5 +15,6 @@ void CoordinatesSequence_delete(struct CoordinatesSequence *coordinates_sequence
 int CoordinatesSequence_isLast(struct CoordinatesSequence *coordinates_sequence);
 void CoordinatesSequence_append(struct CoordinatesSequence *coordinates_sequence, struct Coordinates *new_coordinates);
 int CoordinatesSequence_size(struct CoordinatesSequence *coordinates_sequence);
+struct CoordinatesSequence *CoordinatesSequence_shortenSegments(struct CoordinatesSequence *coordinates_sequence, int max_distance);
 
 #endif // COORDINATESSEQUENCE_H_
