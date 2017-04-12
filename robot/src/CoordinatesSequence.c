@@ -70,6 +70,7 @@ static struct Coordinates *fetchNextValidCoordinatesForDistance(struct Coordinat
     if(distance_between > max_distance) {
         next_valid_coordinates = Coordinates_new(goal->x + max_distance, goal->y);
         struct Angle *angle = Coordinates_angleBetween(current, goal);
+        angle->theta *= -1;
         Coordinates_rotateOfAngleAround(next_valid_coordinates, angle, current);
         Angle_delete(angle);
     } else {
