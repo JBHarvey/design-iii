@@ -42,7 +42,7 @@ struct DetectedThings *detected = NULL;
 
 static int convertAngleToRobotAngle(double angle)
 {
-    int robot_angle = (angle / ANGLE_BASE_UNIT) + 0.5;
+    int robot_angle = round(angle / ANGLE_BASE_UNIT);
 
     if(robot_angle >= 0) {
         robot_angle = PI - robot_angle;
@@ -60,12 +60,12 @@ static int convertObstacleAngleToRobotAngle(double angle)
 
 static int convertCMToRobot(double length)
 {
-    return (length * LENGTH_CM_RATIO) + 0.5;
+    return round(length * LENGTH_CM_RATIO);
 }
 
 static int convertMMToRobot(double length)
 {
-    return (length * LENGTH_MM_RATIO) + 0.5;
+    return round(length * LENGTH_MM_RATIO);
 }
 
 static void drawMarkerLocationOnImage(IplImage *image, struct Marker marker)
@@ -315,14 +315,16 @@ int WorldVisionDetection_detectTableCorners(struct Camera *input_camera)
     _Bool table_detected = findTableCorners(image_yuv, &table_corners);
 
     if(table_detected) {
-        if (!detected->green_square_detected) {
+        if(!detected->green_square_detected) {
             detected->table_detected = 1;
             detected->table = table_corners;
         } else {
-            double dist1 = fabs(GREEN_SQUARE_CORNER_DISTANCE - distancePoints(fixedCvPointFrom32f(table_corners.corner[0]), fixedCvPointFrom32f(detected->green_square.corner[0])));
-            double dist2 = fabs(GREEN_SQUARE_CORNER_DISTANCE - distancePoints(fixedCvPointFrom32f(table_corners.corner[3]), fixedCvPointFrom32f(detected->green_square.corner[3])));
+            double dist1 = fabs(GREEN_SQUARE_CORNER_DISTANCE - distancePoints(fixedCvPointFrom32f(table_corners.corner[0]),
+                                fixedCvPointFrom32f(detected->green_square.corner[0])));
+            double dist2 = fabs(GREEN_SQUARE_CORNER_DISTANCE - distancePoints(fixedCvPointFrom32f(table_corners.corner[3]),
+                                fixedCvPointFrom32f(detected->green_square.corner[3])));
 
-            if (dist1 < GREEN_SQUARE_CORNER_PIXEL_TOLERANCE && dist2 < GREEN_SQUARE_CORNER_PIXEL_TOLERANCE) {
+            if(dist1 < GREEN_SQUARE_CORNER_PIXEL_TOLERANCE && dist2 < GREEN_SQUARE_CORNER_PIXEL_TOLERANCE) {
                 detected->table_detected = 1;
                 detected->table = table_corners;
             }
