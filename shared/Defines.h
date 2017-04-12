@@ -15,7 +15,6 @@
 
 #define IRRELEVANT -1
 
-
 // World related
 
 #define MAXIMUM_OBSTACLE_NUMBER 3
@@ -80,15 +79,18 @@
 #define DEFAULT_GOAL_THETA 0
 
 #define X_TOLERANCE_MIN 0                   // 0 mm
-#define X_TOLERANCE_DEFAULT 50             // 5 mm
+#define X_TOLERANCE_DRAWING 50             // 5 mm
+#define X_TOLERANCE_MOVING 100             // 10 mm
 #define X_TOLERANCE_MAX 50000               // 5 m
 
 #define Y_TOLERANCE_MIN 0                   // 0 mm
-#define Y_TOLERANCE_DEFAULT 50             // 5 mm
+#define Y_TOLERANCE_DRAWING 50             // 5 mm
+#define Y_TOLERANCE_MOVING 100             // 10 mm
 #define Y_TOLERANCE_MAX 50000               // 5 m
 
 #define THETA_TOLERANCE_MIN 0               // 0 rad
-#define THETA_TOLERANCE_DEFAULT 8000      
+#define THETA_TOLERANCE_DRAWING 8000 
+#define THETA_TOLERANCE_MOVING 12000
 #define THETA_TOLERANCE_MAX 314160         // Pi rad
 
 #define OMEGA_MEDIUM_SPEED 8000

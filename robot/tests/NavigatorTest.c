@@ -109,8 +109,8 @@ Test(Navigator, given_anAngleSmallerThanTheThetaTolerance_when_askedIfTheAngleIs
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
-    int angle = THETA_TOLERANCE_DEFAULT / 2;
-    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED);
+    int angle = THETA_TOLERANCE_MOVING / 2;
+    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED, THETA_TOLERANCE_MOVING);
     cr_assert(is_oriented);
 }
 
@@ -118,8 +118,8 @@ Test(Navigator, given_anAngleEqualToTheTolerance_when_askedIfTheAngleIsWithinThe
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
-    int angle = THETA_TOLERANCE_DEFAULT;
-    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED);
+    int angle = THETA_TOLERANCE_MOVING;
+    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED, THETA_TOLERANCE_MOVING);
     cr_assert(!is_oriented);
 }
 
@@ -128,10 +128,10 @@ Test(Navigator,
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
-    int angle = QUARTER_PI - THETA_TOLERANCE_DEFAULT;
-    cr_assert(angle > THETA_TOLERANCE_DEFAULT,
+    int angle = QUARTER_PI - THETA_TOLERANCE_MOVING;
+    cr_assert(angle > THETA_TOLERANCE_MOVING,
               "\n Attention! The current theta tolerance default doesn't allow correct orientation. It is too big.");
-    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED);
+    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED, THETA_TOLERANCE_MOVING);
     cr_assert(!is_oriented);
 }
 
@@ -140,10 +140,10 @@ Test(Navigator,
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
-    int angle = QUARTER_PI + THETA_TOLERANCE_DEFAULT;
-    cr_assert(angle < (HALF_PI - THETA_TOLERANCE_DEFAULT),
+    int angle = QUARTER_PI + THETA_TOLERANCE_MOVING;
+    cr_assert(angle < (HALF_PI - THETA_TOLERANCE_MOVING),
               "\n Attention! The current theta tolerance default doesn't allow correct orientation. It is too big.");
-    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED);
+    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED, THETA_TOLERANCE_MOVING);
     cr_assert(!is_oriented);
 }
 
@@ -152,8 +152,8 @@ Test(Navigator,
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
-    int angle =  HALF_PI - THETA_TOLERANCE_DEFAULT;
-    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED);
+    int angle =  HALF_PI - THETA_TOLERANCE_MOVING;
+    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED, THETA_TOLERANCE_MOVING);
     cr_assert(!is_oriented);
 }
 
@@ -162,8 +162,8 @@ Test(Navigator,
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
-    int angle =  HALF_PI - (THETA_TOLERANCE_DEFAULT / 2);
-    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED);
+    int angle =  HALF_PI - (THETA_TOLERANCE_MOVING / 2);
+    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED, THETA_TOLERANCE_MOVING);
     cr_assert(is_oriented);
 }
 
@@ -173,7 +173,7 @@ Test(Navigator,
      , .fini = teardown_Navigator)
 {
     int angle =  HALF_PI;
-    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED);
+    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED, THETA_TOLERANCE_MOVING);
     cr_assert(is_oriented);
 }
 
@@ -182,8 +182,8 @@ Test(Navigator,
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
-    int angle =  PI - (THETA_TOLERANCE_DEFAULT / 2);
-    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED);
+    int angle =  PI - (THETA_TOLERANCE_MOVING / 2);
+    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED, THETA_TOLERANCE_MOVING);
     cr_assert(is_oriented);
 }
 
@@ -192,8 +192,8 @@ Test(Navigator,
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
-    int angle =  MINUS_PI + (THETA_TOLERANCE_DEFAULT / 2);
-    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED);
+    int angle =  MINUS_PI + (THETA_TOLERANCE_MOVING / 2);
+    int is_oriented = Navigator_isAngleWithinCapTolerance(angle, DEFAULT_SPEED, THETA_TOLERANCE_MOVING);
     cr_assert(is_oriented);
 }
 
@@ -670,7 +670,7 @@ Test(Navigator,
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
-    int target_angle = 2 * THETA_TOLERANCE_DEFAULT;
+    int target_angle = 2 * THETA_TOLERANCE_MOVING;
     updateRobotGoalAngleTo(target_angle);
 
     while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
@@ -688,7 +688,7 @@ Test(Navigator,
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
-    int target_angle = THETA_TOLERANCE_DEFAULT - 1;
+    int target_angle = THETA_TOLERANCE_MOVING - 1;
     updateRobotGoalAngleTo(target_angle);
 
     while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
@@ -706,7 +706,7 @@ Test(Navigator,
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
-    int target_angle = THETA_TOLERANCE_DEFAULT / 3;
+    int target_angle = THETA_TOLERANCE_MOVING / 3;
     updateRobotGoalAngleTo(target_angle);
 
     while(!Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS));
@@ -722,21 +722,5 @@ Test(Navigator,
 void assertEqualityWithTolerance(int expected_value, int received_value, int tolerance)
 {
     cr_assert((abs(expected_value - received_value) <= tolerance));
-}
-
-Test(Navigator, given_zero_when_askedToComputeRotationToleranceForPrecisionMovement_then_returnsTheBaseTheoricalValue)
-{
-    int received_base = Navigator_computeRotationToleranceForPrecisionMovement(0);
-    assertEqualityWithTolerance(THEORICAL_DISTANCE_OVER_ROTATION_TOLERANCE_BASE, received_base, 1);
-}
-
-Test(Navigator,
-     given_aNumber_when_askedToComputeRotationToleranceForPrecisionMovement_then_returnsThatNumberTimesTheTheoricalDistanceOverRotationToleranceRationPlusTheTheoricalDistanceOverRotationToleranceBase)
-{
-    int number = 4200;
-    int expected_value = (int)(THEORICAL_DISTANCE_OVER_ROTATION_TOLERANCE_BASE +
-                               (THEORICAL_DISTANCE_OVER_ROTATION_TOLERANCE_RATIO * number));
-    int received_value = Navigator_computeRotationToleranceForPrecisionMovement(number);
-    assertEqualityWithTolerance(expected_value, received_value, 1);
 }
 
