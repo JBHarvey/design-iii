@@ -21,7 +21,7 @@
 #define NUMBER_OF_PAINTING 8
 #define THEORICAL_OBSTACLE_RADIUS 650
 #define THEORICAL_ROBOT_RADIUS 1700
-#define MINIMAL_ROBOT_WIDTH 2900
+#define OVERLAPPING_DISTANCE 2800
 #define THEORICAL_WORLD_LENGTH 23300
 #define THEORICAL_WORLD_HEIGHT 11300
 #define THEORICAL_DRAWING_ZONE_SIDE 6600
@@ -35,7 +35,7 @@
 #define MINIMAL_GAP 50
 
 // Graph and pathfinding related
-#define MAX_NUMBER_OF_NODE 22
+#define MAX_NUMBER_OF_NODE 15
 #define MAX_VALUE_OF_FLOAT FLT_MAX
 
 // Navigation related
@@ -48,7 +48,7 @@
 #define STOP_VALUE 0
 #define STOP_DISTANCE 75
 
-#define ANTENNA_MARK_DISTANCE 76
+#define ANTENNA_MARK_DISTANCE 85
 
 // Units and mesurements related
 
@@ -62,7 +62,7 @@
 #define MINUS_PI -314160
 #define MINUS_THREE_QUARTER_PI -235620
 #define MINUS_HALF_PI -157080
-#define MINUS_FIFTH_PI 62832
+#define MINUS_FIFTH_PI -62832
 #define MINUS_QUARTER_PI -78540
 #define MINUS_TWENTIETH_PI -15708
 
@@ -73,39 +73,47 @@
 
 
 // Behavior related
-
 #define DEFAULT_GOAL_X 0
 #define DEFAULT_GOAL_Y 0
 #define DEFAULT_GOAL_THETA 0
 
 #define X_TOLERANCE_MIN 0                   // 0 mm
-#define X_TOLERANCE_DRAWING 50             // 5 mm
-#define X_TOLERANCE_MOVING 100             // 10 mm
 #define X_TOLERANCE_MAX 50000               // 5 m
 
 #define Y_TOLERANCE_MIN 0                   // 0 mm
-#define Y_TOLERANCE_DRAWING 50             // 5 mm
-#define Y_TOLERANCE_MOVING 100             // 10 mm
 #define Y_TOLERANCE_MAX 50000               // 5 m
 
 #define THETA_TOLERANCE_MIN 0               // 0 rad
-#define THETA_TOLERANCE_DRAWING 5000 
-#define THETA_TOLERANCE_MOVING 10000
 #define THETA_TOLERANCE_MAX 314160         // Pi rad
 
+// Navigation related
+#define X_TOLERANCE_DRAWING 50             // 5 mm
+#define X_TOLERANCE_MOVING 100             // 10 mm
+
+#define Y_TOLERANCE_DRAWING 50             // 5 mm
+#define Y_TOLERANCE_MOVING 100             // 10 mm
+
+#define THETA_TOLERANCE_DRAWING 3000 
+#define THETA_TOLERANCE_MOVING 10000
+#define THETA_TOLERANCE_ORIENTATION 3000
+
+
 #define OMEGA_MEDIUM_SPEED_DRAWING 6000
-#define OMEGA_LOW_SPEED_DRAWING 3000
+#define OMEGA_LOW_SPEED_DRAWING 3500
 #define OMEGA_MEDIUM_SPEED_MOVING 11000
 #define OMEGA_LOW_SPEED_MOVING 5500
 
 #define MEDIUM_DISTANCE_DRAWING 1000
 #define MEDIUM_DISTANCE_MOVING 2000
-#define MAX_SPEED_DRAWING 1400
+#define MAX_SPEED_DRAWING 1300
 #define MAX_SPEED_MOVING 1600
 #define SHORT_DISTANCE_DRAWING 100
 #define ACCELERATION_FACTOR_DRAWING 1.4
 #define SHORT_DISTANCE_MOVING 400
 #define ACCELERATION_FACTOR_MOVING 2.0
+
+#define MAX_SEGMENT_LENGHT_DRAWING 500
+#define MAX_SEGMENT_LENGHT_OBSTACLE 1500
 
 // Time related
 #define NUMBER_OF_NANOSECONDS_IN_A_SECOND 1.0e9

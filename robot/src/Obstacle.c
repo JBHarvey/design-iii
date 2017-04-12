@@ -164,15 +164,13 @@ struct Obstacle *Obstacle_retrieveSouthern(struct Obstacle *a, struct Obstacle *
 int Obstacle_areOverlappingInX(struct Obstacle *a, struct Obstacle *b)
 {
     int horizontal_distance = abs(a->coordinates->x - b->coordinates->x);
-    int radius_total = a->radius + b->radius;
-    return horizontal_distance <= radius_total;
+    return horizontal_distance <= OVERLAPPING_DISTANCE;
 }
 
 int Obstacle_areOverlappingInY(struct Obstacle *a, struct Obstacle *b)
 {
     int vertical_distance = abs(a->coordinates->y - b->coordinates->y);
-    int radius_total = a->radius + b->radius;
-    return vertical_distance <= radius_total;
+    return vertical_distance <= OVERLAPPING_DISTANCE;
 }
 
 int Obstacle_isCoordinateFree(struct Obstacle *obstacle, struct Coordinates *coordinates)

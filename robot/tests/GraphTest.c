@@ -65,8 +65,6 @@ void setup_Graph(void)
 
     navigable_length = graph_map->south_eastern_table_corner->x - south_western_table_corner->x;
     navigable_height = graph_map->south_eastern_drawing_corner->y - south_western_table_corner->y;
-
-    graph = Graph_new();
 }
 
 void teardown_Graph(void)
@@ -124,12 +122,12 @@ void generateSoloCenterSouthMap(void)
 }
 
 Test(Graph,
-     given_aSoloGraph_when_updatesGraph_then_itsEasternNodeIsBetweenTheTheEasternPointOfTheObstacleAndTheEasternNavigableCoordinates
+     given_aSoloGraph_when_generatesGraph_then_itsEasternNodeIsBetweenTheTheEasternPointOfTheObstacleAndTheEasternNavigableCoordinates
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
     generateSoloMap(CENTER);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
 
     struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
     struct Coordinates *node_coordinates = graph->eastern_node->coordinates;
@@ -144,12 +142,12 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_aSoloGraphWithNorthObstacle_when_updatesGraph_then_itsEasternNodeIsBetweenTheTheNorthernPointOfTheObstacleAndTheNorthernNavigableCoordinates
+     given_aSoloGraphWithNorthObstacle_when_generatesGraph_then_itsEasternNodeIsBetweenTheTheNorthernPointOfTheObstacleAndTheNorthernNavigableCoordinates
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
     generateSoloMap(NORTH);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
 
     struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
     struct Coordinates *node_coordinates = graph->eastern_node->coordinates;
@@ -164,12 +162,12 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_aSoloGraphWithSouthObstacle_when_updatesGraph_then_itsEasternNodeIsBetweenTheTheSouthernPointOfTheObstacleAndTheSouthernNavigableCoordinates
+     given_aSoloGraphWithSouthObstacle_when_generatesGraph_then_itsEasternNodeIsBetweenTheTheSouthernPointOfTheObstacleAndTheSouthernNavigableCoordinates
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
     generateSoloMap(SOUTH);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
 
     struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
     struct Coordinates *node_coordinates = graph->eastern_node->coordinates;
@@ -184,12 +182,12 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_aSoloGraphWithCenterObstacleWithItsNorthernPointNorthOfTheNorthernNavigablePoint_when_updatesGraph_then_itsEasternNodeYValueIsTheSameAsIfTheObstacleWasSouth
+     given_aSoloGraphWithCenterObstacleWithItsNorthernPointNorthOfTheNorthernNavigablePoint_when_generatesGraph_then_itsEasternNodeYValueIsTheSameAsIfTheObstacleWasSouth
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
     generateSoloCenterNorthMap();
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
 
     struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
     struct Coordinates *node_coordinates = graph->eastern_node->coordinates;
@@ -204,12 +202,12 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_aSoloGraphWithCenterObstacleWithItsSouthernPointSouthOfTheSouthernNavigablePoint_when_updatesGraph_then_itsEasternNodeYValueIsTheSameAsIfTheObstacleWasNorth
+     given_aSoloGraphWithCenterObstacleWithItsSouthernPointSouthOfTheSouthernNavigablePoint_when_generatesGraph_then_itsEasternNodeYValueIsTheSameAsIfTheObstacleWasNorth
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
     generateSoloCenterSouthMap();
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
 
     struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
     struct Coordinates *node_coordinates = graph->eastern_node->coordinates;
@@ -224,12 +222,12 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_aSoloGraphWithCenterObstacle_when_updatesGraph_then_itsEasternNodeYValueIsTheMeanOfTheNorthAndSouthNavigablePossibilities
+     given_aSoloGraphWithCenterObstacle_when_generatesGraph_then_itsEasternNodeYValueIsTheMeanOfTheNorthAndSouthNavigablePossibilities
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
     generateSoloMap(CENTER);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
     struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
     struct Coordinates *middle = graph->eastern_node->coordinates;
 
@@ -240,12 +238,13 @@ Test(Graph,
 
 }
 
-Test(Graph, given_aSoloGraph_when_updatesGraph_then_itsWesternNodeIsBetweenTheWesternWallAndTheWesternPointOfTheObstacle
+Test(Graph,
+     given_aSoloGraph_when_generatesGraph_then_itsWesternNodeIsBetweenTheWesternWallAndTheWesternPointOfTheObstacle
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
     generateSoloMap(CENTER);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
 
     struct Obstacle *obstacle = Map_retrieveLastObstacle(graph_map);
     struct Coordinates *node_coordinates = graph->western_node->coordinates;
@@ -259,58 +258,58 @@ Test(Graph, given_aSoloGraph_when_updatesGraph_then_itsWesternNodeIsBetweenTheWe
     Coordinates_delete(western_point_of_the_obstacle);
 }
 
-Test(Graph, given_aSoloGraph_when_updatesGraph_then_itsWesternNodeYValueIsTheSameAsItsEasternNodeXValue
+Test(Graph, given_aSoloGraph_when_generatesGraph_then_itsWesternNodeYValueIsTheSameAsItsEasternNodeXValue
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
     generateSoloMap(CENTER);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
     struct Coordinates *eastern_node_coordinates = graph->eastern_node->coordinates;
     struct Coordinates *western_node_coordinates = graph->western_node->coordinates;
     cr_assert_eq(eastern_node_coordinates->y, western_node_coordinates->y);
 }
 
-Test(Graph, given_aSoloGraphWithNorthernCenterObstacle_when_updatesGraph_then_theTotalNumberOfNodeIsFour
+Test(Graph, given_aSoloGraphWithNorthernCenterObstacle_when_generatesGraph_then_theTotalNumberOfNodeIsFour
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
     generateSoloCenterNorthMap();
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
     int total_number_of_nodes = graph->actual_number_of_nodes;
     int expected_number = 4;
     cr_assert_eq(total_number_of_nodes, expected_number);
 }
 
-Test(Graph, given_aSoloGraphWithSouthernCenterObstacle_when_updatesGraph_then_theTotalNumberOfNodeIsFour
+Test(Graph, given_aSoloGraphWithSouthernCenterObstacle_when_generatesGraph_then_theTotalNumberOfNodeIsFour
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
     generateSoloCenterSouthMap();
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
     int total_number_of_nodes = graph->actual_number_of_nodes;
     int expected_number = 4;
     cr_assert_eq(total_number_of_nodes, expected_number);
 }
 
-Test(Graph, given_aSoloGraphWithNorthObstacle_when_updatesGraph_then_theTotalNumberOfNodeIsFour
+Test(Graph, given_aSoloGraphWithNorthObstacle_when_generatesGraph_then_theTotalNumberOfNodeIsFour
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
     generateSoloMap(NORTH);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
     int total_number_of_nodes = graph->actual_number_of_nodes;
     int expected_number = 4;
     cr_assert_eq(total_number_of_nodes, expected_number);
 }
 
 Test(Graph,
-     given_aNorthSoloGraphWithFourNodes_when_updatesGraph_then_theFirstNewNodeIsConnectedToTheEasternNode
+     given_aNorthSoloGraphWithFourNodes_when_generatesGraph_then_theFirstNewNodeIsConnectedToTheEasternNode
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
 
     generateSoloMap(NORTH);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
 
     struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
     struct Node *eastern_node = graph->eastern_node;
@@ -321,13 +320,13 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_aNorthSoloGraphWithFourNodes_when_updatesGraph_then_theSecondNewNodeIsConnectedToTheWesternNode
+     given_aNorthSoloGraphWithFourNodes_when_generatesGraph_then_theSecondNewNodeIsConnectedToTheWesternNode
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
 
     generateSoloMap(NORTH);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
 
     struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
     struct Node *western_node = graph->western_node;
@@ -338,13 +337,13 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_aNorthSoloGraphWithFourNodes_when_updatesGraph_then_theCoordinatesOfTheTwoNewNodesAreTheEasternAndWesternPointBetweenTheObstacleAndTheNorthWall
+     given_aNorthSoloGraphWithFourNodes_when_generatesGraph_then_theCoordinatesOfTheTwoNewNodesAreTheEasternAndWesternPointBetweenTheObstacleAndTheNorthWall
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
 
     generateSoloMap(NORTH);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
 
     struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
     struct Coordinates *eastern_point = Obstacle_retrieveEasternPointOf(obstacle);
@@ -365,38 +364,38 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_aNorthSoloGraphWithFourNodes_when_updatesGraph_then_theNewNodesAreNeighbours
+     given_aNorthSoloGraphWithFourNodes_when_generatesGraph_then_theNewNodesAreNeighbours
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
 
     generateSoloMap(NORTH);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
 
     struct Node *first_new_node = graph->nodes[2];
     struct Node *second_new_node = graph->nodes[3];
     cr_assert(Node_areNeighbours(first_new_node, second_new_node));
 }
 
-Test(Graph, given_aSouthSoloGraphWithSouthObstacle_when_updatesGraph_then_theTotalNumberOfNodeIsFour
+Test(Graph, given_aSouthSoloGraphWithSouthObstacle_when_generatesGraph_then_theTotalNumberOfNodeIsFour
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
     generateSoloMap(SOUTH);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
     int total_number_of_nodes = graph->actual_number_of_nodes;
     int expected_number = 4;
     cr_assert_eq(total_number_of_nodes, expected_number);
 }
 
 Test(Graph,
-     given_aSouthSoloGraphWithFourNodes_when_updatesGraph_then_theFirstNewNodeIsConnectedToTheEasternNode
+     given_aSouthSoloGraphWithFourNodes_when_generatesGraph_then_theFirstNewNodeIsConnectedToTheEasternNode
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
 
     generateSoloMap(SOUTH);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
 
     struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
     struct Node *eastern_node = graph->eastern_node;
@@ -407,13 +406,13 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_aSouthSoloGraphWithFourNodes_when_updatesGraph_then_theSecondNewNodeIsConnectedToTheWesternNode
+     given_aSouthSoloGraphWithFourNodes_when_generatesGraph_then_theSecondNewNodeIsConnectedToTheWesternNode
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
 
     generateSoloMap(SOUTH);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
 
     struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
     struct Node *western_node = graph->western_node;
@@ -424,13 +423,13 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_aSouthSoloGraphWithFourNodes_when_updatesGraph_then_theCoordinatesOfTheTwoNewNodesAreTheEasternAndWesternPointBetweenTheObstacleAndTheSouthWall
+     given_aSouthSoloGraphWithFourNodes_when_generatesGraph_then_theCoordinatesOfTheTwoNewNodesAreTheEasternAndWesternPointBetweenTheObstacleAndTheSouthWall
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
 
     generateSoloMap(SOUTH);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
 
     struct Obstacle *obstacle = Map_retrieveFirstObstacle(graph_map);
     struct Coordinates *eastern_point = Obstacle_retrieveEasternPointOf(obstacle);
@@ -451,26 +450,27 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_aSouthSoloGraphWithFourNodes_when_updatesGraph_then_theNewNodesAreNeighbours
+     given_aSouthSoloGraphWithFourNodes_when_generatesGraph_then_theNewNodesAreNeighbours
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
 
     generateSoloMap(SOUTH);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
 
     struct Node *first_new_node = graph->nodes[2];
     struct Node *second_new_node = graph->nodes[3];
     cr_assert(Node_areNeighbours(first_new_node, second_new_node));
 }
+/*
 
 Test(Graph,
-     given_anySoloGraphWithFourNodes_when_updatesGraph_then_aPathExistsBetweenTheEasternAndWesternNode
+     given_anySoloGraphWithFourNodes_when_generatesGraph_then_aPathExistsBetweenTheEasternAndWesternNode
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
     generateSoloMap(NORTH);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
     struct CoordinatesSequence *sequence = Pathfinder_generatePathWithDijkstra(graph, graph->eastern_node,
                                            graph->western_node);
     int size = CoordinatesSequence_size(sequence);
@@ -480,12 +480,12 @@ Test(Graph,
     CoordinatesSequence_delete(sequence);
 }
 
-Test(Graph, given_thePathOfASoloGraphWithFourNodes_when_updatesGraph_then_allTheCoordinatesAreFree
+Test(Graph, given_thePathOfASoloGraphWithFourNodes_when_generatesGraph_then_allTheCoordinatesAreFree
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
     generateSoloMap(NORTH);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
     struct CoordinatesSequence *sequence_head = Pathfinder_generatePathWithDijkstra(graph, graph->eastern_node,
             graph->western_node);
     struct CoordinatesSequence *sequence = sequence_head;
@@ -509,24 +509,14 @@ Test(Graph, given_thePathOfASoloGraphWithFourNodes_when_updatesGraph_then_allThe
     CoordinatesSequence_delete(sequence_head);
 }
 
-Test(Graph, given_aSoloGraphWithCenterObstacle_when_updatesGraph_then_theTotalNumberOfNodeIsSix
-     , .init = setup_Graph
-     , .fini = teardown_Graph)
-{
-    generateSoloMap(CENTER);
-    Graph_updateForMap(graph, graph_map);
-    int total_number_of_nodes = graph->actual_number_of_nodes;
-    int expected_number = 6;
-    cr_assert_eq(total_number_of_nodes, expected_number);
-}
 
 Test(Graph,
-     given_aSoloGraphWithCenterObstacleAndSixNodes_when_updatesGraph_then_thePathGeneratedFromTheGraphHasFourElements
+     given_aSoloGraphWithCenterObstacleAndSixNodes_when_generatesGraph_then_thePathGeneratedFromTheGraphHasFourElements
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
     generateSoloMap(CENTER);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
     struct CoordinatesSequence *sequence = Pathfinder_generatePathWithDijkstra(graph, graph->eastern_node,
                                            graph->western_node);
     int size = CoordinatesSequence_size(sequence);
@@ -536,6 +526,17 @@ Test(Graph,
     CoordinatesSequence_delete(sequence);
 }
 
+*/
+Test(Graph, given_aSoloGraphWithCenterObstacle_when_generatesGraph_then_theTotalNumberOfNodeIsSix
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    generateSoloMap(CENTER);
+    graph = Graph_generateForMap(graph_map);
+    int total_number_of_nodes = graph->actual_number_of_nodes;
+    int expected_number = 6;
+    cr_assert_eq(total_number_of_nodes, expected_number);
+}
 /* -- END OF SOLO GRAPH --  */
 /* -- START OF TWO OBSTACLE GRAPH -- */
 struct Obstacle *obstacle_a;
@@ -552,7 +553,7 @@ void setup_TwoObstaclesNoOverlap(enum CardinalDirection orientation_a, enum Card
 
     Coordinates_delete(coordinates_a);
     Coordinates_delete(coordinates_b);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
 }
 
 void setup_TwoObstaclesOverlappingInY(enum CardinalDirection orientation_a, enum CardinalDirection orientation_b)
@@ -566,7 +567,7 @@ void setup_TwoObstaclesOverlappingInY(enum CardinalDirection orientation_a, enum
 
     Coordinates_delete(coordinates_a);
     Coordinates_delete(coordinates_b);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
 }
 
 void setup_TwoObstaclesOverlappingInXWithYValues(enum CardinalDirection orientation_a,
@@ -581,7 +582,7 @@ void setup_TwoObstaclesOverlappingInXWithYValues(enum CardinalDirection orientat
 
     Coordinates_delete(coordinates_a);
     Coordinates_delete(coordinates_b);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
 }
 
 void setup_TwoObstaclesOverlappingInXSouthCenter(void)
@@ -611,7 +612,7 @@ void setup_TwoObstaclesOverlappingInXAndY(enum CardinalDirection orientation_a, 
 
     Coordinates_delete(coordinates_a);
     Coordinates_delete(coordinates_b);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
 }
 
 void assertActualNumberOfNodeIs(int expected_number)
@@ -621,7 +622,7 @@ void assertActualNumberOfNodeIs(int expected_number)
                  expected_number, total_number_of_nodes);
 }
 
-Test(Graph, given_twoObstacleWithNoOverlapNorthSouth_when_updatesGraph_then_theActualNumberOfNodesIsSeven
+Test(Graph, given_twoObstacleWithNoOverlapNorthSouth_when_generatesGraph_then_theActualNumberOfNodesIsSeven
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -639,7 +640,7 @@ void assertNodeCoordinatesAreAbout(struct Node *node, int expected_x, int expect
 }
 
 Test(Graph,
-     given_twoObstacleWithNoOverlapSouthNorth_when_updatesGraph_then_theMiddleNodeIsInTheCenterOfTheObstaclesPassingNodes
+     given_twoObstacleWithNoOverlapSouthNorth_when_generatesGraph_then_theMiddleNodeIsInTheCenterOfTheObstaclesPassingNodes
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -662,7 +663,7 @@ Test(Graph,
     Coordinates_delete(southern_point_of_b);
 }
 
-Test(Graph, given_twoObstacleWithOverlappingInYCenterCenter_when_updatesGraph_then_theActualNumberOfNodesIsEleven
+Test(Graph, given_twoObstacleWithOverlappingInYCenterCenter_when_generatesGraph_then_theActualNumberOfNodesIsEleven
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -671,7 +672,7 @@ Test(Graph, given_twoObstacleWithOverlappingInYCenterCenter_when_updatesGraph_th
 }
 
 Test(Graph,
-     given_twoObstacleWithOverlappingInYCenterNorth_when_updatesGraph_then_theMiddleNodeIsInTheCenterOfTheObstaclesPassingNodes
+     given_twoObstacleWithOverlappingInYCenterNorth_when_generatesGraph_then_theMiddleNodeIsInTheCenterOfTheObstaclesPassingNodes
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -698,7 +699,7 @@ Test(Graph,
     Coordinates_delete(northern_point_of_b);
 }
 
-Test(Graph, given_twoObstacleWithOverlappingInXNorthIrrelevant_when_updatesGraph_then_theActualNumberOfNodesIsFour
+Test(Graph, given_twoObstacleWithOverlappingInXNorthIrrelevant_when_generatesGraph_then_theActualNumberOfNodesIsFour
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -707,7 +708,7 @@ Test(Graph, given_twoObstacleWithOverlappingInXNorthIrrelevant_when_updatesGraph
 }
 
 Test(Graph,
-     given_twoObstacleWithOverlappingInXNorthIrrelevant_when_updatesGraph_then_theNodesArePlacedIgnoringTheSouthObstacle
+     given_twoObstacleWithOverlappingInXNorthIrrelevant_when_generatesGraph_then_theNodesArePlacedIgnoringTheSouthObstacle
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -729,7 +730,7 @@ Test(Graph,
     Coordinates_delete(northern_point);
 }
 
-Test(Graph, given_twoObstacleWithOverlappingInXIrrelevantSouth_when_updatesGraph_then_theActualNumberOfNodesIsFour
+Test(Graph, given_twoObstacleWithOverlappingInXIrrelevantSouth_when_generatesGraph_then_theActualNumberOfNodesIsFour
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -738,7 +739,7 @@ Test(Graph, given_twoObstacleWithOverlappingInXIrrelevantSouth_when_updatesGraph
 }
 
 Test(Graph,
-     given_twoObstacleWithOverlappingInXIrrelevantSouth_when_updatesGraph_then_theNodesArePlacedIgnoringTheNorthObstacle
+     given_twoObstacleWithOverlappingInXIrrelevantSouth_when_generatesGraph_then_theNodesArePlacedIgnoringTheNorthObstacle
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -761,7 +762,7 @@ Test(Graph,
     Coordinates_delete(southern_point);
 }
 
-Test(Graph, given_twoObstacleWithOverlappingInXSouthCenter_when_updatesGraph_then_theActualNumberOfNodesIsSix
+Test(Graph, given_twoObstacleWithOverlappingInXSouthCenter_when_generatesGraph_then_theActualNumberOfNodesIsSix
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -770,7 +771,7 @@ Test(Graph, given_twoObstacleWithOverlappingInXSouthCenter_when_updatesGraph_the
 }
 
 Test(Graph,
-     given_twoObstacleWithOverlappingInXSouthCenter_when_updatesGraph_then_theNodesAreAroundTheCenterObstacleWithTheSouthernPointOfTheNorthObstacleAsLimit
+     given_twoObstacleWithOverlappingInXSouthCenter_when_generatesGraph_then_theNodesAreAroundTheCenterObstacleWithTheSouthernPointOfTheNorthObstacleAsLimit
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -794,7 +795,7 @@ Test(Graph,
 
 }
 
-Test(Graph, given_twoObstacleWithOverlappingInXSouthNorth_when_updatesGraph_then_theActualNumberOfNodesIsFour
+Test(Graph, given_twoObstacleWithOverlappingInXSouthNorth_when_generatesGraph_then_theActualNumberOfNodesIsFour
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -803,7 +804,7 @@ Test(Graph, given_twoObstacleWithOverlappingInXSouthNorth_when_updatesGraph_then
 }
 
 Test(Graph,
-     given_twoObstacleWithOverlappingInXSouthNorth_when_updatesGraph_then_theNodesArePlacedBetweenTheObstacles
+     given_twoObstacleWithOverlappingInXSouthNorth_when_generatesGraph_then_theNodesArePlacedBetweenTheObstacles
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -832,7 +833,7 @@ Test(Graph,
     Coordinates_delete(northern_point_b);
 }
 
-Test(Graph, given_twoObstacleWithOverlappingInXCenterNorth_when_updatesGraph_then_theActualNumberOfNodesIsSix
+Test(Graph, given_twoObstacleWithOverlappingInXCenterNorth_when_generatesGraph_then_theActualNumberOfNodesIsSix
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -841,7 +842,7 @@ Test(Graph, given_twoObstacleWithOverlappingInXCenterNorth_when_updatesGraph_the
 }
 
 Test(Graph,
-     given_twoObstacleWithOverlappingInXCenterNorth_when_updatesGraph_then_theNodesAreAroundTheCenterObstacleWithTheNorthernPointOfTheSouthObstacleAsLimit
+     given_twoObstacleWithOverlappingInXCenterNorth_when_generatesGraph_then_theNodesAreAroundTheCenterObstacleWithTheNorthernPointOfTheSouthObstacleAsLimit
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -868,7 +869,7 @@ Test(Graph,
     Coordinates_delete(northern_point_b);
 }
 
-Test(Graph, given_twoObstacleWithOverlappingInXAndYAndBothAreCenter_when_updatesGraph_then_theActualNumberOfNodesIsSix
+Test(Graph, given_twoObstacleWithOverlappingInXAndYAndBothAreCenter_when_generatesGraph_then_theActualNumberOfNodesIsSix
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -877,7 +878,7 @@ Test(Graph, given_twoObstacleWithOverlappingInXAndYAndBothAreCenter_when_updates
 }
 
 Test(Graph,
-     given_twoObstacleWithOverlappingInXAndYAndBothAreCenter_when_updatesGraph_then_theNodesAreAroundTheObstacleWithTheSouthernPointOfTheSouthernObstacleAndNorthernPointOfTheNorthernObstacleAsLimit
+     given_twoObstacleWithOverlappingInXAndYAndBothAreCenter_when_generatesGraph_then_theNodesAreAroundTheObstacleWithTheSouthernPointOfTheSouthernObstacleAndNorthernPointOfTheNorthernObstacleAsLimit
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -898,7 +899,7 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_twoObstacleWithOverlappingInXAndY_when_updatesGraph_then_theEasternNodeIsBetweenTheEasternObstacleAndTheEasternWall
+     given_twoObstacleWithOverlappingInXAndY_when_generatesGraph_then_theEasternNodeIsBetweenTheEasternObstacleAndTheEasternWall
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -914,7 +915,7 @@ Test(Graph,
 }
 
 Test(Graph,
-     given_twoObstacleWithOverlappingInXAndY_when_updatesGraph_then_theWesternNodeIsBetweenTheWesternObstacleAndTheWesternWall
+     given_twoObstacleWithOverlappingInXAndY_when_generatesGraph_then_theWesternNodeIsBetweenTheWesternObstacleAndTheWesternWall
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -929,7 +930,7 @@ Test(Graph,
 
 }
 
-Test(Graph, given_twoObstacleWithOverlappingInXAndYAndOneIsNorth_when_updatesGraph_then_theActualNumberOfNodesIsFour
+Test(Graph, given_twoObstacleWithOverlappingInXAndYAndOneIsNorth_when_generatesGraph_then_theActualNumberOfNodesIsFour
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -938,7 +939,7 @@ Test(Graph, given_twoObstacleWithOverlappingInXAndYAndOneIsNorth_when_updatesGra
 }
 
 Test(Graph,
-     given_twoObstacleWithOverlappingInXAndYAndOneIsNorth_when_updatesGraph_then_theNodesAreOnlyToTheNorthOfTheObstacles
+     given_twoObstacleWithOverlappingInXAndYAndOneIsNorth_when_generatesGraph_then_theNodesAreOnlyToTheNorthOfTheObstacles
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -954,7 +955,7 @@ Test(Graph,
 
 }
 
-Test(Graph, given_twoObstacleWithOverlappingInXAndYAndOneIsSouth_when_updatesGraph_then_theActualNumberOfNodesIsFour
+Test(Graph, given_twoObstacleWithOverlappingInXAndYAndOneIsSouth_when_generatesGraph_then_theActualNumberOfNodesIsFour
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -963,7 +964,7 @@ Test(Graph, given_twoObstacleWithOverlappingInXAndYAndOneIsSouth_when_updatesGra
 }
 
 Test(Graph,
-     given_twoObstacleWithOverlappingInXAndYAndOneIsSouth_when_updatesGraph_then_theNodesAreOnlyToTheSouthOfTheObstacles
+     given_twoObstacleWithOverlappingInXAndYAndOneIsSouth_when_generatesGraph_then_theNodesAreOnlyToTheSouthOfTheObstacles
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {
@@ -996,11 +997,11 @@ void setup_ThreeObstaclesSoloDuoOverlappingInXAndY(enum CardinalDirection orient
     Coordinates_delete(coordinates_a);
     Coordinates_delete(coordinates_b);
     Coordinates_delete(coordinates_c);
-    Graph_updateForMap(graph, graph_map);
+    graph = Graph_generateForMap(graph_map);
 }
 
 Test(Graph,
-     given_aSoloDuoOverlappingInXAndYObstacleConfiguration_when_updatesGraph_then_theWesternNodeIsToTheWestOfTheWesternObstacle
+     given_aSoloDuoOverlappingInXAndYObstacleConfiguration_when_generatesGraph_then_theWesternNodeIsToTheWestOfTheWesternObstacle
      , .init = setup_Graph
      , .fini = teardown_Graph)
 {

@@ -156,7 +156,7 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstaclesSeparatedHorizontallyByASmallerDistanceThanTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInX_then_returnsOne
+     given_twoObstaclesSeparatedHorizontallyByASmallerDistanceThanOverlappingDistance_when_askedIfTheyAreOverlappingEachOtherInX_then_returnsOne
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
@@ -165,27 +165,27 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstaclesSeparatedHorizontallyByTheExactDistanceOfTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInX_then_returnsOne
+     given_twoObstaclesSeparatedHorizontallyByTheExactDistanceOfTheOverlappingDistance_when_askedIfTheyAreOverlappingEachOtherInX_then_returnsOne
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
-    center_obstacle->coordinates->x = OBSTACLE_X + 2 * THEORICAL_OBSTACLE_RADIUS;
+    center_obstacle->coordinates->x = OBSTACLE_X + OVERLAPPING_DISTANCE;
     int areOverlapping = Obstacle_areOverlappingInX(center_obstacle, south_oriented_obstacle);
     cr_assert(areOverlapping);
 }
 
 Test(Obstacle,
-     given_twoObstaclesSeparatedHorizontallyByABiggerDistanceOfTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInX_then_returnsZero
+     given_twoObstaclesSeparatedHorizontallyByABiggerDistanceOfTheOverlappingDistance_when_askedIfTheyAreOverlappingEachOtherInX_then_returnsZero
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
-    center_obstacle->coordinates->x = OBSTACLE_X + 3 * THEORICAL_OBSTACLE_RADIUS;
+    center_obstacle->coordinates->x = OBSTACLE_X + 3 * OVERLAPPING_DISTANCE;
     int areOverlapping = Obstacle_areOverlappingInX(center_obstacle, south_oriented_obstacle);
     cr_assert(!areOverlapping);
 }
 
 Test(Obstacle,
-     given_twoObstaclesSeparatedVerticallyByASmallerDistanceThanTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInY_then_returnsOne
+     given_twoObstaclesSeparatedVerticallyByASmallerDistanceThanTheOverlappingDistance_when_askedIfTheyAreOverlappingEachOtherInY_then_returnsOne
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
@@ -194,21 +194,21 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstaclesSeparatedVerticallyByTheExactDistanceOfTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInY_then_returnsOne
+     given_twoObstaclesSeparatedVerticallyByTheExactDistanceOfTheOverlappingDistance_when_askedIfTheyAreOverlappingEachOtherInY_then_returnsOne
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
-    center_obstacle->coordinates->y = OBSTACLE_Y + 2 * THEORICAL_OBSTACLE_RADIUS;
+    center_obstacle->coordinates->y = OBSTACLE_Y + OVERLAPPING_DISTANCE;
     int areOverlapping = Obstacle_areOverlappingInY(center_obstacle, south_oriented_obstacle);
     cr_assert(areOverlapping);
 }
 
 Test(Obstacle,
-     given_twoObstaclesSeparatedVerticallyByABiggerDistanceOfTheAdditionOfTheirRadius_when_askedIfTheyAreOverlappingEachOtherInY_then_returnsZero
+     given_twoObstaclesSeparatedVerticallyByABiggerDistanceOfTheOverlappingDistance_when_askedIfTheyAreOverlappingEachOtherInY_then_returnsZero
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
-    center_obstacle->coordinates->y = OBSTACLE_Y + 3 * THEORICAL_OBSTACLE_RADIUS;
+    center_obstacle->coordinates->y = OBSTACLE_Y + 3 * OVERLAPPING_DISTANCE;
     int areOverlapping = Obstacle_areOverlappingInY(center_obstacle, south_oriented_obstacle);
     cr_assert(!areOverlapping);
 }
@@ -266,13 +266,13 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstaclesAlignedInXAndSeparatedByAGreaterDistanceThanTheSumOfTheyRadiusInY_when_askedIfTheyAreOverlappingInY_then_theyAreNot
+     given_twoObstaclesAlignedInXAndSeparatedByAGreaterDistanceThanTheOverlappingDistanceInY_when_askedIfTheyAreOverlappingInY_then_theyAreNot
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
     int first_radius = center_obstacle->radius;
     int second_radius = north_oriented_obstacle->radius;
-    int separation = 2 * (first_radius + second_radius);
+    int separation = 2 * OVERLAPPING_DISTANCE;
     north_oriented_obstacle->coordinates->y += separation;
 
     int are_overlapping = Obstacle_areOverlappingInY(center_obstacle, north_oriented_obstacle);
@@ -280,13 +280,13 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstaclesAlignedInXAndSeparatedByADistanceEqualToTheSumOfTheyRadiusInY_when_askedIfTheyAreOverlappingInY_then_theyAre
+     given_twoObstaclesAlignedInXAndSeparatedByADistanceEqualToTheOverlappingDistanceInY_when_askedIfTheyAreOverlappingInY_then_theyAre
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
     int first_radius = center_obstacle->radius;
     int second_radius = north_oriented_obstacle->radius;
-    int separation = first_radius + second_radius;
+    int separation = OVERLAPPING_DISTANCE;
     north_oriented_obstacle->coordinates->y += separation;
 
     int are_overlapping = Obstacle_areOverlappingInY(center_obstacle, north_oriented_obstacle);
@@ -294,13 +294,13 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstaclesAlignedInXAndSeparatedByASmallerDistanceThanTheSumOfTheyRadiusInY_when_askedIfTheyAreOverlappingInY_then_theyAre
+     given_twoObstaclesAlignedInXAndSeparatedByASmallerDistanceThanTheOverlappingDistanceInY_when_askedIfTheyAreOverlappingInY_then_theyAre
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
     int first_radius = center_obstacle->radius;
     int second_radius = north_oriented_obstacle->radius;
-    int separation = (first_radius + second_radius) / 2;
+    int separation = OVERLAPPING_DISTANCE / 2;
     north_oriented_obstacle->coordinates->y += separation;
 
     int are_overlapping = Obstacle_areOverlappingInY(center_obstacle, north_oriented_obstacle);
@@ -308,13 +308,13 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstaclesAlignedInYAndSeparatedByAGreaterDistanceThanTheSumOfTheyRadiusInX_when_askedIfTheyAreOverlappingInX_then_theyAreNot
+     given_twoObstaclesAlignedInYAndSeparatedByAGreaterDistanceThanTheOverlappingDistanceInX_when_askedIfTheyAreOverlappingInX_then_theyAreNot
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
     int first_radius = center_obstacle->radius;
     int second_radius = north_oriented_obstacle->radius;
-    int separation = 2 * (first_radius + second_radius);
+    int separation = 2 * OVERLAPPING_DISTANCE;
     north_oriented_obstacle->coordinates->x += separation;
 
     int are_overlapping = Obstacle_areOverlappingInX(center_obstacle, north_oriented_obstacle);
@@ -322,13 +322,13 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstaclesAlignedInYAndSeparatedByADistanceEqualToTheSumOfTheyRadiusInX_when_askedIfTheyAreOverlappingInX_then_theyAre
+     given_twoObstaclesAlignedInYAndSeparatedByADistanceEqualToTheOverlappingDistanceInX_when_askedIfTheyAreOverlappingInX_then_theyAre
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
     int first_radius = center_obstacle->radius;
     int second_radius = north_oriented_obstacle->radius;
-    int separation = first_radius + second_radius;
+    int separation = OVERLAPPING_DISTANCE;
     north_oriented_obstacle->coordinates->x += separation;
 
     int are_overlapping = Obstacle_areOverlappingInX(center_obstacle, north_oriented_obstacle);
@@ -336,13 +336,13 @@ Test(Obstacle,
 }
 
 Test(Obstacle,
-     given_twoObstaclesAlignedInYAndSeparatedByASmallerDistanceThanTheSumOfTheyRadiusInX_when_askedIfTheyAreOverlappingInX_then_theyAre
+     given_twoObstaclesAlignedInYAndSeparatedByASmallerDistanceThanTheOverlappingDistanceInX_when_askedIfTheyAreOverlappingInX_then_theyAre
      , .init = setup_Obstacle
      , .fini = teardown_Obstacle)
 {
     int first_radius = center_obstacle->radius;
     int second_radius = north_oriented_obstacle->radius;
-    int separation = (first_radius + second_radius) / 2;
+    int separation = OVERLAPPING_DISTANCE / 2;
     north_oriented_obstacle->coordinates->x += separation;
 
     int are_overlapping = Obstacle_areOverlappingInX(center_obstacle, north_oriented_obstacle);

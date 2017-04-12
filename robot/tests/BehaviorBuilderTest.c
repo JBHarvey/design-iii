@@ -406,7 +406,7 @@ Test(BehaviorBuilder,
                         DEFAULT_GOAL_THETA,
                         X_TOLERANCE_MAX,
                         Y_TOLERANCE_MAX,
-                        THETA_TOLERANCE_MOVING,
+                        THETA_TOLERANCE_ORIENTATION,
                         irrelevant_flags,
                         &Behavior_idle);
     cr_assert(are_equal);

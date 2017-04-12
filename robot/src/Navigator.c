@@ -7,6 +7,12 @@
 const int STM_CLOCK_TIME_IN_MS = 18;
 struct Timer *command_timer;
 
+static void resetGraph(struct Navigator *navigator)
+{
+    Graph_delete(navigator->graph);
+    navigator->graph = Graph_generateForMap(navigator->navigable_map);
+}
+
 struct Navigator *Navigator_new(void)
 {
     struct Object *new_object = Object_new();
@@ -61,7 +67,7 @@ void Navigator_updateNavigableMap(struct Robot *robot)
         struct Map *base_map = robot->world_camera->map;
         int robot_radius = robot->world_camera->robot_radius;
         robot->navigator->navigable_map = Map_fetchNavigableMap(base_map, robot_radius);
-        Graph_updateForMap(robot->navigator->graph, robot->navigator->navigable_map);
+        resetGraph(robot->navigator);
         Sensor_readsData(robot->world_camera->map_sensor);
         // TODO: add validation that map is navigable && robot can go through the obstacles
         Flags_setNavigableMapIsReady(robot->current_state->flags, 1);
@@ -396,7 +402,7 @@ void Navigator_planRisePenForObstacleCrossing(struct Robot * robot)
 void Navigator_planTowardsObstacleZoneEastSide(struct Robot * robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
-    Graph_updateForMap(robot->navigator->graph, robot->navigator->navigable_map);
+    resetGraph(robot->navigator);
     struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
     struct Coordinates *obstacles_east_zone_coordinates = robot->navigator->graph->eastern_node->coordinates;
     struct CoordinatesSequence *obstacles_east_zone_trajectory = CoordinatesSequence_new(current_coordinates);
@@ -472,7 +478,7 @@ void Navigator_planTakingPicture(struct Robot * robot)
 void Navigator_planTowardsObstacleZoneWestSide(struct Robot * robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
-    Graph_updateForMap(robot->navigator->graph, robot->navigator->navigable_map);
+    resetGraph(robot->navigator);
     struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
     struct Coordinates *obstacles_west_zone_coordinates = robot->navigator->graph->western_node->coordinates;
     struct CoordinatesSequence *obstacles_west_zone_trajectory = CoordinatesSequence_new(current_coordinates);
