@@ -755,6 +755,8 @@ static void establishGraphForTrioObstacles(struct Graph *graph, struct Obstacle 
     enum CardinalDirection middle_obstacle_orientation = middle_x_obstacle->orientation;
     enum CardinalDirection southern_obstacle_orientation = southern_obstacle->orientation;
 
+    int middle_y;
+
     if(!northern_overlaps_middle && !southern_overlaps_middle) {
 
         if(middle_obstacle_orientation == NORTH) {
@@ -765,16 +767,52 @@ static void establishGraphForTrioObstacles(struct Graph *graph, struct Obstacle 
             createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, y_between_northern_middle, y_between_middle_southern);
         }
     } else if(northern_overlaps_middle && !southern_overlaps_middle) {
+        middle_y = computeOptimalYValueForDuoOverlappingXObstacles(graph, middle_y_obstacle, southern_obstacle, map);
+
         if(southern_obstacle_orientation == SOUTH) {
+            createGraphTrioOneY(graph, eastern_node_x, western_node_x, navigable_south_y);
         } else if(northern_obstacle_orientation == NORTH || middle_obstacle_orientation == NORTH) {
+            createGraphTrioOneY(graph, eastern_node_x, western_node_x, navigable_north_y);
         } else if(northern_obstacle_orientation == SOUTH || middle_obstacle_orientation == SOUTH) {
+            if(southern_obstacle_orientation == CENTER && south_is_navigable) {
+                createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, navigable_south_y, middle_y);
+            } else {
+                createGraphTrioOneY(graph, eastern_node_x, western_node_x, middle_y);
+            }
         } else if(northern_obstacle_orientation == CENTER && middle_obstacle_orientation == CENTER) {
+            if(north_is_navigable && (south_is_navigable && southern_obstacle_orientation == CENTER)) {
+                createGraphTrioThreeYs(graph, eastern_node_x, western_node_x, navigable_north_y, middle_y, navigable_north_y);
+            } else if(!north_is_navigable && (south_is_navigable && southern_obstacle_orientation == CENTER)) {
+                createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, middle_y, navigable_south_y);
+            } else if(north_is_navigable && !(south_is_navigable && southern_obstacle_orientation == CENTER)) {
+                createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, navigable_north_y, middle_y);
+            } else if(!north_is_navigable && !(south_is_navigable && southern_obstacle_orientation == CENTER)) {
+                createGraphTrioOneY(graph, eastern_node_x, western_node_x, middle_y);
+            }
         }
     } else if(!northern_overlaps_middle && southern_overlaps_middle) {
+        middle_y = computeOptimalYValueForDuoOverlappingXObstacles(graph, northern_obstacle, middle_y_obstacle, map);
+
         if(northern_obstacle_orientation == NORTH) {
+            createGraphTrioOneY(graph, eastern_node_x, western_node_x, navigable_north_y);
         } else if(middle_obstacle_orientation == SOUTH || southern_obstacle_orientation == SOUTH) {
+            createGraphTrioOneY(graph, eastern_node_x, western_node_x, navigable_south_y);
         } else if(middle_obstacle_orientation == NORTH || southern_obstacle_orientation == NORTH) {
+            if(northern_obstacle_orientation == CENTER && north_is_navigable) {
+                createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, navigable_north_y, middle_y);
+            } else {
+                createGraphTrioOneY(graph, eastern_node_x, western_node_x, middle_y);
+            }
         } else if(middle_obstacle_orientation == CENTER && southern_obstacle_orientation == CENTER) {
+            if(south_is_navigable && (north_is_navigable && northern_obstacle_orientation == CENTER)) {
+                createGraphTrioThreeYs(graph, eastern_node_x, western_node_x, navigable_north_y, middle_y, navigable_south_y);
+            } else if(!south_is_navigable && (north_is_navigable && northern_obstacle_orientation == CENTER)) {
+                createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, navigable_north_y, middle_y);
+            } else if(south_is_navigable && !(north_is_navigable && northern_obstacle_orientation == CENTER)) {
+                createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, middle_y, navigable_south_y);
+            } else if(!south_is_navigable && !(north_is_navigable && northern_obstacle_orientation == CENTER)) {
+                createGraphTrioOneY(graph, eastern_node_x, western_node_x, middle_y);
+            }
         }
     } else if(northern_overlaps_middle && southern_overlaps_middle) {
         if(northern_obstacle_orientation == NORTH || middle_obstacle_orientation == NORTH

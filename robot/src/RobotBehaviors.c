@@ -123,6 +123,54 @@ void RobotBehaviors_appendTrajectoryBehaviors(struct Robot *robot, struct Coordi
     Behavior_delete(first_trajectory_behavior);
 }
 
+void RobotBehaviors_appendDrawingTrajectoryBehaviors(struct Robot *robot, struct CoordinatesSequence *trajectory,
+        void (*last_action)(struct Robot *))
+{
+    struct Behavior *planning_behavior = fetchLastBehavior(robot);
+
+    void (*navigationAction)(struct Robot *) = &Navigator_navigateRobotTowardsGoal;
+    struct Flags *planned_trajectory_received_by_station = Flags_irrelevant();
+    Flags_setPlannedTrajectoryReceivedByStation(planned_trajectory_received_by_station, 1);
+
+    struct Behavior *first_trajectory_behavior = BehaviorBuilder_build(
+                BehaviorBuilder_withFlags(planned_trajectory_received_by_station,
+                                          BehaviorBuilder_withFreePoseEntry(
+                                                  BehaviorBuilder_withTolerancesX(X_TOLERANCE_DRAWING,
+                                                          BehaviorBuilder_withTolerancesY(Y_TOLERANCE_DRAWING,
+                                                                  BehaviorBuilder_withTolerancesTheta(THETA_TOLERANCE_DRAWING,
+                                                                          BehaviorBuilder_withAction(navigationAction,
+                                                                                  BehaviorBuilder_end())))))));
+    Behavior_addChild(planning_behavior, first_trajectory_behavior);
+
+    struct Behavior *trajectory_behavior = planning_behavior->first_child;
+
+    int goal_coordinates_x;
+    int goal_coordinates_y;
+
+    while(!CoordinatesSequence_isLast(trajectory)) {
+
+        trajectory = trajectory->next_element;
+        goal_coordinates_x = trajectory->coordinates->x;
+        goal_coordinates_y = trajectory->coordinates->y;
+        struct Behavior *trajectory_behavior_child = BehaviorBuilder_build(
+                    BehaviorBuilder_withGoalX(goal_coordinates_x,
+                                              BehaviorBuilder_withGoalY(goal_coordinates_y,
+                                                      BehaviorBuilder_withFreeEntryForTrajectory(
+                                                              BehaviorBuilder_withTolerancesX(X_TOLERANCE_DRAWING,
+                                                                      BehaviorBuilder_withTolerancesY(Y_TOLERANCE_DRAWING,
+                                                                              BehaviorBuilder_withTolerancesTheta(THETA_TOLERANCE_DRAWING,
+                                                                                      BehaviorBuilder_withAction(navigationAction,
+                                                                                              BehaviorBuilder_end()))))))));
+        Behavior_addChild(trajectory_behavior, trajectory_behavior_child);
+        trajectory_behavior = trajectory_behavior->first_child;
+        Behavior_delete(trajectory_behavior_child);
+    }
+
+    trajectory_behavior->first_child->action = last_action;
+
+    Flags_delete(planned_trajectory_received_by_station);
+    Behavior_delete(first_trajectory_behavior);
+}
 
 void RobotBehavior_appendOrientationBehaviorWithChildAction(struct Robot *robot, int angle,
         void (*action)(struct Robot *))
@@ -407,7 +455,7 @@ void RobotBehavior_appendLightRedLedBehaviorWithChildAction(struct Robot *robot,
     Behavior_delete(behavior_light_red_led_with_free_entry);
 }
 
-void RobotBehavior_appendUpdateNavgableMapBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *))
+void RobotBehavior_appendUpdateNavigableMapBehaviorWithChildAction(struct Robot *robot, void (*action)(struct Robot *))
 {
     struct Behavior *last_behavior = fetchLastBehavior(robot);
 

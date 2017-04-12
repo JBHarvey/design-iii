@@ -39,9 +39,9 @@ Test(BehaviorBuilder, given_noExtraParameters_when_buildingABehavior_then_return
                         DEFAULT_GOAL_X,
                         DEFAULT_GOAL_Y,
                         DEFAULT_GOAL_THETA,
-                        X_TOLERANCE_DEFAULT,
-                        Y_TOLERANCE_DEFAULT,
-                        THETA_TOLERANCE_DEFAULT,
+                        X_TOLERANCE_MOVING,
+                        Y_TOLERANCE_MOVING,
+                        THETA_TOLERANCE_MOVING,
                         comparison_flags,
                         &Behavior_idle);
 
@@ -65,9 +65,9 @@ Test(BehaviorBuilder, given_aSpecificXGoalValue_when_buildingABehavior_then_only
                         specificX,
                         DEFAULT_GOAL_Y,
                         DEFAULT_GOAL_THETA,
-                        X_TOLERANCE_DEFAULT,
-                        Y_TOLERANCE_DEFAULT,
-                        THETA_TOLERANCE_DEFAULT,
+                        X_TOLERANCE_MOVING,
+                        Y_TOLERANCE_MOVING,
+                        THETA_TOLERANCE_MOVING,
                         comparison_flags,
                         &Behavior_idle);
 
@@ -91,9 +91,9 @@ Test(BehaviorBuilder, given_aSpecificYGoalValue_when_buildingABehavior_then_only
                         DEFAULT_GOAL_X,
                         specificY,
                         DEFAULT_GOAL_THETA,
-                        X_TOLERANCE_DEFAULT,
-                        Y_TOLERANCE_DEFAULT,
-                        THETA_TOLERANCE_DEFAULT,
+                        X_TOLERANCE_MOVING,
+                        Y_TOLERANCE_MOVING,
+                        THETA_TOLERANCE_MOVING,
                         comparison_flags,
                         &Behavior_idle);
 
@@ -117,9 +117,9 @@ Test(BehaviorBuilder, given_aSpecificThetaGoalValue_when_buildingABehavior_then_
                         DEFAULT_GOAL_X,
                         DEFAULT_GOAL_Y,
                         specific_theta,
-                        X_TOLERANCE_DEFAULT,
-                        Y_TOLERANCE_DEFAULT,
-                        THETA_TOLERANCE_DEFAULT,
+                        X_TOLERANCE_MOVING,
+                        Y_TOLERANCE_MOVING,
+                        THETA_TOLERANCE_MOVING,
                         comparison_flags,
                         &Behavior_idle);
 
@@ -144,8 +144,8 @@ Test(BehaviorBuilder, given_aSpecificXToleranceValue_when_buildingABehavior_then
                         DEFAULT_GOAL_Y,
                         DEFAULT_GOAL_THETA,
                         specificX,
-                        Y_TOLERANCE_DEFAULT,
-                        THETA_TOLERANCE_DEFAULT,
+                        Y_TOLERANCE_MOVING,
+                        THETA_TOLERANCE_MOVING,
                         comparison_flags,
                         &Behavior_idle);
 
@@ -169,9 +169,9 @@ Test(BehaviorBuilder, given_aSpecificYToleranceValue_when_buildingABehavior_then
                         DEFAULT_GOAL_X,
                         DEFAULT_GOAL_Y,
                         DEFAULT_GOAL_THETA,
-                        X_TOLERANCE_DEFAULT,
+                        X_TOLERANCE_MOVING,
                         specificY,
-                        THETA_TOLERANCE_DEFAULT,
+                        THETA_TOLERANCE_MOVING,
                         comparison_flags,
                         &Behavior_idle);
 
@@ -195,8 +195,8 @@ Test(BehaviorBuilder, given_aSpecificThetaToleranceValue_when_buildingABehavior_
                         DEFAULT_GOAL_X,
                         DEFAULT_GOAL_Y,
                         DEFAULT_GOAL_THETA,
-                        X_TOLERANCE_DEFAULT,
-                        Y_TOLERANCE_DEFAULT,
+                        X_TOLERANCE_MOVING,
+                        Y_TOLERANCE_MOVING,
                         specific_theta,
                         comparison_flags,
                         &Behavior_idle);
@@ -221,9 +221,9 @@ Test(BehaviorBuilder, given_specificFlagsValues_when_buildingABehavior_then_only
                         DEFAULT_GOAL_X,
                         DEFAULT_GOAL_Y,
                         DEFAULT_GOAL_THETA,
-                        X_TOLERANCE_DEFAULT,
-                        Y_TOLERANCE_DEFAULT,
-                        THETA_TOLERANCE_DEFAULT,
+                        X_TOLERANCE_MOVING,
+                        Y_TOLERANCE_MOVING,
+                        THETA_TOLERANCE_MOVING,
                         comparison_flags,
                         &Behavior_idle);
 
@@ -354,8 +354,8 @@ Test(BehaviorBuilder,
                         DEFAULT_GOAL_X,
                         DEFAULT_GOAL_Y,
                         DEFAULT_GOAL_THETA,
-                        X_TOLERANCE_DEFAULT,
-                        Y_TOLERANCE_DEFAULT,
+                        X_TOLERANCE_MOVING,
+                        Y_TOLERANCE_MOVING,
                         THETA_TOLERANCE_MAX,
                         irrelevant_flags,
                         &Behavior_idle);
@@ -379,9 +379,9 @@ Test(BehaviorBuilder, given__when_buildingABehaviorWithFreeFlagsEntry_then_itsFl
                         DEFAULT_GOAL_X,
                         DEFAULT_GOAL_Y,
                         DEFAULT_GOAL_THETA,
-                        X_TOLERANCE_DEFAULT,
-                        Y_TOLERANCE_DEFAULT,
-                        THETA_TOLERANCE_DEFAULT,
+                        X_TOLERANCE_MOVING,
+                        Y_TOLERANCE_MOVING,
+                        THETA_TOLERANCE_MOVING,
                         irrelevant_flags,
                         &Behavior_idle);
     cr_assert(are_equal);
@@ -406,7 +406,7 @@ Test(BehaviorBuilder,
                         DEFAULT_GOAL_THETA,
                         X_TOLERANCE_MAX,
                         Y_TOLERANCE_MAX,
-                        THETA_TOLERANCE_DEFAULT,
+                        THETA_TOLERANCE_MOVING,
                         irrelevant_flags,
                         &Behavior_idle);
     cr_assert(are_equal);

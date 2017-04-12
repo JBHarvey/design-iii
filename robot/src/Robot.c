@@ -93,12 +93,14 @@ void Robot_act(struct Robot *robot)
 void Robot_sendReadyToStartSignal(struct Robot *robot)
 {
     DataSender_sendSignalReadyToStart(robot->data_sender);
+    Flags_setDrawing(robot->current_state->flags, 0);
 }
 
 void Robot_sendReadyToDrawSignal(struct Robot *robot)
 {
     if(Timer_hasTimePassed(robot->timer, THREE_SECONDS)) {
         DataSender_sendSignalReadyToDraw(robot->data_sender);
+        Flags_setDrawing(robot->current_state->flags, 1);
         Timer_reset(robot->timer);
     }
 }

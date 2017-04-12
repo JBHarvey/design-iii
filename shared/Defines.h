@@ -15,7 +15,6 @@
 
 #define IRRELEVANT -1
 
-
 // World related
 
 #define MAXIMUM_OBSTACLE_NUMBER 3
@@ -80,19 +79,33 @@
 #define DEFAULT_GOAL_THETA 0
 
 #define X_TOLERANCE_MIN 0                   // 0 mm
-#define X_TOLERANCE_DEFAULT 50             // 5 mm
+#define X_TOLERANCE_DRAWING 50             // 5 mm
+#define X_TOLERANCE_MOVING 100             // 10 mm
 #define X_TOLERANCE_MAX 50000               // 5 m
 
 #define Y_TOLERANCE_MIN 0                   // 0 mm
-#define Y_TOLERANCE_DEFAULT 50             // 5 mm
+#define Y_TOLERANCE_DRAWING 50             // 5 mm
+#define Y_TOLERANCE_MOVING 100             // 10 mm
 #define Y_TOLERANCE_MAX 50000               // 5 m
 
 #define THETA_TOLERANCE_MIN 0               // 0 rad
-#define THETA_TOLERANCE_DEFAULT 8000      
+#define THETA_TOLERANCE_DRAWING 5000 
+#define THETA_TOLERANCE_MOVING 10000
 #define THETA_TOLERANCE_MAX 314160         // Pi rad
 
-#define OMEGA_MEDIUM_SPEED 8000
-#define OMEGA_LOW_SPEED 4000
+#define OMEGA_MEDIUM_SPEED_DRAWING 6000
+#define OMEGA_LOW_SPEED_DRAWING 3000
+#define OMEGA_MEDIUM_SPEED_MOVING 11000
+#define OMEGA_LOW_SPEED_MOVING 5500
+
+#define MEDIUM_DISTANCE_DRAWING 1000
+#define MEDIUM_DISTANCE_MOVING 2000
+#define MAX_SPEED_DRAWING 1400
+#define MAX_SPEED_MOVING 1600
+#define SHORT_DISTANCE_DRAWING 100
+#define ACCELERATION_FACTOR_DRAWING 1.4
+#define SHORT_DISTANCE_MOVING 400
+#define ACCELERATION_FACTOR_MOVING 2.0
 
 // Time related
 #define NUMBER_OF_NANOSECONDS_IN_A_SECOND 1.0e9

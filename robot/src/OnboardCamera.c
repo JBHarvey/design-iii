@@ -45,7 +45,7 @@ static IplImage *getImage(void)
     IplImage *image;
     unsigned int tries = 0;
 
-    while (tries < CAMERA_BUFFER_LENGTH) {
+    while(tries < CAMERA_BUFFER_LENGTH) {
         image = cvQueryFrame(cv_cap);
         ++tries;
     }
@@ -70,7 +70,7 @@ static int convertToCartesian(double coord)
     return round((coord - (SIZE_SIDE_IN / 2.0)) * (SIZE_SIDE_OUT / SIZE_SIDE_IN));
 }
 
-#define LINE_SIZE  30
+#define LINE_SIZE  2
 
 struct CoordinatesSequence *OnboardCamera_extractTrajectoryFromImage(IplImage **painting_image)
 {

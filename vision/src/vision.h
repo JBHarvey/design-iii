@@ -8,6 +8,7 @@ CvPoint fixedCvPointFrom32f(CvPoint2D32f point);
 
 _Bool isDualSquare(CvSeq *contours);
 _Bool isFigure(CvSeq *contours);
+double distancePoints(CvPoint point1, CvPoint point2);
 
 #define NUM_SQUARE_CORNERS 4
 struct Square {
