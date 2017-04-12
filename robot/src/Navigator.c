@@ -138,6 +138,10 @@ static int convertAngleToSpeed(int theta, int angular_tolerance)
             speed = (angular_tolerance == THETA_TOLERANCE_MOVING) ? OMEGA_LOW_SPEED_MOVING : OMEGA_LOW_SPEED_DRAWING;
         }
 
+        if(theta < angular_tolerance / 3 && theta > -angular_tolerance / 3) {
+            speed = 0;
+        }
+
         if(theta < 0) {
             speed *= -1;
         }
