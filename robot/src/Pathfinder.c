@@ -127,5 +127,6 @@ struct CoordinatesSequence *Pathfinder_generatePathWithDijkstra(struct Graph *gr
 
     node_coordinates = graph->nodes[end_index]->coordinates;
     CoordinatesSequence_append(sequence, node_coordinates);
+    sequence = CoordinatesSequence_shortenSegments(sequence, MAX_SEGMENT_LENGHT_OBSTACLE);
     return sequence;
 }

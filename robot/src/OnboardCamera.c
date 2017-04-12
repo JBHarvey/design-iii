@@ -142,6 +142,7 @@ void OnboardCamera_takePictureAndIfValidSendAndUpdateDrawingBaseTrajectory(struc
     image_trajectory = OnboardCamera_extractTrajectoryFromImage(&image);
 
     if(image_trajectory) {
+        image_trajectory = CoordinatesSequence_shortenSegments(image_trajectory, MAX_SEGMENT_LENGHT_DRAWING);
         Flags_setPictureTaken(robot->current_state->flags, TRUE);
         DataSender_sendImage(robot->data_sender, image);
         robot->drawing_trajectory = image_trajectory;
