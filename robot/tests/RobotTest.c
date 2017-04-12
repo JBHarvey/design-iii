@@ -52,7 +52,7 @@ void assertBehaviorHasAngleEntry(struct Behavior *behavior, int angle)
 
 void assertBehaviorHasOrientationEntry(struct Behavior *behavior, enum CardinalDirection orientation)
 {
-    struct Pose *angle_tolerance = Pose_new(X_TOLERANCE_MAX, Y_TOLERANCE_MAX, THETA_TOLERANCE_MOVING);
+    struct Pose *angle_tolerance = Pose_new(X_TOLERANCE_MAX, Y_TOLERANCE_MAX, THETA_TOLERANCE_ORIENTATION);
     cr_assert(Pose_haveTheSameValues(angle_tolerance, behavior->entry_conditions->tolerances->pose));
     Pose_delete(angle_tolerance);
     int angle;
