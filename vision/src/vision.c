@@ -134,7 +134,7 @@ static IplImage *thresholdImage3D(IplImage *image_yuv, unsigned int erode_dilate
             unsigned int dest_row_index = j * dest_width_step;
 
             if(y > thresh_y && (px * px + py * py) < (FIGURE_UV_MIN_DISTANCE * FIGURE_UV_MIN_DISTANCE)) {
-                image_black_white->imageData[i + dest_row_index] = 255;
+                image_black_white->imageData[i + dest_row_index] = (char) 255;
             } else {
                 image_black_white->imageData[i + dest_row_index] = 0;
             }
@@ -622,8 +622,11 @@ static void findObstaclesRecursive(CvSeq *contours, struct Vision_Obstacle *out_
 
 #define COMPARE_ERROR_PIXELS (5.0)
 
-static int compareObstacles(const struct Vision_Obstacle *obstacle1, const struct Vision_Obstacle *obstacle2)
+static int compareObstacles(const void *obstacle_1, const void *obstacle_2)
 {
+    struct Vision_Obstacle *obstacle1 = (struct Vision_Obstacle *) obstacle_1;
+    struct Vision_Obstacle *obstacle2 = (struct Vision_Obstacle *) obstacle_2;
+
     if(obstacle1->type < obstacle2->type) {
         return -1;
     }

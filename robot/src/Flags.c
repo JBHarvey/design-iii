@@ -21,6 +21,7 @@ struct Flags *Flags_new(void)
     pointer->end_of_cycle_received_by_station = FALSE;
     pointer->manchester_code_received = FALSE;
     pointer->has_completed_a_cycle = FALSE;
+    pointer->drawing = FALSE;
 
     return pointer;
 }
@@ -49,6 +50,7 @@ struct Flags *Flags_irrelevant(void)
     Flags_setEndOfCycleReceivedByStation(irrelevant, IRRELEVANT);
     Flags_setManchesterCodeReceived(irrelevant, IRRELEVANT);
     Flags_setHasCompletedACycle(irrelevant, IRRELEVANT);
+    Flags_setDrawing(irrelevant, IRRELEVANT);
 
     return irrelevant;
 }
@@ -66,6 +68,7 @@ void Flags_copyValuesFrom(struct Flags *recipient, struct Flags *source)
     recipient->end_of_cycle_received_by_station = source->end_of_cycle_received_by_station;
     recipient->manchester_code_received = source->manchester_code_received;
     recipient->has_completed_a_cycle = source->has_completed_a_cycle;
+    recipient->drawing = source->drawing;
 }
 
 
@@ -98,8 +101,10 @@ int Flags_haveTheSameValues(struct Flags *flags, struct Flags *other_flags)
             || other_flags->manchester_code_received == IRRELEVANT)
         && (flags->has_completed_a_cycle == other_flags->has_completed_a_cycle
             || flags->has_completed_a_cycle == IRRELEVANT
-            || other_flags->has_completed_a_cycle == IRRELEVANT
-           );
+            || other_flags->has_completed_a_cycle == IRRELEVANT)
+        && (flags->drawing == other_flags->drawing
+            || flags->drawing == IRRELEVANT
+            || other_flags->drawing == IRRELEVANT);
 }
 
 void Flags_setNavigableMapIsReady(struct Flags *flags, int new_value)
@@ -155,4 +160,9 @@ void Flags_setManchesterCodeReceived(struct Flags *flags, int new_value)
 void Flags_setHasCompletedACycle(struct Flags *flags, int new_value)
 {
     flags->has_completed_a_cycle = new_value;
+}
+
+void Flags_setDrawing(struct Flags *flags, int new_value)
+{
+    flags->drawing = new_value;
 }

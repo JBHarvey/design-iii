@@ -52,7 +52,7 @@ void assertBehaviorHasAngleEntry(struct Behavior *behavior, int angle)
 
 void assertBehaviorHasOrientationEntry(struct Behavior *behavior, enum CardinalDirection orientation)
 {
-    struct Pose *angle_tolerance = Pose_new(X_TOLERANCE_MAX, Y_TOLERANCE_MAX, THETA_TOLERANCE_DEFAULT);
+    struct Pose *angle_tolerance = Pose_new(X_TOLERANCE_MAX, Y_TOLERANCE_MAX, THETA_TOLERANCE_MOVING);
     cr_assert(Pose_haveTheSameValues(angle_tolerance, behavior->entry_conditions->tolerances->pose));
     Pose_delete(angle_tolerance);
     int angle;
@@ -93,7 +93,15 @@ void assertBehaviorHasFreeEntry(struct Behavior *behavior)
 
 void assertBehaviorHasFreeTrajectoryEntry(struct Behavior *behavior)
 {
-    struct Pose *free_coordinates_tolerance = Pose_new(X_TOLERANCE_DEFAULT, Y_TOLERANCE_DEFAULT, THETA_TOLERANCE_MAX);
+    struct Pose *free_coordinates_tolerance = Pose_new(X_TOLERANCE_MOVING, Y_TOLERANCE_MOVING, THETA_TOLERANCE_MAX);
+    cr_assert(Pose_haveTheSameValues(free_coordinates_tolerance, behavior->entry_conditions->tolerances->pose));
+    Pose_delete(free_coordinates_tolerance);
+    assertBehaviorHasFreeFlagsEntry(behavior);
+}
+
+void assertBehaviorHasFreeTrajectoryEntryAndDrawingTolerances(struct Behavior *behavior)
+{
+    struct Pose *free_coordinates_tolerance = Pose_new(X_TOLERANCE_DRAWING, Y_TOLERANCE_DRAWING, THETA_TOLERANCE_MAX);
     cr_assert(Pose_haveTheSameValues(free_coordinates_tolerance, behavior->entry_conditions->tolerances->pose));
     Pose_delete(free_coordinates_tolerance);
     assertBehaviorHasFreeFlagsEntry(behavior);
@@ -292,6 +300,14 @@ Test(Robot, given_aRobot_when_askedToSendAReadyToStartSignal_then_theSignalIsSen
     cr_assert(validation_ready_to_start_is_sent);
 }
 
+Test(Robot, given_aRobot_when_askedToSendAReadyToStartSignal_then_theDrawingFlagIsSetToZero
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    Robot_sendReadyToStartSignal(robot);
+    cr_assert_eq(robot->current_state->flags->drawing, 0);
+}
+
 Test(Robot, given_aRobot_when_askedToSendAReadyToDrawSignal_then_theSignalIsSent
      , .init = setup_robot
      , .fini = teardown_robot)
@@ -300,6 +316,16 @@ Test(Robot, given_aRobot_when_askedToSendAReadyToDrawSignal_then_theSignalIsSent
 
     Robot_sendReadyToDrawSignal(robot);
     cr_assert(validation_ready_to_draw_is_sent);
+}
+
+Test(Robot, given_aRobot_when_askedToSendAReadyToDrawSignal_then_theDrawingFlagIsSetToOne
+     , .init = setup_robot
+     , .fini = teardown_robot)
+{
+    while(!Timer_hasTimePassed(robot->timer, THREE_SECONDS));
+
+    Robot_sendReadyToDrawSignal(robot);
+    cr_assert_eq(robot->current_state->flags->drawing, 1);
 }
 
 Test(Robot, given_aRobot_when_askedToSendAPlannedTrajectory_then_theSignalIsSent
@@ -411,7 +437,55 @@ Test(RobotBehaviors,
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsAntennaStop);
 }
 
-/* End of first action for navigable behaviors */
+void assertBehaviorsAreAMovementChainWithDrawingTolerancesFollowingThePlannedTrajectoryAfterAction(void (*action)(
+            struct Robot *))
+{
+    struct Behavior *behavior = robot->current_behavior;
+    behavior->action = action;
+    Behavior_act(behavior, robot);
+    struct CoordinatesSequence *trajectory = robot->navigator->planned_trajectory;
+
+    // Fetches the sendPlannedTrajectory behavior
+    void (*sendPlannedTrajectory) = &Robot_sendPlannedTrajectory;
+
+    while(behavior->action != sendPlannedTrajectory) {
+        behavior = behavior->first_child;
+    }
+
+    behavior = behavior->first_child;
+
+    void (*navigationAction)(struct Robot *) = &Navigator_navigateRobotTowardsGoal;
+
+    struct Coordinates *point_in_trajectory;
+    struct Coordinates *behavior_goal_coordinates;
+
+    struct Flags *flags_planned_trajectory_received = Flags_irrelevant();
+    Flags_setPlannedTrajectoryReceivedByStation(flags_planned_trajectory_received, 1);
+
+    point_in_trajectory = trajectory->coordinates;
+    behavior_goal_coordinates = behavior->entry_conditions->goal_state->pose->coordinates;
+
+    cr_assert_eq(behavior->action, navigationAction);
+    cr_assert(Flags_haveTheSameValues(behavior->entry_conditions->goal_state->flags, flags_planned_trajectory_received));
+    cr_assert(Coordinates_haveTheSameValues(point_in_trajectory, behavior_goal_coordinates));
+    assertBehaviorHasFreePoseEntry(behavior);
+
+    do {
+        trajectory = trajectory->next_element;
+        behavior = behavior->first_child;
+        point_in_trajectory = trajectory->coordinates;
+        behavior_goal_coordinates = behavior->entry_conditions->goal_state->pose->coordinates;
+        cr_assert(Coordinates_haveTheSameValues(point_in_trajectory, behavior_goal_coordinates));
+
+        if(!CoordinatesSequence_isLast(trajectory)) {
+            cr_assert_eq(behavior->action, navigationAction);
+        }
+
+        assertBehaviorHasFreeTrajectoryEntryAndDrawingTolerances(behavior);
+    } while(!CoordinatesSequence_isLast(trajectory));
+
+    Flags_delete(flags_planned_trajectory_received);
+}
 
 void assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(void (*action)(struct Robot *))
 {
@@ -719,7 +793,8 @@ Test(RobotBehaviors,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsAntennaMarkEnd);
+    assertBehaviorsAreAMovementChainWithDrawingTolerancesFollowingThePlannedTrajectoryAfterAction(
+        &Navigator_planTowardsAntennaMarkEnd);
 }
 
 Test(RobotBehaviors,
@@ -1036,7 +1111,8 @@ Test(RobotBehaviors,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsCenterOfDrawingZone);
+    assertBehaviorsAreAMovementChainWithDrawingTolerancesFollowingThePlannedTrajectoryAfterAction(
+        &Navigator_planTowardsCenterOfDrawingZone);
 }
 
 Test(RobotBehaviors,
@@ -1119,7 +1195,8 @@ Test(RobotBehaviors,
      , .fini = teardown_robot)
 {
     giveADummyDrawingTrajectoryToTheRobot(robot);
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsDrawingStart);
+    assertBehaviorsAreAMovementChainWithDrawingTolerancesFollowingThePlannedTrajectoryAfterAction(
+        &Navigator_planTowardsDrawingStart);
 }
 
 Test(RobotBehaviors,
