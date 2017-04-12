@@ -62,19 +62,27 @@ int CoordinatesSequence_size(struct CoordinatesSequence *coordinates_sequence)
 }
 
 static struct Coordinates *fetchNextValidCoordinatesForDistance(struct Coordinates *current, struct Coordinates *goal,
-        int max_distance)
+        double max_distance)
 {
-    struct Coordinates *next_valid_coordinates;
-    int distance_between = Coordinates_distanceBetween(current, goal);
+    double distance_between = (double) Coordinates_distanceBetween(current, goal);
+
+    struct Coordinates *next_valid_coordinates = Coordinates_new(goal->x, goal->y);
 
     if(distance_between > max_distance) {
-        next_valid_coordinates = Coordinates_new(goal->x + max_distance, goal->y);
-        struct Angle *angle = Coordinates_angleBetween(current, goal);
-        angle->theta *= -1;
-        Coordinates_rotateOfAngleAround(next_valid_coordinates, angle, current);
-        Angle_delete(angle);
-    } else {
-        next_valid_coordinates = Coordinates_new(goal->x, goal->y);
+        struct Coordinates *to_origin = Coordinates_zero();
+        struct Coordinates *back_to_place = Coordinates_zero();
+        Coordinates_copyValuesFrom(to_origin, current);
+        Coordinates_scaleOf(to_origin, -1.0);
+        Coordinates_copyValuesFrom(back_to_place, current);
+
+        double ratio = max_distance / distance_between;
+
+        Coordinates_translateOf(next_valid_coordinates, to_origin);
+        Coordinates_scaleOf(next_valid_coordinates, ratio);
+        Coordinates_translateOf(next_valid_coordinates, back_to_place);
+
+        Coordinates_delete(to_origin);
+        Coordinates_delete(back_to_place);
     }
 
     return next_valid_coordinates;
@@ -97,7 +105,7 @@ struct CoordinatesSequence *CoordinatesSequence_shortenSegments(struct Coordinat
         }
 
         struct Coordinates *next_valid_coordinates = fetchNextValidCoordinatesForDistance(last_valid_coordinates,
-                goal_coordinates, max_distance);
+                goal_coordinates, (double)max_distance);
 
         CoordinatesSequence_append(new_sequence, next_valid_coordinates);
 

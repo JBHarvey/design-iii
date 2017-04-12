@@ -183,7 +183,7 @@ void Coordinates_translateOf(struct Coordinates *toTranslate, struct Coordinates
     toTranslate->y += delta->y;
 }
 
-void Coordinates_scaleOf(struct Coordinates *toScale, int scale_factor)
+void Coordinates_scaleOf(struct Coordinates *toScale, double scale_factor)
 {
     toScale->x *= scale_factor;
     toScale->y *= scale_factor;
