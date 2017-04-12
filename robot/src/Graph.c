@@ -842,8 +842,9 @@ static void establishGraphForTrioObstacles(struct Graph *graph, struct Obstacle 
     }
 }
 
-void Graph_updateForMap(struct Graph *graph, struct Map* map)
+struct Graph *Graph_generateForMap(struct Map* map)
 {
+    struct Graph *graph = Graph_new();
     int number_of_obstacle = Map_fetchNumberOfObstacles(map);
 
     struct Obstacle *first;
@@ -924,4 +925,6 @@ void Graph_updateForMap(struct Graph *graph, struct Map* map)
             break;
 
     };
+
+    return graph;
 }

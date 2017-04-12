@@ -16,5 +16,5 @@ struct Graph {
 struct Graph *Graph_new(void);
 void Graph_delete(struct Graph *graph);
 
-void Graph_updateForMap(struct Graph *graph, struct Map* map);
+struct Graph *Graph_generateForMap(struct Map* map);
 #endif // GRAPH_H_
