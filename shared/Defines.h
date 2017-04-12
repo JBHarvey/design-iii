@@ -21,7 +21,7 @@
 #define NUMBER_OF_PAINTING 8
 #define THEORICAL_OBSTACLE_RADIUS 650
 #define THEORICAL_ROBOT_RADIUS 1700
-#define MINIMAL_ROBOT_WIDTH 2900
+#define OVERLAPPING_DISTANCE 2800
 #define THEORICAL_WORLD_LENGTH 23300
 #define THEORICAL_WORLD_HEIGHT 11300
 #define THEORICAL_DRAWING_ZONE_SIDE 6600
@@ -35,7 +35,7 @@
 #define MINIMAL_GAP 50
 
 // Graph and pathfinding related
-#define MAX_NUMBER_OF_NODE 22
+#define MAX_NUMBER_OF_NODE 15
 #define MAX_VALUE_OF_FLOAT FLT_MAX
 
 // Navigation related
@@ -48,7 +48,7 @@
 #define STOP_VALUE 0
 #define STOP_DISTANCE 75
 
-#define ANTENNA_MARK_DISTANCE 76
+#define ANTENNA_MARK_DISTANCE 85
 
 // Units and mesurements related
 
@@ -73,7 +73,6 @@
 
 
 // Behavior related
-
 #define DEFAULT_GOAL_X 0
 #define DEFAULT_GOAL_Y 0
 #define DEFAULT_GOAL_THETA 0
@@ -94,6 +93,7 @@
 #define THETA_TOLERANCE_ORIENTATION 3000
 #define THETA_TOLERANCE_MAX 314160         // Pi rad
 
+// Navigation related
 #define OMEGA_MEDIUM_SPEED_DRAWING 6000
 #define OMEGA_LOW_SPEED_DRAWING 3000
 #define OMEGA_MEDIUM_SPEED_MOVING 11000
