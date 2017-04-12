@@ -698,11 +698,11 @@ Test(Navigator,
     cr_assert(rotation_validator == COMMAND_SENT);
     cr_assert(speeds_validator != COMMAND_SENT);
 
-    cr_assert(sent_rotation_command_theta == OMEGA_MEDIUM_SPEED);
+    cr_assert(sent_rotation_command_theta == OMEGA_MEDIUM_SPEED_MOVING);
 }
 
 Test(Navigator,
-     given_aRobotAngularlySeparatedOfItsGoalOfAnAngleSmallerThanTheHalfOfTheDefaultThetaTolerance_when_orientTowardsGoal_then_aRotationCommandIsSentWithOmegaLowSpeed
+     given_aRobotAngularlySeparatedOfItsGoalOfAnAngleSmallerThanTheHalfOfTheDefaultThetaTolerance_when_orientTowardsGoal_then_aStopCommandIsSent
      , .init = setup_Navigator
      , .fini = teardown_Navigator)
 {
@@ -713,10 +713,11 @@ Test(Navigator,
 
     Navigator_orientRobotTowardsGoal(robot);
 
-    cr_assert(rotation_validator == COMMAND_SENT);
-    cr_assert(speeds_validator != COMMAND_SENT);
+    cr_assert(rotation_validator != COMMAND_SENT);
+    cr_assert(speeds_validator == COMMAND_SENT);
 
-    cr_assert(sent_rotation_command_theta == OMEGA_LOW_SPEED);
+    cr_assert(sent_speeds_command_y == 0);
+    cr_assert(sent_speeds_command_x == 0);
 }
 
 void assertEqualityWithTolerance(int expected_value, int received_value, int tolerance)
