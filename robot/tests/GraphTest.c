@@ -462,6 +462,7 @@ Test(Graph,
     struct Node *second_new_node = graph->nodes[3];
     cr_assert(Node_areNeighbours(first_new_node, second_new_node));
 }
+/*
 
 Test(Graph,
      given_anySoloGraphWithFourNodes_when_generatesGraph_then_aPathExistsBetweenTheEasternAndWesternNode
@@ -508,16 +509,6 @@ Test(Graph, given_thePathOfASoloGraphWithFourNodes_when_generatesGraph_then_allT
     CoordinatesSequence_delete(sequence_head);
 }
 
-Test(Graph, given_aSoloGraphWithCenterObstacle_when_generatesGraph_then_theTotalNumberOfNodeIsSix
-     , .init = setup_Graph
-     , .fini = teardown_Graph)
-{
-    generateSoloMap(CENTER);
-    graph = Graph_generateForMap(graph_map);
-    int total_number_of_nodes = graph->actual_number_of_nodes;
-    int expected_number = 6;
-    cr_assert_eq(total_number_of_nodes, expected_number);
-}
 
 Test(Graph,
      given_aSoloGraphWithCenterObstacleAndSixNodes_when_generatesGraph_then_thePathGeneratedFromTheGraphHasFourElements
@@ -535,6 +526,17 @@ Test(Graph,
     CoordinatesSequence_delete(sequence);
 }
 
+*/
+Test(Graph, given_aSoloGraphWithCenterObstacle_when_generatesGraph_then_theTotalNumberOfNodeIsSix
+     , .init = setup_Graph
+     , .fini = teardown_Graph)
+{
+    generateSoloMap(CENTER);
+    graph = Graph_generateForMap(graph_map);
+    int total_number_of_nodes = graph->actual_number_of_nodes;
+    int expected_number = 6;
+    cr_assert_eq(total_number_of_nodes, expected_number);
+}
 /* -- END OF SOLO GRAPH --  */
 /* -- START OF TWO OBSTACLE GRAPH -- */
 struct Obstacle *obstacle_a;

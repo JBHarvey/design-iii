@@ -119,7 +119,7 @@ Test(CoordinatesSequence,
      , .fini = teardown_CoordinatesSequence)
 {
     int distance = MAX_SEGMENT_LENGHT_DRAWING;
-    other_coordinates->x = SEQUENCE_X + 3 * MAX_SEGMENT_LENGHT_OBSTACLE;
+    other_coordinates->x = SEQUENCE_X + 3 * MAX_SEGMENT_LENGHT_DRAWING;
     CoordinatesSequence_append(sequence, other_coordinates);
 
     sequence = CoordinatesSequence_shortenSegments(sequence, distance);
@@ -128,7 +128,7 @@ Test(CoordinatesSequence,
 
     do {
         segment_distance = Coordinates_distanceBetween(new_element->coordinates, new_element->next_element->coordinates);
-        cr_assert(distance >= segment_distance);
+        cr_assert(distance >= segment_distance, "Distance max: %d, got : %d", distance, segment_distance);
         new_element = new_element->next_element;
 
     } while(!CoordinatesSequence_isLast(new_element));

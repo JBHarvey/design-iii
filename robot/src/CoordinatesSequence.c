@@ -68,7 +68,7 @@ static struct Coordinates *fetchNextValidCoordinatesForDistance(struct Coordinat
 
     struct Coordinates *next_valid_coordinates = Coordinates_new(goal->x, goal->y);
 
-    if(distance_between > max_distance) {
+    if(distance_between >= max_distance) {
         struct Coordinates *to_origin = Coordinates_zero();
         struct Coordinates *back_to_place = Coordinates_zero();
         Coordinates_copyValuesFrom(to_origin, current);
