@@ -27,7 +27,7 @@
 #define YELLOW CV_RGB(0, 255, 255)
 
 #define ANGLE_TOLERANCE 0.0872665
-#define POSITION_TOLERANCE 1
+#define POSITION_TOLERANCE 5
 
 #define ONE_SECOND_IN_MICROSECONDS 1000000
 
@@ -302,6 +302,9 @@ struct Point2DSet *WorldVisionDetection_getDetectedGreenSquareCorners(void)
     }
 }
 
+#define GREEN_SQUARE_CORNER_DISTANCE 250.0
+#define GREEN_SQUARE_CORNER_PIXEL_TOLERANCE 75.0
+
 int WorldVisionDetection_detectTableCorners(struct Camera *input_camera)
 {
     WorldVision_createWorldCameraFrameSafeCopy();
@@ -312,9 +315,18 @@ int WorldVisionDetection_detectTableCorners(struct Camera *input_camera)
     _Bool table_detected = findTableCorners(image_yuv, &table_corners);
 
     if(table_detected) {
+        if (!detected->green_square_detected) {
+            detected->table_detected = 1;
+            detected->table = table_corners;
+        } else {
+            double dist1 = fabs(GREEN_SQUARE_CORNER_DISTANCE - distancePoints(fixedCvPointFrom32f(table_corners.corner[0]), fixedCvPointFrom32f(detected->green_square.corner[0])));
+            double dist2 = fabs(GREEN_SQUARE_CORNER_DISTANCE - distancePoints(fixedCvPointFrom32f(table_corners.corner[3]), fixedCvPointFrom32f(detected->green_square.corner[3])));
 
-        detected->table_detected = 1;
-        detected->table = table_corners;
+            if (dist1 < GREEN_SQUARE_CORNER_PIXEL_TOLERANCE && dist2 < GREEN_SQUARE_CORNER_PIXEL_TOLERANCE) {
+                detected->table_detected = 1;
+                detected->table = table_corners;
+            }
+        }
     }
 
     cvReleaseImage(&image_yuv);
