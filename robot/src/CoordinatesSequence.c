@@ -66,25 +66,46 @@ static struct Coordinates *fetchNextValidCoordinatesForDistance(struct Coordinat
 {
     struct Coordinates *next_valid_coordinates;
     int distance_between = Coordinates_distanceBetween(current, goal);
-    /*
-    if(distance_between > max_distance){
+
+    if(distance_between > max_distance) {
+        next_valid_coordinates = Coordinates_new(goal->x + max_distance, goal->y);
+        struct Angle *angle = Coordinates_angleBetween(current, goal);
+        Coordinates_rotateOfAngleAround(next_valid_coordinates, angle, current);
+        Angle_delete(angle);
+    } else {
+        next_valid_coordinates = Coordinates_new(goal->x, goal->y);
     }
-    */
+
     return next_valid_coordinates;
 }
 
 struct CoordinatesSequence *CoordinatesSequence_shortenSegments(struct CoordinatesSequence *coordinates_sequence,
         int max_distance)
 {
+    struct CoordinatesSequence *old_sequence_head = coordinates_sequence;
     struct Coordinates *last_valid_coordinates = coordinates_sequence->coordinates;
-    struct Coordinates *goal_coordinates = coordinates_sequence->next_element->coordinates;
-    struct Coordinates *next_valid_coordinates;
+    struct Coordinates *goal_coordinates = coordinates_sequence->coordinates;
 
     struct CoordinatesSequence *new_sequence = CoordinatesSequence_new(last_valid_coordinates);
 
-    while(!CoordinatesSequence_isLast(coordinates_sequence)) {
-        last_valid_coordinates = next_valid_coordinates;
-    }
+    while(!(CoordinatesSequence_isLast(coordinates_sequence)
+            && Coordinates_haveTheSameValues(last_valid_coordinates, goal_coordinates))) {
+        if(Coordinates_haveTheSameValues(last_valid_coordinates, goal_coordinates)) {
+            coordinates_sequence = coordinates_sequence->next_element;
+            goal_coordinates = coordinates_sequence->coordinates;
+        }
+
+        struct Coordinates *next_valid_coordinates = fetchNextValidCoordinatesForDistance(last_valid_coordinates,
+                goal_coordinates, max_distance);
+
+        CoordinatesSequence_append(new_sequence, next_valid_coordinates);
+
+        Coordinates_copyValuesFrom(last_valid_coordinates, next_valid_coordinates);
+
+        Coordinates_delete(next_valid_coordinates);
+    };
+
+    CoordinatesSequence_delete(old_sequence_head);
 
     return new_sequence;
 }

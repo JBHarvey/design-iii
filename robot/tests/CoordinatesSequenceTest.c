@@ -97,26 +97,24 @@ Test(CoordinateSequence, given_aSequence_when_fetchSize_then_returnsTheTotalNumb
 
 }
 
-/*
 Test(CoordinatesSequence,
      given_aSequenceOfSizeTwoBiggerThanADistance_when_askedToShortenTheSegments_then_aSequenceOfBiggerSizeIsReturned
      , .init = setup_CoordinatesSequence
      , .fini = teardown_CoordinatesSequence)
 {
     int distance = MAX_SEGMENT_LENGHT_DRAWING;
-    other_coordinates->x = SEQUENCE_X + 2 * MAX_SEGMENT_LENGHT_DRAWING;
+    other_coordinates->x = SEQUENCE_X + 2 * distance;
     CoordinatesSequence_append(sequence, other_coordinates);
     int original_size = CoordinatesSequence_size(sequence);
 
-    struct CoordinatesSequence *new_sequence = CoordinatesSequence_shortenSegments(sequence, distance);
-    int new_size = CoordinatesSequence_size(new_sequence);
+    sequence = CoordinatesSequence_shortenSegments(sequence, distance);
+    int new_size = CoordinatesSequence_size(sequence);
     cr_assert(original_size < new_size);
 
-    CoordinatesSequence_delete(new_sequence);
 }
 
 Test(CoordinatesSequence,
-     given_aSequenceOfSizeTwoBiggerThanADistance_when_askedToShortenTheSegments_then_aSequenceOfBiggerSizeIsReturned
+     given_aSequenceOfSizeTwoBiggerThanADistance_when_askedToShortenTheSegments_then_aSequenceOfSegmentsOfTheDistanceLenghtAtMostIsReturned
      , .init = setup_CoordinatesSequence
      , .fini = teardown_CoordinatesSequence)
 {
@@ -124,8 +122,8 @@ Test(CoordinatesSequence,
     other_coordinates->x = SEQUENCE_X + 3 * MAX_SEGMENT_LENGHT_OBSTACLE;
     CoordinatesSequence_append(sequence, other_coordinates);
 
-    struct CoordinatesSequence *new_sequence = CoordinatesSequence_shortenSegments(sequence, distance);
-    struct CoordinatesSequence *new_element = new_sequence;
+    sequence = CoordinatesSequence_shortenSegments(sequence, distance);
+    struct CoordinatesSequence *new_element = sequence;
     int segment_distance;
 
     do {
@@ -135,7 +133,4 @@ Test(CoordinatesSequence,
 
     } while(!CoordinatesSequence_isLast(new_element));
 
-    CoordinatesSequence_delete(new_sequence);
 }
-
-*/
