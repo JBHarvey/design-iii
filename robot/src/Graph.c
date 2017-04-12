@@ -144,9 +144,9 @@ static void addNodesForXBordersAndYValue(struct Graph *graph, struct Node *east_
 
     struct Node *new_west_node = Node_new();
 
-    Coordinates_copyValuesFrom(new_east_node->coordinates, new_east_node_coordinates);
+    Coordinates_copyValuesFrom(east_node->coordinates, new_east_node_coordinates);
 
-    Coordinates_copyValuesFrom(new_west_node->coordinates, new_west_node_coordinates);
+    Coordinates_copyValuesFrom(west_node->coordinates, new_west_node_coordinates);
 
     Coordinates_delete(new_east_node_coordinates);
 
