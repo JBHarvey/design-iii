@@ -200,7 +200,7 @@ static void sendSpeedsCommand(struct Robot * robot, int angular_distance_to_targ
 
             x = horizontal_correction;
 
-            if(alignment_correction_rotation == CLOCKWISE) {
+            if(alignment_correction_rotation == ANTICLOCKWISE) {
                 x *= -1;
             }
 
@@ -210,7 +210,7 @@ static void sendSpeedsCommand(struct Robot * robot, int angular_distance_to_targ
         } else if(angular_distance_to_south < angular_tolerance) {
             x = horizontal_correction;
 
-            if(alignment_correction_rotation == ANTICLOCKWISE) {
+            if(alignment_correction_rotation == CLOCKWISE) {
                 x *= -1;
             }
 
