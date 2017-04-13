@@ -302,9 +302,9 @@ void Navigator_navigateRobotTowardsGoal(struct Robot * robot)
             //int distance_from_trajectory = calculateDistanceFromTrajectory(current_pose->coordinates->x,
 
             //current_pose->coordinates->y);
-            int correction = 50;
+            int correction = 60;
 
-            if(angle_between_robot_and_target >= 0) {
+            if(angle_between_robot_and_target < 0) {
                 correction *= -1;
             }
 
