@@ -181,6 +181,13 @@ static void sendSpeedsCommand(struct Robot * robot, int angular_distance_to_targ
     if(Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS)) {
         int x = 0;
         int y = 0;
+
+        int correction_factor = 1;
+
+        if(angle_to_target < 0) {
+            correction_factor *=  -1;
+        }
+
         int angular_tolerance = (robot->current_state->flags->drawing) ? THETA_TOLERANCE_DRAWING : THETA_TOLERANCE_MOVING;
         int angular_distance_to_east = abs(angle_to_target);
         int angular_distance_to_north = abs(HALF_PI - angle_to_target);
@@ -190,22 +197,20 @@ static void sendSpeedsCommand(struct Robot * robot, int angular_distance_to_targ
             int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->x),
                                                angular_tolerance);
             x = speed;
-            y = correction;
         } else if(angular_distance_to_north < angular_tolerance) {
             int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->y),
                                                angular_tolerance);
             y = speed;
-            x = correction;
+            x = correction * correction_factor * -1;
         } else if(angular_distance_to_south < angular_tolerance) {
             int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->y),
                                                angular_tolerance);
             y = -1 * speed;
-            x = correction;
+            x = correction * correction_factor;
         } else {
             int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->x),
                                                angular_tolerance);
             x = -1 * speed;
-            y = correction;
         }
 
         struct Command_Speeds speeds_command = {
@@ -303,11 +308,6 @@ void Navigator_navigateRobotTowardsGoal(struct Robot * robot)
 
             //current_pose->coordinates->y);
             int correction = 60;
-
-            if(angle_between_robot_and_target >= 0) {
-                correction *= -1;
-            }
-
             sendSpeedsCommand(robot, distance_to_target, angle_between_robot_and_target, correction);
         } else if(!was_oriented) {
             Navigator_stopMovement(robot);
