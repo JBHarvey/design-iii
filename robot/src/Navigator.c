@@ -299,14 +299,16 @@ void Navigator_navigateRobotTowardsGoal(struct Robot * robot)
 
         if(was_oriented) {
             int distance_to_target = Coordinates_distanceBetween(current_pose->coordinates, goal_coordinates);
-            int distance_from_trajectory = calculateDistanceFromTrajectory(current_pose->coordinates->x,
-                                           current_pose->coordinates->y);
+            //int distance_from_trajectory = calculateDistanceFromTrajectory(current_pose->coordinates->x,
 
-            if(angle_between_robot_and_target < 0) {
-                distance_from_trajectory *= -2;
+            //current_pose->coordinates->y);
+            int correction = 10;
+
+            if(angle_between_robot_and_target >= 0) {
+                correction *= -1;
             }
 
-            sendSpeedsCommand(robot, distance_to_target, angle_between_robot_and_target, 0);
+            sendSpeedsCommand(robot, distance_to_target, angle_between_robot_and_target, correction);
         } else if(!was_oriented) {
             Navigator_stopMovement(robot);
         }
