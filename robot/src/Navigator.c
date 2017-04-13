@@ -304,7 +304,7 @@ void Navigator_navigateRobotTowardsGoal(struct Robot * robot)
 
         if(was_oriented) {
             int distance_to_target = Coordinates_distanceBetween(current_pose->coordinates, goal_coordinates);
-            int correction = 120;
+            int correction = 0;
             sendSpeedsCommand(robot, distance_to_target, angle_between_robot_and_target, correction);
         } else if(!was_oriented) {
             Navigator_stopMovement(robot);
@@ -321,11 +321,6 @@ void Navigator_orientRobotTowardsGoal(struct Robot * robot)
                                          robot->current_behavior->first_child->entry_conditions->goal_state->pose->angle->theta);
     struct Angle *current_angle = robot->current_state->pose->angle;
     int angular_distance_to_goal = abs(Angle_smallestAngleBetween(orientation_goal, current_angle));
-
-    setCurrentTrajectoryEquation(robot->current_behavior->first_child->entry_conditions->goal_state->pose->coordinates->x,
-                                 robot->current_behavior->first_child->entry_conditions->goal_state->pose->coordinates->y,
-                                 robot->current_state->pose->coordinates->x,
-                                 robot->current_state->pose->coordinates->y);
 
     if(angular_distance_to_goal > angular_tolerance) {
         enum RotationDirection direction = Angle_fetchOptimalRotationDirection(orientation_goal, current_angle);
