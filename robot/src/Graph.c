@@ -692,27 +692,29 @@ static void establishEasternAndWesternNodeForTrioObstacles(struct Graph *graph, 
     Coordinates_delete(western_node_coordinates);
 }
 
-static void createGraphTrioOneY(struct Graph *graph, int eastern_node_x, int western_node_x, int y)
+static void createGraphTrioOneY(struct Graph *graph, int eastern_node_x, int western_node_x, int east_node_x,
+                                int west_node_x, int y)
 {
     establishEasternAndWesternNodeForTrioObstacles(graph, eastern_node_x, western_node_x, y);
-    addNodesForXBordersAndYValue(graph, graph->eastern_node, graph->western_node, eastern_node_x, western_node_x, y);
+    addNodesForXBordersAndYValue(graph, graph->eastern_node, graph->western_node, east_node_x, west_node_x, y);
 }
 
-static void createGraphTrioTwoYs(struct Graph *graph, int eastern_node_x, int western_node_x, int first_y, int second_y)
+static void createGraphTrioTwoYs(struct Graph *graph, int eastern_node_x, int western_node_x, int east_node_x,
+                                 int west_node_x, int first_y, int second_y)
 {
     int y = ((first_y + second_y) / 2);
     establishEasternAndWesternNodeForTrioObstacles(graph, eastern_node_x, western_node_x, y);
-    addNodesForXBordersAndYValue(graph, graph->eastern_node, graph->western_node, eastern_node_x, western_node_x, first_y);
-    addNodesForXBordersAndYValue(graph, graph->eastern_node, graph->western_node, eastern_node_x, western_node_x, second_y);
+    addNodesForXBordersAndYValue(graph, graph->eastern_node, graph->western_node, east_node_x, west_node_x, first_y);
+    addNodesForXBordersAndYValue(graph, graph->eastern_node, graph->western_node, east_node_x, west_node_x, second_y);
 }
 
-static void createGraphTrioThreeYs(struct Graph *graph, int eastern_node_x, int western_node_x, int first_y,
-                                   int second_y, int third_y)
+static void createGraphTrioThreeYs(struct Graph *graph, int eastern_node_x, int western_node_x, int east_node_x,
+                                   int west_node_x, int first_y, int second_y, int third_y)
 {
     int y = ((first_y + second_y + third_y) / 3);
     establishEasternAndWesternNodeForTrioObstacles(graph, eastern_node_x, western_node_x, y);
-    addNodesForXBordersAndYValue(graph, graph->eastern_node, graph->western_node, eastern_node_x, western_node_x, first_y);
-    addNodesForXBordersAndYValue(graph, graph->eastern_node, graph->western_node, eastern_node_x, western_node_x, second_y);
+    addNodesForXBordersAndYValue(graph, graph->eastern_node, graph->western_node, east_node_x, west_node_x, first_y);
+    addNodesForXBordersAndYValue(graph, graph->eastern_node, graph->western_node, east_node_x, west_node_x, second_y);
 }
 
 static void establishGraphForTrioObstacles(struct Graph *graph, struct Obstacle *eastern_obstacle,
@@ -720,6 +722,8 @@ static void establishGraphForTrioObstacles(struct Graph *graph, struct Obstacle 
 {
     struct Coordinates *eastern_point_of_eastern_obstacle = Obstacle_retrieveEasternPointOf(eastern_obstacle);
     struct Coordinates *western_point_of_western_obstacle = Obstacle_retrieveWesternPointOf(western_obstacle);
+    int east_node_x = eastern_point_of_eastern_obstacle->x;
+    int west_node_x = western_point_of_western_obstacle->x;
     int eastern_node_x = Coordinates_computeMeanX(map->south_eastern_table_corner, eastern_point_of_eastern_obstacle);
     int western_node_x = Coordinates_computeMeanX(map->south_western_table_corner, western_point_of_western_obstacle);
     Coordinates_delete(eastern_point_of_eastern_obstacle);
@@ -752,7 +756,7 @@ static void establishGraphForTrioObstacles(struct Graph *graph, struct Obstacle 
 
 
     enum CardinalDirection northern_obstacle_orientation = northern_obstacle->orientation;
-    enum CardinalDirection middle_obstacle_orientation = middle_x_obstacle->orientation;
+    enum CardinalDirection middle_obstacle_orientation = middle_y_obstacle->orientation;
     enum CardinalDirection southern_obstacle_orientation = southern_obstacle->orientation;
 
     int middle_y;
@@ -760,82 +764,87 @@ static void establishGraphForTrioObstacles(struct Graph *graph, struct Obstacle 
     if(!northern_overlaps_middle && !southern_overlaps_middle) {
 
         if(middle_obstacle_orientation == NORTH) {
-            createGraphTrioOneY(graph, eastern_node_x, western_node_x, y_between_northern_middle);
+            createGraphTrioOneY(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, y_between_northern_middle);
         } else if(middle_obstacle_orientation == SOUTH) {
-            createGraphTrioOneY(graph, eastern_node_x, western_node_x, y_between_middle_southern);
+            createGraphTrioOneY(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, y_between_middle_southern);
         } else if(middle_obstacle_orientation == CENTER) {
-            createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, y_between_northern_middle, y_between_middle_southern);
+            createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, y_between_northern_middle,
+                                 y_between_middle_southern);
         }
     } else if(northern_overlaps_middle && !southern_overlaps_middle) {
         middle_y = computeOptimalYValueForDuoOverlappingXObstacles(graph, middle_y_obstacle, southern_obstacle, map);
 
         if(southern_obstacle_orientation == SOUTH) {
-            createGraphTrioOneY(graph, eastern_node_x, western_node_x, navigable_south_y);
+            createGraphTrioOneY(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, navigable_south_y);
         } else if(northern_obstacle_orientation == NORTH || middle_obstacle_orientation == NORTH) {
-            createGraphTrioOneY(graph, eastern_node_x, western_node_x, navigable_north_y);
+            createGraphTrioOneY(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, navigable_north_y);
         } else if(northern_obstacle_orientation == SOUTH || middle_obstacle_orientation == SOUTH) {
             if(southern_obstacle_orientation == CENTER && south_is_navigable) {
-                createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, navigable_south_y, middle_y);
+                createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, navigable_south_y, middle_y);
             } else {
-                createGraphTrioOneY(graph, eastern_node_x, western_node_x, middle_y);
+                createGraphTrioOneY(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, middle_y);
             }
         } else if(northern_obstacle_orientation == CENTER && middle_obstacle_orientation == CENTER) {
             if(north_is_navigable && (south_is_navigable && southern_obstacle_orientation == CENTER)) {
-                createGraphTrioThreeYs(graph, eastern_node_x, western_node_x, navigable_north_y, middle_y, navigable_north_y);
+                createGraphTrioThreeYs(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, navigable_north_y, middle_y,
+                                       navigable_north_y);
             } else if(!north_is_navigable && (south_is_navigable && southern_obstacle_orientation == CENTER)) {
-                createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, middle_y, navigable_south_y);
+                createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, middle_y, navigable_south_y);
             } else if(north_is_navigable && !(south_is_navigable && southern_obstacle_orientation == CENTER)) {
-                createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, navigable_north_y, middle_y);
+                createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, navigable_north_y, middle_y);
             } else if(!north_is_navigable && !(south_is_navigable && southern_obstacle_orientation == CENTER)) {
-                createGraphTrioOneY(graph, eastern_node_x, western_node_x, middle_y);
+                createGraphTrioOneY(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, middle_y);
             }
         }
     } else if(!northern_overlaps_middle && southern_overlaps_middle) {
         middle_y = computeOptimalYValueForDuoOverlappingXObstacles(graph, northern_obstacle, middle_y_obstacle, map);
 
         if(northern_obstacle_orientation == NORTH) {
-            createGraphTrioOneY(graph, eastern_node_x, western_node_x, navigable_north_y);
+            createGraphTrioOneY(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, navigable_north_y);
         } else if(middle_obstacle_orientation == SOUTH || southern_obstacle_orientation == SOUTH) {
-            createGraphTrioOneY(graph, eastern_node_x, western_node_x, navigable_south_y);
+            createGraphTrioOneY(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, navigable_south_y);
         } else if(middle_obstacle_orientation == NORTH || southern_obstacle_orientation == NORTH) {
             if(northern_obstacle_orientation == CENTER && north_is_navigable) {
-                createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, navigable_north_y, middle_y);
+                createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, navigable_north_y, middle_y);
             } else {
-                createGraphTrioOneY(graph, eastern_node_x, western_node_x, middle_y);
+                createGraphTrioOneY(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, middle_y);
             }
         } else if(middle_obstacle_orientation == CENTER && southern_obstacle_orientation == CENTER) {
             if(south_is_navigable && (north_is_navigable && northern_obstacle_orientation == CENTER)) {
-                createGraphTrioThreeYs(graph, eastern_node_x, western_node_x, navigable_north_y, middle_y, navigable_south_y);
+                createGraphTrioThreeYs(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, navigable_north_y, middle_y,
+                                       navigable_south_y);
             } else if(!south_is_navigable && (north_is_navigable && northern_obstacle_orientation == CENTER)) {
-                createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, navigable_north_y, middle_y);
+                createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, navigable_north_y, middle_y);
             } else if(south_is_navigable && !(north_is_navigable && northern_obstacle_orientation == CENTER)) {
-                createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, middle_y, navigable_south_y);
+                createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, middle_y, navigable_south_y);
             } else if(!south_is_navigable && !(north_is_navigable && northern_obstacle_orientation == CENTER)) {
-                createGraphTrioOneY(graph, eastern_node_x, western_node_x, middle_y);
+                createGraphTrioOneY(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, middle_y);
             }
         }
     } else if(northern_overlaps_middle && southern_overlaps_middle) {
         if(northern_obstacle_orientation == NORTH || middle_obstacle_orientation == NORTH
            || southern_obstacle_orientation == NORTH) {
-            createGraphTrioOneY(graph, eastern_node_x, western_node_x, navigable_north_y);
+            createGraphTrioOneY(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, navigable_north_y);
         } else if(northern_obstacle_orientation == SOUTH || middle_obstacle_orientation == SOUTH
                   || southern_obstacle_orientation == SOUTH) {
-            createGraphTrioOneY(graph, eastern_node_x, western_node_x, navigable_south_y);
+            createGraphTrioOneY(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, navigable_south_y);
         } else if(northern_obstacle_orientation == CENTER && middle_obstacle_orientation == CENTER
                   && southern_obstacle_orientation == CENTER) {
             if(north_is_navigable && south_is_navigable) {
-                createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, navigable_north_y, navigable_south_y);
+                createGraphTrioTwoYs(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, navigable_north_y,
+                                     navigable_south_y);
             } else if(north_is_navigable && !south_is_navigable) {
-                createGraphTrioOneY(graph, eastern_node_x, western_node_x, navigable_north_y);
+                createGraphTrioOneY(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, navigable_north_y);
             } else if(!north_is_navigable && south_is_navigable) {
-                createGraphTrioOneY(graph, eastern_node_x, western_node_x, navigable_south_y);
+                createGraphTrioOneY(graph, eastern_node_x, western_node_x, east_node_x, west_node_x, navigable_south_y);
             }
         }
     }
 }
 
-void Graph_updateForMap(struct Graph *graph, struct Map* map)
+struct Graph *Graph_generateForMap(struct Map* map)
 {
+    struct Graph *graph = Graph_new();
     int number_of_obstacle = Map_fetchNumberOfObstacles(map);
 
     struct Obstacle *first;
@@ -916,4 +925,6 @@ void Graph_updateForMap(struct Graph *graph, struct Map* map)
             break;
 
     };
+
+    return graph;
 }
