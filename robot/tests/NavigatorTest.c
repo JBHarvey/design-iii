@@ -58,6 +58,7 @@ Test(Navigator, creation_destruction
      , .fini = teardown_Navigator)
 {
     cr_assert(navigator->navigable_map == NULL);
+    cr_assert(navigator->trajectory_last_command->theta == 0);
     cr_assert(navigator->was_oriented_before_last_command == 0);
 }
 

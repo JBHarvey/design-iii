@@ -158,7 +158,6 @@ void RobotBehaviors_appendDrawingTrajectoryBehaviors(struct Robot *robot, struct
 {
     struct Behavior *planning_behavior = fetchLastBehavior(robot);
 
-    void (*navigationAction)(struct Robot *) = &Navigator_navigateRobotTowardsGoal;
     void (*computeTrajectoryStartAngle)(struct Robot *) = &Navigator_computeTrajectoryStartAngle;
     struct Flags *planned_trajectory_received_by_station = Flags_irrelevant();
     Flags_setPlannedTrajectoryReceivedByStation(planned_trajectory_received_by_station, 1);
