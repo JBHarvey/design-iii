@@ -21,6 +21,7 @@ struct Navigator *Navigator_new(void)
     int new_oriented_before_last_command_value = 0;
     struct CoordinatesSequence *new_planned_trajectory = NULL;
     struct Navigator *pointer =  malloc(sizeof(struct Navigator));
+    struct Angle *new_trajectory_start_angle = Angle_new(0);
 
     command_timer = Timer_new();
 
@@ -54,6 +55,8 @@ void Navigator_delete(struct Navigator *navigator)
         deletePlannedTrajectoryIfExistant(navigator);
 
         Graph_delete(navigator->graph);
+        Timer_delete(command_timer);
+        Angle_delete(navigator->trajectory_start_angle);
 
         free(navigator);
     }
@@ -231,7 +234,7 @@ static void sendSpeedsCommand(struct Robot * robot, int angular_distance_to_targ
     }
 }
 
-static void sendRotationCommand(struct Robot * robot, int value)
+static void sendRotationCommand(struct Robot *robot, int value)
 {
     if(Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS)) {
         int angular_tolerance = (robot->current_state->flags->drawing) ? THETA_TOLERANCE_DRAWING : THETA_TOLERANCE_MOVING;

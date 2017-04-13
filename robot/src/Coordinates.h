@@ -52,4 +52,5 @@ void Coordinates_scaleOf(struct Coordinates *toScale, int scale_factor);
 
 int Coordinates_computeMeanX(struct Coordinates *a, struct Coordinates *b);
 int Coordinates_computeMeanY(struct Coordinates *a, struct Coordinates *b);
+struct Angle *Coordinates_angleBetween(struct Coordinates *a, struct Coordinates *b);
 #endif // COORDINATES_H_
