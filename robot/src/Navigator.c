@@ -201,12 +201,12 @@ static void sendSpeedsCommand(struct Robot * robot, int angular_distance_to_targ
             int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->y),
                                                angular_tolerance);
             y = speed;
-            x = correction * correction_factor * -1;
+            x = correction * correction_factor;
         } else if(angular_distance_to_south < angular_tolerance) {
             int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->y),
                                                angular_tolerance);
             y = -1 * speed;
-            x = correction * correction_factor;
+            x = correction * correction_factor * -1;
         } else {
             int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->x),
                                                angular_tolerance);
