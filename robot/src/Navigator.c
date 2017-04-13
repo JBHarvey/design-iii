@@ -7,6 +7,9 @@
 const int STM_CLOCK_TIME_IN_MS = 18;
 struct Timer *command_timer;
 
+double current_trajectory_m;
+double current_trajectory_p;
+
 static void resetGraph(struct Navigator *navigator)
 {
     Graph_delete(navigator->graph);
@@ -173,7 +176,7 @@ static int isMovingTowardsXAxis(int angle_to_target, int angular_tolerance)
     }
 }
 
-static void sendSpeedsCommand(struct Robot * robot, int angular_distance_to_target, int angle_to_target)
+static void sendSpeedsCommand(struct Robot * robot, int angular_distance_to_target, int angle_to_target, int correction)
 {
     if(Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS)) {
         int x = 0;
@@ -187,18 +190,22 @@ static void sendSpeedsCommand(struct Robot * robot, int angular_distance_to_targ
             int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->x),
                                                angular_tolerance);
             x = speed;
+            y = correction;
         } else if(angular_distance_to_north < angular_tolerance) {
             int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->y),
                                                angular_tolerance);
             y = speed;
+            x = correction;
         } else if(angular_distance_to_south < angular_tolerance) {
             int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->y),
                                                angular_tolerance);
             y = -1 * speed;
+            x = correction;
         } else {
             int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->x),
                                                angular_tolerance);
             x = -1 * speed;
+            y = correction;
         }
 
         struct Command_Speeds speeds_command = {
@@ -261,6 +268,13 @@ void Navigator_stopMovement(struct Robot * robot)
     Timer_reset(command_timer);
 }
 
+static int calculateDistanceFromTrajectory(int robot_x, int robot_y)
+{
+    int distance = (int)(fabs((current_trajectory_m * (double) robot_x) - robot_y + current_trajectory_p) /
+                         sqrt(1 + pow(current_trajectory_m, 2)));
+    return distance;
+}
+
 void Navigator_navigateRobotTowardsGoal(struct Robot * robot)
 {
     struct Coordinates *goal_coordinates =
@@ -285,11 +299,24 @@ void Navigator_navigateRobotTowardsGoal(struct Robot * robot)
 
         if(was_oriented) {
             int distance_to_target = Coordinates_distanceBetween(current_pose->coordinates, goal_coordinates);
-            sendSpeedsCommand(robot, distance_to_target, angle_between_robot_and_target);
+            int distance_from_trajectory = calculateDistanceFromTrajectory(current_pose->coordinates->x,
+                                           current_pose->coordinates->y);
+
+            if(angle_between_robot_and_target < 0) {
+                distance_from_trajectory *= -2;
+            }
+
+            sendSpeedsCommand(robot, distance_to_target, angle_between_robot_and_target, distance_from_trajectory);
         } else if(!was_oriented) {
             Navigator_stopMovement(robot);
         }
     }
+}
+
+static void setCurrentTrajectoryEquation(int goal_x, int goal_y, int robot_x, int robot_y)
+{
+    current_trajectory_m = (double)(goal_y - robot_y) / (double)(goal_x - robot_x);
+    current_trajectory_p = (double) goal_y - (current_trajectory_m * (double) goal_x);
 }
 
 void Navigator_orientRobotTowardsGoal(struct Robot * robot)
@@ -301,6 +328,11 @@ void Navigator_orientRobotTowardsGoal(struct Robot * robot)
                                          robot->current_behavior->first_child->entry_conditions->goal_state->pose->angle->theta);
     struct Angle *current_angle = robot->current_state->pose->angle;
     int angular_distance_to_goal = abs(Angle_smallestAngleBetween(orientation_goal, current_angle));
+
+    setCurrentTrajectoryEquation(robot->current_behavior->first_child->entry_conditions->goal_state->pose->coordinates->x,
+                                 robot->current_behavior->first_child->entry_conditions->goal_state->pose->coordinates->y,
+                                 robot->current_state->pose->coordinates->x,
+                                 robot->current_state->pose->coordinates->y);
 
     if(angular_distance_to_goal > angular_tolerance) {
         enum RotationDirection direction = Angle_fetchOptimalRotationDirection(orientation_goal, current_angle);
