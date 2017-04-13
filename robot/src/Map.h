@@ -47,4 +47,6 @@ struct Obstacle *Map_retrieveLastOverlappingObstacle(struct Map *map);
 
 int Map_isCoordinateFree(struct Map *map, struct Coordinates *coordinates);
 void Map_createDrawingTrajectory(struct Map *map, struct ManchesterCode *manchester_code, struct CoordinatesSequence *coordinates_sequence);
+struct Coordinates *Map_retrieveSafeZone(struct Map *map);
+
 #endif // MAP_H_

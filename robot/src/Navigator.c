@@ -634,23 +634,23 @@ void Navigator_planDrawing(struct Robot * robot)
 
 void Navigator_planRisePenBeforeGoingToAntennaStop(struct Robot * robot)
 {
-    void (*action)(struct Robot *) = &Navigator_planTowardsAntennaStop;
+    void (*action)(struct Robot *) = &Navigator_planTowardsSafeZone;
     RobotBehavior_appendRisePenBehaviorWithChildAction(robot, action);
 }
 
-void Navigator_planTowardsAntennaStop(struct Robot * robot)
+void Navigator_planTowardsSafeZone(struct Robot * robot)
 {
     deletePlannedTrajectoryIfExistant(robot->navigator);
     struct Coordinates *current_coordinates = robot->current_state->pose->coordinates;
-    struct Coordinates *antenna_stop_coordinates = robot->navigator->navigable_map->antenna_zone_stop;
-    struct CoordinatesSequence *antenna_stop_trajectory = CoordinatesSequence_new(current_coordinates);
-    CoordinatesSequence_append(antenna_stop_trajectory, antenna_stop_coordinates);
+    struct Coordinates *safe_zone = Map_retrieveSafeZone(robot->navigator->navigable_map);
+    struct CoordinatesSequence *safe_zone_trajectory = CoordinatesSequence_new(current_coordinates);
+    CoordinatesSequence_append(safe_zone_trajectory, safe_zone);
 
-    robot->navigator->planned_trajectory = antenna_stop_trajectory;
+    robot->navigator->planned_trajectory = safe_zone_trajectory;
 
     RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(robot);
     void (*planStopMotionForEndOfCycle)(struct Robot *) = &Navigator_planStopMotionForEndOfCycle;
-    RobotBehaviors_appendTrajectoryBehaviors(robot, antenna_stop_trajectory, planStopMotionForEndOfCycle);
+    RobotBehaviors_appendTrajectoryBehaviors(robot, safe_zone_trajectory, planStopMotionForEndOfCycle);
 }
 
 void Navigator_planStopMotionForEndOfCycle(struct Robot * robot)
@@ -673,7 +673,7 @@ void Navigator_planLightingRedLedUntilNewCycle(struct Robot * robot)
 
 void Navigator_planUpdateMapForNewCycle(struct Robot * robot)
 {
-    void(*action)(struct Robot *) = &Navigator_planOrientationTowardsAntenna;
+    void(*action)(struct Robot *) = &Navigator_planTowardsAntennaMiddle;
     RobotBehavior_appendUpdateNavigableMapBehaviorWithChildAction(robot, action);
 }
 

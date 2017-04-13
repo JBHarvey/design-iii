@@ -1474,12 +1474,12 @@ Test(RobotBehaviors,
 }
 
 Test(RobotBehaviors,
-     given_aBehaviorWithUpdateMapForNewCycleAction_when_behaviorActs_then_theLastBehaviorHasAPlanOrientTowardsAntennaAction
+     given_aBehaviorWithUpdateMapForNewCycleAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsAntennaMiddle
      , .init = setup_robot
      , .fini = teardown_robot)
 {
     assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planUpdateMapForNewCycle,
-            &Navigator_planOrientationTowardsAntenna);
+            &Navigator_planTowardsAntennaMiddle);
 }
 
 /*END OF BEHAVIORS*/
