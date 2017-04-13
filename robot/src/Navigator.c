@@ -202,6 +202,8 @@ static void sendSpeedsCommand(struct Robot * robot, int angular_distance_to_targ
 
             if(alignment_correction_rotation == ANTICLOCKWISE) {
                 x *= -1;
+            } else if(alignment_correction_rotation == STOP_TURNING) {
+                x = 0;
             }
 
             int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->y),
@@ -210,8 +212,10 @@ static void sendSpeedsCommand(struct Robot * robot, int angular_distance_to_targ
         } else if(angular_distance_to_south < angular_tolerance) {
             x = horizontal_correction;
 
-            if(alignment_correction_rotation == CLOCKWISE) {
+            if(alignment_correction_rotation == ANTICLOCKWISE) {
                 x *= -1;
+            } else if(alignment_correction_rotation == STOP_TURNING) {
+                x = 0;
             }
 
             int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->y),
