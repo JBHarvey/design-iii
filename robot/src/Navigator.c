@@ -322,11 +322,6 @@ void Navigator_orientRobotTowardsGoal(struct Robot * robot)
     struct Angle *current_angle = robot->current_state->pose->angle;
     int angular_distance_to_goal = abs(Angle_smallestAngleBetween(orientation_goal, current_angle));
 
-    setCurrentTrajectoryEquation(robot->current_behavior->first_child->entry_conditions->goal_state->pose->coordinates->x,
-                                 robot->current_behavior->first_child->entry_conditions->goal_state->pose->coordinates->y,
-                                 robot->current_state->pose->coordinates->x,
-                                 robot->current_state->pose->coordinates->y);
-
     if(angular_distance_to_goal > angular_tolerance) {
         enum RotationDirection direction = Angle_fetchOptimalRotationDirection(orientation_goal, current_angle);
 
