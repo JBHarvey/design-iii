@@ -291,9 +291,15 @@ void Navigator_navigateRobotTowardsGoal(struct Robot * robot)
     int angle_between_robot_and_target = Pose_computeAngleBetween(current_pose, goal_coordinates);
     int was_oriented = robot->navigator->was_oriented_before_last_command;
     int angular_tolerance = (robot->current_state->flags->drawing) ? THETA_TOLERANCE_DRAWING : THETA_TOLERANCE_MOVING;
-    int current_speed = (isMovingTowardsXAxis(angle_between_robot_and_target,
-                         angular_tolerance)) ? robot->wheels->translation_data_speed->x :
-                        robot->wheels->translation_data_speed->y;
+    int is_moving_towards_x_axis = isMovingTowardsXAxis(angle_between_robot_and_target, angular_tolerance);
+    int current_speed;
+
+    if(is_moving_towards_x_axis) {
+        current_speed = robot->wheels->translation_data_speed->x;
+    } else {
+        current_speed = robot->wheels->translation_data_speed->y;
+    }
+
     int is_oriented = Navigator_isAngleWithinCapTolerance(angle_between_robot_and_target, current_speed, angular_tolerance);
     resetPlannedTrajectoryFlagsIfNecessary(robot);
 

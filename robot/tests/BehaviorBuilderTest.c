@@ -366,6 +366,31 @@ Test(BehaviorBuilder,
     Behavior_delete(built_behavior);
 }
 
+Test(BehaviorBuilder,
+     given__when_buildingABehaviorWithEntryForDrawingTrajectory_then_theThetaToleranceHaveMaxValuesAndItsFlagsAreIrrelevantWithDrawingXAndYTolerance)
+{
+    struct Flags *irrelevant_flags = Flags_irrelevant();
+    struct Behavior *built_behavior = BehaviorBuilder_build(
+                                          BehaviorBuilder_withFreeEntryForDrawingTrajectory(
+                                                  BehaviorBuilder_end()));
+
+    int are_equal = validate_behavior_has_parameters(
+                        built_behavior,
+                        DEFAULT_GOAL_X,
+                        DEFAULT_GOAL_Y,
+                        DEFAULT_GOAL_THETA,
+                        X_TOLERANCE_DRAWING,
+                        Y_TOLERANCE_DRAWING,
+                        THETA_TOLERANCE_MAX,
+                        irrelevant_flags,
+                        &Behavior_idle);
+
+    cr_assert(are_equal);
+
+    Flags_delete(irrelevant_flags);
+    Behavior_delete(built_behavior);
+}
+
 Test(BehaviorBuilder, given__when_buildingABehaviorWithFreeFlagsEntry_then_itsFlagsEntryConditionAreIrrelevant)
 {
     struct Flags *irrelevant_flags = Flags_irrelevant();
