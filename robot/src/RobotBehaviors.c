@@ -80,24 +80,50 @@ void RobotBehaviors_appendSendPlannedTrajectoryWithFreeEntry(struct Robot *robot
     Behavior_delete(new_behavior);
 }
 
+void RobotBehaviors_appendComputeTrajectoryStartAngle(struct Robot *robot)
+{
+    struct Behavior *last_behavior = fetchLastBehavior(robot);
+
+    void (*computeTrajectoryStartAngle)(struct Robot *) = &Navigator_computeTrajectoryStartAngle;
+    struct Behavior *new_behavior = BehaviorBuilder_build(
+                                        BehaviorBuilder_withAction(computeTrajectoryStartAngle,
+                                                BehaviorBuilder_withFreeEntry(
+                                                        BehaviorBuilder_end())));
+
+    Behavior_addChild(last_behavior, new_behavior);
+    Behavior_delete(new_behavior);
+}
+
+static void appendFreeEntryNavigationBehavior(struct Behavior *behavior)
+{
+    void (*navigationAction)(struct Robot *) = &Navigator_navigateRobotTowardsGoal;
+    struct Behavior *free_entry_navigation_behavior = BehaviorBuilder_build(
+                BehaviorBuilder_withFreeEntry(
+                    BehaviorBuilder_withAction(navigationAction,
+                            BehaviorBuilder_end())));
+    Behavior_addChild(behavior, free_entry_navigation_behavior);
+    Behavior_delete(free_entry_navigation_behavior);
+}
+
 void RobotBehaviors_appendTrajectoryBehaviors(struct Robot *robot, struct CoordinatesSequence *trajectory,
         void (*last_action)(struct Robot *))
 {
     struct Behavior *planning_behavior = fetchLastBehavior(robot);
 
-    void (*navigationAction)(struct Robot *) = &Navigator_navigateRobotTowardsGoal;
+    void (*computeTrajectoryStartAngle)(struct Robot *) = &Navigator_computeTrajectoryStartAngle;
     struct Flags *planned_trajectory_received_by_station = Flags_irrelevant();
     Flags_setPlannedTrajectoryReceivedByStation(planned_trajectory_received_by_station, 1);
 
     struct Behavior *first_trajectory_behavior = BehaviorBuilder_build(
-                BehaviorBuilder_withFlags(planned_trajectory_received_by_station,
-                                          BehaviorBuilder_withFreePoseEntry(
-                                                  BehaviorBuilder_withAction(navigationAction,
-                                                          BehaviorBuilder_end()))));
+                BehaviorBuilder_withAction(computeTrajectoryStartAngle,
+                                           BehaviorBuilder_withFlags(planned_trajectory_received_by_station,
+                                                   BehaviorBuilder_withFreePoseEntry(
+                                                           BehaviorBuilder_end()))));
     Behavior_addChild(planning_behavior, first_trajectory_behavior);
 
-    struct Behavior *trajectory_behavior = planning_behavior->first_child;
+    appendFreeEntryNavigationBehavior(first_trajectory_behavior);
 
+    struct Behavior *trajectory_behavior = first_trajectory_behavior->first_child;
     int goal_coordinates_x;
     int goal_coordinates_y;
 
@@ -106,15 +132,19 @@ void RobotBehaviors_appendTrajectoryBehaviors(struct Robot *robot, struct Coordi
         trajectory = trajectory->next_element;
         goal_coordinates_x = trajectory->coordinates->x;
         goal_coordinates_y = trajectory->coordinates->y;
-        struct Behavior *trajectory_behavior_child = BehaviorBuilder_build(
-                    BehaviorBuilder_withGoalX(goal_coordinates_x,
-                                              BehaviorBuilder_withGoalY(goal_coordinates_y,
-                                                      BehaviorBuilder_withFreeEntryForTrajectory(
-                                                              BehaviorBuilder_withAction(navigationAction,
-                                                                      BehaviorBuilder_end())))));
-        Behavior_addChild(trajectory_behavior, trajectory_behavior_child);
-        trajectory_behavior = trajectory_behavior->first_child;
-        Behavior_delete(trajectory_behavior_child);
+
+        struct Behavior *start_angle_behavior = BehaviorBuilder_build(
+                BehaviorBuilder_withAction(computeTrajectoryStartAngle,
+                                           BehaviorBuilder_withGoalX(goal_coordinates_x,
+                                                   BehaviorBuilder_withGoalY(goal_coordinates_y,
+                                                           BehaviorBuilder_withFreeEntryForTrajectory(
+                                                                   BehaviorBuilder_end())))));
+        Behavior_addChild(trajectory_behavior, start_angle_behavior);
+        appendFreeEntryNavigationBehavior(start_angle_behavior);
+
+        trajectory_behavior = start_angle_behavior->first_child;
+
+        Behavior_delete(start_angle_behavior);
     }
 
     trajectory_behavior->first_child->action = last_action;
@@ -128,21 +158,20 @@ void RobotBehaviors_appendDrawingTrajectoryBehaviors(struct Robot *robot, struct
 {
     struct Behavior *planning_behavior = fetchLastBehavior(robot);
 
-    void (*navigationAction)(struct Robot *) = &Navigator_navigateRobotTowardsGoal;
+    void (*computeTrajectoryStartAngle)(struct Robot *) = &Navigator_computeTrajectoryStartAngle;
     struct Flags *planned_trajectory_received_by_station = Flags_irrelevant();
     Flags_setPlannedTrajectoryReceivedByStation(planned_trajectory_received_by_station, 1);
 
     struct Behavior *first_trajectory_behavior = BehaviorBuilder_build(
                 BehaviorBuilder_withFlags(planned_trajectory_received_by_station,
                                           BehaviorBuilder_withFreePoseEntry(
-                                                  BehaviorBuilder_withTolerancesX(X_TOLERANCE_DRAWING,
-                                                          BehaviorBuilder_withTolerancesY(Y_TOLERANCE_DRAWING,
-                                                                  BehaviorBuilder_withTolerancesTheta(THETA_TOLERANCE_DRAWING,
-                                                                          BehaviorBuilder_withAction(navigationAction,
-                                                                                  BehaviorBuilder_end())))))));
+                                                  BehaviorBuilder_withAction(computeTrajectoryStartAngle,
+                                                          BehaviorBuilder_end()))));
     Behavior_addChild(planning_behavior, first_trajectory_behavior);
 
-    struct Behavior *trajectory_behavior = planning_behavior->first_child;
+    appendFreeEntryNavigationBehavior(first_trajectory_behavior);
+
+    struct Behavior *trajectory_behavior = first_trajectory_behavior->first_child;
 
     int goal_coordinates_x;
     int goal_coordinates_y;
@@ -152,18 +181,20 @@ void RobotBehaviors_appendDrawingTrajectoryBehaviors(struct Robot *robot, struct
         trajectory = trajectory->next_element;
         goal_coordinates_x = trajectory->coordinates->x;
         goal_coordinates_y = trajectory->coordinates->y;
-        struct Behavior *trajectory_behavior_child = BehaviorBuilder_build(
-                    BehaviorBuilder_withGoalX(goal_coordinates_x,
-                                              BehaviorBuilder_withGoalY(goal_coordinates_y,
-                                                      BehaviorBuilder_withFreeEntryForTrajectory(
-                                                              BehaviorBuilder_withTolerancesX(X_TOLERANCE_DRAWING,
-                                                                      BehaviorBuilder_withTolerancesY(Y_TOLERANCE_DRAWING,
-                                                                              BehaviorBuilder_withTolerancesTheta(THETA_TOLERANCE_DRAWING,
-                                                                                      BehaviorBuilder_withAction(navigationAction,
-                                                                                              BehaviorBuilder_end()))))))));
-        Behavior_addChild(trajectory_behavior, trajectory_behavior_child);
-        trajectory_behavior = trajectory_behavior->first_child;
-        Behavior_delete(trajectory_behavior_child);
+
+        struct Behavior *start_angle_behavior = BehaviorBuilder_build(
+                BehaviorBuilder_withAction(computeTrajectoryStartAngle,
+                                           BehaviorBuilder_withGoalX(goal_coordinates_x,
+                                                   BehaviorBuilder_withGoalY(goal_coordinates_y,
+                                                           BehaviorBuilder_withFreeEntryForDrawingTrajectory(
+                                                                   BehaviorBuilder_end())))));
+        Behavior_addChild(trajectory_behavior, start_angle_behavior);
+
+        appendFreeEntryNavigationBehavior(start_angle_behavior);
+
+        trajectory_behavior = start_angle_behavior->first_child;
+
+        Behavior_delete(start_angle_behavior);
     }
 
     trajectory_behavior->first_child->action = last_action;

@@ -14,6 +14,7 @@ struct Navigator {
     struct Graph *graph;
     struct CoordinatesSequence *planned_trajectory;
     int was_oriented_before_last_command;
+    struct Angle *trajectory_start_angle;
 };
 
 struct Navigator *Navigator_new(void);
@@ -23,6 +24,7 @@ void Navigator_updateNavigableMap(struct Robot *robot);
 
 int Navigator_isAngleWithinCapTolerance(int angle, int current_speed, int angular_tolerance);
 void Navigator_stopMovement(struct Robot *robot);
+void Navigator_computeTrajectoryStartAngle(struct Robot *robot);
 void Navigator_navigateRobotTowardsGoal(struct Robot *robot);
 void Navigator_orientRobotTowardsGoal(struct Robot *robot);
 

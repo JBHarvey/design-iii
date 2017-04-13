@@ -178,3 +178,13 @@ void Coordinates_scaleOf(struct Coordinates *toScale, int scale_factor)
     toScale->x *= scale_factor;
     toScale->y *= scale_factor;
 }
+
+struct Angle *Coordinates_angleBetween(struct Coordinates *a, struct Coordinates *b)
+{
+    int delta_x = b->x - a->x;
+    int delta_y = b->y - a->y;
+    double base_angle = atan2(delta_y, delta_x);
+    int theta = (int)(base_angle / ANGLE_BASE_UNIT);
+    struct Angle *angle = Angle_new(theta);
+    return angle;
+}

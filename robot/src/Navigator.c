@@ -20,6 +20,7 @@ struct Navigator *Navigator_new(void)
     struct Graph *new_graph = Graph_new();
     int new_oriented_before_last_command_value = 0;
     struct CoordinatesSequence *new_planned_trajectory = NULL;
+    struct Angle *new_trajectory_start_angle = Angle_new(0);
     struct Navigator *pointer =  malloc(sizeof(struct Navigator));
 
     command_timer = Timer_new();
@@ -29,6 +30,7 @@ struct Navigator *Navigator_new(void)
     pointer->graph = new_graph;
     pointer->was_oriented_before_last_command = new_oriented_before_last_command_value;
     pointer->planned_trajectory = new_planned_trajectory;
+    pointer->trajectory_start_angle = new_trajectory_start_angle;
 
     return pointer;
 }
@@ -54,6 +56,8 @@ void Navigator_delete(struct Navigator *navigator)
         deletePlannedTrajectoryIfExistant(navigator);
 
         Graph_delete(navigator->graph);
+        Timer_delete(command_timer);
+        Angle_delete(navigator->trajectory_start_angle);
 
         free(navigator);
     }
@@ -156,11 +160,11 @@ static int convertAngleToSpeed(int theta, int angular_tolerance)
     return speed;
 }
 
-static int isMovingTowardsXAxis(int angle_to_target, int angular_tolerance)
+static int isMovingTowardsXAxis(int relative_angle_to_target, int angular_tolerance)
 {
-    int angular_distance_to_east = abs(angle_to_target);
-    int angular_distance_to_north = abs(HALF_PI - angle_to_target);
-    int angular_distance_to_south = abs(MINUS_HALF_PI - angle_to_target);
+    int angular_distance_to_east = abs(relative_angle_to_target);
+    int angular_distance_to_north = abs(HALF_PI - relative_angle_to_target);
+    int angular_distance_to_south = abs(MINUS_HALF_PI - relative_angle_to_target);
 
     if(angular_distance_to_east < angular_tolerance) {
         return 1;
@@ -173,47 +177,51 @@ static int isMovingTowardsXAxis(int angle_to_target, int angular_tolerance)
     }
 }
 
-static void sendSpeedsCommand(struct Robot * robot, int angular_distance_to_target, int angle_to_target, int correction)
+static void sendSpeedsCommand(struct Robot * robot, int angular_distance_to_target, int relative_angle_to_target,
+                              struct Angle *absolute_angle_target_robot)
 {
     if(Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS)) {
         int x = 0;
         int y = 0;
+        int horizontal_correction = 120;
 
         int angular_tolerance = (robot->current_state->flags->drawing) ? THETA_TOLERANCE_DRAWING : THETA_TOLERANCE_MOVING;
-        int angular_distance_to_east = abs(angle_to_target);
-        int angular_distance_to_north = abs(HALF_PI - angle_to_target);
-        int angular_distance_to_south = abs(MINUS_HALF_PI - angle_to_target);
+        int angular_distance_to_east = abs(relative_angle_to_target);
+        int angular_distance_to_north = abs(HALF_PI - relative_angle_to_target);
+        int angular_distance_to_south = abs(MINUS_HALF_PI - relative_angle_to_target);
+        enum RotationDirection alignment_correction_rotation = Angle_fetchOptimalRotationDirection(
+                    robot->navigator->trajectory_start_angle, absolute_angle_target_robot);
 
         if(angular_distance_to_east < angular_tolerance) {
             int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->x),
                                                angular_tolerance);
             x = speed;
         } else if(angular_distance_to_north < angular_tolerance) {
+
+            x = horizontal_correction;
+
+            if(alignment_correction_rotation == ANTICLOCKWISE) {
+                x *= -1;
+            } else if(alignment_correction_rotation == STOP_TURNING) {
+                x = 0;
+            }
+
             int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->y),
                                                angular_tolerance);
             y = speed;
-            struct Angle *angle = Angle_new(angle_to_target - HALF_PI);
+        } else if(angular_distance_to_south < angular_tolerance) {
+            x = horizontal_correction;
 
-            if(angle->theta < 0) {
-                x = correction * -1;
-            } else {
-                x = correction;
+            if(alignment_correction_rotation == ANTICLOCKWISE) {
+                x *= -1;
+            } else if(alignment_correction_rotation == STOP_TURNING) {
+                x = 0;
             }
 
-            Angle_delete(angle);
-        } else if(angular_distance_to_south < angular_tolerance) {
             int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->y),
                                                angular_tolerance);
             y = -1 * speed;
-            struct Angle *angle = Angle_new(angle_to_target + HALF_PI);
 
-            if(angle->theta < 0) {
-                x = correction;
-            } else {
-                x = correction * -1;
-            }
-
-            Angle_delete(angle);
         } else {
             int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->x),
                                                angular_tolerance);
@@ -231,7 +239,7 @@ static void sendSpeedsCommand(struct Robot * robot, int angular_distance_to_targ
     }
 }
 
-static void sendRotationCommand(struct Robot * robot, int value)
+static void sendRotationCommand(struct Robot *robot, int value)
 {
     if(Timer_hasTimePassed(command_timer, STM_CLOCK_TIME_IN_MS)) {
         int angular_tolerance = (robot->current_state->flags->drawing) ? THETA_TOLERANCE_DRAWING : THETA_TOLERANCE_MOVING;
@@ -246,17 +254,17 @@ static void sendRotationCommand(struct Robot * robot, int value)
     }
 }
 
-static void sendRotationCommandForNavigation(struct Robot * robot, int angle_to_target)
+static void sendRotationCommandForNavigation(struct Robot * robot, int relative_angle_to_target)
 {
     int theta;
 
-    if(angle_to_target >= 0) {
-        angle_to_target = MINUS_HALF_PI + angle_to_target;
-    } else if(angle_to_target < 0) {
-        angle_to_target = HALF_PI + angle_to_target;
+    if(relative_angle_to_target >= 0) {
+        relative_angle_to_target = MINUS_HALF_PI + relative_angle_to_target;
+    } else if(relative_angle_to_target < 0) {
+        relative_angle_to_target = HALF_PI + relative_angle_to_target;
     }
 
-    theta = angle_to_target;
+    theta = relative_angle_to_target;
 
     sendRotationCommand(robot, theta);
 }
@@ -280,36 +288,70 @@ void Navigator_stopMovement(struct Robot * robot)
     Timer_reset(command_timer);
 }
 
-void Navigator_navigateRobotTowardsGoal(struct Robot * robot)
+static struct Angle *fetchAbsoluteAngleWithGoal(struct Robot *robot)
+{
+    struct Coordinates *goal_coordinates =
+            robot->current_behavior->first_child->entry_conditions->goal_state->pose->coordinates;
+    struct Angle *current_angle = robot->navigator->trajectory_start_angle = Coordinates_angleBetween(goal_coordinates,
+                                  robot->current_state->pose->coordinates);
+    return current_angle;
+}
+
+static int fetchRelativeAngleWithGoal(struct Robot *robot)
 {
     struct Coordinates *goal_coordinates =
             robot->current_behavior->first_child->entry_conditions->goal_state->pose->coordinates;
     struct Pose *current_pose = robot->current_state->pose;
     int angle_between_robot_and_target = Pose_computeAngleBetween(current_pose, goal_coordinates);
+    return angle_between_robot_and_target;
+}
+
+void Navigator_computeTrajectoryStartAngle(struct Robot *robot)
+{
+    Angle_delete(robot->navigator->trajectory_start_angle);
+    robot->navigator->trajectory_start_angle = fetchAbsoluteAngleWithGoal(robot);
+}
+
+void Navigator_navigateRobotTowardsGoal(struct Robot * robot)
+{
+    struct Coordinates *goal_coordinates =
+            robot->current_behavior->first_child->entry_conditions->goal_state->pose->coordinates;
+    struct Pose *current_pose = robot->current_state->pose;
+    struct Angle *absolute_angle_between_target_and_robot = fetchAbsoluteAngleWithGoal(robot);
+    int relative_angle_between_robot_and_target = fetchRelativeAngleWithGoal(robot);
     int was_oriented = robot->navigator->was_oriented_before_last_command;
     int angular_tolerance = (robot->current_state->flags->drawing) ? THETA_TOLERANCE_DRAWING : THETA_TOLERANCE_MOVING;
-    int current_speed = (isMovingTowardsXAxis(angle_between_robot_and_target,
-                         angular_tolerance)) ? robot->wheels->translation_data_speed->x :
-                        robot->wheels->translation_data_speed->y;
-    int is_oriented = Navigator_isAngleWithinCapTolerance(angle_between_robot_and_target, current_speed, angular_tolerance);
+    int is_moving_towards_x_axis = isMovingTowardsXAxis(relative_angle_between_robot_and_target, angular_tolerance);
+    int current_speed;
+
+    if(is_moving_towards_x_axis) {
+        current_speed = robot->wheels->translation_data_speed->x;
+    } else {
+        current_speed = robot->wheels->translation_data_speed->y;
+    }
+
+    int is_oriented = Navigator_isAngleWithinCapTolerance(relative_angle_between_robot_and_target, current_speed,
+                      angular_tolerance);
     resetPlannedTrajectoryFlagsIfNecessary(robot);
 
     if(!is_oriented && was_oriented) {
         robot->navigator->was_oriented_before_last_command = 0;
         Navigator_stopMovement(robot);
     } else if(!is_oriented && !was_oriented) {
-        sendRotationCommandForNavigation(robot, angle_between_robot_and_target);
+        sendRotationCommandForNavigation(robot, relative_angle_between_robot_and_target);
     } else {
         robot->navigator->was_oriented_before_last_command = 1;
 
         if(was_oriented) {
             int distance_to_target = Coordinates_distanceBetween(current_pose->coordinates, goal_coordinates);
-            int correction = 0;
-            sendSpeedsCommand(robot, distance_to_target, angle_between_robot_and_target, correction);
+            sendSpeedsCommand(robot, distance_to_target, relative_angle_between_robot_and_target,
+                              absolute_angle_between_target_and_robot);
         } else if(!was_oriented) {
             Navigator_stopMovement(robot);
         }
     }
+
+    Angle_delete(absolute_angle_between_target_and_robot);
 }
 
 void Navigator_orientRobotTowardsGoal(struct Robot * robot)
