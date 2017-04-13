@@ -182,12 +182,6 @@ static void sendSpeedsCommand(struct Robot * robot, int angular_distance_to_targ
         int x = 0;
         int y = 0;
 
-        int correction_factor = 1;
-
-        if(angle_to_target < 0) {
-            correction_factor *=  -1;
-        }
-
         int angular_tolerance = (robot->current_state->flags->drawing) ? THETA_TOLERANCE_DRAWING : THETA_TOLERANCE_MOVING;
         int angular_distance_to_east = abs(angle_to_target);
         int angular_distance_to_north = abs(HALF_PI - angle_to_target);
@@ -201,12 +195,28 @@ static void sendSpeedsCommand(struct Robot * robot, int angular_distance_to_targ
             int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->y),
                                                angular_tolerance);
             y = speed;
-            x = correction * correction_factor;
+            struct Angle *angle = Angle_new(angle_to_target - HALF_PI);
+
+            if(angle->theta < 0) {
+                x = correction * -1;
+            } else {
+                x = correction;
+            }
+
+            Angle_delete(angle);
         } else if(angular_distance_to_south < angular_tolerance) {
             int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->y),
                                                angular_tolerance);
             y = -1 * speed;
-            x = correction * correction_factor * -1;
+            struct Angle *angle = Angle_new(angle_to_target + HALF_PI);
+
+            if(angle->theta < 0) {
+                x = correction;
+            } else {
+                x = correction * -1;
+            }
+
+            Angle_delete(angle);
         } else {
             int speed = convertDistanceToSpeed(angular_distance_to_target, abs(robot->wheels->translation_data_speed->x),
                                                angular_tolerance);
