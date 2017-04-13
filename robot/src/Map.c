@@ -350,3 +350,13 @@ void Map_createDrawingTrajectory(struct Map *map, struct ManchesterCode *manches
     Angle_delete(manchester_angle);
     Coordinates_delete(drawing_zone_center);
 }
+
+struct Coordinates *Map_retrieveSafeZone(struct Map *map)
+{
+    while(!Map_isCoordinateFree(map, map->antenna_zone_stop)) {
+        map->antenna_zone_stop->y -= MINIMAL_GAP;
+    }
+
+    return map->antenna_zone_stop;
+}
+
