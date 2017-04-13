@@ -306,7 +306,7 @@ void Navigator_navigateRobotTowardsGoal(struct Robot * robot)
                 distance_from_trajectory *= -2;
             }
 
-            sendSpeedsCommand(robot, distance_to_target, angle_between_robot_and_target, distance_from_trajectory);
+            sendSpeedsCommand(robot, distance_to_target, angle_between_robot_and_target, 0);
         } else if(!was_oriented) {
             Navigator_stopMovement(robot);
         }
