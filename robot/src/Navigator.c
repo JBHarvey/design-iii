@@ -7,9 +7,6 @@
 const int STM_CLOCK_TIME_IN_MS = 18;
 struct Timer *command_timer;
 
-double current_trajectory_m;
-double current_trajectory_p;
-
 static void resetGraph(struct Navigator *navigator)
 {
     Graph_delete(navigator->graph);
@@ -283,13 +280,6 @@ void Navigator_stopMovement(struct Robot * robot)
     Timer_reset(command_timer);
 }
 
-static int calculateDistanceFromTrajectory(int robot_x, int robot_y)
-{
-    int distance = (int)(fabs((current_trajectory_m * (double) robot_x) - robot_y + current_trajectory_p) /
-                         sqrt(1 + pow(current_trajectory_m, 2)));
-    return distance;
-}
-
 void Navigator_navigateRobotTowardsGoal(struct Robot * robot)
 {
     struct Coordinates *goal_coordinates =
@@ -314,21 +304,12 @@ void Navigator_navigateRobotTowardsGoal(struct Robot * robot)
 
         if(was_oriented) {
             int distance_to_target = Coordinates_distanceBetween(current_pose->coordinates, goal_coordinates);
-            //int distance_from_trajectory = calculateDistanceFromTrajectory(current_pose->coordinates->x,
-
-            //current_pose->coordinates->y);
-            int correction = 60;
+            int correction = 120;
             sendSpeedsCommand(robot, distance_to_target, angle_between_robot_and_target, correction);
         } else if(!was_oriented) {
             Navigator_stopMovement(robot);
         }
     }
-}
-
-static void setCurrentTrajectoryEquation(int goal_x, int goal_y, int robot_x, int robot_y)
-{
-    current_trajectory_m = (double)(goal_y - robot_y) / (double)(goal_x - robot_x);
-    current_trajectory_p = (double) goal_y - (current_trajectory_m * (double) goal_x);
 }
 
 void Navigator_orientRobotTowardsGoal(struct Robot * robot)
