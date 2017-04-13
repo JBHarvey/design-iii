@@ -177,7 +177,7 @@ struct Map *Map_fetchNavigableMap(struct Map *original_map, int robot_radius)
     int i;
 
     for(i = 0; i < MAXIMUM_OBSTACLE_NUMBER; ++i) {
-        new_map->obstacles[i]->radius = original_map->obstacles[i]->radius + (int)((double) robot_radius * 0.95) ;
+        new_map->obstacles[i]->radius = original_map->obstacles[i]->radius + (int)((double) robot_radius * 0.85) ;
         new_map->obstacles[i]->orientation = original_map->obstacles[i]->orientation;
         Coordinates_copyValuesFrom(new_map->obstacles[i]->coordinates, original_map->obstacles[i]->coordinates);
     }
