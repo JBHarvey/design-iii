@@ -50,7 +50,7 @@ void Navigator_planToTellReadyToDraw(struct Robot *robot);
 void Navigator_planTowardsDrawingStart(struct Robot *robot);
 void Navigator_planLowerPenBeforeDrawing(struct Robot *robot);
 void Navigator_planDrawing(struct Robot *robot);
-void Navigator_planRisePenBeforeGoingToAntennaStop(struct Robot *robot);
+void Navigator_planRisePenBeforeGoingToSafeZone(struct Robot *robot);
 void Navigator_planTowardsSafeZone(struct Robot *robot);
 void Navigator_planStopMotionForEndOfCycle(struct Robot *robot);
 void Navigator_planEndOfCycleAndSendSignal(struct Robot *robot);
