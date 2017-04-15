@@ -16,7 +16,6 @@
 #define IRRELEVANT -1
 
 // World related
-
 #define MAXIMUM_OBSTACLE_NUMBER 3
 #define NUMBER_OF_PAINTING 8
 #define THEORICAL_OBSTACLE_RADIUS 650
@@ -33,6 +32,7 @@
 #define THEORICAL_ANTENNA_ZONE_Y (THEORICAL_WORLD_HEIGHT - THEORICAL_ROBOT_RADIUS / 2)
 #define ONE_CENTIMETER_GAP 100
 #define MINIMAL_GAP 50
+#define NAVIGABLE_OBSTACLE_AJUSTMENT 0.85
 
 // Graph and pathfinding related
 #define MAX_NUMBER_OF_NODE 22
@@ -51,7 +51,6 @@
 #define ANTENNA_MARK_DISTANCE 76
 
 // Units and mesurements related
-
 #define ANGLE_BASE_UNIT 0.00001
 #define TWENTIETH_PI 15708
 #define FIFTH_PI 62832
@@ -73,7 +72,6 @@
 
 
 // Behavior related
-
 #define DEFAULT_GOAL_X 0
 #define DEFAULT_GOAL_Y 0
 #define DEFAULT_GOAL_THETA 0

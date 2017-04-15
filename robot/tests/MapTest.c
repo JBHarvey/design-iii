@@ -252,9 +252,10 @@ Test(Map, given_aMapAndARobotRadius_when_askedToFetchNavigableMap_then_theRobotR
 
     struct Map *navigable_map = Map_fetchNavigableMap(map, THEORICAL_ROBOT_RADIUS);
 
-    int expected_radius_0 = map->obstacles[0]->radius + THEORICAL_ROBOT_RADIUS;
-    int expected_radius_1 = map->obstacles[1]->radius + THEORICAL_ROBOT_RADIUS;
-    int expected_radius_2 = map->obstacles[2]->radius + THEORICAL_ROBOT_RADIUS;
+    int expected_growing = (int)((double) THEORICAL_ROBOT_RADIUS * NAVIGABLE_OBSTACLE_AJUSTMENT);
+    int expected_radius_0 = map->obstacles[0]->radius + expected_growing;
+    int expected_radius_1 = map->obstacles[1]->radius + expected_growing;
+    int expected_radius_2 = map->obstacles[2]->radius + expected_growing;
 
     cr_assert_eq(navigable_map->obstacles[0]->radius, expected_radius_0);
     cr_assert_eq(navigable_map->obstacles[1]->radius, expected_radius_1);

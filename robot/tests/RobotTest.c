@@ -356,20 +356,9 @@ void assertBehaviorIsAFreeEntrySendingPlannedTrajectory(void (*action)(struct Ro
         behavior = behavior->first_child;
     }
 
-    struct Behavior *expected = BehaviorBuilder_build(
-                                    BehaviorBuilder_withAction(sendPlannedTrajectory,
-                                            BehaviorBuilder_withFreeEntry(
-                                                    BehaviorBuilder_end())));
+    assertBehaviorHasFreeEntry(behavior);
 
-    cr_assert(Pose_haveTheSameValues(expected->entry_conditions->tolerances->pose,
-                                     behavior->entry_conditions->tolerances->pose));
-
-    cr_assert(Flags_haveTheSameValues(expected->entry_conditions->goal_state->flags,
-                                      behavior->entry_conditions->goal_state->flags));
-
-    cr_assert_eq(expected->action, behavior->action);
-
-    Behavior_delete(expected);
+    cr_assert_eq(sendPlannedTrajectory, behavior->action);
 }
 
 Test(RobotBehaviors,
@@ -429,111 +418,77 @@ Test(RobotBehaviors,
     assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsDrawingStart);
 }
 
-Test(RobotBehaviors,
-     given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theBehaviorsFirstChildHasFreeEntryAndSendsThePlannedTrajectory
-     , .init = setup_robot
-     , .fini = teardown_robot)
+void assertBehaviorIsAFreeEntryNavigation(struct Behavior *behavior)
 {
-    assertBehaviorIsAFreeEntrySendingPlannedTrajectory(&Navigator_planTowardsAntennaStop);
+    assertBehaviorHasFreeEntry(behavior);
+    void (*action)(struct Robot *) = &Navigator_navigateRobotTowardsGoal;
+    cr_assert_eq(behavior->action, action);
 }
 
-void assertBehaviorsAreAMovementChainWithDrawingTolerancesFollowingThePlannedTrajectoryAfterAction(void (*action)(
-            struct Robot *))
+struct Behavior *findBehaviorSendingPlannedTrajectoryAfterAction(void (*action)(struct Robot *))
 {
     struct Behavior *behavior = robot->current_behavior;
     behavior->action = action;
     Behavior_act(behavior, robot);
-    struct CoordinatesSequence *trajectory = robot->navigator->planned_trajectory;
 
-    // Fetches the sendPlannedTrajectory behavior
     void (*sendPlannedTrajectory) = &Robot_sendPlannedTrajectory;
 
     while(behavior->action != sendPlannedTrajectory) {
         behavior = behavior->first_child;
     }
 
-    behavior = behavior->first_child;
-
-    void (*navigationAction)(struct Robot *) = &Navigator_navigateRobotTowardsGoal;
-
-    struct Coordinates *point_in_trajectory;
-    struct Coordinates *behavior_goal_coordinates;
-
-    struct Flags *flags_planned_trajectory_received = Flags_irrelevant();
-    Flags_setPlannedTrajectoryReceivedByStation(flags_planned_trajectory_received, 1);
-
-    point_in_trajectory = trajectory->coordinates;
-    behavior_goal_coordinates = behavior->entry_conditions->goal_state->pose->coordinates;
-
-    cr_assert_eq(behavior->action, navigationAction);
-    cr_assert(Flags_haveTheSameValues(behavior->entry_conditions->goal_state->flags, flags_planned_trajectory_received));
-    cr_assert(Coordinates_haveTheSameValues(point_in_trajectory, behavior_goal_coordinates));
-    assertBehaviorHasFreePoseEntry(behavior);
-
-    do {
-        trajectory = trajectory->next_element;
-        behavior = behavior->first_child;
-        point_in_trajectory = trajectory->coordinates;
-        behavior_goal_coordinates = behavior->entry_conditions->goal_state->pose->coordinates;
-        cr_assert(Coordinates_haveTheSameValues(point_in_trajectory, behavior_goal_coordinates));
-
-        if(!CoordinatesSequence_isLast(trajectory)) {
-            cr_assert_eq(behavior->action, navigationAction);
-        }
-
-        assertBehaviorHasFreeTrajectoryEntryAndDrawingTolerances(behavior);
-    } while(!CoordinatesSequence_isLast(trajectory));
-
-    Flags_delete(flags_planned_trajectory_received);
+    return behavior;
 }
 
-void assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(void (*action)(struct Robot *))
+void assertBehaviorHasPlannedTrajectoryReceivedFlagsAndFreePoseEntry(struct Behavior *behavior)
 {
-    struct Behavior *behavior = robot->current_behavior;
-    behavior->action = action;
-    Behavior_act(behavior, robot);
-    struct CoordinatesSequence *trajectory = robot->navigator->planned_trajectory;
+    struct Flags *flags_planned_trajectory_received = Flags_irrelevant();
+    Flags_setPlannedTrajectoryReceivedByStation(flags_planned_trajectory_received, 1);
+    cr_assert(Flags_haveTheSameValues(behavior->entry_conditions->goal_state->flags, flags_planned_trajectory_received));
+    Flags_delete(flags_planned_trajectory_received);
 
-    // Fetches the sendPlannedTrajectory behavior
-    void (*sendPlannedTrajectory) = &Robot_sendPlannedTrajectory;
+    assertBehaviorHasFreePoseEntry(behavior);
+}
 
-    while(behavior->action != sendPlannedTrajectory) {
-        behavior = behavior->first_child;
-    }
+void assertBehaviorsAreANavigationAndMovementChainFollowingThePlannedTrajectoryAfterAction(void (*action)(
+            struct Robot *), void (*assertTrajectoryEntryIsCorrect)(struct Behavior *behavior))
+{
+
+    struct Behavior *behavior = findBehaviorSendingPlannedTrajectoryAfterAction(action);
+    behavior = behavior->first_child;
+
+    void (*computeTrajectoryStartAngle)(struct Robot *) = &Navigator_computeTrajectoryStartAngle;
+    cr_assert_eq(behavior->action, computeTrajectoryStartAngle);
+
+    assertBehaviorHasPlannedTrajectoryReceivedFlagsAndFreePoseEntry(behavior);
 
     behavior = behavior->first_child;
 
-    void (*navigationAction)(struct Robot *) = &Navigator_navigateRobotTowardsGoal;
+    assertBehaviorIsAFreeEntryNavigation(behavior);
 
+    struct CoordinatesSequence *trajectory = robot->navigator->planned_trajectory;
     struct Coordinates *point_in_trajectory;
     struct Coordinates *behavior_goal_coordinates;
-
-    struct Flags *flags_planned_trajectory_received = Flags_irrelevant();
-    Flags_setPlannedTrajectoryReceivedByStation(flags_planned_trajectory_received, 1);
-
-    point_in_trajectory = trajectory->coordinates;
-    behavior_goal_coordinates = behavior->entry_conditions->goal_state->pose->coordinates;
-
-    cr_assert_eq(behavior->action, navigationAction);
-    cr_assert(Flags_haveTheSameValues(behavior->entry_conditions->goal_state->flags, flags_planned_trajectory_received));
-    cr_assert(Coordinates_haveTheSameValues(point_in_trajectory, behavior_goal_coordinates));
-    assertBehaviorHasFreePoseEntry(behavior);
 
     do {
         trajectory = trajectory->next_element;
         behavior = behavior->first_child;
+
         point_in_trajectory = trajectory->coordinates;
         behavior_goal_coordinates = behavior->entry_conditions->goal_state->pose->coordinates;
+        cr_assert_eq(behavior->action, computeTrajectoryStartAngle);
         cr_assert(Coordinates_haveTheSameValues(point_in_trajectory, behavior_goal_coordinates));
+        assertTrajectoryEntryIsCorrect(behavior);
+
+        behavior = behavior->first_child;
 
         if(!CoordinatesSequence_isLast(trajectory)) {
-            cr_assert_eq(behavior->action, navigationAction);
+            assertBehaviorIsAFreeEntryNavigation(behavior);
         }
 
-        assertBehaviorHasFreeTrajectoryEntry(behavior);
+
     } while(!CoordinatesSequence_isLast(trajectory));
 
-    Flags_delete(flags_planned_trajectory_received);
 }
 
 struct Behavior *fetchBeforeLastBehavior(struct Behavior *behavior)
@@ -630,7 +585,8 @@ Test(RobotBehaviors,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsAntennaMiddle);
+    assertBehaviorsAreANavigationAndMovementChainFollowingThePlannedTrajectoryAfterAction(
+        &Navigator_planTowardsAntennaMiddle, &assertBehaviorHasFreeTrajectoryEntry);
 }
 
 Test(RobotBehaviors,
@@ -793,8 +749,8 @@ Test(RobotBehaviors,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    assertBehaviorsAreAMovementChainWithDrawingTolerancesFollowingThePlannedTrajectoryAfterAction(
-        &Navigator_planTowardsAntennaMarkEnd);
+    assertBehaviorsAreANavigationAndMovementChainFollowingThePlannedTrajectoryAfterAction(
+        &Navigator_planTowardsAntennaMarkEnd, &assertBehaviorHasFreeTrajectoryEntryAndDrawingTolerances);
 }
 
 Test(RobotBehaviors,
@@ -809,7 +765,8 @@ Test(RobotBehaviors,
     int y = robot->current_state->pose->coordinates->y - ANTENNA_MARK_DISTANCE;
     struct Coordinates *expected_coordinates = Coordinates_new(x, y);
     struct Coordinates *goal_coordinates = last_behavior->entry_conditions->goal_state->pose->coordinates;
-    cr_assert(Coordinates_haveTheSameValues(expected_coordinates, goal_coordinates));
+    cr_assert(expected_coordinates->x == goal_coordinates->x);
+    cr_assert(abs(expected_coordinates->y == goal_coordinates->y) <= 100);
     Coordinates_delete(expected_coordinates);
 }
 
@@ -861,7 +818,8 @@ Test(RobotBehaviors,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsObstacleZoneEastSide);
+    assertBehaviorsAreANavigationAndMovementChainFollowingThePlannedTrajectoryAfterAction(
+        &Navigator_planTowardsObstacleZoneEastSide, &assertBehaviorHasFreeTrajectoryEntry);
 }
 
 Test(RobotBehaviors,
@@ -886,16 +844,13 @@ Test(RobotBehaviors,
             &Navigator_planTowardsPaintingZone);
 }
 
-/*
- *  TODO : Add a map and its setup and test the obstacle crossing
- */
-
 Test(RobotBehaviors,
      given_aBehaviorWithPlanTowardsPaintingAction_when_behaviorActs_then_theLastBehaviorsOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsPainting);
+    assertBehaviorsAreANavigationAndMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsPainting,
+            &assertBehaviorHasFreeTrajectoryEntry);
 }
 
 Test(RobotBehaviors,
@@ -1081,7 +1036,8 @@ Test(RobotBehaviors,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsObstacleZoneWestSide);
+    assertBehaviorsAreANavigationAndMovementChainFollowingThePlannedTrajectoryAfterAction(
+        &Navigator_planTowardsObstacleZoneWestSide, &assertBehaviorHasFreeTrajectoryEntry);
 }
 
 Test(RobotBehaviors,
@@ -1111,8 +1067,8 @@ Test(RobotBehaviors,
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    assertBehaviorsAreAMovementChainWithDrawingTolerancesFollowingThePlannedTrajectoryAfterAction(
-        &Navigator_planTowardsCenterOfDrawingZone);
+    assertBehaviorsAreANavigationAndMovementChainFollowingThePlannedTrajectoryAfterAction(
+        &Navigator_planTowardsCenterOfDrawingZone, &assertBehaviorHasFreeTrajectoryEntryAndDrawingTolerances);
 }
 
 Test(RobotBehaviors,
@@ -1195,8 +1151,8 @@ Test(RobotBehaviors,
      , .fini = teardown_robot)
 {
     giveADummyDrawingTrajectoryToTheRobot(robot);
-    assertBehaviorsAreAMovementChainWithDrawingTolerancesFollowingThePlannedTrajectoryAfterAction(
-        &Navigator_planTowardsDrawingStart);
+    assertBehaviorsAreANavigationAndMovementChainFollowingThePlannedTrajectoryAfterAction(
+        &Navigator_planTowardsDrawingStart, &assertBehaviorHasFreeTrajectoryEntryAndDrawingTolerances);
 }
 
 Test(RobotBehaviors,
@@ -1257,66 +1213,69 @@ Test(RobotBehaviors,
 }
 
 Test(RobotBehaviors,
-     given_aBehaviorWithPlanRisePenBeforeGoingToAntennaStopAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
+     given_aBehaviorWithPlanRisePenBeforeGoingToSafeZoneAction_when_behaviorActs_then_theBeforeLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planRisePenBeforeGoingToAntennaStop);
+    assertBeforeLastBehaviorHasFreeEntryAfterAction(&Navigator_planRisePenBeforeGoingToSafeZone);
 }
 
 Test(RobotBehaviors,
-     given_aBehaviorWithPlanRisePenBeforeGoingToAntennaStopAction_when_behaviorActs_then_theBeforeLastBehaviorHasARisePenAndWaitAction
+     given_aBehaviorWithPlanRisePenBeforeGoingToSafeZoneAction_when_behaviorActs_then_theBeforeLastBehaviorHasARisePenAndWaitAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planRisePenBeforeGoingToAntennaStop,
+    assertBeforeLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planRisePenBeforeGoingToSafeZone,
             &Robot_stopWaitTwoSecondsRisePenWaitTwoSecond);
 }
 
 Test(RobotBehaviors,
-     given_aBehaviorWithPlanRisePenBeforeGoingToAntennaStopAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
+     given_aBehaviorWithPlanRisePenBeforeGoingToSafeZoneAction_when_behaviorActs_then_theLastBehaviorHasAFreeEntry
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planRisePenBeforeGoingToAntennaStop);
+    assertLastBehaviorHasFreeEntryAfterAction(&Navigator_planRisePenBeforeGoingToSafeZone);
 }
 
 Test(RobotBehaviors,
-     given_aBehaviorWithPlanRisePenBeforeGoingToAntennaStopAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsAntennaStopAction
+     given_aBehaviorWithPlanRisePenBeforeGoingToSafeZoneAction_when_behaviorActs_then_theLastBehaviorHasAPlanTowardsSafeZoneAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planRisePenBeforeGoingToAntennaStop,
-            &Navigator_planTowardsAntennaStop);
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planRisePenBeforeGoingToSafeZone,
+            &Navigator_planTowardsSafeZone);
 }
 
 Test(RobotBehaviors,
-     given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theLastBehaviorOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
+     given_aBehaviorWithPlanTowardsSafeZoneAction_when_behaviorActs_then_theLastBehaviorOfTheRobotAreMovementBehaviorsFollowingThePlannedTrajectory
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    assertBehaviorsAreAMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsAntennaStop);
+    assertBehaviorsAreANavigationAndMovementChainFollowingThePlannedTrajectoryAfterAction(&Navigator_planTowardsSafeZone,
+            &assertBehaviorHasFreeTrajectoryEntryAndDrawingTolerances);
 }
 
 Test(RobotBehaviors,
-     given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theLastBehaviorOfTheRobotHasTheAntennaStopCoordinatesAsEntryConditions
+     given_aBehaviorWithPlanTowardsSafeZoneAction_when_behaviorActs_then_theLastBehaviorOfTheRobotHasTheSafeZoneAsEntryConditions
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    robot->current_behavior->action = &Navigator_planTowardsAntennaStop;
+    robot->current_behavior->action = &Navigator_planTowardsSafeZone;
     Behavior_act(robot->current_behavior, robot);
     struct Behavior *last_behavior = fetchLastBehavior(robot->current_behavior);
-    struct Coordinates *expected_coordinates = robot->navigator->navigable_map->antenna_zone_stop;
+    struct Coordinates *expected_coordinates = Map_retrieveSafeZone(robot->navigator->navigable_map);
     struct Coordinates *goal_coordinates = last_behavior->entry_conditions->goal_state->pose->coordinates;
-    cr_assert(Coordinates_haveTheSameValues(expected_coordinates, goal_coordinates));
+    cr_assert(expected_coordinates->x == goal_coordinates->x);
+    cr_assert(abs(expected_coordinates->y == goal_coordinates->y) <= 100);
+    Coordinates_delete(expected_coordinates);
 }
 
 Test(RobotBehaviors,
-     given_aBehaviorWithPlanTowardsAntennaStopAction_when_behaviorActs_then_theLastBehaviorHasAPlanStopMotionForEndOfCycleAction
+     given_aBehaviorWithPlanTowardsSafeZoneAction_when_behaviorActs_then_theLastBehaviorHasAPlanStopMotionForEndOfCycleAction
      , .init = setup_robot
      , .fini = teardown_robot)
 {
-    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsAntennaStop,
+    assertLastBehaviorAfterExecutionOfFirstActionHasTheAction(&Navigator_planTowardsSafeZone,
             &Navigator_planStopMotionForEndOfCycle);
 }
 
